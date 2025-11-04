@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo de Integración - StickyWork Widget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content-wrapper {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .info-box h3 {
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box p {
+            color: #1e3a8a;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .code-block code {
+            color: #10b981;
+        }
+
+        .widget-section {
+            margin-top: 3rem;
+            padding-top: 3rem;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .widget-title {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 2rem;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 3rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Ejemplo de Integración</h1>
+            <p>Widget de StickyWork en una página externa</p>
+        </div>
+
+        <div class="content-wrapper">
+            <div class="info-box">
+                <h3>Sobre este ejemplo</h3>
+                <p>
+                    Esta página demuestra cómo integrar el widget de StickyWork en cualquier sitio web.
+                    El widget está completamente funcional y conectado a una base de datos real.
+                    Puedes usar este código como base para tu propia implementación.
+                </p>
+            </div>
+
+            <h2 style="color: #1f2937; margin-bottom: 1rem;">Código de integración</h2>
+
+            <p style="color: #6b7280; margin-bottom: 1rem;">
+                Solo necesitas agregar estas 3 líneas de código a tu página HTML:
+            </p>
+
+            <div class="code-block">
+                <div style="color: #9ca3af; margin-bottom: 0.5rem;"><!-- Contenedor --></div>
+                &lt;div id="stickywork-widget"&gt;&lt;/div&gt;<br><br>
+
+                <div style="color: #9ca3af; margin-bottom: 0.5rem;"><!-- Script --></div>
+                &lt;script src="<code>http://localhost:3000/public/widget/stickywork-widget.js</code>"&gt;&lt;/script&gt;<br><br>
+
+                <div style="color: #9ca3af; margin-bottom: 0.5rem;"><!-- Inicialización --></div>
+                &lt;script&gt;<br>
+                &nbsp;&nbsp;StickyWork.init({<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;businessId: <span style="color: #fbbf24;">1</span>,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;apiUrl: '<code>http://localhost:3000</code>',<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;primaryColor: '<span style="color: #fbbf24;">#3b82f6</span>',<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;language: '<span style="color: #fbbf24;">es</span>'<br>
+                &nbsp;&nbsp;});<br>
+                &lt;/script&gt;
+            </div>
+
+            <!-- Widget en acción -->
+            <div class="widget-section">
+                <h2 class="widget-title">Widget en Vivo</h2>
+
+                <!-- Aquí se carga el widget -->
+                <div id="stickywork-widget"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by StickyWork - Sistema de Reservas Online</p>
+        </div>
+    </div>
+
+    <!-- Integración del widget -->
+    <script src="http://localhost:3000/public/widget/stickywork-widget.js"></script>
+    <script>
+        StickyWork.init({
+            businessId: 1,
+            apiUrl: 'http://localhost:3000',
+            primaryColor: '#3b82f6',
+            secondaryColor: '#10b981',
+            language: 'es'
+        });
+    </script>
+</body>
+</html>

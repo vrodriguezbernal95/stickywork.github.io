@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Interactiva - StickyWork</title>
+    <meta name="description" content="Prueba nuestro sistema de reservas online en vivo. Ve cómo se vería en tu web.">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">StickyWork</a>
+            <button class="nav-toggle">☰</button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Inicio</a></li>
+                <li><a href="como-funciona.html" class="nav-link">Cómo funciona</a></li>
+                <li><a href="planes.html" class="nav-link">Planes</a></li>
+                <li><a href="demo.html" class="nav-link">Demo</a></li>
+                <li><a href="contacto.html" class="nav-link">Contacto</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Prueba Nuestro Sistema en Vivo</h1>
+            <p>Experimenta cómo funcionaría el widget de reservas en tu sitio web</p>
+        </div>
+    </section>
+
+    <!-- Demo Widget -->
+    <section style="background-color: var(--light);">
+        <div class="container">
+            <h2 class="section-title">Widget de Reservas - Demo Interactiva</h2>
+            <p class="section-subtitle">Este widget está conectado a una base de datos real. ¡Prueba hacer una reserva!</p>
+
+            <div class="demo-container">
+                <div class="widget-preview">
+                    <p style="text-align: center; color: var(--gray); margin-bottom: 1rem;">
+                        <strong>Widget en Vivo:</strong> Este es el widget real funcionando
+                    </p>
+
+                    <!-- Aquí se carga el widget real -->
+                    <div id="stickywork-widget"></div>
+
+                    <p style="text-align: center; color: var(--gray); margin-top: 1rem; font-size: 0.9rem;">
+                        Las reservas se guardan en la base de datos MySQL
+                    </p>
+                </div>
+
+                <!-- Código de integración -->
+                <div style="margin-top: 3rem;">
+                    <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--dark);">
+                        Código para integrar en tu web
+                    </h3>
+
+                    <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
+                        <div style="color: #888; margin-bottom: 1rem;"><!-- Paso 1: Agrega el contenedor --></div>
+                        &lt;<span style="color: #ff6b6b;">div</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-widget"</span>&gt;&lt;/<span style="color: #ff6b6b;">div</span>&gt;<br><br>
+
+                        <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
+                        &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
+
+                        <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa el widget con tu configuración --></div>
+                        &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
+                        &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<span style="color: #888;"> // Tu color principal</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
+                        &nbsp;&nbsp;});<br>
+                        &lt;/<span style="color: #ff6b6b;">script</span>&gt;
+                    </div>
+
+                    <div style="margin-top: 2rem; padding: 1.5rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
+                        <p style="margin: 0; color: #856404;"><strong>💡 Nota:</strong> El businessId por defecto es <code>1</code> (negocio demo). Después de configurar tu cuenta, obtendrás tu propio ID único.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Características del widget -->
+    <section>
+        <div class="container">
+            <h2 class="section-title">Características del Widget</h2>
+            <p class="section-subtitle">Todo lo que necesitas en una solución simple</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Totalmente Personalizable</h3>
+                    <p>Colores, fuentes, campos y estilos adaptados a tu marca. El widget se verá como parte de tu web.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Diseño Responsive</h3>
+                    <p>Funciona perfectamente en móviles, tablets y escritorio. Se adapta automáticamente al tamaño de pantalla.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Carga Rápida</h3>
+                    <p>Optimizado para velocidad. No afecta el rendimiento de tu sitio web. Menos de 50KB de tamaño.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Multiidioma</h3>
+                    <p>Soporta español, inglés, francés, alemán y más. Detecta automáticamente el idioma del navegador.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>Validación Inteligente</h3>
+                    <p>Validación de datos en tiempo real. Solo muestra horarios disponibles. Previene reservas duplicadas.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Seguro y GDPR</h3>
+                    <p>Cumple con normativas de privacidad. Datos encriptados. Conforme con RGPD y LOPD.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Personalización -->
+    <section style="background-color: var(--light);">
+        <div class="container">
+            <h2 class="section-title">Opciones de Personalización</h2>
+            <p class="section-subtitle">Configura el widget exactamente como lo necesitas</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">🎯 Campos del Formulario</h3>
+                    <ul style="text-align: left; color: var(--gray); line-height: 2;">
+                        <li>Agrega o quita campos personalizados</li>
+                        <li>Campos obligatorios u opcionales</li>
+                        <li>Validación personalizada</li>
+                        <li>Etiquetas en tu idioma</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">🎨 Diseño Visual</h3>
+                    <ul style="text-align: left; color: var(--gray); line-height: 2;">
+                        <li>Colores de tu marca</li>
+                        <li>Fuentes personalizadas</li>
+                        <li>Tamaños y espaciados</li>
+                        <li>Botones y efectos</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">⚙️ Comportamiento</h3>
+                    <ul style="text-align: left; color: var(--gray); line-height: 2;">
+                        <li>Horarios y disponibilidad</li>
+                        <li>Duración de servicios</li>
+                        <li>Tiempo entre citas</li>
+                        <li>Límites y restricciones</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: var(--white);">
+        <div class="container" style="text-align: center;">
+            <h2 style="color: var(--white); font-size: 2.5rem; margin-bottom: 1rem;">¿Te gusta lo que ves?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95;">Empieza tu prueba gratuita de 14 días hoy mismo</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="planes.html" class="btn btn-secondary">Ver Planes</a>
+                <a href="contacto.html" class="btn btn-outline">Contactar</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>StickyWork</h3>
+                <p>La plataforma de reservas online más sencilla para negocios físicos.</p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Producto</h3>
+                <ul>
+                    <li><a href="como-funciona.html">Cómo funciona</a></li>
+                    <li><a href="planes.html">Planes y precios</a></li>
+                    <li><a href="demo.html">Demo interactiva</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Empresa</h3>
+                <ul>
+                    <li><a href="#">Sobre nosotros</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Términos de servicio</a></li>
+                    <li><a href="#">Política de privacidad</a></li>
+                    <li><a href="#">Cookies</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2024 StickyWork. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+
+    <!-- Cargar widget de StickyWork -->
+    <script src="/public/widget/stickywork-widget.js"></script>
+    <script>
+        // Inicializar widget
+        StickyWork.init({
+            businessId: 1,
+            apiUrl: 'http://localhost:3000',
+            primaryColor: '#3b82f6',
+            secondaryColor: '#10b981',
+            language: 'es'
+        });
+    </script>
+</body>
+</html>

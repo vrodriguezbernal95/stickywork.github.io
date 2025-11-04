@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - StickyWork</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #00ff00;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .test-section {
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .test-section h2 {
+            color: #00d9ff;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .endpoint {
+            background: #0f3460;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .method {
+            background: #00ff00;
+            color: #000;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .method.post {
+            background: #ffd700;
+        }
+
+        .method.patch {
+            background: #ff6b6b;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background: #00cc00;
+        }
+
+        .result {
+            background: #000;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.error {
+            color: #ff6b6b;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-left: auto;
+        }
+
+        .status.pending {
+            background: #666;
+        }
+
+        .status.success {
+            background: #00ff00;
+            color: #000;
+        }
+
+        .status.error {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        .info {
+            background: #2d4059;
+            border-left: 4px solid #00d9ff;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 StickyWork API Tester</h1>
+
+        <div class="info">
+            <strong>Instrucciones:</strong> Haz clic en "Probar" para verificar cada endpoint de la API.
+            Asegúrate de que el servidor esté corriendo en http://localhost:3000
+        </div>
+
+        <!-- Test 1: Health Check -->
+        <div class="test-section">
+            <h2>1. Health Check del Servidor</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span>/api/health</span>
+                <span class="status pending" id="status-1">Sin probar</span>
+            </div>
+            <button onclick="testHealth()">Probar</button>
+            <div class="result" id="result-1"></div>
+        </div>
+
+        <!-- Test 2: Get Services -->
+        <div class="test-section">
+            <h2>2. Obtener Servicios (Business ID: 1)</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span>/api/services/1</span>
+                <span class="status pending" id="status-2">Sin probar</span>
+            </div>
+            <button onclick="testGetServices()">Probar</button>
+            <div class="result" id="result-2"></div>
+        </div>
+
+        <!-- Test 3: Get Business -->
+        <div class="test-section">
+            <h2>3. Obtener Información del Negocio</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span>/api/business/1</span>
+                <span class="status pending" id="status-3">Sin probar</span>
+            </div>
+            <button onclick="testGetBusiness()">Probar</button>
+            <div class="result" id="result-3"></div>
+        </div>
+
+        <!-- Test 4: Get Availability -->
+        <div class="test-section">
+            <h2>4. Obtener Disponibilidad</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span>/api/availability/1?date=2024-12-25</span>
+                <span class="status pending" id="status-4">Sin probar</span>
+            </div>
+            <button onclick="testGetAvailability()">Probar</button>
+            <div class="result" id="result-4"></div>
+        </div>
+
+        <!-- Test 5: Create Booking -->
+        <div class="test-section">
+            <h2>5. Crear Reserva de Prueba</h2>
+            <div class="endpoint">
+                <span class="method post">POST</span>
+                <span>/api/bookings</span>
+                <span class="status pending" id="status-5">Sin probar</span>
+            </div>
+            <button onclick="testCreateBooking()">Probar</button>
+            <div class="result" id="result-5"></div>
+        </div>
+
+        <!-- Test 6: Get Bookings -->
+        <div class="test-section">
+            <h2>6. Obtener Todas las Reservas</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span>/api/bookings/1</span>
+                <span class="status pending" id="status-6">Sin probar</span>
+            </div>
+            <button onclick="testGetBookings()">Probar</button>
+            <div class="result" id="result-6"></div>
+        </div>
+
+        <!-- Test 7: Get Stats -->
+        <div class="test-section">
+            <h2>7. Obtener Estadísticas</h2>
+            <div class="endpoint">
+                <span class="method">GET</span>
+                <span>/api/stats/1</span>
+                <span class="status pending" id="status-7">Sin probar</span>
+            </div>
+            <button onclick="testGetStats()">Probar</button>
+            <div class="result" id="result-7"></div>
+        </div>
+
+        <!-- Test All Button -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <button onclick="testAll()" style="background: #00d9ff; padding: 1rem 3rem; font-size: 1.1rem;">
+                ▶ Probar Todos los Endpoints
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+
+        function showResult(testNum, data, isError = false) {
+            const resultDiv = document.getElementById(`result-${testNum}`);
+            const statusSpan = document.getElementById(`status-${testNum}`);
+
+            resultDiv.textContent = JSON.stringify(data, null, 2);
+            resultDiv.classList.add('show');
+
+            if (isError) {
+                resultDiv.classList.add('error');
+                statusSpan.textContent = 'ERROR';
+                statusSpan.className = 'status error';
+            } else {
+                resultDiv.classList.remove('error');
+                statusSpan.textContent = 'OK';
+                statusSpan.className = 'status success';
+            }
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                const data = await response.json();
+                showResult(1, data);
+            } catch (error) {
+                showResult(1, { error: error.message }, true);
+            }
+        }
+
+        async function testGetServices() {
+            try {
+                const response = await fetch(`${API_URL}/api/services/1`);
+                const data = await response.json();
+                showResult(2, data);
+            } catch (error) {
+                showResult(2, { error: error.message }, true);
+            }
+        }
+
+        async function testGetBusiness() {
+            try {
+                const response = await fetch(`${API_URL}/api/business/1`);
+                const data = await response.json();
+                showResult(3, data);
+            } catch (error) {
+                showResult(3, { error: error.message }, true);
+            }
+        }
+
+        async function testGetAvailability() {
+            try {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const date = tomorrow.toISOString().split('T')[0];
+
+                const response = await fetch(`${API_URL}/api/availability/1?date=${date}`);
+                const data = await response.json();
+                showResult(4, data);
+            } catch (error) {
+                showResult(4, { error: error.message }, true);
+            }
+        }
+
+        async function testCreateBooking() {
+            try {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const date = tomorrow.toISOString().split('T')[0];
+
+                const booking = {
+                    businessId: 1,
+                    serviceId: 1,
+                    customerName: 'Test User',
+                    customerEmail: 'test@example.com',
+                    customerPhone: '+34 600000000',
+                    bookingDate: date,
+                    bookingTime: '10:00:00',
+                    notes: 'Reserva de prueba desde API Tester'
+                };
+
+                const response = await fetch(`${API_URL}/api/bookings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(booking)
+                });
+                const data = await response.json();
+                showResult(5, data, !data.success);
+            } catch (error) {
+                showResult(5, { error: error.message }, true);
+            }
+        }
+
+        async function testGetBookings() {
+            try {
+                const response = await fetch(`${API_URL}/api/bookings/1`);
+                const data = await response.json();
+                showResult(6, data);
+            } catch (error) {
+                showResult(6, { error: error.message }, true);
+            }
+        }
+
+        async function testGetStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/stats/1`);
+                const data = await response.json();
+                showResult(7, data);
+            } catch (error) {
+                showResult(7, { error: error.message }, true);
+            }
+        }
+
+        async function testAll() {
+            const tests = [
+                testHealth,
+                testGetServices,
+                testGetBusiness,
+                testGetAvailability,
+                testCreateBooking,
+                testGetBookings,
+                testGetStats
+            ];
+
+            for (const test of tests) {
+                await test();
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+    </script>
+</body>
+</html>

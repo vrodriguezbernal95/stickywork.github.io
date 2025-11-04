@@ -1,0 +1,31 @@
+{
+  "name": "stickywork",
+  "version": "1.0.0",
+  "description": "Sistema de reservas online para negocios físicos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:sqlite": "node server-sqlite.js",
+    "dev": "nodemon server.js",
+    "dev:sqlite": "nodemon server-sqlite.js",
+    "setup": "node backend/setup-database.js"
+  },
+  "keywords": [
+    "reservas",
+    "booking",
+    "appointments"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "mysql2": "^3.6.5",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - StickyWork</title>
+    <meta name="description" content="¿Tienes preguntas? Contáctanos. Nuestro equipo está listo para ayudarte a implementar el sistema de reservas perfecto.">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">StickyWork</a>
+            <button class="nav-toggle">☰</button>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Inicio</a></li>
+                <li><a href="como-funciona.html" class="nav-link">Cómo funciona</a></li>
+                <li><a href="planes.html" class="nav-link">Planes</a></li>
+                <li><a href="demo.html" class="nav-link">Demo</a></li>
+                <li><a href="contacto.html" class="nav-link">Contacto</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Estamos Aquí Para Ayudarte</h1>
+            <p>Envíanos un mensaje y te responderemos en menos de 24 horas</p>
+        </div>
+    </section>
+
+    <!-- Formulario de contacto -->
+    <section>
+        <div class="container">
+            <h2 class="section-title">Ponte en contacto</h2>
+            <p class="section-subtitle">Completa el formulario y nuestro equipo se pondrá en contacto contigo</p>
+
+            <div class="contact-form">
+                <form id="contact-form" onsubmit="return handleContactFormSubmit(event)">
+                    <div class="form-group">
+                        <label for="name">Nombre completo *</label>
+                        <input type="text" id="name" name="name" required placeholder="Tu nombre">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Correo electrónico *</label>
+                        <input type="email" id="email" name="email" required placeholder="tu@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Teléfono</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+34 600 000 000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="business">Nombre de tu negocio</label>
+                        <input type="text" id="business" name="business" placeholder="Ej: Peluquería Moderna">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="business-type">Tipo de negocio *</label>
+                        <select id="business-type" name="business-type" required>
+                            <option value="">-- Selecciona una opción --</option>
+                            <option value="Restaurante">Restaurante</option>
+                            <option value="Peluquería/Salón">Peluquería / Salón de belleza</option>
+                            <option value="Clínica">Clínica / Consultorio</option>
+                            <option value="Despacho">Despacho de abogados</option>
+                            <option value="Centro nutrición">Centro de nutrición</option>
+                            <option value="Gimnasio">Gimnasio / Centro deportivo</option>
+                            <option value="Spa">Spa / Centro de bienestar</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interest">¿Qué te interesa? *</label>
+                        <select id="interest" name="interest" required>
+                            <option value="">-- Selecciona una opción --</option>
+                            <option value="Información general">Información general</option>
+                            <option value="Demo personalizada">Solicitar demo personalizada</option>
+                            <option value="Precios">Consulta sobre precios</option>
+                            <option value="Integración técnica">Ayuda con integración técnica</option>
+                            <option value="Plan empresarial">Plan empresarial</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Mensaje *</label>
+                        <textarea id="message" name="message" required placeholder="Cuéntanos cómo podemos ayudarte..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem;">
+                        Enviar Mensaje
+                    </button>
+
+                    <p style="text-align: center; color: var(--gray); margin-top: 1rem; font-size: 0.9rem;">
+                        * Campos obligatorios
+                    </p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Información de contacto -->
+    <section style="background-color: var(--light);">
+        <div class="container">
+            <h2 class="section-title">Otras formas de contactarnos</h2>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📧</div>
+                    <h3>Email</h3>
+                    <p style="margin-top: 1rem; font-size: 1.1rem;">
+                        <a href="mailto:info@stickywork.com" style="color: var(--primary-color); text-decoration: none;">
+                            info@stickywork.com
+                        </a>
+                    </p>
+                    <p style="margin-top: 0.5rem; color: var(--gray);">
+                        Respuesta en menos de 24 horas
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Chat en Vivo</h3>
+                    <p style="margin-top: 1rem;">
+                        Disponible de Lunes a Viernes
+                    </p>
+                    <p style="color: var(--gray);">
+                        9:00 AM - 6:00 PM (CET)
+                    </p>
+                    <button class="btn btn-primary" style="margin-top: 1rem;" onclick="alert('Chat disponible próximamente')">
+                        Iniciar Chat
+                    </button>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📞</div>
+                    <h3>Teléfono</h3>
+                    <p style="margin-top: 1rem; font-size: 1.1rem;">
+                        <a href="tel:+34900000000" style="color: var(--primary-color); text-decoration: none;">
+                            +34 900 000 000
+                        </a>
+                    </p>
+                    <p style="margin-top: 0.5rem; color: var(--gray);">
+                        Lun - Vie: 9:00 - 18:00
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Rápido -->
+    <section>
+        <div class="container">
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <p class="section-subtitle">Puede que tu respuesta ya esté aquí</p>
+
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
+                    <h3 style="margin-bottom: 1rem;">¿Cuánto tarda la implementación?</h3>
+                    <p>La mayoría de nuestros clientes tienen el widget funcionando en su web en menos de 1 hora. Te proporcionamos documentación completa y soporte técnico si lo necesitas.</p>
+                </div>
+
+                <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
+                    <h3 style="margin-bottom: 1rem;">¿Necesito conocimientos técnicos?</h3>
+                    <p>No. Si puedes copiar y pegar código, puedes integrar StickyWork. También ofrecemos servicio de instalación profesional si lo prefieres.</p>
+                </div>
+
+                <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
+                    <h3 style="margin-bottom: 1rem;">¿Ofrecen capacitación?</h3>
+                    <p>Sí. Todos los clientes reciben una sesión de onboarding gratuita. Los planes Empresariales incluyen capacitación personalizada para todo tu equipo.</p>
+                </div>
+
+                <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
+                    <h3 style="margin-bottom: 1rem;">¿Puedo migrar desde otro sistema?</h3>
+                    <p>Por supuesto. Te ayudamos a migrar tus datos existentes sin perder información. Es un proceso rápido y sin interrupciones en tu servicio.</p>
+                </div>
+
+                <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
+                    <h3 style="margin-bottom: 1rem;">¿Hay penalización por cancelar?</h3>
+                    <p>No hay penalizaciones. Puedes cancelar tu suscripción en cualquier momento desde tu panel de control. No hacemos preguntas innecesarias.</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;">¿No encontraste tu respuesta?</p>
+                <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="btn btn-primary">
+                    Envíanos un mensaje
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mapa o ubicación (opcional) -->
+    <section style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: var(--white);">
+        <div class="container" style="text-align: center;">
+            <div class="feature-icon" style="font-size: 4rem; margin-bottom: 1rem;">📍</div>
+            <h2 style="color: var(--white); font-size: 2rem; margin-bottom: 1rem;">Nuestra Oficina</h2>
+            <p style="font-size: 1.1rem; opacity: 0.95; margin-bottom: 0.5rem;">
+                Calle Innovación 123, 28001 Madrid, España
+            </p>
+            <p style="opacity: 0.9;">
+                Horario de atención: Lunes a Viernes, 9:00 - 18:00
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>StickyWork</h3>
+                <p>La plataforma de reservas online más sencilla para negocios físicos.</p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Producto</h3>
+                <ul>
+                    <li><a href="como-funciona.html">Cómo funciona</a></li>
+                    <li><a href="planes.html">Planes y precios</a></li>
+                    <li><a href="demo.html">Demo interactiva</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Empresa</h3>
+                <ul>
+                    <li><a href="#">Sobre nosotros</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Términos de servicio</a></li>
+                    <li><a href="#">Política de privacidad</a></li>
+                    <li><a href="#">Cookies</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2024 StickyWork. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
