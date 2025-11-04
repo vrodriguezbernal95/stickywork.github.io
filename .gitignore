@@ -35,3 +35,5 @@ temp/
 # Build
 dist/
 build/
+.claude/settings.local.json
+css/styles-backup.css

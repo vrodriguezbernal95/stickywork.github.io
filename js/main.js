@@ -19,7 +19,7 @@ const themeToggle = () => {
 
 // Cargar tema guardado al iniciar
 const loadTheme = () => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark'; // Dark mode por defecto
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     const themeBtn = document.querySelector('.theme-toggle');
