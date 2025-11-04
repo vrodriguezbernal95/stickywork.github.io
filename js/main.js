@@ -1,5 +1,38 @@
+// Dark Mode Toggle
+const themeToggle = () => {
+    // Obtener tema actual
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // Aplicar nuevo tema
+    document.documentElement.setAttribute('data-theme', newTheme);
+
+    // Guardar preferencia
+    localStorage.setItem('theme', newTheme);
+
+    // Actualizar ícono del botón
+    const themeBtn = document.querySelector('.theme-toggle');
+    if (themeBtn) {
+        themeBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    }
+};
+
+// Cargar tema guardado al iniciar
+const loadTheme = () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const themeBtn = document.querySelector('.theme-toggle');
+    if (themeBtn) {
+        themeBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    }
+};
+
 // Navegación móvil
 document.addEventListener('DOMContentLoaded', function() {
+    // Cargar tema
+    loadTheme();
+
     const navToggle = document.querySelector('.nav-toggle');
     const navMenu = document.querySelector('.nav-menu');
 

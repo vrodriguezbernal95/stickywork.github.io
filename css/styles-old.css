@@ -1,12 +1,12 @@
 :root {
     /* Colores principales - Modo Claro */
-    --primary-color: #2563eb;
+    --primary-color: #2563eb;      /* Azul */
     --primary-dark: #1e40af;
     --primary-light: #3b82f6;
-    --secondary-color: #dc2626;
+    --secondary-color: #dc2626;     /* Rojo */
     --secondary-dark: #b91c1c;
     --secondary-light: #ef4444;
-    --accent-color: #f59e0b;
+    --accent-color: #f59e0b;        /* Acento dorado/naranja */
 
     /* Tonos neutros - Modo Claro */
     --bg-primary: #ffffff;
@@ -28,6 +28,7 @@
 
 /* Dark Mode */
 [data-theme="dark"] {
+    /* Colores principales - Modo Oscuro */
     --primary-color: #3b82f6;
     --primary-dark: #2563eb;
     --primary-light: #60a5fa;
@@ -36,14 +37,16 @@
     --secondary-light: #f87171;
     --accent-color: #fbbf24;
 
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-tertiary: #94a3b8;
+    /* Tonos neutros - Modo Oscuro */
+    --bg-primary: #0f172a;         /* Azul muy oscuro */
+    --bg-secondary: #1e293b;       /* Azul oscuro */
+    --bg-tertiary: #334155;        /* Azul gris */
+    --text-primary: #f1f5f9;       /* Casi blanco */
+    --text-secondary: #cbd5e1;     /* Gris claro */
+    --text-tertiary: #94a3b8;      /* Gris medio */
     --border-color: #334155;
 
+    /* Sombras más suaves en dark mode */
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -81,7 +84,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
 }
 
 .theme-toggle:hover {
@@ -111,10 +113,7 @@ body {
 .logo {
     font-size: 1.8rem;
     font-weight: bold;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-color);
     text-decoration: none;
 }
 
@@ -159,35 +158,20 @@ body {
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: var(--text-primary);
+    color: var(--dark);
 }
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--white);
     padding: 6rem 2rem;
     text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.1), transparent);
-    pointer-events: none;
 }
 
 .hero-content {
     max-width: 800px;
     margin: 0 auto;
-    position: relative;
-    z-index: 1;
 }
 
 .hero h1 {
@@ -202,16 +186,15 @@ body {
     opacity: 0.95;
 }
 
-/* Botones */
 .btn {
     display: inline-block;
     padding: 1rem 2.5rem;
     background-color: var(--secondary-color);
-    color: white;
+    color: var(--white);
     text-decoration: none;
     border-radius: 50px;
     font-weight: 600;
-    transition: var(--transition);
+    transition: all 0.3s;
     border: none;
     cursor: pointer;
     font-size: 1rem;
@@ -220,7 +203,6 @@ body {
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
-    background-color: var(--secondary-dark);
 }
 
 .btn-primary {
@@ -232,25 +214,14 @@ body {
 }
 
 .btn-secondary {
-    background-color: var(--bg-primary);
+    background-color: var(--white);
     color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-}
-
-.btn-secondary:hover {
-    background-color: var(--primary-color);
-    color: white;
 }
 
 .btn-outline {
     background-color: transparent;
-    border: 2px solid white;
-    color: white;
-}
-
-.btn-outline:hover {
-    background-color: white;
-    color: var(--primary-color);
+    border: 2px solid var(--white);
+    color: var(--white);
 }
 
 /* Secciones */
@@ -267,12 +238,12 @@ section {
     font-size: 2.5rem;
     text-align: center;
     margin-bottom: 1rem;
-    color: var(--text-primary);
+    color: var(--dark);
 }
 
 .section-subtitle {
     text-align: center;
-    color: var(--text-secondary);
+    color: var(--gray);
     font-size: 1.2rem;
     margin-bottom: 4rem;
 }
@@ -288,17 +259,14 @@ section {
 .feature-card {
     text-align: center;
     padding: 2rem;
-    background-color: var(--bg-secondary);
+    background-color: var(--white);
     border-radius: 15px;
     box-shadow: var(--shadow);
-    transition: var(--transition);
-    border: 1px solid var(--border-color);
+    transition: transform 0.3s;
 }
 
 .feature-card:hover {
     transform: translateY(-10px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-color);
 }
 
 .feature-icon {
@@ -309,17 +277,17 @@ section {
 .feature-card h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
-    color: var(--text-primary);
+    color: var(--dark);
 }
 
 .feature-card p {
-    color: var(--text-secondary);
+    color: var(--gray);
     line-height: 1.8;
 }
 
 /* Steps */
 .steps {
-    background-color: var(--bg-secondary);
+    background-color: var(--light);
 }
 
 .steps-container {
@@ -329,25 +297,18 @@ section {
 }
 
 .step {
-    background-color: var(--bg-primary);
+    background-color: var(--white);
     padding: 2rem;
     border-radius: 15px;
     text-align: center;
     position: relative;
-    border: 1px solid var(--border-color);
-    transition: var(--transition);
-}
-
-.step:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-5px);
 }
 
 .step-number {
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--white);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -359,11 +320,11 @@ section {
 
 .step h3 {
     margin-bottom: 1rem;
-    color: var(--text-primary);
+    color: var(--dark);
 }
 
 .step p {
-    color: var(--text-secondary);
+    color: var(--gray);
 }
 
 /* Pricing */
@@ -375,12 +336,12 @@ section {
 }
 
 .pricing-card {
-    background-color: var(--bg-primary);
-    border: 2px solid var(--border-color);
+    background-color: var(--white);
+    border: 2px solid #e5e7eb;
     border-radius: 20px;
     padding: 3rem 2rem;
     text-align: center;
-    transition: var(--transition);
+    transition: all 0.3s;
 }
 
 .pricing-card:hover {
@@ -391,13 +352,13 @@ section {
 
 .pricing-card.featured {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(220, 38, 38, 0.05));
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(37, 99, 235, 0.05));
     transform: scale(1.05);
 }
 
 .pricing-badge {
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    color: white;
+    background-color: var(--secondary-color);
+    color: var(--white);
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -409,21 +370,18 @@ section {
 .pricing-card h3 {
     font-size: 1.8rem;
     margin-bottom: 1rem;
-    color: var(--text-primary);
+    color: var(--dark);
 }
 
 .pricing-price {
     font-size: 3rem;
     font-weight: bold;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--primary-color);
     margin-bottom: 0.5rem;
 }
 
 .pricing-period {
-    color: var(--text-secondary);
+    color: var(--gray);
     margin-bottom: 2rem;
 }
 
@@ -435,8 +393,8 @@ section {
 
 .pricing-features li {
     padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    border-bottom: 1px solid #e5e7eb;
+    color: var(--gray);
 }
 
 .pricing-features li:before {
@@ -450,37 +408,34 @@ section {
 .demo-container {
     max-width: 900px;
     margin: 3rem auto;
-    background-color: var(--bg-secondary);
+    background-color: var(--white);
     border-radius: 20px;
     box-shadow: var(--shadow-lg);
     padding: 3rem;
-    border: 1px solid var(--border-color);
 }
 
 .widget-preview {
-    background-color: var(--bg-tertiary);
+    background-color: var(--light);
     border-radius: 15px;
     padding: 2rem;
     margin-bottom: 2rem;
 }
 
 .widget-frame {
-    background-color: var(--bg-primary);
+    background-color: var(--white);
     border-radius: 10px;
     padding: 2rem;
     box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
 }
 
 /* Contact Form */
 .contact-form {
     max-width: 600px;
     margin: 2rem auto;
-    background-color: var(--bg-secondary);
+    background-color: var(--white);
     padding: 3rem;
     border-radius: 20px;
     box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
 }
 
 .form-group {
@@ -491,7 +446,7 @@ section {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--dark);
 }
 
 .form-group input,
@@ -499,13 +454,11 @@ section {
 .form-group select {
     width: 100%;
     padding: 1rem;
-    border: 2px solid var(--border-color);
+    border: 2px solid #e5e7eb;
     border-radius: 10px;
     font-size: 1rem;
     font-family: inherit;
-    transition: var(--transition);
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+    transition: border-color 0.3s;
 }
 
 .form-group input:focus,
@@ -513,7 +466,6 @@ section {
 .form-group select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .form-group textarea {
@@ -523,10 +475,9 @@ section {
 
 /* Footer */
 .footer {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
+    background-color: var(--dark);
+    color: var(--white);
     padding: 3rem 2rem 1rem;
-    border-top: 1px solid var(--border-color);
 }
 
 .footer-content {
@@ -540,7 +491,7 @@ section {
 
 .footer-section h3 {
     margin-bottom: 1rem;
-    color: var(--text-primary);
+    color: var(--white);
 }
 
 .footer-section ul {
@@ -552,20 +503,20 @@ section {
 }
 
 .footer-section a {
-    color: var(--text-secondary);
+    color: var(--gray);
     text-decoration: none;
-    transition: var(--transition);
+    transition: color 0.3s;
 }
 
 .footer-section a:hover {
-    color: var(--primary-color);
+    color: var(--white);
 }
 
 .footer-bottom {
     text-align: center;
     padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--gray);
 }
 
 /* Responsive */
@@ -575,12 +526,11 @@ section {
         top: 100%;
         left: 0;
         right: 0;
-        background-color: var(--bg-primary);
+        background-color: var(--white);
         flex-direction: column;
         padding: 1rem;
         box-shadow: var(--shadow);
         display: none;
-        border-top: 1px solid var(--border-color);
     }
 
     .nav-menu.active {
@@ -606,14 +556,6 @@ section {
     .pricing-card.featured {
         transform: scale(1);
     }
-
-    .theme-toggle {
-        bottom: 1rem;
-        right: 1rem;
-        width: 50px;
-        height: 50px;
-        font-size: 1.2rem;
-    }
 }
 
 /* Animations */
@@ -630,22 +572,4 @@ section {
 
 .fade-in-up {
     animation: fadeInUp 0.6s ease-out;
-}
-
-/* Gradients personalizados */
-.gradient-text {
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.gradient-bg {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-}
-
-.gradient-border {
-    border: 2px solid transparent;
-    background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
-                linear-gradient(90deg, var(--primary-color), var(--secondary-color)) border-box;
 }
