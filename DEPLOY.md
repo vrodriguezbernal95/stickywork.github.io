@@ -12,7 +12,7 @@ Frontend (GitHub Pages)     Backend + DB (Render.com)
 │  (Páginas públicas) │    │  PostgreSQL Database │
 │                     │    │  API REST            │
 └─────────────────────┘    └──────────────────────┘
-https://vrodriguezbernal95   https://stickywork-api
+https://vrodriguezbernal95   https://stickywork-github-io
 .github.io/                  .onrender.com
 ```
 
@@ -87,7 +87,7 @@ DATABASE_URL=postgresql://user:password@host/database
 ```
 NODE_ENV=production
 PORT=3000
-APP_URL=https://stickywork-api.onrender.com
+APP_URL=https://stickywork-github-io.onrender.com
 FRONTEND_URL=https://vrodriguezbernal95.github.io
 ```
 
@@ -166,14 +166,14 @@ Busca en estos archivos y verifica/actualiza la URL de producción:
 ```javascript
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
-    : 'https://stickywork-api.onrender.com';  // ← Cambia si tu URL es diferente
+    : 'https://stickywork-github-io.onrender.com';  // ← Cambia si tu URL es diferente
 ```
 
-**admin-dashboard.html** (similar):
+**admin/js/api.js** (similar):
 ```javascript
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
-    : 'https://stickywork-api.onrender.com';  // ← Cambia si tu URL es diferente
+    : 'https://stickywork-github-io.onrender.com';  // ← Cambia si tu URL es diferente
 ```
 
 ### 5.3 Habilitar CORS
@@ -298,7 +298,7 @@ Tu aplicación completa ahora está en producción:
 
 ```
 🌐 Frontend:  https://vrodriguezbernal95.github.io/stickywork.github.io/
-🔌 Backend:   https://stickywork-api.onrender.com
+🔌 Backend:   https://stickywork-github-io.onrender.com
 🔐 Admin:     https://vrodriguezbernal95.github.io/stickywork.github.io/admin-login.html
 ```
 
