@@ -1,7 +1,7 @@
 // API Configuration and Utilities
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
-    : 'https://vic-eph.github.io/stickywork';
+    : 'https://stickywork-api.onrender.com';  // URL del backend en Render
 
 // API Helper Functions
 const api = {

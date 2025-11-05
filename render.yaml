@@ -1,0 +1,52 @@
+services:
+  # Backend API Service
+  - type: web
+    name: stickywork-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_PORT
+        value: 3306
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: APP_URL
+        value: https://stickywork-api.onrender.com
+      - key: FRONTEND_URL
+        value: https://vrodriguezbernal95.github.io
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_SECURE
+        value: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        value: StickyWork <noreply@stickywork.com>
+
+  # MySQL Database
+  - type: pserv
+    name: stickywork-db
+    env: docker
+    dockerfilePath: ./Dockerfile.mysql
+    disk:
+      name: stickywork-mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 1
