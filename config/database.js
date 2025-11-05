@@ -1,67 +1,17 @@
-const mysql = require('mysql2/promise');
+// Adaptador universal de base de datos
+// Usa PostgreSQL en producción (Render) y MySQL en desarrollo (local)
+
 require('dotenv').config();
 
-// Configuración de la conexión a MySQL
-const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'stickywork',
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-};
+// Detectar qué base de datos usar
+const usePostgres = process.env.DATABASE_URL || process.env.USE_POSTGRES === 'true';
 
-// Pool de conexiones
-let pool;
+// Cargar el driver correspondiente
+const db = usePostgres
+    ? require('./database-postgres')
+    : require('./database-mysql');
 
-async function createPool() {
-    try {
-        pool = mysql.createPool(dbConfig);
-        console.log('✓ Pool de conexiones MySQL creado');
-        return pool;
-    } catch (error) {
-        console.error('✗ Error al crear pool de conexiones:', error.message);
-        throw error;
-    }
-}
+console.log(`🗄️  Usando: ${usePostgres ? 'PostgreSQL' : 'MySQL'}`);
 
-async function getConnection() {
-    if (!pool) {
-        await createPool();
-    }
-    return pool.getConnection();
-}
-
-async function query(sql, params) {
-    const connection = await getConnection();
-    try {
-        const [results] = await connection.execute(sql, params);
-        return results;
-    } finally {
-        connection.release();
-    }
-}
-
-// Función para verificar la conexión
-async function testConnection() {
-    try {
-        const connection = await getConnection();
-        await connection.ping();
-        connection.release();
-        console.log('✓ Conexión a MySQL exitosa');
-        return true;
-    } catch (error) {
-        console.error('✗ Error de conexión a MySQL:', error.message);
-        return false;
-    }
-}
-
-module.exports = {
-    createPool,
-    getConnection,
-    query,
-    testConnection,
-    pool: () => pool
-};
+// Exportar la interfaz unificada
+module.exports = db;
