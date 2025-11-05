@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planes y Precios - StickyWork</title>
-    <meta name="description" content="Encuentra el plan perfecto para tu negocio. Precios transparentes y sin compromisos. Prueba gratis 14 días.">
+    <meta name="description" content="Encuentra el plan perfecto para tu negocio. Desde opciones gratuitas para PYMEs con propósito hasta soluciones completas con web incluida.">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -19,6 +19,7 @@
                 <li><a href="planes.html" class="nav-link">Planes</a></li>
                 <li><a href="demo.html" class="nav-link">Demo</a></li>
                 <li><a href="contacto.html" class="nav-link">Contacto</a></li>
+                <li><a href="admin-login.html" class="nav-link" style="color: var(--primary-color);">Admin</a></li>
             </ul>
         </div>
     </nav>
@@ -26,8 +27,23 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Planes Transparentes para Tu Negocio</h1>
-            <p>Sin costos ocultos. Cancela cuando quieras. 14 días de prueba gratis.</p>
+            <h1>Planes para Cada Tipo de Negocio</h1>
+            <p>Desde PYMEs con propósito hasta negocios establecidos. Encuentra tu opción ideal.</p>
+        </div>
+    </section>
+
+    <!-- Banner especial PYME -->
+    <section style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(239, 68, 68, 0.1)); padding: 3rem 0;">
+        <div class="container">
+            <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎁</div>
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--text-primary);">Plan especial "Negocios con propósito"</h2>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Sabemos que muchos negocios locales tienen un gran valor que aún no ha llegado al mundo digital.
+                    Por eso, ofrecemos un <strong style="color: var(--primary-color);">plan 100% gratuito</strong> para aquellos proyectos que realmente aportan algo distinto a su comunidad.
+                </p>
+                <a href="contacto.html" class="btn btn-primary">Solicitar Acceso Gratuito</a>
+            </div>
         </div>
     </section>
 
@@ -35,130 +51,243 @@
     <section>
         <div class="container">
             <h2 class="section-title">Elige el plan perfecto para ti</h2>
-            <p class="section-subtitle">Todos los planes incluyen 14 días de prueba gratuita</p>
+            <p class="section-subtitle">Soluciones adaptadas a las necesidades de tu negocio</p>
 
             <div class="pricing-grid">
-                <!-- Plan Básico -->
+                <!-- Plan Gratuito PYME con Propósito -->
                 <div class="pricing-card">
-                    <h3>Básico</h3>
-                    <div class="pricing-price">€19</div>
-                    <div class="pricing-period">por mes</div>
+                    <span class="pricing-badge" style="background: linear-gradient(135deg, #10b981, #059669);">Solidario</span>
+                    <h3>Negocios con Propósito</h3>
+                    <div class="pricing-price">Gratis</div>
+                    <div class="pricing-period">para proyectos con valor</div>
                     <ul class="pricing-features">
-                        <li>Hasta 100 reservas/mes</li>
-                        <li>1 usuario administrador</li>
-                        <li>Widget personalizable</li>
-                        <li>Notificaciones por email</li>
-                        <li>Calendario sincronizado</li>
-                        <li>Soporte por email</li>
-                        <li>Panel de estadísticas básico</li>
+                        <li>✅ Acceso completo al sistema de reservas</li>
+                        <li>✅ Widget embebible en tu web</li>
+                        <li>✅ Panel de administración completo</li>
+                        <li>✅ Soporte técnico básico</li>
+                        <li>✅ Sin publicidad</li>
+                        <li>✅ Actualizaciones automáticas</li>
+                        <li>✅ Gestión ilimitada de servicios</li>
+                        <li>💡 Ideal para negocios locales con impacto social</li>
                     </ul>
-                    <a href="contacto.html" class="btn btn-primary">Empezar Prueba</a>
+                    <a href="contacto.html" class="btn btn-outline">Solicitar Acceso</a>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        <strong>Requisito:</strong> Cuéntanos tu historia y por qué tu proyecto merece este plan.
+                        Colaboramos con negocios profesionales que aportan valor a su comunidad.
+                    </p>
                 </div>
 
                 <!-- Plan Profesional (Featured) -->
                 <div class="pricing-card featured">
                     <span class="pricing-badge">Más Popular</span>
                     <h3>Profesional</h3>
-                    <div class="pricing-price">€49</div>
+                    <div class="pricing-price">20€</div>
                     <div class="pricing-period">por mes</div>
                     <ul class="pricing-features">
-                        <li>Reservas ilimitadas</li>
-                        <li>3 usuarios administradores</li>
-                        <li>Widget personalizable avanzado</li>
-                        <li>Notificaciones email + SMS</li>
-                        <li>Calendario sincronizado</li>
-                        <li>Recordatorios automáticos</li>
-                        <li>Soporte prioritario (chat)</li>
-                        <li>Reportes avanzados y analytics</li>
-                        <li>Integración con Google/Outlook</li>
-                        <li>Gestión de múltiples servicios</li>
-                        <li>Lista de espera automática</li>
+                        <li>✅ Acceso completo al sistema de reservas</li>
+                        <li>✅ Widget embebible sin publicidad</li>
+                        <li>✅ Panel de administración completo</li>
+                        <li>✅ Soporte técnico básico</li>
+                        <li>✅ Actualizaciones automáticas</li>
+                        <li>✅ Gestión ilimitada de servicios</li>
+                        <li>✅ Múltiples usuarios administradores</li>
+                        <li>✅ Estadísticas y reportes</li>
+                        <li>✅ Calendario sincronizado</li>
+                        <li>✅ Notificaciones por email</li>
+                        <li>💼 Ideal para restaurantes, peluquerías y clínicas</li>
                     </ul>
-                    <a href="contacto.html" class="btn btn-primary">Empezar Prueba</a>
+                    <a href="contacto.html" class="btn btn-primary">Contratar Ahora</a>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        <strong>Requisito:</strong> Tu negocio debe contar con página web propia.
+                        Simplemente integra el widget y empieza a gestionar reservas de forma profesional.
+                    </p>
                 </div>
 
-                <!-- Plan Empresarial -->
+                <!-- Plan Premium Web -->
                 <div class="pricing-card">
-                    <h3>Empresarial</h3>
-                    <div class="pricing-price">€99</div>
-                    <div class="pricing-period">por mes</div>
+                    <span class="pricing-badge" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">Todo incluido</span>
+                    <h3>Premium Web</h3>
+                    <div class="pricing-price">200€</div>
+                    <div class="pricing-period">pago único por tu web</div>
+                    <div style="margin-top: 0.5rem; font-size: 1.2rem; font-weight: 600; color: var(--text-primary);">+ 20€/mes</div>
+                    <div class="pricing-period" style="margin-top: 0.25rem;">suscripción profesional</div>
                     <ul class="pricing-features">
-                        <li>Todo del plan Profesional</li>
-                        <li>Usuarios ilimitados</li>
-                        <li>Múltiples ubicaciones</li>
-                        <li>API personalizada</li>
-                        <li>Pasarela de pagos integrada</li>
-                        <li>Marca blanca (sin logo)</li>
-                        <li>Soporte 24/7 dedicado</li>
-                        <li>Gestor de cuenta personal</li>
-                        <li>Capacitación personalizada</li>
-                        <li>Integraciones personalizadas</li>
-                        <li>SLA garantizado</li>
+                        <li>🌐 <strong>Creación de web estática personalizada</strong></li>
+                        <li>✅ Dominio y hosting inicial incluido</li>
+                        <li>✅ Diseño moderno y responsive</li>
+                        <li>✅ Acceso completo al sistema de reservas</li>
+                        <li>✅ Widget integrado en tu nueva web</li>
+                        <li>✅ Panel de administración completo</li>
+                        <li>✅ Soporte técnico básico</li>
+                        <li>✅ Sin publicidad</li>
+                        <li>✅ Actualizaciones automáticas</li>
+                        <li>✅ Optimizado para SEO</li>
+                        <li>✅ Formulario de contacto</li>
+                        <li>🚀 Perfecto si aún no tienes presencia online</li>
                     </ul>
-                    <a href="contacto.html" class="btn btn-primary">Contactar Ventas</a>
+                    <a href="contacto.html" class="btn btn-primary">Solicitar Presupuesto</a>
+                    <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        <strong>Incluye:</strong> Creación de web completa (200€ pago único) + Plan Profesional de reservas (20€/mes).
+                        Empiezas desde cero con una presencia online profesional y funcional desde el primer día.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Descripción detallada de cada plan -->
+    <section style="background-color: var(--bg-secondary);">
+        <div class="container">
+            <h2 class="section-title">¿Qué plan es para ti?</h2>
+            <p class="section-subtitle">Encuentra el que mejor se adapte a tu situación</p>
+
+            <div style="display: grid; gap: 2rem; max-width: 1000px; margin: 0 auto;">
+                <!-- Plan Gratuito -->
+                <div class="feature-card" style="text-align: left; border-left: 4px solid #10b981;">
+                    <h3 style="color: #10b981; margin-bottom: 1rem;">🎁 Plan Gratuito: Negocios con Propósito</h3>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        El <strong>Plan Gratuito Negocios con Propósito</strong> está pensado para aquellos negocios que aportan algo especial a su comunidad y quieren digitalizarse sin coste.
+                    </p>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        Si crees que tu proyecto tiene valor y merece ser visible, puedes solicitar este plan que incluye <strong>acceso completo al sistema de reservas</strong>,
+                        soporte técnico básico y un enlace embebido en tu web.
+                    </p>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        Solo tienes que <strong>escribirnos y contarnos tu historia</strong>. ¿Por qué queremos ayudar? Porque creemos en proyectos que realmente ofrecen algo diferente al mundo.
+                    </p>
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">¿Tienes una historia que vale la pena compartir?</p>
+                        <p style="line-height: 1.6;">
+                            Cuéntanosla. Si creemos en tu visión, te ayudaremos a digitalizar tus reservas sin coste alguno.
+                            Buscamos negocios profesionales con propósito real.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Plan Profesional -->
+                <div class="feature-card" style="text-align: left; border-left: 4px solid var(--primary-color);">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">💼 Plan Profesional - 20€/mes</h3>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        El <strong>Plan Profesional</strong> tiene un coste de <strong>20 euros al mes</strong> y está diseñado para negocios que ya cuentan con página web
+                        y buscan una forma sencilla de gestionar sus reservas online.
+                    </p>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        Este plan ofrece <strong>acceso completo al sistema de reservas</strong>, soporte técnico básico, un enlace embebido sin publicidad
+                        y actualizaciones automáticas.
+                    </p>
+                    <p style="line-height: 1.8;">
+                        Ideal para <strong>restaurantes, peluquerías o clínicas</strong> que quieren ofrecer un servicio ágil y profesional a sus clientes.
+                        Si ya tienes web, este es tu plan.
+                    </p>
+                </div>
+
+                <!-- Plan Premium Web -->
+                <div class="feature-card" style="text-align: left; border-left: 4px solid #8b5cf6;">
+                    <h3 style="color: #8b5cf6; margin-bottom: 1rem;">🌐 Plan Premium Web - 200€ pago único + 20€/mes</h3>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        El <strong>Plan Premium Web</strong> combina dos elementos: un <strong>pago único de 200 euros</strong> por la creación de tu web estática personalizada
+                        con dominio y hosting inicial, <strong>más una suscripción mensual de 20 euros</strong> que corresponde al Plan Profesional de reservas.
+                    </p>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        Con este plan obtienes una <strong>página web completamente nueva</strong> más el acceso completo al sistema de reservas profesional,
+                        soporte técnico básico y la integración del servicio directamente en tu web.
+                    </p>
+                    <p style="line-height: 1.8; margin-bottom: 1rem;">
+                        Es la opción perfecta para negocios que <strong>aún no tienen presencia online</strong> y quieren empezar con una página moderna,
+                        práctica y totalmente funcional desde el primer día, con reservas incluidas.
+                    </p>
+                    <div style="background: rgba(139, 92, 246, 0.1); padding: 1.5rem; border-radius: 10px; margin-top: 1rem;">
+                        <p style="font-weight: 600; margin-bottom: 0.5rem;">¿Qué incluye exactamente?</p>
+                        <p style="line-height: 1.6; margin-bottom: 0.5rem;">
+                            <strong>Pago único (200€):</strong> Web estática con diseño personalizado, secciones de servicios, sobre nosotros, contacto,
+                            galería de imágenes, formulario de contacto funcional, dominio y hosting inicial.
+                        </p>
+                        <p style="line-height: 1.6;">
+                            <strong>Suscripción mensual (20€):</strong> Sistema de reservas profesional totalmente integrado, panel de administración,
+                            actualizaciones automáticas y soporte técnico. Todo listo para funcionar desde el minuto uno.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Comparación de planes -->
-    <section style="background-color: var(--light);">
+    <section>
         <div class="container">
-            <h2 class="section-title">Comparación detallada</h2>
-            <p class="section-subtitle">Encuentra las diferencias entre cada plan</p>
+            <h2 class="section-title">Comparación de Planes</h2>
+            <p class="section-subtitle">Encuentra las diferencias entre cada opción</p>
 
             <div style="overflow-x: auto;">
-                <table style="width: 100%; background: white; border-radius: 15px; overflow: hidden; box-shadow: var(--shadow);">
-                    <thead style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white;">
+                <table style="width: 100%; background: var(--bg-secondary); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow);">
+                    <thead style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white;">
                         <tr>
                             <th style="padding: 1.5rem; text-align: left;">Característica</th>
-                            <th style="padding: 1.5rem; text-align: center;">Básico</th>
+                            <th style="padding: 1.5rem; text-align: center;">Negocios con Propósito</th>
                             <th style="padding: 1.5rem; text-align: center;">Profesional</th>
-                            <th style="padding: 1.5rem; text-align: center;">Empresarial</th>
+                            <th style="padding: 1.5rem; text-align: center;">Premium Web</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 1rem;">Reservas mensuales</td>
-                            <td style="padding: 1rem; text-align: center;">100</td>
-                            <td style="padding: 1rem; text-align: center;">Ilimitadas</td>
-                            <td style="padding: 1rem; text-align: center;">Ilimitadas</td>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;"><strong>Precio</strong></td>
+                            <td style="padding: 1rem; text-align: center; color: #10b981; font-weight: 600;">GRATIS</td>
+                            <td style="padding: 1rem; text-align: center; font-weight: 600;">20€/mes</td>
+                            <td style="padding: 1rem; text-align: center; font-weight: 600;">200€ único + 20€/mes</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 1rem;">Usuarios administradores</td>
-                            <td style="padding: 1rem; text-align: center;">1</td>
-                            <td style="padding: 1rem; text-align: center;">3</td>
-                            <td style="padding: 1rem; text-align: center;">Ilimitados</td>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Requisito</td>
+                            <td style="padding: 1rem; text-align: center; font-size: 0.9rem;">Solicitud + aprobación</td>
+                            <td style="padding: 1rem; text-align: center; font-size: 0.9rem;">Tener web propia</td>
+                            <td style="padding: 1rem; text-align: center; font-size: 0.9rem;">Ninguno</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 1rem;">Notificaciones SMS</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">✓</td>
-                            <td style="padding: 1rem; text-align: center;">✓</td>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Sistema de reservas completo</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 1rem;">Recordatorios automáticos</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">✓</td>
-                            <td style="padding: 1rem; text-align: center;">✓</td>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Widget embebible</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 1rem;">Pagos online</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">✓</td>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Panel de administración</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
                         </tr>
-                        <tr style="border-bottom: 1px solid #e5e7eb;">
-                            <td style="padding: 1rem;">API personalizada</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">✓</td>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Soporte técnico</td>
+                            <td style="padding: 1rem; text-align: center;">Básico</td>
+                            <td style="padding: 1rem; text-align: center;">Básico</td>
+                            <td style="padding: 1rem; text-align: center;">Básico</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Sin publicidad</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Creación de página web</td>
+                            <td style="padding: 1rem; text-align: center;">❌</td>
+                            <td style="padding: 1rem; text-align: center;">❌</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">Dominio y hosting inicial</td>
+                            <td style="padding: 1rem; text-align: center;">❌</td>
+                            <td style="padding: 1rem; text-align: center;">❌</td>
+                            <td style="padding: 1rem; text-align: center;">✅</td>
                         </tr>
                         <tr>
-                            <td style="padding: 1rem;">Marca blanca</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">-</td>
-                            <td style="padding: 1rem; text-align: center;">✓</td>
+                            <td style="padding: 1rem;">Ideal para</td>
+                            <td style="padding: 1rem; text-align: center; font-size: 0.85rem;">Negocios con impacto social</td>
+                            <td style="padding: 1rem; text-align: center; font-size: 0.85rem;">Negocios con web</td>
+                            <td style="padding: 1rem; text-align: center; font-size: 0.85rem;">Negocios sin web</td>
                         </tr>
                     </tbody>
                 </table>
@@ -167,40 +296,40 @@
     </section>
 
     <!-- FAQ -->
-    <section>
+    <section style="background-color: var(--bg-secondary);">
         <div class="container">
             <h2 class="section-title">Preguntas Frecuentes</h2>
             <p class="section-subtitle">Resolvemos tus dudas sobre los planes</p>
 
             <div style="max-width: 800px; margin: 0 auto;">
                 <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
-                    <h3 style="margin-bottom: 1rem;">¿Puedo cambiar de plan en cualquier momento?</h3>
-                    <p>Sí, puedes actualizar o reducir tu plan cuando lo desees. Los cambios se aplican inmediatamente y el precio se ajusta de forma proporcional.</p>
+                    <h3 style="margin-bottom: 1rem;">¿Cómo solicito el Plan Gratuito Negocios con Propósito?</h3>
+                    <p>Simplemente ve a nuestra página de contacto y cuéntanos tu historia. Explícanos qué hace tu negocio, por qué aporta valor a tu comunidad y por qué crees que mereces acceso gratuito. Evaluamos cada solicitud personalmente.</p>
                 </div>
 
                 <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
-                    <h3 style="margin-bottom: 1rem;">¿Hay costos de instalación o configuración?</h3>
-                    <p>No. Todos nuestros planes incluyen la configuración inicial sin cargo adicional. Solo pagas la mensualidad del plan elegido.</p>
+                    <h3 style="margin-bottom: 1rem;">¿El Plan Profesional tiene permanencia?</h3>
+                    <p>No, puedes cancelar cuando quieras. Pagas mes a mes y si decides que no es para ti, puedes darte de baja sin penalizaciones.</p>
                 </div>
 
                 <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
-                    <h3 style="margin-bottom: 1rem;">¿Qué incluye la prueba gratuita?</h3>
-                    <p>Durante 14 días tendrás acceso completo a todas las funciones del plan que elijas. No necesitas tarjeta de crédito para empezar.</p>
+                    <h3 style="margin-bottom: 1rem;">¿Qué incluye exactamente el Plan Premium Web?</h3>
+                    <p>Incluye el diseño y desarrollo de una web estática personalizada para tu negocio, con todas las secciones necesarias (inicio, servicios, sobre nosotros, contacto, etc.), dominio por 1 año, hosting inicial, y el sistema de reservas completamente integrado. Todo listo para funcionar.</p>
                 </div>
 
                 <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
-                    <h3 style="margin-bottom: 1rem;">¿Qué sucede si supero el límite de reservas?</h3>
-                    <p>En el plan Básico, si superas las 100 reservas mensuales, te sugeriremos actualizar al plan Profesional. Nunca bloquearemos tu servicio sin previo aviso.</p>
+                    <h3 style="margin-bottom: 1rem;">¿Puedo cambiar de plan más adelante?</h3>
+                    <p>Sí, por supuesto. Si empiezas con el Plan Profesional y más adelante quieres añadir funcionalidades adicionales o viceversa, podemos adaptarnos a tus necesidades.</p>
                 </div>
 
                 <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
-                    <h3 style="margin-bottom: 1rem;">¿Ofrecen descuentos por pago anual?</h3>
-                    <p>Sí, si pagas anualmente obtienes un 20% de descuento. Contacta con nuestro equipo de ventas para más información.</p>
+                    <h3 style="margin-bottom: 1rem;">¿El soporte técnico es suficiente?</h3>
+                    <p>El soporte básico incluye asistencia por email para resolver dudas sobre el uso del sistema, solucionar problemas técnicos y ayudarte con la configuración inicial. Para la mayoría de negocios es más que suficiente.</p>
                 </div>
 
                 <div class="feature-card" style="margin-bottom: 1.5rem; text-align: left;">
-                    <h3 style="margin-bottom: 1rem;">¿Puedo cancelar mi suscripción?</h3>
-                    <p>Por supuesto. Puedes cancelar en cualquier momento desde tu panel de control. No hay penalizaciones ni períodos de permanencia obligatorios.</p>
+                    <h3 style="margin-bottom: 1rem;">¿Qué pasa después del primer año con el Plan Premium Web?</h3>
+                    <p>Los 200€ del pago único son solo por la creación de la web. La suscripción mensual de 20€ continúa mes a mes mientras uses el sistema de reservas (igual que el Plan Profesional). Después del primer año, solo tendrías que renovar tu dominio (unos 10-15€/año) y el hosting si decides mantenerlo con nosotros. También puedes optar por llevarte la web a tu propio hosting, pero necesitarás la suscripción activa para que el sistema de reservas funcione.</p>
                 </div>
             </div>
         </div>
@@ -209,10 +338,10 @@
     <!-- CTA -->
     <section style="background: linear-gradient(135deg, var(--hero-bg-start) 0%, var(--hero-bg-end) 100%); color: var(--hero-text);">
         <div class="container" style="text-align: center;">
-            <h2 style="color: var(--hero-text); font-size: 2.5rem; margin-bottom: 1rem;">¿Necesitas ayuda para elegir?</h2>
-            <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95;">Nuestro equipo está aquí para ayudarte</p>
+            <h2 style="color: var(--hero-text); font-size: 2.5rem; margin-bottom: 1rem;">¿Listo para empezar?</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95;">Cuéntanos qué necesitas y te ayudaremos a encontrar la mejor opción</p>
             <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="contacto.html" class="btn btn-secondary">Hablar con Ventas</a>
+                <a href="contacto.html" class="btn btn-secondary">Hablar con Nosotros</a>
                 <a href="demo.html" class="btn btn-outline">Probar Demo</a>
             </div>
         </div>

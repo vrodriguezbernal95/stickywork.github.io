@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const db = require('./config/database');
 const routes = require('./backend/routes');
+const emailService = require('./backend/email-service');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -103,6 +104,9 @@ async function startServer() {
             console.error('El servidor se iniciará, pero las funciones de base de datos no estarán disponibles.');
             console.error('Por favor, verifica la configuración en el archivo .env\n');
         }
+
+        // Verificar configuración de email
+        await emailService.verifyEmailService();
 
         // Iniciar servidor
         app.listen(PORT, () => {

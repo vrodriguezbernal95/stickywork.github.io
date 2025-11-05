@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StickyWork Admin</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="admin/css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">StickyWork</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-link active" data-section="dashboard">
+                📊 Dashboard
+            </a>
+            <a href="#" class="sidebar-link" data-section="bookings">
+                📅 Reservas
+            </a>
+            <a href="#" class="sidebar-link" data-section="messages">
+                💬 Mensajes
+            </a>
+            <a href="#" class="sidebar-link" data-section="services">
+                🛠️ Servicios
+            </a>
+            <a href="#" class="sidebar-link" data-section="calendar">
+                📆 Calendario
+            </a>
+            <a href="#" class="sidebar-link" data-section="settings">
+                ⚙️ Configuración
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Cargando...</div>
+                    <div class="user-email" id="userEmail"></div>
+                </div>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-title" id="pageTitle">Dashboard</div>
+            <div id="businessName" style="color: var(--text-secondary); font-size: 1rem;"></div>
+        </header>
+
+        <div class="content-area" id="contentArea">
+            <!-- Content will be loaded dynamically by modules -->
+            <div class="loading">
+                <p>Cargando datos...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Load modules in order -->
+    <script src="admin/js/api.js"></script>
+    <script src="admin/js/auth.js"></script>
+    <script src="admin/js/dashboard.js"></script>
+    <script src="admin/js/bookings.js"></script>
+    <script src="admin/js/messages.js"></script>
+    <script src="admin/js/services.js"></script>
+    <script src="admin/js/calendar.js"></script>
+    <script src="admin/js/app.js"></script>
+</body>
+</html>

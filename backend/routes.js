@@ -1,16 +1,161 @@
 const express = require('express');
 const router = express.Router();
+const authRoutes = require('./routes/auth');
+const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
+const emailService = require('./email-service');
 
 // Permitir inyección de la base de datos (MySQL o SQLite)
 let db = require('../config/database');
 
 function setDatabase(database) {
     db = database;
+    authRoutes.setDatabase(database);
 }
 
 router.setDatabase = setDatabase;
 
+// ==================== AUTENTICACIÓN ====================
+router.use(authRoutes);
+
 // ==================== SERVICIOS ====================
+
+// Crear un nuevo servicio (requiere autenticación)
+router.post('/api/services', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const {
+            business_id,
+            name,
+            description,
+            duration,
+            price,
+            is_active
+        } = req.body;
+
+        // Validaciones
+        if (!business_id || !name || !duration) {
+            return res.status(400).json({
+                success: false,
+                message: 'Faltan campos obligatorios (business_id, name, duration)'
+            });
+        }
+
+        // Crear servicio
+        const result = await db.query(
+            `INSERT INTO services (business_id, name, description, duration, price, is_active)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [business_id, name, description || null, duration, price || null, is_active !== false]
+        );
+
+        // Obtener el servicio creado
+        const service = await db.query(
+            'SELECT * FROM services WHERE id = ?',
+            [result.insertId]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Servicio creado exitosamente',
+            data: service[0]
+        });
+
+    } catch (error) {
+        console.error('Error al crear servicio:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al crear servicio',
+            error: error.message
+        });
+    }
+});
+
+// Actualizar un servicio (requiere autenticación)
+router.put('/api/services/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            name,
+            description,
+            duration,
+            price,
+            is_active
+        } = req.body;
+
+        // Verificar que el servicio existe
+        const existing = await db.query('SELECT * FROM services WHERE id = ?', [id]);
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Servicio no encontrado'
+            });
+        }
+
+        // Actualizar servicio
+        await db.query(
+            `UPDATE services
+             SET name = ?, description = ?, duration = ?, price = ?, is_active = ?
+             WHERE id = ?`,
+            [
+                name || existing[0].name,
+                description !== undefined ? description : existing[0].description,
+                duration || existing[0].duration,
+                price !== undefined ? price : existing[0].price,
+                is_active !== undefined ? is_active : existing[0].is_active,
+                id
+            ]
+        );
+
+        // Obtener servicio actualizado
+        const service = await db.query('SELECT * FROM services WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: 'Servicio actualizado exitosamente',
+            data: service[0]
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar servicio:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar servicio',
+            error: error.message
+        });
+    }
+});
+
+// Eliminar un servicio (requiere autenticación)
+router.delete('/api/services/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verificar que el servicio existe
+        const existing = await db.query('SELECT * FROM services WHERE id = ?', [id]);
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Servicio no encontrado'
+            });
+        }
+
+        // Eliminar servicio
+        await db.query('DELETE FROM services WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: 'Servicio eliminado exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error al eliminar servicio:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar servicio',
+            error: error.message
+        });
+    }
+});
 
 // Obtener todos los servicios de un negocio
 router.get('/api/services/:businessId', async (req, res) => {
@@ -96,16 +241,40 @@ router.post('/api/bookings', async (req, res) => {
              bookingDate, bookingTime, notes || null]
         );
 
-        // Obtener la reserva creada
-        const booking = await db.query(
-            'SELECT * FROM bookings WHERE id = ?',
+        // Obtener la reserva creada con información del servicio
+        const bookingQuery = await db.query(
+            `SELECT b.*, s.name as service_name
+             FROM bookings b
+             LEFT JOIN services s ON b.service_id = s.id
+             WHERE b.id = ?`,
             [result.insertId]
         );
+        const bookingData = bookingQuery[0];
+
+        // Obtener información del negocio para los emails
+        const businessQuery = await db.query(
+            'SELECT * FROM businesses WHERE id = ?',
+            [businessId]
+        );
+        const businessData = businessQuery[0];
+
+        // Enviar emails de confirmación (asíncrono, no bloqueante)
+        if (businessData) {
+            // Email de confirmación al cliente
+            emailService.sendBookingConfirmation(bookingData, businessData)
+                .then(() => console.log('✓ Email de confirmación enviado al cliente'))
+                .catch(err => console.error('✗ Error enviando email al cliente:', err.message));
+
+            // Email de notificación al administrador
+            emailService.sendAdminNotification(bookingData, businessData)
+                .then(() => console.log('✓ Email de notificación enviado al admin'))
+                .catch(err => console.error('✗ Error enviando email al admin:', err.message));
+        }
 
         res.status(201).json({
             success: true,
             message: 'Reserva creada exitosamente',
-            data: booking[0]
+            data: bookingData
         });
 
     } catch (error) {
@@ -118,8 +287,8 @@ router.post('/api/bookings', async (req, res) => {
     }
 });
 
-// Obtener todas las reservas de un negocio
-router.get('/api/bookings/:businessId', async (req, res) => {
+// Obtener todas las reservas de un negocio (requiere autenticación)
+router.get('/api/bookings/:businessId', requireAuth, requireBusinessAccess, async (req, res) => {
     try {
         const { businessId } = req.params;
         const { date, status } = req.query;
@@ -243,8 +412,8 @@ router.get('/api/booking/:id', async (req, res) => {
     }
 });
 
-// Actualizar estado de una reserva
-router.patch('/api/booking/:id', async (req, res) => {
+// Actualizar estado de una reserva (requiere autenticación)
+router.patch('/api/booking/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
@@ -314,8 +483,8 @@ router.get('/api/business/:businessId', async (req, res) => {
 
 // ==================== ESTADÍSTICAS ====================
 
-// Obtener estadísticas de un negocio
-router.get('/api/stats/:businessId', async (req, res) => {
+// Obtener estadísticas de un negocio (requiere autenticación)
+router.get('/api/stats/:businessId', requireAuth, requireBusinessAccess, async (req, res) => {
     try {
         const { businessId } = req.params;
 
@@ -420,8 +589,8 @@ router.post('/api/contact', async (req, res) => {
     }
 });
 
-// Obtener todos los mensajes de contacto
-router.get('/api/contact', async (req, res) => {
+// Obtener todos los mensajes de contacto (requiere autenticación)
+router.get('/api/contact', requireAuth, async (req, res) => {
     try {
         const { status } = req.query;
 
@@ -451,8 +620,8 @@ router.get('/api/contact', async (req, res) => {
     }
 });
 
-// Obtener un mensaje específico
-router.get('/api/contact/:id', async (req, res) => {
+// Obtener un mensaje específico (requiere autenticación)
+router.get('/api/contact/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -482,8 +651,8 @@ router.get('/api/contact/:id', async (req, res) => {
     }
 });
 
-// Actualizar estado de un mensaje
-router.patch('/api/contact/:id', async (req, res) => {
+// Actualizar estado de un mensaje (requiere autenticación)
+router.patch('/api/contact/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
@@ -518,8 +687,8 @@ router.patch('/api/contact/:id', async (req, res) => {
     }
 });
 
-// Eliminar un mensaje
-router.delete('/api/contact/:id', async (req, res) => {
+// Eliminar un mensaje (requiere autenticación)
+router.delete('/api/contact/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
 

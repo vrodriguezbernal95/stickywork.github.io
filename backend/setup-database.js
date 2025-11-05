@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 async function setupDatabase() {
@@ -86,6 +87,48 @@ async function setupDatabase() {
         `);
         console.log('✓ Tabla "bookings" creada/verificada');
 
+        // Crear tabla de administradores
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                business_id INT NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password_hash VARCHAR(255) NOT NULL,
+                full_name VARCHAR(255) NOT NULL,
+                role ENUM('owner', 'admin', 'staff') DEFAULT 'admin',
+                is_active BOOLEAN DEFAULT TRUE,
+                last_login TIMESTAMP NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+                INDEX idx_email (email),
+                INDEX idx_business (business_id),
+                INDEX idx_active (is_active)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        console.log('✓ Tabla "admin_users" creada/verificada');
+
+        // Crear tabla de mensajes de contacto
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS contact_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                phone VARCHAR(50),
+                business_name VARCHAR(255),
+                business_type VARCHAR(100),
+                interest VARCHAR(100),
+                message TEXT NOT NULL,
+                status ENUM('unread', 'read', 'replied') DEFAULT 'unread',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_status (status),
+                INDEX idx_email (email),
+                INDEX idx_created (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+        console.log('✓ Tabla "contact_messages" creada/verificada');
+
         // Insertar negocio de ejemplo
         const [businessResult] = await connection.query(`
             INSERT INTO businesses (name, type, email, phone, address, widget_settings)
@@ -155,6 +198,28 @@ async function setupDatabase() {
         `, [businessId, businessId]);
 
         console.log('✓ Servicios de ejemplo creados/verificados');
+
+        // Crear usuario administrador demo
+        const demoPassword = 'admin123';
+        const passwordHash = await bcrypt.hash(demoPassword, 10);
+
+        await connection.query(`
+            INSERT INTO admin_users (business_id, email, password_hash, full_name, role)
+            SELECT * FROM (SELECT
+                ? as business_id,
+                'admin@demo.com' as email,
+                ? as password_hash,
+                'Administrador Demo' as full_name,
+                'owner' as role
+            ) AS tmp
+            WHERE NOT EXISTS (
+                SELECT id FROM admin_users WHERE email = 'admin@demo.com'
+            ) LIMIT 1
+        `, [businessId, passwordHash]);
+
+        console.log('✓ Usuario administrador demo creado/verificado');
+        console.log('  📧 Email: admin@demo.com');
+        console.log('  🔑 Password: admin123');
 
         console.log('\n✅ ¡Base de datos configurada exitosamente!');
         console.log('\nPuedes iniciar el servidor con: npm start');
