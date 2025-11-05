@@ -3,6 +3,7 @@ const router = express.Router();
 const authRoutes = require('./routes/auth');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
 const emailService = require('./email-service');
+const { setupPostgres } = require('./setup-postgres');
 
 // Permitir inyección de la base de datos (MySQL o SQLite)
 let db = require('../config/database');
@@ -703,6 +704,41 @@ router.delete('/api/contact/:id', requireAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al eliminar mensaje',
+            error: error.message
+        });
+    }
+});
+
+// ==================== SETUP TEMPORAL (Solo para inicialización) ====================
+
+// Endpoint temporal para inicializar la base de datos
+// Protegido con JWT_SECRET para evitar accesos no autorizados
+router.post('/api/setup-database', async (req, res) => {
+    try {
+        const { secret } = req.body;
+
+        // Verificar que se proporcionó el secreto correcto
+        if (!secret || secret !== process.env.JWT_SECRET) {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso denegado. Secret incorrecto.'
+            });
+        }
+
+        // Ejecutar setup de PostgreSQL
+        const result = await setupPostgres();
+
+        res.json({
+            success: true,
+            message: 'Base de datos inicializada correctamente',
+            details: result
+        });
+
+    } catch (error) {
+        console.error('Error en setup de base de datos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al inicializar la base de datos',
             error: error.message
         });
     }
