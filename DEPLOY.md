@@ -9,7 +9,7 @@ Frontend (GitHub Pages)     Backend + DB (Render.com)
 ┌─────────────────────┐    ┌──────────────────────┐
 │                     │    │                      │
 │  HTML, CSS, JS      │───▶│  Node.js + Express   │
-│  (Páginas públicas) │    │  MySQL Database      │
+│  (Páginas públicas) │    │  PostgreSQL Database │
 │                     │    │  API REST            │
 └─────────────────────┘    └──────────────────────┘
 https://vrodriguezbernal95   https://stickywork-api
@@ -27,35 +27,27 @@ https://vrodriguezbernal95   https://stickywork-api
 
 ---
 
-## 🗄️ Paso 2: Crear Base de Datos MySQL
+## 🗄️ Paso 2: Crear Base de Datos PostgreSQL
 
-### Opción A: MySQL en Render (Recomendado - Gratis para desarrollo)
+### En Render (Gratis - Recomendado)
 
 1. En el dashboard de Render, haz clic en **"New +"**
-2. Selecciona **"MySQL"**
+2. Selecciona **"PostgreSQL"** (⚠️ Render solo ofrece PostgreSQL, no MySQL)
 3. Configuración:
    ```
    Name: stickywork-db
    Database: stickywork
-   User: admin (o el que prefieras)
+   User: stickywork (se genera automáticamente)
    Region: Frankfurt (o el más cercano a ti)
    Plan: Free
    ```
 4. Clic en **"Create Database"**
-5. **IMPORTANTE**: Guarda las credenciales que te muestra:
+5. **IMPORTANTE**: Guarda la **Internal Database URL** que te muestra:
    ```
-   Internal Database URL: mysql://[user]:[password]@[host]/[database]
-   External Database URL: mysql://[user]:[password]@[host]:[port]/[database]
+   Internal Database URL: postgresql://user:password@host/database
    ```
 
-### Opción B: FreeSQLDatabase.com (Alternativa gratuita)
-
-Si Render no ofrece MySQL gratuito:
-
-1. Ve a [freesqldatabase.com](https://www.freesqldatabase.com)
-2. Regístrate gratis
-3. Crea una base de datos MySQL
-4. Guarda las credenciales proporcionadas
+**Nota:** La aplicación detectará automáticamente que estás usando PostgreSQL y usará el driver correcto. En local seguirás usando MySQL sin problemas.
 
 ---
 
@@ -85,14 +77,11 @@ Plan: Free
 
 Haz clic en **"Advanced"** y añade estas variables de entorno:
 
-#### Base de Datos (usa las credenciales del Paso 2):
+#### Base de Datos PostgreSQL:
 ```
-DB_HOST=xxxx.render.com (o tu host)
-DB_USER=admin (o tu usuario)
-DB_PASSWORD=tu_password_aqui
-DB_NAME=stickywork
-DB_PORT=3306
+DATABASE_URL=postgresql://user:password@host/database
 ```
+👆 **Copia esto de tu base de datos en Render (Internal Database URL)**
 
 #### Aplicación:
 ```
@@ -291,7 +280,7 @@ Render Free pone tu servicio en "sleep" después de 15 minutos sin uso.
 
 ### Plan Gratuito:
 - ✅ Backend en Render: **GRATIS**
-- ✅ MySQL en Render: **GRATIS** (512 MB)
+- ✅ PostgreSQL en Render: **GRATIS** (1 GB)
 - ✅ Frontend en GitHub Pages: **GRATIS**
 - ⚠️ Servicio se duerme tras inactividad
 

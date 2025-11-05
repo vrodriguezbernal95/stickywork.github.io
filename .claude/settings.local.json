@@ -2,7 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(.gitignore)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix: Widget demo funcional para GitHub Pages\n\n🔧 Problema resuelto:\n- El widget intentaba cargar desde localhost:3000 en producción\n- Script del widget no disponible en GitHub Pages\n\n✨ Solución implementada:\n- Reemplazado widget real por demo simulado con HTML/CSS/JS puro\n- Formulario funcional sin dependencia del backend\n- Pantalla de confirmación animada tras enviar reserva\n- Adaptado completamente al sistema de temas (dark/light mode)\n- Funciona perfectamente en Chrome, Edge, Firefox y Safari\n\n🎨 Características del nuevo widget demo:\n- Campos: Nombre, Email, Servicio, Fecha, Hora\n- Botón con gradiente azul-rojo\n- Mensaje de confirmación con resumen de datos\n- Botón \"Nueva Reserva\" para reiniciar\n- Estilos adaptativos según el tema activo\n\n✅ Funciona en:\n- Local (localhost:3000)\n- GitHub Pages (producción)\n- Todos los navegadores modernos\n\n🤖 Generado con Claude Code\nhttps://claude.com/claude-code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(npm run setup:*)",
+      "Bash(taskkill //F //PID 3760)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill //F //PID 25340)",
+      "Bash(npm start)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(taskkill //F //PID 30728)"
     ],
     "deny": [],
     "ask": []
