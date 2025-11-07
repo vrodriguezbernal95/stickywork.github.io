@@ -32,16 +32,36 @@
         </div>
     </section>
 
+    <!-- Selector de Modo -->
+    <section style="padding: 2rem 0; background-color: var(--bg-secondary);">
+        <div class="container">
+            <div style="max-width: 700px; margin: 0 auto; text-align: center;">
+                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Elige el modo de integración</h3>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="mostrarModo('embedded')" id="btnModoEmbedded" style="padding: 1rem 2rem; border: 2px solid var(--primary-color); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;">
+                        📄 Modo Embebido
+                    </button>
+                    <button onclick="mostrarModo('modal')" id="btnModoModal" style="padding: 1rem 2rem; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;">
+                        🎯 Modo Modal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Demo Widget -->
     <section style="background-color: var(--light);">
         <div class="container">
-            <h2 class="section-title">Widget de Reservas - Demo Interactiva</h2>
-            <p class="section-subtitle">Este widget está conectado a una base de datos real. ¡Prueba hacer una reserva!</p>
+            <div id="tituloModo">
+                <h2 class="section-title">Modo Embebido - Widget en la Página</h2>
+                <p class="section-subtitle">El formulario se muestra directamente en tu página web</p>
+            </div>
 
             <div class="demo-container">
-                <div class="widget-preview">
+                <!-- MODO EMBEBIDO -->
+                <div class="widget-preview" id="modoEmbedded">
                     <p style="text-align: center; color: var(--gray); margin-bottom: 1rem;">
-                        <strong>Widget en Vivo:</strong> Este es el widget real funcionando
+                        <strong>Widget en Vivo:</strong> Este es el widget embebido funcionando
                     </p>
 
                     <!-- Widget Demo Simulado -->
@@ -103,30 +123,82 @@
                     </p>
                 </div>
 
+                <!-- MODO MODAL -->
+                <div class="widget-preview" id="modoModal" style="display: none;">
+                    <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">
+                        <strong>Demo del Modo Modal:</strong> Haz clic en el botón para abrir el widget
+                    </p>
+
+                    <div style="text-align: center; padding: 4rem 2rem; background: var(--bg-secondary); border-radius: 15px;">
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem;">
+                            Así se vería el botón en tu página web:
+                        </p>
+                        <button onclick="abrirModalDemo()" style="padding: 1rem 2.5rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;">
+                            📅 Reserva tu Cita Ahora
+                        </button>
+                        <p style="color: var(--text-secondary); margin-top: 1.5rem; font-size: 0.9rem;">
+                            💡 Personalizable: texto, colores, icono y posición
+                        </p>
+                    </div>
+
+                    <p style="text-align: center; color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+                        ✨ Al hacer clic, se abre un modal centrado con el formulario
+                    </p>
+                </div>
+
                 <!-- Código de integración -->
                 <div style="margin-top: 3rem;">
                     <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--dark);">
                         Código para integrar en tu web
                     </h3>
 
-                    <div style="position: relative;">
-                        <button onclick="copiarCodigo()" id="btnCopiar" style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; z-index: 10;">
+                    <!-- Código Modo Embebido -->
+                    <div id="codigoEmbedded" style="position: relative;">
+                        <button onclick="copiarCodigo('embedded')" id="btnCopiarEmbedded" style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; z-index: 10;">
                             📋 Copiar Código
                         </button>
 
-                        <div id="codigoWidget" style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
+                        <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
                             <div style="color: #888; margin-bottom: 1rem;"><!-- Paso 1: Agrega el contenedor --></div>
                             &lt;<span style="color: #ff6b6b;">div</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-widget"</span>&gt;&lt;/<span style="color: #ff6b6b;">div</span>&gt;<br><br>
 
                             <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
                             &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
 
-                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa el widget con tu configuración --></div>
+                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa en modo embebido --></div>
                             &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
                             &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'embedded'</span>,<span style="color: #888;"> // Modo embebido</span><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<span style="color: #888;"> // Tu color principal</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
+                            &nbsp;&nbsp;});<br>
+                            &lt;/<span style="color: #ff6b6b;">script</span>&gt;
+                        </div>
+                    </div>
+
+                    <!-- Código Modo Modal -->
+                    <div id="codigoModal" style="position: relative; display: none;">
+                        <button onclick="copiarCodigo('modal')" id="btnCopiarModal" style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; z-index: 10;">
+                            📋 Copiar Código
+                        </button>
+
+                        <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
+                            <div style="color: #888; margin-bottom: 1rem;"><!-- Paso 1: Agrega el botón --></div>
+                            &lt;<span style="color: #ff6b6b;">button</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-btn"</span>&gt;📅 Reserva Ahora&lt;/<span style="color: #ff6b6b;">button</span>&gt;<br><br>
+
+                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
+                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
+
+                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa en modo modal --></div>
+                            &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
+                            &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'modal'</span>,<span style="color: #888;"> // Modo modal (botón + popup)</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">trigger</span>: <span style="color: #ffe66d;">'#stickywork-btn'</span>,<span style="color: #888;"> // ID del botón</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
                             &nbsp;&nbsp;});<br>
                             &lt;/<span style="color: #ff6b6b;">script</span>&gt;
@@ -289,29 +361,95 @@
 
     <!-- Script del widget demo -->
     <script>
-        // Función para copiar el código
-        function copiarCodigo() {
-            // Obtener el texto sin formato HTML
-            const codigoTexto = `<!-- Paso 1: Agrega el contenedor -->
+        // Función para cambiar entre modos
+        function mostrarModo(modo) {
+            // Actualizar botones
+            const btnEmbedded = document.getElementById('btnModoEmbedded');
+            const btnModal = document.getElementById('btnModoModal');
+
+            if (modo === 'embedded') {
+                btnEmbedded.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
+                btnEmbedded.style.color = 'white';
+                btnEmbedded.style.borderColor = 'var(--primary-color)';
+
+                btnModal.style.background = 'var(--bg-primary)';
+                btnModal.style.color = 'var(--text-primary)';
+                btnModal.style.borderColor = 'var(--border-color)';
+            } else {
+                btnModal.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
+                btnModal.style.color = 'white';
+                btnModal.style.borderColor = 'var(--primary-color)';
+
+                btnEmbedded.style.background = 'var(--bg-primary)';
+                btnEmbedded.style.color = 'var(--text-primary)';
+                btnEmbedded.style.borderColor = 'var(--border-color)';
+            }
+
+            // Actualizar título
+            const titulo = document.getElementById('tituloModo');
+            if (modo === 'embedded') {
+                titulo.innerHTML = '<h2 class="section-title">Modo Embebido - Widget en la Página</h2><p class="section-subtitle">El formulario se muestra directamente en tu página web</p>';
+            } else {
+                titulo.innerHTML = '<h2 class="section-title">Modo Modal - Botón con Popup</h2><p class="section-subtitle">Un botón discreto que abre el formulario en un modal centrado</p>';
+            }
+
+            // Mostrar/ocultar widgets
+            document.getElementById('modoEmbedded').style.display = modo === 'embedded' ? 'block' : 'none';
+            document.getElementById('modoModal').style.display = modo === 'modal' ? 'block' : 'none';
+
+            // Mostrar/ocultar códigos
+            document.getElementById('codigoEmbedded').style.display = modo === 'embedded' ? 'block' : 'none';
+            document.getElementById('codigoModal').style.display = modo === 'modal' ? 'block' : 'none';
+        }
+
+        // Función para copiar el código según el modo
+        function copiarCodigo(modo) {
+            let codigoTexto = '';
+            let btnId = '';
+
+            if (modo === 'embedded') {
+                codigoTexto = `<!-- Paso 1: Agrega el contenedor -->
 <div id="stickywork-widget"></div>
 
 <!-- Paso 2: Carga el script del widget -->
 <script src="http://localhost:3000/public/widget/stickywork-widget.js"><\/script>
 
-<!-- Paso 3: Inicializa el widget con tu configuración -->
+<!-- Paso 3: Inicializa en modo embebido -->
 <script>
   StickyWork.init({
     businessId: 1, // Tu ID de negocio
+    mode: 'embedded', // Modo embebido
     apiUrl: 'http://localhost:3000',
-    primaryColor: '#3b82f6', // Tu color principal
+    primaryColor: '#3b82f6',
     language: 'es'
   });
 <\/script>`;
+                btnId = 'btnCopiarEmbedded';
+            } else {
+                codigoTexto = `<!-- Paso 1: Agrega el botón -->
+<button id="stickywork-btn">📅 Reserva Ahora</button>
+
+<!-- Paso 2: Carga el script del widget -->
+<script src="http://localhost:3000/public/widget/stickywork-widget.js"><\/script>
+
+<!-- Paso 3: Inicializa en modo modal -->
+<script>
+  StickyWork.init({
+    businessId: 1, // Tu ID de negocio
+    mode: 'modal', // Modo modal (botón + popup)
+    trigger: '#stickywork-btn', // ID del botón
+    apiUrl: 'http://localhost:3000',
+    primaryColor: '#3b82f6',
+    language: 'es'
+  });
+<\/script>`;
+                btnId = 'btnCopiarModal';
+            }
 
             // Copiar al portapapeles
             navigator.clipboard.writeText(codigoTexto).then(function() {
                 // Cambiar el botón temporalmente
-                const btn = document.getElementById('btnCopiar');
+                const btn = document.getElementById(btnId);
                 const textoOriginal = btn.innerHTML;
                 btn.innerHTML = '✓ ¡Copiado!';
                 btn.style.background = '#10b981';
@@ -324,6 +462,129 @@
             }).catch(function(err) {
                 alert('Error al copiar: ' + err);
             });
+        }
+
+        // Función para abrir el modal demo
+        function abrirModalDemo() {
+            // Crear overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'modal-overlay';
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 9998; animation: fadeIn 0.3s ease;';
+
+            // Crear modal
+            const modal = document.createElement('div');
+            modal.id = 'modal-widget';
+            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-primary); border-radius: 20px; padding: 2rem; z-index: 9999; max-width: 650px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); animation: slideUp 0.3s ease;';
+
+            modal.innerHTML = `
+                <div style="position: relative;">
+                    <button onclick="cerrarModalDemo()" style="position: absolute; top: -1rem; right: -1rem; background: var(--secondary-color); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                        ✕
+                    </button>
+                    <h3 style="text-align: center; color: var(--primary-color); margin-bottom: 1.5rem; font-size: 1.8rem;">Reserva tu Cita</h3>
+
+                    <form id="modal-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Nombre completo</label>
+                            <input type="text" placeholder="Tu nombre" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Email</label>
+                            <input type="email" placeholder="tu@email.com" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Servicio</label>
+                            <select required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
+                                <option value="">Selecciona un servicio</option>
+                                <option value="Corte de pelo">Corte de pelo - 25€</option>
+                                <option value="Tinte">Tinte - 45€</option>
+                                <option value="Manicura">Manicura - 20€</option>
+                                <option value="Masaje">Masaje - 50€</option>
+                            </select>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Fecha</label>
+                                <input type="date" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Hora</label>
+                                <select required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
+                                    <option value="">Selecciona hora</option>
+                                    <option value="09:00">09:00</option>
+                                    <option value="10:00">10:00</option>
+                                    <option value="11:00">11:00</option>
+                                    <option value="12:00">12:00</option>
+                                    <option value="15:00">15:00</option>
+                                    <option value="16:00">16:00</option>
+                                    <option value="17:00">17:00</option>
+                                    <option value="18:00">18:00</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 1rem; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: var(--transition); margin-top: 1rem;">
+                            Confirmar Reserva
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            // Añadir animaciones CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideUp {
+                    from { opacity: 0; transform: translate(-50%, -45%); }
+                    to { opacity: 1; transform: translate(-50%, -50%); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Añadir al DOM
+            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
+
+            // Cerrar al hacer clic en el overlay
+            overlay.onclick = cerrarModalDemo;
+
+            // Manejar submit del formulario
+            document.getElementById('modal-form').onsubmit = function(e) {
+                e.preventDefault();
+                const nombre = this.querySelector('input[type="text"]').value;
+                const email = this.querySelector('input[type="email"]').value;
+                const servicio = this.querySelectorAll('select')[0].value;
+                const fecha = this.querySelector('input[type="date"]').value;
+                const hora = this.querySelectorAll('select')[1].value;
+
+                modal.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
+                        <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.8rem;">¡Reserva Confirmada!</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: left;">
+                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Nombre:</strong> ${nombre}</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Email:</strong> ${email}</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Servicio:</strong> ${servicio}</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Fecha:</strong> ${fecha}</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Hora:</strong> ${hora}</p>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Recibirás un email de confirmación en breve</p>
+                        <button onclick="cerrarModalDemo()" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+                            Cerrar
+                        </button>
+                    </div>
+                `;
+            };
+        }
+
+        // Función para cerrar el modal
+        function cerrarModalDemo() {
+            const overlay = document.getElementById('modal-overlay');
+            const modal = document.getElementById('modal-widget');
+            if (overlay) overlay.remove();
+            if (modal) modal.remove();
         }
 
         // Manejar el envío del formulario demo
