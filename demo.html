@@ -109,22 +109,28 @@
                         Código para integrar en tu web
                     </h3>
 
-                    <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
-                        <div style="color: #888; margin-bottom: 1rem;"><!-- Paso 1: Agrega el contenedor --></div>
-                        &lt;<span style="color: #ff6b6b;">div</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-widget"</span>&gt;&lt;/<span style="color: #ff6b6b;">div</span>&gt;<br><br>
+                    <div style="position: relative;">
+                        <button onclick="copiarCodigo()" id="btnCopiar" style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; z-index: 10;">
+                            📋 Copiar Código
+                        </button>
 
-                        <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
-                        &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
+                        <div id="codigoWidget" style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
+                            <div style="color: #888; margin-bottom: 1rem;"><!-- Paso 1: Agrega el contenedor --></div>
+                            &lt;<span style="color: #ff6b6b;">div</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-widget"</span>&gt;&lt;/<span style="color: #ff6b6b;">div</span>&gt;<br><br>
 
-                        <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa el widget con tu configuración --></div>
-                        &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
-                        &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<span style="color: #888;"> // Tu color principal</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
-                        &nbsp;&nbsp;});<br>
-                        &lt;/<span style="color: #ff6b6b;">script</span>&gt;
+                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
+                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
+
+                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa el widget con tu configuración --></div>
+                            &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
+                            &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<span style="color: #888;"> // Tu color principal</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
+                            &nbsp;&nbsp;});<br>
+                            &lt;/<span style="color: #ff6b6b;">script</span>&gt;
+                        </div>
                     </div>
 
                     <div style="margin-top: 2rem; padding: 1.5rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
@@ -283,6 +289,43 @@
 
     <!-- Script del widget demo -->
     <script>
+        // Función para copiar el código
+        function copiarCodigo() {
+            // Obtener el texto sin formato HTML
+            const codigoTexto = `<!-- Paso 1: Agrega el contenedor -->
+<div id="stickywork-widget"></div>
+
+<!-- Paso 2: Carga el script del widget -->
+<script src="http://localhost:3000/public/widget/stickywork-widget.js"><\/script>
+
+<!-- Paso 3: Inicializa el widget con tu configuración -->
+<script>
+  StickyWork.init({
+    businessId: 1, // Tu ID de negocio
+    apiUrl: 'http://localhost:3000',
+    primaryColor: '#3b82f6', // Tu color principal
+    language: 'es'
+  });
+<\/script>`;
+
+            // Copiar al portapapeles
+            navigator.clipboard.writeText(codigoTexto).then(function() {
+                // Cambiar el botón temporalmente
+                const btn = document.getElementById('btnCopiar');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = '✓ ¡Copiado!';
+                btn.style.background = '#10b981';
+
+                // Restaurar después de 2 segundos
+                setTimeout(function() {
+                    btn.innerHTML = textoOriginal;
+                    btn.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
+                }, 2000);
+            }).catch(function(err) {
+                alert('Error al copiar: ' + err);
+            });
+        }
+
         // Manejar el envío del formulario demo
         document.addEventListener('DOMContentLoaded', function() {
             const demoForm = document.getElementById('demo-widget-form');
