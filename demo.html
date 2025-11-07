@@ -40,10 +40,10 @@
                 <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Elige el modo de integración</h3>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <button onclick="mostrarModo('embedded')" id="btnModoEmbedded" style="padding: 1rem 2rem; border: 2px solid var(--primary-color); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;">
-                        📄 Modo Embebido
+                        📄 Formulario Directo
                     </button>
                     <button onclick="mostrarModo('modal')" id="btnModoModal" style="padding: 1rem 2rem; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;">
-                        🎯 Modo Modal
+                        🎯 Botón Flotante
                     </button>
                 </div>
             </div>
@@ -54,7 +54,7 @@
     <section style="background-color: var(--light);">
         <div class="container">
             <div id="tituloModo">
-                <h2 class="section-title">Modo Embebido - Widget en la Página</h2>
+                <h2 class="section-title">Formulario Directo - Integrado en la Página</h2>
                 <p class="section-subtitle">El formulario se muestra directamente en tu página web</p>
             </div>
 
@@ -127,7 +127,7 @@
                 <!-- MODO MODAL -->
                 <div class="widget-preview" id="modoModal" style="display: none;">
                     <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">
-                        <strong>Demo del Modo Modal:</strong> Haz clic en el botón para abrir el widget
+                        <strong>Demo del Botón Flotante:</strong> Haz clic en el botón para abrir el formulario
                     </p>
 
                     <div style="text-align: center; padding: 4rem 2rem; background: var(--bg-secondary); border-radius: 15px;">
@@ -166,11 +166,11 @@
                             <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
                             &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
 
-                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa en modo embebido --></div>
+                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa en formulario directo --></div>
                             &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
                             &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'embedded'</span>,<span style="color: #888;"> // Modo embebido</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'embedded'</span>,<span style="color: #888;"> // Formulario directo</span><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
@@ -192,11 +192,11 @@
                             <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
                             &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
 
-                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa en modo modal --></div>
+                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa como botón flotante --></div>
                             &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
                             &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'modal'</span>,<span style="color: #888;"> // Modo modal (botón + popup)</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'modal'</span>,<span style="color: #888;"> // Botón flotante (ventana emergente)</span><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">trigger</span>: <span style="color: #ffe66d;">'#stickywork-btn'</span>,<span style="color: #888;"> // ID del botón</span><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
@@ -389,9 +389,9 @@
             // Actualizar título
             const titulo = document.getElementById('tituloModo');
             if (modo === 'embedded') {
-                titulo.innerHTML = '<h2 class="section-title">Modo Embebido - Widget en la Página</h2><p class="section-subtitle">El formulario se muestra directamente en tu página web</p>';
+                titulo.innerHTML = '<h2 class="section-title">Formulario Directo - Integrado en la Página</h2><p class="section-subtitle">El formulario se muestra directamente en tu página web</p>';
             } else {
-                titulo.innerHTML = '<h2 class="section-title">Modo Modal - Botón con Popup</h2><p class="section-subtitle">Un botón discreto que abre el formulario en un modal centrado</p>';
+                titulo.innerHTML = '<h2 class="section-title">Botón Flotante - Ventana Emergente</h2><p class="section-subtitle">Un botón discreto que abre el formulario en una ventana emergente</p>';
             }
 
             // Mostrar/ocultar widgets
@@ -415,11 +415,11 @@
 <!-- Paso 2: Carga el script del widget -->
 <script src="http://localhost:3000/public/widget/stickywork-widget.js"><\/script>
 
-<!-- Paso 3: Inicializa en modo embebido -->
+<!-- Paso 3: Inicializa en formulario directo -->
 <script>
   StickyWork.init({
     businessId: 1, // Tu ID de negocio
-    mode: 'embedded', // Modo embebido
+    mode: 'embedded', // Formulario directo
     apiUrl: 'http://localhost:3000',
     primaryColor: '#3b82f6',
     language: 'es'
@@ -433,11 +433,11 @@
 <!-- Paso 2: Carga el script del widget -->
 <script src="http://localhost:3000/public/widget/stickywork-widget.js"><\/script>
 
-<!-- Paso 3: Inicializa en modo modal -->
+<!-- Paso 3: Inicializa como botón flotante -->
 <script>
   StickyWork.init({
     businessId: 1, // Tu ID de negocio
-    mode: 'modal', // Modo modal (botón + popup)
+    mode: 'modal', // Botón flotante (ventana emergente)
     trigger: '#stickywork-btn', // ID del botón
     apiUrl: 'http://localhost:3000',
     primaryColor: '#3b82f6',
