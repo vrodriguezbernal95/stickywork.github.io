@@ -11,20 +11,20 @@ const themeToggle = () => {
     localStorage.setItem('theme', newTheme);
 
     // Actualizar ícono del botón
-    const themeBtn = document.querySelector('.theme-toggle');
+    const themeBtn = document.querySelector('.theme-toggle-nav');
     if (themeBtn) {
-        themeBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        themeBtn.textContent = newTheme === 'dark' ? '🌙' : '☀️';
     }
 };
 
 // Cargar tema guardado al iniciar
 const loadTheme = () => {
-    const savedTheme = localStorage.getItem('theme') || 'dark'; // Dark mode por defecto
+    const savedTheme = localStorage.getItem('theme') || 'light'; // Light mode por defecto
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-    const themeBtn = document.querySelector('.theme-toggle');
+    const themeBtn = document.querySelector('.theme-toggle-nav');
     if (themeBtn) {
-        themeBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        themeBtn.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
     }
 };
 
