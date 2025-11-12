@@ -175,9 +175,7 @@
                 <h1 id="hero-title" itemprop="name">Reservas Online Simplificadas para Tu Negocio</h1>
                 <p itemprop="description">Integra un sistema de reservas profesional en tu web con solo un widget. Sin complicaciones, sin desarrollo técnico.</p>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;" role="group" aria-label="Acciones principales">
-                    <a href="demo.html" class="btn btn-secondary" aria-label="Ver demostración interactiva del sistema">Ver Demo</a>
-                    <a href="planes.html" class="btn btn-outline" aria-label="Ver planes y precios disponibles">Ver Planes</a>
-                    <button id="reserva-demo-btn" class="btn btn-primary" style="cursor: pointer;" aria-label="Solicitar una demostración personalizada">📅 Reservar Demo</button>
+                    <button onclick="scrollToSection('features-title')" class="btn btn-primary" style="cursor: pointer;" aria-label="Conocer más sobre StickyWork">Quiero saber más</button>
                 </div>
             </div>
         </section>
@@ -225,6 +223,11 @@
                         <p itemprop="description">Datos protegidos con encriptación. Cumplimos con todas las normativas de privacidad y seguridad.</p>
                     </article>
                 </div>
+
+                <!-- Botón Cómo funciona -->
+                <div style="text-align: center; margin-top: 3rem;">
+                    <a href="como-funciona.html" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;" aria-label="Descubre cómo funciona StickyWork">Cómo funciona</a>
+                </div>
             </div>
         </section>
 
@@ -270,6 +273,11 @@
                     <h3>Y muchos más...</h3>
                     <p>Gimnasios, spas, talleres, academias. Cualquier negocio que necesite gestionar citas.</p>
                 </div>
+            </div>
+
+            <!-- Botón Demo -->
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="demo.html" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;" aria-label="Prueba StickyWork en tu página">Pruébalo en tu página</a>
             </div>
         </div>
     </section>
@@ -550,6 +558,22 @@
             const modal = document.getElementById('modal-contacto');
             if (overlay) overlay.remove();
             if (modal) modal.remove();
+        }
+
+        // Función para hacer scroll suave teniendo en cuenta el navbar
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            const navbar = document.querySelector('.navbar');
+            if (element && navbar) {
+                const navbarHeight = navbar.offsetHeight;
+                const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+                const offsetPosition = elementPosition - navbarHeight - 20; // 20px extra de padding
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
         }
 
         // Event listeners para los botones
