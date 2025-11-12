@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplos de Personalización Avanzada - StickyWork Widget</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #3b82f6;
+            margin-bottom: 3rem;
+        }
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .example-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .example-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .example-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        .code-toggle {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .code-toggle:hover {
+            background: #2563eb;
+        }
+        .code-block {
+            display: none;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .code-block.show {
+            display: block;
+        }
+        .demo-button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Ejemplos de Personalización Avanzada del Widget</h1>
+
+    <div class="example-grid">
+        <!-- Ejemplo 1: Tema Oscuro -->
+        <div class="example-box">
+            <div class="example-title">🌙 Tema Oscuro Moderno</div>
+            <div class="example-description">
+                Widget con fondo oscuro, textos claros y acentos morados. Perfecto para sitios modernos y tecnológicos.
+            </div>
+            <button class="code-toggle" onclick="toggleCode('code1')">Ver Código</button>
+            <div id="code1" class="code-block">
+StickyWork.init({
+  businessId: 1,
+  apiUrl: 'http://localhost:3000',
+  mode: 'modal',
+  trigger: '#dark-theme-btn',
+
+  // Colores - Tema Oscuro
+  primaryColor: '#a78bfa',
+  secondaryColor: '#8b5cf6',
+  backgroundColor: '#1e293b',
+  textColor: '#f1f5f9',
+  textSecondaryColor: '#cbd5e1',
+
+  // Tipografía
+  fontFamily: 'Inter, system-ui, sans-serif',
+  borderRadius: '12px',
+  borderRadiusInput: '10px',
+
+  // Inputs con fondo oscuro
+  inputBackgroundColor: '#0f172a',
+  inputTextColor: '#f1f5f9',
+  inputBorderColor: '#334155',
+
+  // Botones
+  buttonBackgroundColor: 'linear-gradient(135deg, #a78bfa, #8b5cf6)',
+  boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+});
+            </div>
+            <button id="dark-theme-btn" class="demo-button">🌙 Probar Tema Oscuro</button>
+        </div>
+
+        <!-- Ejemplo 2: Tema Minimalista -->
+        <div class="example-box">
+            <div class="example-title">⚪ Tema Minimalista</div>
+            <div class="example-description">
+                Diseño limpio y minimalista con líneas finas y espaciado amplio. Ideal para sitios corporativos y profesionales.
+            </div>
+            <button class="code-toggle" onclick="toggleCode('code2')">Ver Código</button>
+            <div id="code2" class="code-block">
+StickyWork.init({
+  businessId: 1,
+  apiUrl: 'http://localhost:3000',
+  mode: 'modal',
+  trigger: '#minimal-theme-btn',
+
+  // Colores - Minimalista
+  primaryColor: '#000000',
+  secondaryColor: '#666666',
+  backgroundColor: '#ffffff',
+  textColor: '#000000',
+  textSecondaryColor: '#666666',
+
+  // Tipografía elegante
+  fontFamily: 'Helvetica Neue, Arial, sans-serif',
+  fontSize: '0.95rem',
+  fontWeight: '300',
+  fontWeightBold: '500',
+
+  // Bordes finos
+  borderRadius: '4px',
+  borderRadiusInput: '2px',
+  borderRadiusButton: '0px',
+  borderWidth: '1px',
+  borderColor: '#e0e0e0',
+
+  // Espaciado generoso
+  padding: '3rem',
+  spacing: '2rem',
+
+  // Sin sombras
+  boxShadow: 'none',
+  boxShadowButton: 'none',
+
+  // Efecto hover sutil
+  buttonHoverTransform: 'none'
+});
+            </div>
+            <button id="minimal-theme-btn" class="demo-button">⚪ Probar Tema Minimalista</button>
+        </div>
+
+        <!-- Ejemplo 3: Tema Colorido -->
+        <div class="example-box">
+            <div class="example-title">🌈 Tema Colorido y Divertido</div>
+            <div class="example-description">
+                Colores vibrantes con gradientes y animaciones llamativas. Perfecto para negocios creativos y juveniles.
+            </div>
+            <button class="code-toggle" onclick="toggleCode('code3')">Ver Código</button>
+            <div id="code3" class="code-block">
+StickyWork.init({
+  businessId: 1,
+  apiUrl: 'http://localhost:3000',
+  mode: 'modal',
+  trigger: '#colorful-theme-btn',
+
+  // Colores - Vibrantes
+  primaryColor: '#f472b6',
+  secondaryColor: '#facc15',
+  backgroundColor: '#fef3c7',
+  textColor: '#92400e',
+  textSecondaryColor: '#b45309',
+  successColor: '#34d399',
+
+  // Tipografía juguetona
+  fontFamily: 'Comic Sans MS, Quicksand, sans-serif',
+  fontSizeTitle: '2.2rem',
+
+  // Bordes redondeados
+  borderRadius: '25px',
+  borderRadiusInput: '15px',
+  borderRadiusButton: '20px',
+  borderWidth: '3px',
+  borderColor: '#fbbf24',
+
+  // Inputs coloridos
+  inputBackgroundColor: '#fffbeb',
+  inputBorderColor: '#fbbf24',
+
+  // Botones con gradiente
+  buttonBackgroundColor: 'linear-gradient(135deg, #f472b6, #fb923c, #facc15)',
+
+  // Sombras coloridas
+  boxShadow: '0 15px 40px rgba(244, 114, 182, 0.3)',
+  boxShadowButton: '0 10px 30px rgba(244, 114, 182, 0.4)',
+
+  // Animación divertida
+  buttonHoverTransform: 'translateY(-5px) scale(1.02)'
+});
+            </div>
+            <button id="colorful-theme-btn" class="demo-button">🌈 Probar Tema Colorido</button>
+        </div>
+
+        <!-- Ejemplo 4: Tema Elegante -->
+        <div class="example-box">
+            <div class="example-title">👔 Tema Elegante y Sofisticado</div>
+            <div class="example-description">
+                Estilo premium con tipografía serif, colores dorados y transiciones suaves. Para negocios de lujo.
+            </div>
+            <button class="code-toggle" onclick="toggleCode('code4')">Ver Código</button>
+            <div id="code4" class="code-block">
+StickyWork.init({
+  businessId: 1,
+  apiUrl: 'http://localhost:3000',
+  mode: 'modal',
+  trigger: '#elegant-theme-btn',
+
+  // Colores - Premium
+  primaryColor: '#d97706',
+  secondaryColor: '#92400e',
+  backgroundColor: '#fffbeb',
+  textColor: '#78350f',
+  textSecondaryColor: '#92400e',
+
+  // Tipografía elegante
+  fontFamily: 'Georgia, Garamond, serif',
+  fontSize: '1.05rem',
+  fontSizeTitle: '2rem',
+  fontWeight: '400',
+  fontWeightBold: '700',
+
+  // Formas sofisticadas
+  borderRadius: '8px',
+  borderRadiusInput: '6px',
+  borderWidth: '2px',
+  borderColor: '#fbbf24',
+  borderColorFocus: '#d97706',
+
+  // Inputs premium
+  inputBackgroundColor: '#ffffff',
+  inputBorderColor: '#fbbf24',
+
+  // Botón con gradiente dorado
+  buttonBackgroundColor: 'linear-gradient(135deg, #d97706, #f59e0b)',
+  buttonTextColor: '#ffffff',
+
+  // Sombras elegantes
+  boxShadow: '0 25px 60px rgba(217, 119, 6, 0.15)',
+  boxShadowButton: '0 15px 35px rgba(217, 119, 6, 0.25)',
+  boxShadowInput: '0 2px 8px rgba(251, 191, 36, 0.1)',
+
+  // Transiciones suaves
+  transitionSpeed: '0.4s',
+  animationDuration: '0.5s',
+  buttonHoverTransform: 'translateY(-3px)'
+});
+            </div>
+            <button id="elegant-theme-btn" class="demo-button">👔 Probar Tema Elegante</button>
+        </div>
+
+        <!-- Ejemplo 5: Tema Material Design -->
+        <div class="example-box">
+            <div class="example-title">📱 Estilo Material Design</div>
+            <div class="example-description">
+                Inspirado en Google Material Design con elevación, ripples y colores corporativos.
+            </div>
+            <button class="code-toggle" onclick="toggleCode('code5')">Ver Código</button>
+            <div id="code5" class="code-block">
+StickyWork.init({
+  businessId: 1,
+  apiUrl: 'http://localhost:3000',
+  mode: 'modal',
+  trigger: '#material-theme-btn',
+
+  // Colores - Material
+  primaryColor: '#1976d2',
+  secondaryColor: '#388e3c',
+  backgroundColor: '#fafafa',
+  textColor: '#212121',
+  textSecondaryColor: '#757575',
+
+  // Tipografía Roboto
+  fontFamily: 'Roboto, -apple-system, sans-serif',
+  fontSize: '1rem',
+  fontSizeLabel: '0.875rem',
+
+  // Formas Material
+  borderRadius: '4px',
+  borderRadiusInput: '4px',
+  borderRadiusButton: '4px',
+  borderWidth: '1px',
+  borderColor: '#e0e0e0',
+
+  // Inputs estilo Material
+  inputBackgroundColor: '#ffffff',
+  paddingInput: '1rem 0.75rem',
+
+  // Botón Material
+  buttonBackgroundColor: '#1976d2',
+  paddingButton: '0.875rem 1.5rem',
+
+  // Elevación Material
+  boxShadow: '0 2px 4px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.24)',
+  boxShadowButton: '0 4px 8px rgba(0,0,0,0.24)',
+  boxShadowModal: '0 24px 38px rgba(0,0,0,0.14)',
+
+  // Transiciones Material
+  transitionSpeed: '0.2s',
+  buttonHoverTransform: 'translateY(-2px)'
+});
+            </div>
+            <button id="material-theme-btn" class="demo-button">📱 Probar Material Design</button>
+        </div>
+
+        <!-- Ejemplo 6: Tema Personalizado Completo -->
+        <div class="example-box">
+            <div class="example-title">🎨 Tu Marca Personalizada</div>
+            <div class="example-description">
+                Ejemplo mostrando TODAS las opciones disponibles. Personaliza cada detalle del widget.
+            </div>
+            <button class="code-toggle" onclick="toggleCode('code6')">Ver Código Completo</button>
+            <div id="code6" class="code-block">
+StickyWork.init({
+  // === CONFIGURACIÓN BÁSICA ===
+  businessId: 1,
+  apiUrl: 'http://localhost:3000',
+  language: 'es',
+  mode: 'modal',
+  trigger: '#custom-theme-btn',
+
+  // === COLORES ===
+  primaryColor: '#your-primary-color',
+  secondaryColor: '#your-secondary-color',
+  backgroundColor: '#ffffff',
+  textColor: '#1f2937',
+  textSecondaryColor: '#6b7280',
+  errorColor: '#ef4444',
+  successColor: '#10b981',
+
+  // === TIPOGRAFÍA ===
+  fontFamily: 'Your Font, sans-serif',
+  fontSize: '1rem',
+  fontSizeTitle: '1.8rem',
+  fontSizeLabel: '1rem',
+  fontWeight: '400',
+  fontWeightBold: '600',
+
+  // === BORDES Y FORMA ===
+  borderRadius: '15px',
+  borderRadiusInput: '8px',
+  borderRadiusButton: '8px',
+  borderWidth: '2px',
+  borderColor: '#e5e7eb',
+  borderColorFocus: null, // null = usa primaryColor
+
+  // === ESPACIADOS ===
+  padding: '2rem',
+  paddingInput: '0.75rem',
+  paddingButton: '1rem',
+  spacing: '1.5rem',
+
+  // === SOMBRAS ===
+  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+  boxShadowModal: '0 20px 60px rgba(0,0,0,0.5)',
+  boxShadowInput: 'none',
+  boxShadowButton: '0 10px 25px rgba(0,0,0,0.15)',
+
+  // === INPUTS ===
+  inputBackgroundColor: null, // null = usa backgroundColor
+  inputTextColor: null, // null = usa textColor
+  inputBorderColor: null, // null = usa borderColor
+  inputPlaceholderColor: '#9ca3af',
+
+  // === BOTONES ===
+  buttonBackgroundColor: null, // null = usa primaryColor
+  buttonTextColor: '#ffffff',
+  buttonHoverTransform: 'translateY(-2px)',
+  buttonDisabledColor: '#9ca3af',
+
+  // === EFECTOS Y ANIMACIONES ===
+  transitionSpeed: '0.3s',
+  animationDuration: '0.3s',
+
+  // === MODAL ESPECÍFICO ===
+  modalOverlayColor: 'rgba(0, 0, 0, 0.7)',
+  modalMaxWidth: '650px',
+  modalMaxHeight: '90vh',
+  modalCloseButtonColor: null, // null = usa secondaryColor
+  modalCloseButtonHoverColor: '#ef4444'
+});
+            </div>
+            <button id="custom-theme-btn" class="demo-button">🎨 Probar Personalizado</button>
+        </div>
+    </div>
+
+    <!-- Cargar el widget -->
+    <script src="http://localhost:3000/public/widget/stickywork-widget.js"></script>
+
+    <script>
+        // Toggle para mostrar/ocultar código
+        function toggleCode(id) {
+            const codeBlock = document.getElementById(id);
+            codeBlock.classList.toggle('show');
+        }
+
+        // Inicializar todos los temas cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Los widgets se inicializarán cuando se haga clic en cada botón
+            // Para evitar conflictos, usamos el modo modal
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Widget - StickyWork</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #3b82f6;
+        }
+        .test-section {
+            background: white;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #3b82f6, #ef4444);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Prueba del Widget StickyWork</h1>
+
+    <!-- TEST 1: Modo Embedded -->
+    <div class="test-section">
+        <h2>📄 Test 1: Modo Embedded (Formulario Directo)</h2>
+        <p>El formulario debe aparecer directamente en la página:</p>
+        <div id="stickywork-widget"></div>
+    </div>
+
+    <!-- TEST 2: Modo Modal -->
+    <div class="test-section">
+        <h2>🎯 Test 2: Modo Modal (Botón Flotante)</h2>
+        <p>Al hacer clic en el botón, debe abrirse un modal con el formulario:</p>
+        <button id="stickywork-btn" class="test-button">📅 Abrir Formulario de Reserva</button>
+    </div>
+
+    <!-- Cargar el widget -->
+    <script src="http://localhost:3000/public/widget/stickywork-widget.js"></script>
+
+    <!-- Inicializar Modo Embedded -->
+    <script>
+        // Test 1: Modo Embedded
+        StickyWork.init({
+            businessId: 1,
+            mode: 'embedded',
+            apiUrl: 'http://localhost:3000',
+            primaryColor: '#3b82f6',
+            language: 'es'
+        });
+    </script>
+
+    <!-- Inicializar Modo Modal -->
+    <script>
+        // Test 2: Modo Modal
+        // Necesitamos esperar a que el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear una nueva instancia para el modo modal
+            const ModalWidget = Object.create(StickyWork);
+            ModalWidget.config = Object.assign({}, StickyWork.config);
+            ModalWidget.services = [];
+            ModalWidget.modalOpen = false;
+
+            ModalWidget.init({
+                businessId: 1,
+                mode: 'modal',
+                trigger: '#stickywork-btn',
+                apiUrl: 'http://localhost:3000',
+                primaryColor: '#3b82f6',
+                secondaryColor: '#10b981',
+                language: 'es',
+                containerId: 'stickywork-widget-modal'
+            });
+        });
+    </script>
+</body>
+</html>

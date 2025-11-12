@@ -20,18 +20,80 @@
 
     const StickyWork = {
         config: {
+            // Configuración básica
             businessId: null,
             apiUrl: 'http://localhost:3000',
+            language: 'es',
+            containerId: 'stickywork-widget',
+            mode: 'embedded', // 'embedded' o 'modal'
+            trigger: null, // Selector del botón para modo modal
+
+            // Colores
             primaryColor: '#3b82f6',
             secondaryColor: '#10b981',
-            language: 'es',
-            containerId: 'stickywork-widget'
+            backgroundColor: '#ffffff',
+            textColor: '#1f2937',
+            textSecondaryColor: '#6b7280',
+            errorColor: '#ef4444',
+            successColor: '#10b981',
+
+            // Tipografía
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            fontSize: '1rem',
+            fontSizeTitle: '1.8rem',
+            fontSizeLabel: '1rem',
+            fontWeight: '400',
+            fontWeightBold: '600',
+
+            // Bordes y forma
+            borderRadius: '15px',
+            borderRadiusInput: '8px',
+            borderRadiusButton: '8px',
+            borderWidth: '2px',
+            borderColor: '#e5e7eb',
+            borderColorFocus: null, // null = usa primaryColor
+
+            // Espaciados
+            padding: '2rem',
+            paddingInput: '0.75rem',
+            paddingButton: '1rem',
+            spacing: '1.5rem', // Espacio entre campos
+
+            // Sombras
+            boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+            boxShadowModal: '0 20px 60px rgba(0, 0, 0, 0.5)',
+            boxShadowInput: 'none',
+            boxShadowButton: '0 10px 25px rgba(0,0,0,0.15)',
+
+            // Inputs
+            inputBackgroundColor: null, // null = usa backgroundColor
+            inputTextColor: null, // null = usa textColor
+            inputBorderColor: null, // null = usa borderColor
+            inputPlaceholderColor: '#9ca3af',
+
+            // Botones
+            buttonBackgroundColor: null, // null = usa primaryColor
+            buttonTextColor: '#ffffff',
+            buttonHoverTransform: 'translateY(-2px)',
+            buttonDisabledColor: '#9ca3af',
+
+            // Efectos y animaciones
+            transitionSpeed: '0.3s',
+            animationDuration: '0.3s',
+
+            // Modo modal específico
+            modalOverlayColor: 'rgba(0, 0, 0, 0.7)',
+            modalMaxWidth: '650px',
+            modalMaxHeight: '90vh',
+            modalCloseButtonColor: null, // null = usa secondaryColor
+            modalCloseButtonHoverColor: '#ef4444'
         },
 
         services: [],
         selectedService: null,
         selectedDate: null,
         selectedTime: null,
+        modalOpen: false,
 
         /**
          * Inicializa el widget
@@ -49,124 +111,307 @@
             // Inyectar estilos
             this.injectStyles();
 
-            // Cargar servicios
+            // Determinar modo de funcionamiento
+            if (this.config.mode === 'modal') {
+                this.initModalMode();
+            } else {
+                // Modo embedded tradicional
+                this.loadServices();
+            }
+        },
+
+        /**
+         * Inicializa el modo modal
+         */
+        initModalMode: function() {
+            if (!this.config.trigger) {
+                console.error('StickyWork Error: trigger es requerido para modo modal');
+                return;
+            }
+
+            // Buscar el botón trigger
+            const triggerElement = document.querySelector(this.config.trigger);
+
+            if (!triggerElement) {
+                console.error('StickyWork Error: No se encontró el elemento trigger:', this.config.trigger);
+                return;
+            }
+
+            // Agregar evento click al botón
+            triggerElement.addEventListener('click', () => this.openModal());
+        },
+
+        /**
+         * Abre el modal
+         */
+        openModal: function() {
+            if (this.modalOpen) return;
+
+            this.modalOpen = true;
+
+            // Crear overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'stickywork-modal-overlay';
+            overlay.className = 'stickywork-modal-overlay';
+            overlay.addEventListener('click', () => this.closeModal());
+
+            // Crear contenedor del modal
+            const modalContainer = document.createElement('div');
+            modalContainer.id = 'stickywork-modal-container';
+            modalContainer.className = 'stickywork-modal-container';
+
+            // Crear botón de cerrar
+            const closeButton = document.createElement('button');
+            closeButton.className = 'stickywork-modal-close';
+            closeButton.innerHTML = '×';
+            closeButton.addEventListener('click', () => this.closeModal());
+
+            // Crear contenedor del widget
+            const widgetContainer = document.createElement('div');
+            widgetContainer.id = this.config.containerId + '-modal';
+
+            modalContainer.appendChild(closeButton);
+            modalContainer.appendChild(widgetContainer);
+
+            document.body.appendChild(overlay);
+            document.body.appendChild(modalContainer);
+
+            // Temporalmente cambiar el containerId para renderizar en el modal
+            const originalContainerId = this.config.containerId;
+            this.config.containerId = this.config.containerId + '-modal';
+
+            // Cargar servicios y renderizar
             this.loadServices();
+        },
+
+        /**
+         * Cierra el modal
+         */
+        closeModal: function() {
+            if (!this.modalOpen) return;
+
+            const overlay = document.getElementById('stickywork-modal-overlay');
+            const container = document.getElementById('stickywork-modal-container');
+
+            if (overlay) overlay.remove();
+            if (container) container.remove();
+
+            this.modalOpen = false;
         },
 
         /**
          * Inyecta los estilos CSS del widget
          */
         injectStyles: function() {
+            // Helper para obtener valores con fallback
+            const c = this.config;
+            const borderColorFocus = c.borderColorFocus || c.primaryColor;
+            const inputBg = c.inputBackgroundColor || c.backgroundColor;
+            const inputText = c.inputTextColor || c.textColor;
+            const inputBorder = c.inputBorderColor || c.borderColor;
+            const buttonBg = c.buttonBackgroundColor || c.primaryColor;
+            const modalCloseBg = c.modalCloseButtonColor || c.secondaryColor;
+
             const styles = `
+                /* Modal - Overlay y contenedor */
+                .stickywork-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: ${c.modalOverlayColor};
+                    z-index: 9998;
+                    animation: stickywork-fadeIn ${c.animationDuration} ease;
+                }
+                .stickywork-modal-container {
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: ${c.backgroundColor};
+                    border-radius: ${c.borderRadius};
+                    padding: ${c.padding};
+                    z-index: 9999;
+                    max-width: ${c.modalMaxWidth};
+                    width: 90%;
+                    max-height: ${c.modalMaxHeight};
+                    overflow-y: auto;
+                    box-shadow: ${c.boxShadowModal};
+                    animation: stickywork-slideUp ${c.animationDuration} ease;
+                    font-family: ${c.fontFamily};
+                }
+                .stickywork-modal-close {
+                    position: absolute;
+                    top: 1rem;
+                    right: 1rem;
+                    background: ${modalCloseBg};
+                    color: ${c.buttonTextColor};
+                    border: none;
+                    width: 35px;
+                    height: 35px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 1.5rem;
+                    font-weight: bold;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all ${c.transitionSpeed} ease;
+                    line-height: 1;
+                }
+                .stickywork-modal-close:hover {
+                    transform: rotate(90deg);
+                    background: ${c.modalCloseButtonHoverColor};
+                }
+
+                /* Animaciones */
+                @keyframes stickywork-fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes stickywork-slideUp {
+                    from { opacity: 0; transform: translate(-50%, -45%); }
+                    to { opacity: 1; transform: translate(-50%, -50%); }
+                }
+                @keyframes stickywork-spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+
+                /* Widget principal */
                 .stickywork-widget {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    font-family: ${c.fontFamily};
                     max-width: 600px;
                     margin: 0 auto;
-                    background: white;
-                    border-radius: 15px;
-                    padding: 2rem;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    background: ${c.backgroundColor};
+                    border-radius: ${c.borderRadius};
+                    padding: ${c.padding};
+                    box-shadow: ${c.boxShadow};
+                    color: ${c.textColor};
+                    font-size: ${c.fontSize};
+                    font-weight: ${c.fontWeight};
                 }
+
+                /* Títulos y texto */
                 .stickywork-title {
-                    color: ${this.config.primaryColor};
-                    font-size: 1.8rem;
+                    color: ${c.primaryColor};
+                    font-size: ${c.fontSizeTitle};
+                    font-weight: ${c.fontWeightBold};
                     margin-bottom: 0.5rem;
                     text-align: center;
                 }
                 .stickywork-subtitle {
-                    color: #6b7280;
+                    color: ${c.textSecondaryColor};
+                    font-size: ${c.fontSize};
                     text-align: center;
                     margin-bottom: 2rem;
                 }
+
+                /* Formulario */
                 .stickywork-form-group {
-                    margin-bottom: 1.5rem;
+                    margin-bottom: ${c.spacing};
                 }
                 .stickywork-label {
                     display: block;
                     margin-bottom: 0.5rem;
-                    font-weight: 600;
-                    color: #1f2937;
+                    font-weight: ${c.fontWeightBold};
+                    font-size: ${c.fontSizeLabel};
+                    color: ${c.textColor};
                 }
+
+                /* Inputs, selects y textareas */
                 .stickywork-input,
                 .stickywork-select,
                 .stickywork-textarea {
                     width: 100%;
-                    padding: 0.75rem;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 8px;
-                    font-size: 1rem;
-                    font-family: inherit;
-                    transition: border-color 0.3s;
+                    padding: ${c.paddingInput};
+                    border: ${c.borderWidth} solid ${inputBorder};
+                    border-radius: ${c.borderRadiusInput};
+                    font-size: ${c.fontSize};
+                    font-family: ${c.fontFamily};
+                    background: ${inputBg};
+                    color: ${inputText};
+                    box-shadow: ${c.boxShadowInput};
+                    transition: border-color ${c.transitionSpeed}, box-shadow ${c.transitionSpeed};
                     box-sizing: border-box;
+                }
+                .stickywork-input::placeholder,
+                .stickywork-select::placeholder,
+                .stickywork-textarea::placeholder {
+                    color: ${c.inputPlaceholderColor};
                 }
                 .stickywork-input:focus,
                 .stickywork-select:focus,
                 .stickywork-textarea:focus {
                     outline: none;
-                    border-color: ${this.config.primaryColor};
+                    border-color: ${borderColorFocus};
                 }
                 .stickywork-textarea {
                     resize: vertical;
                     min-height: 100px;
                 }
+
+                /* Botones */
                 .stickywork-button {
                     width: 100%;
-                    padding: 1rem;
-                    background: ${this.config.primaryColor};
-                    color: white;
+                    padding: ${c.paddingButton};
+                    background: ${buttonBg};
+                    color: ${c.buttonTextColor};
                     border: none;
-                    border-radius: 8px;
+                    border-radius: ${c.borderRadiusButton};
                     font-size: 1.1rem;
-                    font-weight: 600;
+                    font-weight: ${c.fontWeightBold};
+                    font-family: ${c.fontFamily};
                     cursor: pointer;
-                    transition: all 0.3s;
+                    transition: all ${c.transitionSpeed};
                 }
                 .stickywork-button:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+                    transform: ${c.buttonHoverTransform};
+                    box-shadow: ${c.boxShadowButton};
                 }
                 .stickywork-button:disabled {
-                    background: #9ca3af;
+                    background: ${c.buttonDisabledColor};
                     cursor: not-allowed;
                     transform: none;
                 }
+
+                /* Mensajes de error y éxito */
                 .stickywork-error {
-                    color: #ef4444;
+                    color: ${c.errorColor};
                     font-size: 0.9rem;
                     margin-top: 0.5rem;
                 }
                 .stickywork-success {
-                    background: linear-gradient(135deg, ${this.config.secondaryColor}, #059669);
-                    color: white;
-                    padding: 2rem;
-                    border-radius: 10px;
+                    background: linear-gradient(135deg, ${c.successColor}, #059669);
+                    color: ${c.buttonTextColor};
+                    padding: ${c.padding};
+                    border-radius: ${c.borderRadius};
                     text-align: center;
                 }
                 .stickywork-success h3 {
                     font-size: 1.5rem;
                     margin-bottom: 1rem;
+                    font-weight: ${c.fontWeightBold};
                 }
+
+                /* Loading */
                 .stickywork-loading {
                     text-align: center;
-                    padding: 2rem;
-                    color: #6b7280;
+                    padding: ${c.padding};
+                    color: ${c.textSecondaryColor};
                 }
                 .stickywork-spinner {
                     border: 3px solid #f3f4f6;
-                    border-top: 3px solid ${this.config.primaryColor};
+                    border-top: 3px solid ${c.primaryColor};
                     border-radius: 50%;
                     width: 40px;
                     height: 40px;
                     animation: stickywork-spin 1s linear infinite;
                     margin: 0 auto 1rem;
                 }
-                @keyframes stickywork-spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-                .stickywork-service-option {
-                    padding: 0.75rem;
-                }
+
+                /* Selector de horarios */
                 .stickywork-time-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -174,21 +419,23 @@
                     margin-top: 0.5rem;
                 }
                 .stickywork-time-slot {
-                    padding: 0.75rem;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 8px;
+                    padding: ${c.paddingInput};
+                    border: ${c.borderWidth} solid ${inputBorder};
+                    border-radius: ${c.borderRadiusInput};
                     text-align: center;
                     cursor: pointer;
-                    transition: all 0.3s;
+                    transition: all ${c.transitionSpeed};
+                    background: ${inputBg};
+                    color: ${inputText};
                 }
                 .stickywork-time-slot:hover {
-                    border-color: ${this.config.primaryColor};
-                    background: rgba(59, 130, 246, 0.05);
+                    border-color: ${c.primaryColor};
+                    background: ${c.primaryColor}10;
                 }
                 .stickywork-time-slot.selected {
-                    background: ${this.config.primaryColor};
-                    color: white;
-                    border-color: ${this.config.primaryColor};
+                    background: ${c.primaryColor};
+                    color: ${c.buttonTextColor};
+                    border-color: ${c.primaryColor};
                 }
                 .stickywork-time-slot.unavailable {
                     opacity: 0.3;

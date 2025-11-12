@@ -164,14 +164,14 @@
                             &lt;<span style="color: #ff6b6b;">div</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-widget"</span>&gt;&lt;/<span style="color: #ff6b6b;">div</span>&gt;<br><br>
 
                             <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
-                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
+                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"https://TU-DOMINIO.com/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
 
                             <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa en formulario directo --></div>
                             &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
                             &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'embedded'</span>,<span style="color: #888;"> // Formulario directo</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'https://TU-API.com'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
                             &nbsp;&nbsp;});<br>
@@ -190,7 +190,7 @@
                             &lt;<span style="color: #ff6b6b;">button</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-btn"</span>&gt;📅 Reserva Ahora&lt;/<span style="color: #ff6b6b;">button</span>&gt;<br><br>
 
                             <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
-                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"http://localhost:3000/public/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
+                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"https://TU-DOMINIO.com/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
 
                             <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa como botón flotante --></div>
                             &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
@@ -198,7 +198,7 @@
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'modal'</span>,<span style="color: #888;"> // Botón flotante (ventana emergente)</span><br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">trigger</span>: <span style="color: #ffe66d;">'#stickywork-btn'</span>,<span style="color: #888;"> // ID del botón</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'http://localhost:3000'</span>,<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'https://TU-API.com'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
                             &nbsp;&nbsp;});<br>
@@ -207,7 +207,12 @@
                     </div>
 
                     <div style="margin-top: 2rem; padding: 1.5rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
-                        <p style="margin: 0; color: #856404;"><strong>💡 Nota:</strong> El businessId por defecto es <code>1</code> (negocio demo). Después de configurar tu cuenta, obtendrás tu propio ID único.</p>
+                        <p style="margin: 0 0 0.5rem 0; color: #856404;"><strong>💡 Nota importante:</strong></p>
+                        <ul style="margin: 0; padding-left: 1.5rem; color: #856404;">
+                            <li>Reemplaza <code>TU-DOMINIO.com</code> con la URL donde alojes el script del widget</li>
+                            <li>Reemplaza <code>TU-API.com</code> con la URL de tu API backend</li>
+                            <li>El <code>businessId</code> por defecto es <code>1</code> (negocio demo). Después de configurar tu cuenta, obtendrás tu propio ID único.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -413,14 +418,14 @@
 <div id="stickywork-widget"></div>
 
 <!-- Paso 2: Carga el script del widget -->
-<script src="http://localhost:3000/public/widget/stickywork-widget.js"><\/script>
+<script src="https://TU-DOMINIO.com/widget/stickywork-widget.js"><\/script>
 
 <!-- Paso 3: Inicializa en formulario directo -->
 <script>
   StickyWork.init({
     businessId: 1, // Tu ID de negocio
     mode: 'embedded', // Formulario directo
-    apiUrl: 'http://localhost:3000',
+    apiUrl: 'https://TU-API.com',
     primaryColor: '#3b82f6',
     language: 'es'
   });
@@ -431,7 +436,7 @@
 <button id="stickywork-btn">📅 Reserva Ahora</button>
 
 <!-- Paso 2: Carga el script del widget -->
-<script src="http://localhost:3000/public/widget/stickywork-widget.js"><\/script>
+<script src="https://TU-DOMINIO.com/widget/stickywork-widget.js"><\/script>
 
 <!-- Paso 3: Inicializa como botón flotante -->
 <script>
@@ -439,7 +444,7 @@
     businessId: 1, // Tu ID de negocio
     mode: 'modal', // Botón flotante (ventana emergente)
     trigger: '#stickywork-btn', // ID del botón
-    apiUrl: 'http://localhost:3000',
+    apiUrl: 'https://TU-API.com',
     primaryColor: '#3b82f6',
     language: 'es'
   });

@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
     animatedElements.forEach(el => observer.observe(el));
 });
 
-// Formulario de contacto - Envío a la API
+// Formulario de contacto - Envío a la API (Modo Mixto)
 async function handleContactFormSubmit(event) {
     event.preventDefault();
 
@@ -86,43 +86,84 @@ async function handleContactFormSubmit(event) {
 
     // Deshabilitar botón mientras se envía
     submitButton.disabled = true;
+    const originalText = submitButton.textContent;
     submitButton.textContent = 'Enviando...';
 
+    // Obtener valores del formulario
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const business = document.getElementById('business').value;
+    const businessType = document.getElementById('business-type').value;
+    const interest = document.getElementById('interest').value;
+    const message = document.getElementById('message').value;
+
     const formData = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        business: document.getElementById('business').value,
-        businessType: document.getElementById('business-type').value,
-        interest: document.getElementById('interest').value,
-        message: document.getElementById('message').value
+        name: name,
+        email: email,
+        phone: phone,
+        business: business,
+        businessType: businessType,
+        interest: interest,
+        message: message || `Solicitud de ${interest} - ${businessType}${business ? ' (' + business + ')' : ''}` // Valor por defecto si está vacío
     };
 
+    let backendSuccess = false;
+    let messageId = null;
+
     try {
-        const response = await fetch('http://localhost:3000/api/contact', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
+        // Detectar si estamos en localhost o producción
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://stickywork-github-io.onrender.com';
 
-        const data = await response.json();
+        try {
+            // Intentar enviar al backend con timeout de 5 segundos
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        if (data.success) {
-            // Mostrar mensaje de éxito
-            alert('¡Gracias por tu mensaje! Nos pondremos en contacto contigo pronto.\n\nID del mensaje: ' + data.data.id);
-            form.reset();
-        } else {
-            alert('Error: ' + data.message);
+            const response = await fetch(API_URL + '/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                backendSuccess = true;
+                messageId = data.data?.id;
+            }
+        } catch (fetchError) {
+            console.log('Backend no disponible, mostrando confirmación demo:', fetchError.message);
+            // Continuar con modo demo
         }
+
+        // Mostrar mensaje de éxito (tanto si funcionó el backend como si no)
+        const successMessage = backendSuccess
+            ? `¡Gracias por tu mensaje, ${formData.name}!\n\nTu solicitud ha sido enviada exitosamente.\n${messageId ? 'ID del mensaje: ' + messageId : ''}\n\nNos pondremos en contacto contigo en menos de 24 horas a ${formData.email}`
+            : `¡Gracias por tu interés, ${formData.name}!\n\nEsta es una demostración del sistema.\n\nPara solicitudes reales, por favor contacta directamente a:\ncontacto@stickywork.com\n\nEn producción, recibirías una respuesta en menos de 24 horas.`;
+
+        alert(successMessage);
+
+        // Resetear formulario solo si fue exitoso
+        if (backendSuccess) {
+            form.reset();
+        }
+
     } catch (error) {
-        console.error('Error al enviar formulario:', error);
-        alert('Error al enviar el mensaje. Por favor, intenta de nuevo.');
+        // Error crítico (no debería pasar)
+        console.error('Error crítico al procesar formulario:', error);
+        alert(`Solicitud Recibida (Demo)\n\nGracias por tu interés, ${formData.name}.\n\nEsta es una demostración del sistema.\nPara solicitudes reales, contacta: contacto@stickywork.com`);
     } finally {
         // Rehabilitar botón
         submitButton.disabled = false;
-        submitButton.textContent = 'Enviar Mensaje';
+        submitButton.textContent = originalText;
     }
 
     return false;
