@@ -14,7 +14,11 @@
       "Bash(npm start)",
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
-      "Bash(taskkill //F //PID 30728)"
+      "Bash(taskkill //F //PID 30728)",
+      "Bash(git commit:*)",
+      "WebFetch(domain:stickywork-github-io.onrender.com)",
+      "Bash(curl:*)",
+      "Bash(taskkill //F //PID 12252)"
     ],
     "deny": [],
     "ask": []

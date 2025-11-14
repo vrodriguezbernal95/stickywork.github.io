@@ -929,6 +929,11 @@ section:nth-child(even)::before {
 
 /* Responsive */
 @media (max-width: 768px) {
+    /* Navegación móvil */
+    .nav-container {
+        padding: 1rem;
+    }
+
     .nav-menu {
         position: absolute;
         top: 100%;
@@ -940,6 +945,7 @@ section:nth-child(even)::before {
         box-shadow: var(--shadow);
         display: none;
         border-top: 1px solid var(--border-color);
+        gap: 0.5rem;
     }
 
     .nav-menu.active {
@@ -954,31 +960,251 @@ section:nth-child(even)::before {
         margin: 0.5rem auto 0 auto;
     }
 
+    /* Hero más compacto en móvil */
+    .hero {
+        padding: 3rem 1.5rem;
+    }
+
+    .hero h1 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .hero p {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Secciones más compactas */
+    section {
+        padding: 3rem 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .section-subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Grid más flexible */
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .feature-card {
+        padding: 1.5rem;
+    }
+
+    /* Botones más pequeños */
+    .btn {
+        padding: 0.85rem 1.75rem;
+        font-size: 0.95rem;
+    }
+
+    /* Botón flotante adaptado */
     .sticky-contact-button {
         bottom: 1rem;
         right: 1rem;
         padding: 0.6rem 1rem;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 
+    /* Footer compacto */
     .footer {
         padding: 2rem 1rem 4rem;
     }
 
-    .hero h1 {
-        font-size: 2rem;
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 
-    .hero p {
-        font-size: 1.1rem;
+    /* Pricing cards */
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
 
-    .section-title {
-        font-size: 2rem;
+    .pricing-card {
+        padding: 2rem 1.5rem;
     }
 
     .pricing-card.featured {
         transform: scale(1);
+    }
+
+    /* Contacto/Demo containers */
+    .demo-container,
+    .contact-form {
+        padding: 2rem 1.5rem;
+        margin: 1.5rem 1rem;
+    }
+
+    /* Modal adaptado a móvil */
+    #modal-contacto {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 1.5rem !important;
+        max-height: 85vh !important;
+    }
+
+    #modal-contacto h3 {
+        font-size: 1.5rem !important;
+    }
+
+    #modal-contacto p {
+        font-size: 0.9rem !important;
+    }
+
+    #modal-contacto input,
+    #modal-contacto select,
+    #modal-contacto textarea {
+        font-size: 16px !important; /* Evita zoom en iOS */
+    }
+
+    #modal-contacto button[type="submit"] {
+        font-size: 1rem !important;
+        padding: 0.85rem !important;
+    }
+
+    /* Widget demo responsive */
+    #stickywork-widget {
+        padding: 1.5rem !important;
+        max-width: 100% !important;
+    }
+
+    #stickywork-widget h3 {
+        font-size: 1.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    #stickywork-widget input,
+    #stickywork-widget select {
+        font-size: 16px !important; /* Evita zoom en iOS */
+        padding: 0.65rem !important;
+    }
+
+    #stickywork-widget label {
+        font-size: 0.9rem !important;
+    }
+
+    /* Grid de fecha/hora en columna en móvil */
+    #demo-widget-form > div:last-of-type,
+    #modal-form > div:last-of-type {
+        grid-template-columns: 1fr !important;
+    }
+
+    #demo-widget-form button[type="submit"],
+    #modal-form button[type="submit"] {
+        font-size: 1rem !important;
+        padding: 0.85rem !important;
+    }
+
+    /* Modal del widget demo */
+    #modal-widget {
+        width: 95% !important;
+        max-width: 95% !important;
+        padding: 1.5rem !important;
+        max-height: 85vh !important;
+    }
+
+    #modal-widget h3 {
+        font-size: 1.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    #modal-widget input,
+    #modal-widget select {
+        font-size: 16px !important;
+        padding: 0.65rem !important;
+    }
+
+    #modal-widget label {
+        font-size: 0.9rem !important;
+    }
+
+    /* Botones de selección de modo */
+    #btnModoEmbedded,
+    #btnModoModal {
+        min-width: auto !important;
+        width: 100%;
+        padding: 0.85rem 1.5rem !important;
+        font-size: 0.95rem !important;
+    }
+}
+
+/* Mejoras adicionales para móviles pequeños */
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    .hero h1 {
+        font-size: 1.5rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+    }
+
+    .pricing-price {
+        font-size: 2.5rem;
+    }
+
+    /* Widget demo en móviles pequeños */
+    #stickywork-widget {
+        padding: 1.25rem !important;
+    }
+
+    #stickywork-widget h3 {
+        font-size: 1.35rem !important;
+    }
+
+    #stickywork-widget input,
+    #stickywork-widget select {
+        padding: 0.6rem !important;
+    }
+
+    #demo-widget-form button[type="submit"],
+    #modal-form button[type="submit"] {
+        padding: 0.75rem !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* Modal widget en móviles pequeños */
+    #modal-widget {
+        padding: 1.25rem !important;
+    }
+
+    #modal-widget h3 {
+        font-size: 1.35rem !important;
+    }
+
+    /* Botones de modo */
+    #btnModoEmbedded,
+    #btnModoModal {
+        padding: 0.75rem 1.25rem !important;
+        font-size: 0.9rem !important;
     }
 }
 

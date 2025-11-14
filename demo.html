@@ -51,7 +51,7 @@
     </section>
 
     <!-- Demo Widget -->
-    <section style="background-color: var(--light);">
+    <section style="background-color: var(--bg-secondary);">
         <div class="container">
             <div id="tituloModo">
                 <h2 class="section-title">Formulario Directo - Integrado en la Página</h2>
@@ -61,7 +61,7 @@
             <div class="demo-container">
                 <!-- MODO EMBEBIDO -->
                 <div class="widget-preview" id="modoEmbedded">
-                    <p style="text-align: center; color: var(--gray); margin-bottom: 1rem;">
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1rem;">
                         <strong>Widget en Vivo:</strong> Este es el widget embebido funcionando
                     </p>
 
@@ -126,7 +126,7 @@
 
                 <!-- MODO MODAL -->
                 <div class="widget-preview" id="modoModal" style="display: none;">
-                    <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
                         <strong>Demo del Botón Flotante:</strong> Haz clic en el botón para abrir el formulario
                     </p>
 
@@ -149,7 +149,7 @@
 
                 <!-- Código de integración -->
                 <div style="margin-top: 3rem;">
-                    <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--dark);">
+                    <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-primary);">
                         Código para integrar en tu web
                     </h3>
 
@@ -266,7 +266,7 @@
     </section>
 
     <!-- Personalización -->
-    <section style="background-color: var(--light);">
+    <section style="background-color: var(--bg-secondary);">
         <div class="container">
             <h2 class="section-title">Opciones de Personalización</h2>
             <p class="section-subtitle">Configura el widget exactamente como lo necesitas</p>
@@ -274,7 +274,7 @@
             <div class="features-grid">
                 <div class="feature-card">
                     <h3 style="color: var(--primary-color); margin-bottom: 1rem;">🎯 Campos del Formulario</h3>
-                    <ul style="text-align: left; color: var(--gray); line-height: 2;">
+                    <ul style="text-align: left; color: var(--text-secondary); line-height: 2;">
                         <li>Agrega o quita campos personalizados</li>
                         <li>Campos obligatorios u opcionales</li>
                         <li>Validación personalizada</li>
@@ -284,7 +284,7 @@
 
                 <div class="feature-card">
                     <h3 style="color: var(--primary-color); margin-bottom: 1rem;">🎨 Diseño Visual</h3>
-                    <ul style="text-align: left; color: var(--gray); line-height: 2;">
+                    <ul style="text-align: left; color: var(--text-secondary); line-height: 2;">
                         <li>Colores de tu marca</li>
                         <li>Fuentes personalizadas</li>
                         <li>Tamaños y espaciados</li>
@@ -294,7 +294,7 @@
 
                 <div class="feature-card">
                     <h3 style="color: var(--primary-color); margin-bottom: 1rem;">⚙️ Comportamiento</h3>
-                    <ul style="text-align: left; color: var(--gray); line-height: 2;">
+                    <ul style="text-align: left; color: var(--text-secondary); line-height: 2;">
                         <li>Horarios y disponibilidad</li>
                         <li>Duración de servicios</li>
                         <li>Tiempo entre citas</li>
@@ -364,6 +364,52 @@
     </button>
 
     <script src="js/main.js"></script>
+
+    <!-- Estilos adicionales para demo móvil -->
+    <style>
+        /* Mejoras responsive para la página demo */
+        @media (max-width: 768px) {
+            /* Código de integración más compacto */
+            .demo-container > div:last-child > div > div {
+                padding: 1.5rem !important;
+                font-size: 0.75rem !important;
+            }
+
+            /* Botón copiar código más pequeño */
+            #btnCopiarEmbedded,
+            #btnCopiarModal {
+                position: static !important;
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+
+            /* Sección de notas más compacta */
+            .demo-container > div:last-child > div:last-child {
+                padding: 1rem !important;
+                font-size: 0.85rem !important;
+            }
+
+            .demo-container > div:last-child > div:last-child ul {
+                font-size: 0.85rem !important;
+            }
+
+            .demo-container > div:last-child > div:last-child code {
+                font-size: 0.8rem !important;
+                padding: 0.2rem 0.4rem;
+                background: rgba(0,0,0,0.1);
+                border-radius: 4px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* Código aún más pequeño en móviles pequeños */
+            .demo-container > div:last-child > div > div {
+                padding: 1rem !important;
+                font-size: 0.7rem !important;
+                line-height: 1.6 !important;
+            }
+        }
+    </style>
 
     <!-- Script del widget demo -->
     <script>
