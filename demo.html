@@ -45,6 +45,9 @@
                     <button onclick="mostrarModo('modal')" id="btnModoModal" style="padding: 1rem 2rem; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; min-width: 220px;">
                         🎯 Botón Flotante
                     </button>
+                    <button onclick="mostrarModo('qr')" id="btnModoQR" style="padding: 1rem 2rem; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; min-width: 220px;">
+                        📱 Código QR
+                    </button>
                 </div>
             </div>
         </div>
@@ -147,6 +150,51 @@
                     </p>
                 </div>
 
+                <!-- MODO QR -->
+                <div class="widget-preview" id="modoQR" style="display: none;">
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                        <strong>Código QR para Reservas:</strong> Ideal para materiales impresos
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                        <!-- Previsualización del QR -->
+                        <div style="text-align: center; padding: 2rem; background: var(--bg-secondary); border-radius: 15px;">
+                            <h4 style="color: var(--text-primary); margin-bottom: 1.5rem;">Vista Previa del QR</h4>
+                            <div id="qrcode-container" style="display: flex; justify-content: center; margin-bottom: 1.5rem; padding: 1.5rem; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                                <!-- El QR se generará aquí -->
+                            </div>
+                            <button onclick="descargarQR()" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-bottom: 0.5rem;">
+                                📥 Descargar QR en PNG
+                            </button>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">
+                                Listo para imprimir o compartir
+                            </p>
+                        </div>
+
+                        <!-- Usos del QR -->
+                        <div style="padding: 2rem; background: var(--bg-secondary); border-radius: 15px;">
+                            <h4 style="color: var(--text-primary); margin-bottom: 1rem;">¿Dónde usar el código QR?</h4>
+                            <ul style="color: var(--text-secondary); line-height: 2; text-align: left;">
+                                <li><strong>📇 Tarjetas de presentación:</strong> Los clientes escanean y reservan al instante</li>
+                                <li><strong>📄 Folletos y flyers:</strong> Facilita la conversión en campañas impresas</li>
+                                <li><strong>🏪 En el local:</strong> Carteles en recepción o escaparates</li>
+                                <li><strong>📧 Email marketing:</strong> Incluye el QR en newsletters</li>
+                                <li><strong>📱 Redes sociales:</strong> Comparte en Instagram, Facebook, etc.</li>
+                                <li><strong>🎫 Eventos:</strong> En stands o material promocional</li>
+                            </ul>
+                            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--primary-color); border-radius: 5px;">
+                                <p style="margin: 0; color: var(--text-primary); font-size: 0.9rem;">
+                                    💡 <strong>Consejo PRO:</strong> El QR apunta directamente a tu página de reservas. Puedes regenerarlo con diferentes parámetros UTM para trackear conversiones.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p style="text-align: center; color: var(--text-secondary); margin-top: 2rem; font-size: 0.9rem;">
+                        ✨ El código QR apunta a: <strong>https://vrodriguezbernal95.github.io/stickywork.github.io/</strong>
+                    </p>
+                </div>
+
                 <!-- Código de integración -->
                 <div style="margin-top: 3rem;">
                     <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-primary);">
@@ -203,6 +251,32 @@
                             &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
                             &nbsp;&nbsp;});<br>
                             &lt;/<span style="color: #ff6b6b;">script</span>&gt;
+                        </div>
+                    </div>
+
+                    <!-- Código Modo QR -->
+                    <div id="codigoQR" style="position: relative; display: none;">
+                        <button onclick="copiarCodigo('qr')" id="btnCopiarQR" style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; z-index: 10;">
+                            📋 Copiar URL
+                        </button>
+
+                        <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
+                            <div style="color: #888; margin-bottom: 1rem;"><!-- URL para generar el código QR --></div>
+                            <span style="color: #ffe66d;">https://vrodriguezbernal95.github.io/stickywork.github.io/</span><br><br>
+
+                            <div style="color: #888; margin: 1rem 0;"><!-- Instrucciones para generar el QR --></div>
+                            <div style="color: #e0e0e0; line-height: 1.8;">
+                                <span style="color: #4ecdc4;">1.</span> Usa cualquier generador de códigos QR online<br>
+                                <span style="color: #4ecdc4;">2.</span> Pega la URL de arriba<br>
+                                <span style="color: #4ecdc4;">3.</span> Descarga el QR en alta resolución (PNG o SVG)<br>
+                                <span style="color: #4ecdc4;">4.</span> Úsalo en tus materiales impresos<br><br>
+
+                                <div style="color: #888; margin: 1rem 0;"><!-- Generadores recomendados --></div>
+                                <span style="color: #ff6b6b;">Generadores recomendados:</span><br>
+                                • <span style="color: #ffe66d;">qr-code-generator.com</span><br>
+                                • <span style="color: #ffe66d;">qrcode-monkey.com</span><br>
+                                • <span style="color: #ffe66d;">goqr.me</span><br>
+                            </div>
                         </div>
                     </div>
 
@@ -365,6 +439,9 @@
 
     <script src="js/main.js"></script>
 
+    <!-- Librería QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <!-- Estilos adicionales para demo móvil -->
     <style>
         /* Mejoras responsive para la página demo */
@@ -377,7 +454,8 @@
 
             /* Botón copiar código más pequeño */
             #btnCopiarEmbedded,
-            #btnCopiarModal {
+            #btnCopiarModal,
+            #btnCopiarQR {
                 position: static !important;
                 width: 100%;
                 margin-bottom: 1rem;
@@ -399,6 +477,15 @@
                 background: rgba(0,0,0,0.1);
                 border-radius: 4px;
             }
+
+            /* Modo QR responsive - cambiar a columna única */
+            #modoQR > div[style*="grid-template-columns"] {
+                display: block !important;
+            }
+
+            #modoQR > div > div {
+                margin-bottom: 1.5rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -418,40 +505,60 @@
             // Actualizar botones
             const btnEmbedded = document.getElementById('btnModoEmbedded');
             const btnModal = document.getElementById('btnModoModal');
+            const btnQR = document.getElementById('btnModoQR');
 
+            // Resetear todos los botones
+            btnEmbedded.style.background = 'var(--bg-primary)';
+            btnEmbedded.style.color = 'var(--text-primary)';
+            btnEmbedded.style.borderColor = 'var(--border-color)';
+
+            btnModal.style.background = 'var(--bg-primary)';
+            btnModal.style.color = 'var(--text-primary)';
+            btnModal.style.borderColor = 'var(--border-color)';
+
+            btnQR.style.background = 'var(--bg-primary)';
+            btnQR.style.color = 'var(--text-primary)';
+            btnQR.style.borderColor = 'var(--border-color)';
+
+            // Activar botón seleccionado
             if (modo === 'embedded') {
                 btnEmbedded.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
                 btnEmbedded.style.color = 'white';
                 btnEmbedded.style.borderColor = 'var(--primary-color)';
-
-                btnModal.style.background = 'var(--bg-primary)';
-                btnModal.style.color = 'var(--text-primary)';
-                btnModal.style.borderColor = 'var(--border-color)';
-            } else {
+            } else if (modo === 'modal') {
                 btnModal.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
                 btnModal.style.color = 'white';
                 btnModal.style.borderColor = 'var(--primary-color)';
-
-                btnEmbedded.style.background = 'var(--bg-primary)';
-                btnEmbedded.style.color = 'var(--text-primary)';
-                btnEmbedded.style.borderColor = 'var(--border-color)';
+            } else if (modo === 'qr') {
+                btnQR.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
+                btnQR.style.color = 'white';
+                btnQR.style.borderColor = 'var(--primary-color)';
             }
 
             // Actualizar título
             const titulo = document.getElementById('tituloModo');
             if (modo === 'embedded') {
                 titulo.innerHTML = '<h2 class="section-title">Formulario Directo - Integrado en la Página</h2><p class="section-subtitle">El formulario se muestra directamente en tu página web</p>';
-            } else {
+            } else if (modo === 'modal') {
                 titulo.innerHTML = '<h2 class="section-title">Botón Flotante - Ventana Emergente</h2><p class="section-subtitle">Un botón discreto que abre el formulario en una ventana emergente</p>';
+            } else if (modo === 'qr') {
+                titulo.innerHTML = '<h2 class="section-title">Código QR - Para Materiales Impresos</h2><p class="section-subtitle">Genera un código QR para que tus clientes reserven desde cualquier lugar</p>';
             }
 
             // Mostrar/ocultar widgets
             document.getElementById('modoEmbedded').style.display = modo === 'embedded' ? 'block' : 'none';
             document.getElementById('modoModal').style.display = modo === 'modal' ? 'block' : 'none';
+            document.getElementById('modoQR').style.display = modo === 'qr' ? 'block' : 'none';
 
             // Mostrar/ocultar códigos
             document.getElementById('codigoEmbedded').style.display = modo === 'embedded' ? 'block' : 'none';
             document.getElementById('codigoModal').style.display = modo === 'modal' ? 'block' : 'none';
+            document.getElementById('codigoQR').style.display = modo === 'qr' ? 'block' : 'none';
+
+            // Generar QR si es el modo QR
+            if (modo === 'qr') {
+                generarQR();
+            }
         }
 
         // Función para copiar el código según el modo
@@ -477,7 +584,7 @@
   });
 <\/script>`;
                 btnId = 'btnCopiarEmbedded';
-            } else {
+            } else if (modo === 'modal') {
                 codigoTexto = `<!-- Paso 1: Agrega el botón -->
 <button id="stickywork-btn">📅 Reserva Ahora</button>
 
@@ -496,6 +603,9 @@
   });
 <\/script>`;
                 btnId = 'btnCopiarModal';
+            } else if (modo === 'qr') {
+                codigoTexto = 'https://vrodriguezbernal95.github.io/stickywork.github.io/';
+                btnId = 'btnCopiarQR';
             }
 
             // Copiar al portapapeles
@@ -677,6 +787,47 @@
                 });
             }
         });
+
+        // Variable global para almacenar el objeto QR
+        let qrCodeInstance = null;
+
+        // Función para generar el código QR
+        function generarQR() {
+            const container = document.getElementById('qrcode-container');
+
+            // Limpiar QR anterior si existe
+            container.innerHTML = '';
+
+            // URL del proyecto
+            const url = 'https://vrodriguezbernal95.github.io/stickywork.github.io/';
+
+            // Generar nuevo QR
+            qrCodeInstance = new QRCode(container, {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        // Función para descargar el QR como imagen PNG
+        function descargarQR() {
+            const container = document.getElementById('qrcode-container');
+            const canvas = container.querySelector('canvas');
+
+            if (canvas) {
+                // Convertir canvas a imagen y descargar
+                const url = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'stickywork-qr-code.png';
+                link.href = url;
+                link.click();
+            } else {
+                alert('Por favor, genera primero el código QR');
+            }
+        }
     </script>
 </body>
 </html>
