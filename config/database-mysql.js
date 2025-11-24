@@ -2,16 +2,26 @@ const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 // Configuración de la conexión a MySQL
-const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'stickywork',
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-};
+// Prioriza MYSQL_URL (Railway) sobre variables individuales
+let dbConfig;
+
+if (process.env.MYSQL_URL) {
+    // Usar URL de conexión directa (Railway)
+    console.log('📦 Usando MYSQL_URL para conexión');
+    dbConfig = process.env.MYSQL_URL;
+} else {
+    // Usar variables individuales (desarrollo local)
+    dbConfig = {
+        host: process.env.DB_HOST || 'localhost',
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'stickywork',
+        port: parseInt(process.env.DB_PORT) || 3306,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+    };
+}
 
 // Pool de conexiones
 let pool;

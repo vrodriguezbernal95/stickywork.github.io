@@ -8,63 +8,19 @@ const db = require('./config/database');
 const routes = require('./backend/routes');
 const emailService = require('./backend/email-service');
 
-// Función para crear tablas necesarias
+// Función para ejecutar migraciones MySQL
 async function runMigrations() {
-    const usePostgres = process.env.DATABASE_URL || process.env.USE_POSTGRES === 'true';
-    if (!usePostgres) return; // Solo para PostgreSQL en producción
-
-    console.log('🔄 Ejecutando migraciones PostgreSQL...');
+    console.log('🔄 Verificando tablas MySQL...');
     try {
-        // Crear tabla business_types
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS business_types (
-                id SERIAL PRIMARY KEY,
-                type_key VARCHAR(50) NOT NULL UNIQUE,
-                type_name VARCHAR(100) NOT NULL,
-                icon VARCHAR(10),
-                description TEXT,
-                booking_mode VARCHAR(20) DEFAULT 'services',
-                required_fields JSONB,
-                default_services JSONB,
-                widget_config JSONB,
-                is_active BOOLEAN DEFAULT TRUE,
-                display_order INT DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Insertar tipos de negocio
-        const types = [
-            ['salon', 'Peluquería / Salón', '💇', 'Cortes, tintes, tratamientos', 'services', 1],
-            ['clinic', 'Clínica / Consultorio', '🏥', 'Consultas médicas', 'services', 2],
-            ['restaurant', 'Restaurante / Bar', '🍽️', 'Reservas de mesas', 'tables', 3],
-            ['nutrition', 'Centro de Nutrición', '🥗', 'Consultas nutricionales', 'services', 4],
-            ['gym', 'Gimnasio', '💪', 'Clases y entrenamientos', 'classes', 5],
-            ['spa', 'Spa / Bienestar', '🧖', 'Masajes, tratamientos', 'services', 6],
-            ['lawyer', 'Despacho de Abogados', '⚖️', 'Consultas legales', 'services', 7],
-            ['other', 'Otro', '🎯', 'Configúralo a tu medida', 'simple', 8]
-        ];
-        for (const t of types) {
-            await db.query(`INSERT INTO business_types (type_key, type_name, icon, description, booking_mode, display_order) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (type_key) DO NOTHING`, t);
+        // Verificar si existe la tabla business_types
+        const tables = await db.query("SHOW TABLES LIKE 'business_types'");
+        if (tables.length === 0) {
+            console.log('⚠️ Tabla business_types no existe. Ejecuta: npm run setup');
+        } else {
+            console.log('✅ Tablas verificadas');
         }
-
-        // Crear tabla professionals
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS professionals (
-                id SERIAL PRIMARY KEY,
-                business_id INT NOT NULL,
-                name VARCHAR(100) NOT NULL,
-                email VARCHAR(255),
-                phone VARCHAR(20),
-                specialization VARCHAR(255),
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        console.log('✅ Migraciones completadas');
     } catch (err) {
-        console.error('⚠️ Error en migraciones:', err.message);
+        console.error('⚠️ Error verificando tablas:', err.message);
     }
 }
 
