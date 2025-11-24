@@ -61,6 +61,19 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Debug de variables de entorno (solo en producción)
+app.get('/api/debug/env', (req, res) => {
+    res.json({
+        hasMySQL_URL: !!process.env.MYSQL_URL,
+        hasMYSQLURL: !!process.env.MYSQLURL,
+        hasDB_HOST: !!process.env.DB_HOST,
+        hasMYSQLHOST: !!process.env.MYSQLHOST,
+        NODE_ENV: process.env.NODE_ENV,
+        DB_HOST_value: process.env.DB_HOST || 'not set',
+        MYSQLHOST_value: process.env.MYSQLHOST || 'not set'
+    });
+});
+
 // ==================== RUTAS HTML ====================
 
 // Página principal
