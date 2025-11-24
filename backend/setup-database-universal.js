@@ -7,22 +7,26 @@ async function setupDatabase() {
     console.log('🚀 Iniciando configuración de base de datos...\n');
     console.log(`📦 Usando: ${usePostgres ? 'PostgreSQL' : 'MySQL'}\n`);
 
-    const db = require('../config/database');
-
     try {
+        const db = require('../config/database');
+
         // Verificar conexión
-        await db.testConnection();
+        const connected = await db.testConnection();
+        if (!connected) {
+            console.log('⚠️ No se pudo conectar a la BD, saltando setup');
+            return;
+        }
 
         if (usePostgres) {
             await setupPostgres(db);
         } else {
-            await setupMySQL(db);
+            console.log('ℹ️ MySQL: usando setup-database.js estándar');
         }
 
         console.log('\n✅ Setup completado exitosamente');
 
     } catch (error) {
-        console.error('❌ Error en setup:', error.message);
+        console.error('⚠️ Error en setup (no fatal):', error.message);
         // No lanzar error para que el servidor pueda iniciar
     }
 }
@@ -145,7 +149,15 @@ async function setupMySQL(db) {
     // El setup MySQL ya se ejecuta por sí solo
 }
 
-// Ejecutar setup
-setupDatabase();
+// Ejecutar setup y salir correctamente
+setupDatabase()
+    .then(() => {
+        console.log('Setup finalizado, iniciando servidor...');
+        process.exit(0);
+    })
+    .catch((err) => {
+        console.error('Error en setup:', err.message);
+        process.exit(0); // Salir con código 0 para que el servidor inicie
+    });
 
 module.exports = { setupDatabase };
