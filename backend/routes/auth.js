@@ -112,6 +112,265 @@ router.post('/api/auth/register', async (req, res) => {
     }
 });
 
+// ==================== REGISTRO DE NEGOCIO COMPLETO ====================
+
+/**
+ * POST /api/auth/register-business
+ * Registrar un nuevo negocio con su administrador
+ * Este es el endpoint principal para el flujo de registro público
+ */
+router.post('/api/auth/register-business', async (req, res) => {
+    try {
+        const {
+            // Datos del negocio
+            businessType,
+            businessName,
+            businessEmail,
+            businessPhone,
+            businessAddress,
+            businessWebsite,
+            // Datos del admin
+            adminName,
+            adminEmail,
+            adminPassword
+        } = req.body;
+
+        // Validaciones
+        if (!businessType || !businessName || !businessEmail) {
+            return res.status(400).json({
+                success: false,
+                error: 'Nombre del negocio, email y tipo son obligatorios'
+            });
+        }
+
+        if (!adminName || !adminEmail || !adminPassword) {
+            return res.status(400).json({
+                success: false,
+                error: 'Nombre, email y contraseña del administrador son obligatorios'
+            });
+        }
+
+        // Validar formato de emails
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(businessEmail)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Formato de email del negocio inválido'
+            });
+        }
+        if (!emailRegex.test(adminEmail)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Formato de email del administrador inválido'
+            });
+        }
+
+        // Validar contraseña
+        if (adminPassword.length < 8) {
+            return res.status(400).json({
+                success: false,
+                error: 'La contraseña debe tener al menos 8 caracteres'
+            });
+        }
+
+        // Verificar si el email del negocio ya existe
+        const existingBusiness = await db.query(
+            'SELECT id FROM businesses WHERE email = ?',
+            [businessEmail]
+        );
+
+        if (existingBusiness.length > 0) {
+            return res.status(409).json({
+                success: false,
+                error: 'Ya existe un negocio con este email'
+            });
+        }
+
+        // Verificar si el email del admin ya existe
+        const existingUser = await db.query(
+            'SELECT id FROM admin_users WHERE email = ?',
+            [adminEmail]
+        );
+
+        if (existingUser.length > 0) {
+            return res.status(409).json({
+                success: false,
+                error: 'Ya existe una cuenta con este email de administrador'
+            });
+        }
+
+        // Obtener información del tipo de negocio
+        const businessTypes = await db.query(
+            'SELECT * FROM business_types WHERE type_key = ?',
+            [businessType]
+        );
+
+        const typeInfo = businessTypes.length > 0 ? businessTypes[0] : {
+            type_key: 'other',
+            type_name: 'Otro',
+            booking_mode: 'simple',
+            default_services: '[]'
+        };
+
+        // Generar slug único
+        const baseSlug = businessName
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+
+        let slug = baseSlug;
+        let slugCounter = 1;
+        while (true) {
+            const existingSlug = await db.query(
+                'SELECT id FROM businesses WHERE slug = ?',
+                [slug]
+            );
+            if (existingSlug.length === 0) break;
+            slug = `${baseSlug}-${slugCounter}`;
+            slugCounter++;
+        }
+
+        // Calcular fecha de fin de prueba (14 días)
+        const trialEnds = new Date();
+        trialEnds.setDate(trialEnds.getDate() + 14);
+
+        // Crear el negocio
+        const businessResult = await db.query(
+            `INSERT INTO businesses (
+                name, slug, type_key, type, email, phone, address, website,
+                subscription_status, trial_ends_at, onboarding_completed,
+                widget_settings, booking_settings
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'trial', ?, FALSE, ?, ?)`,
+            [
+                businessName,
+                slug,
+                typeInfo.type_key,
+                typeInfo.type_name,
+                businessEmail,
+                businessPhone || null,
+                businessAddress || null,
+                businessWebsite || null,
+                trialEnds,
+                JSON.stringify({
+                    primaryColor: '#3b82f6',
+                    secondaryColor: '#ef4444',
+                    language: 'es',
+                    showPrices: true,
+                    showDuration: true
+                }),
+                JSON.stringify({
+                    workDays: [1, 2, 3, 4, 5, 6],
+                    workHoursStart: '09:00',
+                    workHoursEnd: '20:00',
+                    slotDuration: 30,
+                    minAdvanceHours: 2,
+                    maxAdvanceDays: 30
+                })
+            ]
+        );
+
+        const businessId = businessResult.insertId;
+
+        // Hash de la contraseña
+        const passwordHash = await bcrypt.hash(adminPassword, 10);
+
+        // Crear usuario administrador
+        const userResult = await db.query(
+            `INSERT INTO admin_users (business_id, email, password_hash, full_name, role)
+             VALUES (?, ?, ?, ?, 'owner')`,
+            [businessId, adminEmail, passwordHash, adminName]
+        );
+
+        const userId = userResult.insertId;
+
+        // Crear servicios por defecto según el tipo de negocio
+        if (typeInfo.default_services) {
+            try {
+                const defaultServices = JSON.parse(typeInfo.default_services);
+                for (const service of defaultServices) {
+                    await db.query(
+                        `INSERT INTO services (business_id, name, duration, price, capacity, is_active)
+                         VALUES (?, ?, ?, ?, ?, TRUE)`,
+                        [
+                            businessId,
+                            service.name,
+                            service.duration || 30,
+                            service.price || 0,
+                            service.capacity || 1
+                        ]
+                    );
+                }
+            } catch (e) {
+                console.log('No se pudieron crear servicios por defecto:', e.message);
+            }
+        }
+
+        // Obtener datos del usuario creado
+        const [newUser] = await db.query(
+            `SELECT id, business_id, email, full_name, role, is_active, created_at
+             FROM admin_users WHERE id = ?`,
+            [userId]
+        );
+
+        // Obtener datos del negocio creado
+        const [newBusiness] = await db.query(
+            `SELECT id, name, slug, type_key, type, email, phone, address, website,
+                    subscription_status, trial_ends_at, onboarding_completed,
+                    widget_settings, booking_settings, created_at
+             FROM businesses WHERE id = ?`,
+            [businessId]
+        );
+
+        // Generar token
+        const token = generateToken(newUser);
+
+        res.status(201).json({
+            success: true,
+            message: 'Negocio y cuenta creados exitosamente',
+            token,
+            user: newUser,
+            business: newBusiness
+        });
+
+    } catch (error) {
+        console.error('Error en registro de negocio:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al crear el negocio. Por favor, inténtalo de nuevo.'
+        });
+    }
+});
+
+// ==================== OBTENER TIPOS DE NEGOCIO ====================
+
+/**
+ * GET /api/auth/business-types
+ * Obtener lista de tipos de negocio disponibles (público)
+ */
+router.get('/api/auth/business-types', async (req, res) => {
+    try {
+        const types = await db.query(
+            `SELECT type_key, type_name, icon, description, booking_mode
+             FROM business_types
+             WHERE is_active = TRUE
+             ORDER BY display_order ASC`
+        );
+
+        res.json({
+            success: true,
+            data: types
+        });
+    } catch (error) {
+        console.error('Error al obtener tipos de negocio:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener tipos de negocio'
+        });
+    }
+});
+
 // ==================== LOGIN ====================
 
 /**

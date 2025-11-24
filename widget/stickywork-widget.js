@@ -1,80 +1,111 @@
 /**
- * StickyWork Widget - Sistema de Reservas Embebible
- * Version: 1.0.0
- * Funciona en cualquier página web sin dependencias
+ * StickyWork Widget - Sistema de Reservas Embebible Adaptativo
+ * Version: 2.0.0
+ * Soporta diferentes tipos de negocio: servicios, restaurantes, clases
  */
 
 (function() {
     'use strict';
 
-    // Namespace global
     window.StickyWork = window.StickyWork || {};
 
-    // Configuración por defecto
+    // Configuracion por defecto
     const defaultConfig = {
         businessId: 1,
-        mode: 'embedded', // 'embedded' o 'modal'
-        apiUrl: '', // Si está vacío, funciona en modo demo
+        mode: 'embedded',
+        bookingMode: 'services', // 'services', 'tables', 'classes', 'simple'
+        apiUrl: '',
         primaryColor: '#3b82f6',
         secondaryColor: '#ef4444',
         language: 'es',
-        buttonText: '📅 Reserva tu Cita',
-        services: [
-            { name: 'Corte de pelo', price: '25€', duration: '30min' },
-            { name: 'Tinte', price: '45€', duration: '60min' },
-            { name: 'Manicura', price: '20€', duration: '45min' },
-            { name: 'Masaje', price: '50€', duration: '60min' }
-        ]
+        buttonText: 'Reserva tu Cita',
+        showPrices: true,
+        showDuration: true,
+        // Datos que se cargan del backend
+        services: [],
+        professionals: [],
+        zones: [],
+        classes: []
     };
 
     let config = {};
     let widgetContainer = null;
+    let businessConfig = null;
 
-    // Textos según idioma
+    // Traducciones
     const translations = {
         es: {
             title: 'Reserva tu Cita',
+            titleRestaurant: 'Reserva tu Mesa',
+            titleClass: 'Reserva tu Clase',
             name: 'Nombre completo',
             email: 'Email',
-            phone: 'Teléfono',
+            phone: 'Telefono',
             service: 'Servicio',
             selectService: 'Selecciona un servicio',
+            professional: 'Profesional',
+            selectProfessional: 'Cualquier profesional',
+            numPeople: 'Numero de personas',
+            zone: 'Zona preferida',
+            selectZone: 'Sin preferencia',
+            class: 'Clase',
+            selectClass: 'Selecciona una clase',
             date: 'Fecha',
             time: 'Hora',
             selectTime: 'Selecciona una hora',
+            notes: 'Notas adicionales',
+            notesPlaceholder: 'Alguna peticion especial...',
             submit: 'Reservar',
-            success: '¡Reserva Confirmada!',
-            successMessage: 'Recibirás un email de confirmación en breve',
+            success: 'Reserva Confirmada!',
+            successMessage: 'Recibiras un email de confirmacion en breve',
             newBooking: 'Nueva Reserva',
-            demoNote: '✨ Demo - En producción se guardará en tu base de datos'
+            demoNote: 'Demo - En produccion se guardara en tu base de datos',
+            loading: 'Cargando...',
+            error: 'Error al cargar. Intentalo de nuevo.',
+            people: 'personas',
+            person: 'persona',
+            minutes: 'min',
+            spots: 'plazas'
         },
         en: {
             title: 'Book Your Appointment',
+            titleRestaurant: 'Book Your Table',
+            titleClass: 'Book Your Class',
             name: 'Full name',
             email: 'Email',
             phone: 'Phone',
             service: 'Service',
             selectService: 'Select a service',
+            professional: 'Professional',
+            selectProfessional: 'Any professional',
+            numPeople: 'Number of guests',
+            zone: 'Preferred area',
+            selectZone: 'No preference',
+            class: 'Class',
+            selectClass: 'Select a class',
             date: 'Date',
             time: 'Time',
             selectTime: 'Select a time',
+            notes: 'Additional notes',
+            notesPlaceholder: 'Any special requests...',
             submit: 'Book Now',
             success: 'Booking Confirmed!',
             successMessage: 'You will receive a confirmation email shortly',
             newBooking: 'New Booking',
-            demoNote: '✨ Demo - In production it will save to your database'
+            demoNote: 'Demo - In production it will save to your database',
+            loading: 'Loading...',
+            error: 'Error loading. Please try again.',
+            people: 'guests',
+            person: 'guest',
+            minutes: 'min',
+            spots: 'spots'
         }
     };
 
-    // Función para obtener el tema actual (light/dark)
-    function getCurrentTheme() {
-        const htmlElement = document.documentElement;
-        return htmlElement.classList.contains('dark-mode') ? 'dark' : 'light';
-    }
-
-    // Colores CSS adaptativos según tema
+    // Obtener colores del tema
     function getThemeColors() {
-        const isDark = getCurrentTheme() === 'dark';
+        const htmlElement = document.documentElement;
+        const isDark = htmlElement.classList.contains('dark-mode');
         return {
             bgPrimary: isDark ? '#1e293b' : '#ffffff',
             bgSecondary: isDark ? '#334155' : '#f8fafc',
@@ -84,7 +115,7 @@
         };
     }
 
-    // Inyectar estilos CSS en el documento
+    // Inyectar estilos
     function injectStyles() {
         if (document.getElementById('stickywork-styles')) return;
 
@@ -100,13 +131,8 @@
                 padding: 2rem;
                 border-radius: 15px;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: all 0.3s ease;
             }
-
-            .stickywork-widget * {
-                box-sizing: border-box;
-            }
-
+            .stickywork-widget * { box-sizing: border-box; }
             .stickywork-title {
                 text-align: center;
                 color: ${config.primaryColor};
@@ -114,18 +140,12 @@
                 font-size: 1.8rem;
                 font-weight: 700;
             }
-
             .stickywork-form {
                 display: flex;
                 flex-direction: column;
                 gap: 1rem;
             }
-
-            .stickywork-field {
-                display: flex;
-                flex-direction: column;
-            }
-
+            .stickywork-field { display: flex; flex-direction: column; }
             .stickywork-label {
                 display: block;
                 margin-bottom: 0.5rem;
@@ -133,9 +153,9 @@
                 font-weight: 500;
                 font-size: 0.95rem;
             }
-
             .stickywork-input,
-            .stickywork-select {
+            .stickywork-select,
+            .stickywork-textarea {
                 width: 100%;
                 padding: 0.75rem;
                 border: 2px solid ${colors.borderColor};
@@ -145,20 +165,22 @@
                 color: ${colors.textPrimary};
                 transition: all 0.3s ease;
             }
-
+            .stickywork-textarea {
+                resize: vertical;
+                min-height: 80px;
+            }
             .stickywork-input:focus,
-            .stickywork-select:focus {
+            .stickywork-select:focus,
+            .stickywork-textarea:focus {
                 outline: none;
                 border-color: ${config.primaryColor};
                 box-shadow: 0 0 0 3px ${config.primaryColor}20;
             }
-
             .stickywork-row {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 1rem;
             }
-
             .stickywork-button {
                 background: linear-gradient(135deg, ${config.primaryColor}, ${config.secondaryColor});
                 color: white;
@@ -171,42 +193,73 @@
                 transition: all 0.3s ease;
                 margin-top: 1rem;
             }
-
             .stickywork-button:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 6px 20px ${config.primaryColor}40;
             }
-
             .stickywork-button:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
                 transform: none;
             }
-
             .stickywork-note {
                 text-align: center;
                 color: ${colors.textSecondary};
                 margin-top: 1rem;
                 font-size: 0.9rem;
             }
-
+            .stickywork-service-option {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .stickywork-service-details {
+                font-size: 0.85rem;
+                color: ${colors.textSecondary};
+            }
+            .stickywork-people-selector {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            .stickywork-people-btn {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: 2px solid ${config.primaryColor};
+                background: transparent;
+                color: ${config.primaryColor};
+                font-size: 1.5rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .stickywork-people-btn:hover {
+                background: ${config.primaryColor};
+                color: white;
+            }
+            .stickywork-people-count {
+                font-size: 1.5rem;
+                font-weight: 600;
+                min-width: 60px;
+                text-align: center;
+                color: ${colors.textPrimary};
+            }
             .stickywork-success {
                 text-align: center;
                 padding: 3rem 2rem;
             }
-
             .stickywork-success-icon {
                 font-size: 4rem;
                 margin-bottom: 1rem;
             }
-
             .stickywork-success-title {
                 color: ${config.primaryColor};
                 margin-bottom: 1rem;
                 font-size: 1.8rem;
                 font-weight: 700;
             }
-
             .stickywork-success-details {
                 background: ${colors.bgSecondary};
                 padding: 1.5rem;
@@ -214,19 +267,19 @@
                 margin-bottom: 1.5rem;
                 text-align: left;
             }
-
             .stickywork-success-detail {
                 margin: 0.5rem 0;
                 color: ${colors.textPrimary};
-                font-size: 1rem;
             }
-
             .stickywork-success-message {
                 color: ${colors.textSecondary};
                 margin-bottom: 1.5rem;
             }
-
-            /* Modal styles */
+            .stickywork-loading {
+                text-align: center;
+                padding: 3rem;
+                color: ${colors.textSecondary};
+            }
             .stickywork-modal-overlay {
                 position: fixed;
                 top: 0;
@@ -235,9 +288,8 @@
                 height: 100%;
                 background: rgba(0, 0, 0, 0.7);
                 z-index: 9998;
-                animation: fadeIn 0.3s ease;
+                animation: stickywork-fadeIn 0.3s ease;
             }
-
             .stickywork-modal {
                 position: fixed;
                 top: 50%;
@@ -252,9 +304,8 @@
                 max-height: 90vh;
                 overflow-y: auto;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-                animation: slideUp 0.3s ease;
+                animation: stickywork-slideUp 0.3s ease;
             }
-
             .stickywork-close-btn {
                 position: absolute;
                 top: 1rem;
@@ -268,54 +319,172 @@
                 cursor: pointer;
                 font-size: 1.2rem;
                 font-weight: bold;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.3s ease;
             }
-
-            .stickywork-close-btn:hover {
-                transform: rotate(90deg);
-            }
-
-            @keyframes fadeIn {
+            @keyframes stickywork-fadeIn {
                 from { opacity: 0; }
                 to { opacity: 1; }
             }
-
-            @keyframes slideUp {
+            @keyframes stickywork-slideUp {
                 from { opacity: 0; transform: translate(-50%, -45%); }
                 to { opacity: 1; transform: translate(-50%, -50%); }
             }
-
             @media (max-width: 600px) {
-                .stickywork-row {
-                    grid-template-columns: 1fr;
-                }
-
-                .stickywork-widget {
-                    padding: 1.5rem;
-                }
-
-                .stickywork-modal {
-                    width: 95%;
-                    padding: 1.5rem;
-                }
+                .stickywork-row { grid-template-columns: 1fr; }
+                .stickywork-widget { padding: 1.5rem; }
+                .stickywork-modal { width: 95%; padding: 1.5rem; }
             }
         `;
         document.head.appendChild(style);
     }
 
-    // Generar horarios disponibles
+    // Cargar configuracion del negocio
+    async function loadBusinessConfig() {
+        if (!config.apiUrl || !config.businessId) return null;
+
+        try {
+            const response = await fetch(`${config.apiUrl}/api/widget/${config.businessId}`);
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.log('StickyWork: Usando configuracion local');
+        }
+        return null;
+    }
+
+    // Generar horarios
     function generateTimeSlots() {
         const slots = [];
-        for (let hour = 9; hour <= 18; hour++) {
+        const start = businessConfig?.workHoursStart || '09:00';
+        const end = businessConfig?.workHoursEnd || '20:00';
+        const startHour = parseInt(start.split(':')[0]);
+        const endHour = parseInt(end.split(':')[0]);
+
+        for (let hour = startHour; hour <= endHour; hour++) {
             slots.push(`${hour.toString().padStart(2, '0')}:00`);
-            if (hour < 18) {
+            if (hour < endHour) {
                 slots.push(`${hour.toString().padStart(2, '0')}:30`);
             }
         }
         return slots;
+    }
+
+    // Obtener titulo segun modo
+    function getTitle() {
+        const t = translations[config.language];
+        switch (config.bookingMode) {
+            case 'tables': return t.titleRestaurant;
+            case 'classes': return t.titleClass;
+            default: return t.title;
+        }
+    }
+
+    // Crear campos segun modo de reserva
+    function createModeSpecificFields() {
+        const t = translations[config.language];
+
+        switch (config.bookingMode) {
+            case 'tables':
+                return createRestaurantFields(t);
+            case 'classes':
+                return createClassFields(t);
+            case 'services':
+            default:
+                return createServiceFields(t);
+        }
+    }
+
+    // Campos para servicios (peluqueria, clinica, etc.)
+    function createServiceFields(t) {
+        const serviceOptions = config.services.length > 0
+            ? config.services.map(s => {
+                const details = [];
+                if (config.showDuration && s.duration) details.push(`${s.duration}${t.minutes}`);
+                if (config.showPrices && s.price) details.push(`${s.price}€`);
+                const detailsStr = details.length > 0 ? ` - ${details.join(' / ')}` : '';
+                return `<option value="${s.id || s.name}">${s.name}${detailsStr}</option>`;
+            }).join('')
+            : `
+                <option value="Consulta">Consulta general - 30${t.minutes}</option>
+                <option value="Servicio">Servicio estandar - 45${t.minutes}</option>
+            `;
+
+        const professionalField = config.professionals && config.professionals.length > 0
+            ? `
+                <div class="stickywork-field">
+                    <label class="stickywork-label">${t.professional}</label>
+                    <select class="stickywork-select" name="professional">
+                        <option value="">${t.selectProfessional}</option>
+                        ${config.professionals.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                    </select>
+                </div>
+            `
+            : '';
+
+        return `
+            <div class="stickywork-field">
+                <label class="stickywork-label">${t.service}</label>
+                <select class="stickywork-select" name="service" required>
+                    <option value="">${t.selectService}</option>
+                    ${serviceOptions}
+                </select>
+            </div>
+            ${professionalField}
+        `;
+    }
+
+    // Campos para restaurantes
+    function createRestaurantFields(t) {
+        const zoneOptions = config.zones && config.zones.length > 0
+            ? config.zones.map(z => `<option value="${z.id || z.name}">${z.name}</option>`).join('')
+            : `
+                <option value="interior">Interior</option>
+                <option value="terraza">Terraza</option>
+            `;
+
+        return `
+            <div class="stickywork-field">
+                <label class="stickywork-label">${t.numPeople}</label>
+                <div class="stickywork-people-selector">
+                    <button type="button" class="stickywork-people-btn" onclick="StickyWork.decrementPeople()">-</button>
+                    <span class="stickywork-people-count" id="stickywork-people-count">2</span>
+                    <button type="button" class="stickywork-people-btn" onclick="StickyWork.incrementPeople()">+</button>
+                    <span style="color: var(--text-secondary);">${t.people}</span>
+                </div>
+                <input type="hidden" name="numPeople" id="stickywork-num-people" value="2">
+            </div>
+            <div class="stickywork-field">
+                <label class="stickywork-label">${t.zone}</label>
+                <select class="stickywork-select" name="zone">
+                    <option value="">${t.selectZone}</option>
+                    ${zoneOptions}
+                </select>
+            </div>
+        `;
+    }
+
+    // Campos para clases (gimnasio)
+    function createClassFields(t) {
+        const classOptions = config.classes && config.classes.length > 0
+            ? config.classes.map(c => {
+                const spots = c.capacity ? ` (${c.capacity} ${t.spots})` : '';
+                return `<option value="${c.id || c.name}">${c.name}${spots}</option>`;
+            }).join('')
+            : `
+                <option value="yoga">Yoga - 60${t.minutes}</option>
+                <option value="spinning">Spinning - 45${t.minutes}</option>
+                <option value="pilates">Pilates - 50${t.minutes}</option>
+            `;
+
+        return `
+            <div class="stickywork-field">
+                <label class="stickywork-label">${t.class}</label>
+                <select class="stickywork-select" name="class" required>
+                    <option value="">${t.selectClass}</option>
+                    ${classOptions}
+                </select>
+            </div>
+        `;
     }
 
     // Crear HTML del formulario
@@ -323,43 +492,32 @@
         const t = translations[config.language];
         const timeSlots = generateTimeSlots();
         const isDemoMode = !config.apiUrl;
+        const showNotes = config.bookingMode === 'services';
 
         return `
             <div class="stickywork-widget">
-                <h3 class="stickywork-title">${t.title}</h3>
-
+                <h3 class="stickywork-title">${getTitle()}</h3>
                 <form class="stickywork-form" id="stickywork-form">
-                    <div class="stickywork-field">
-                        <label class="stickywork-label">${t.name}</label>
-                        <input type="text" class="stickywork-input" name="name" placeholder="${t.name}" required>
+                    <div class="stickywork-row">
+                        <div class="stickywork-field">
+                            <label class="stickywork-label">${t.name}</label>
+                            <input type="text" class="stickywork-input" name="name" placeholder="${t.name}" required>
+                        </div>
+                        <div class="stickywork-field">
+                            <label class="stickywork-label">${t.phone}</label>
+                            <input type="tel" class="stickywork-input" name="phone" placeholder="+34 600 000 000" required>
+                        </div>
                     </div>
-
                     <div class="stickywork-field">
                         <label class="stickywork-label">${t.email}</label>
                         <input type="email" class="stickywork-input" name="email" placeholder="${t.email}" required>
                     </div>
-
-                    <div class="stickywork-field">
-                        <label class="stickywork-label">${t.phone}</label>
-                        <input type="tel" class="stickywork-input" name="phone" placeholder="+34 600 000 000">
-                    </div>
-
-                    <div class="stickywork-field">
-                        <label class="stickywork-label">${t.service}</label>
-                        <select class="stickywork-select" name="service" required>
-                            <option value="">${t.selectService}</option>
-                            ${config.services.map(service =>
-                                `<option value="${service.name}">${service.name} - ${service.price}</option>`
-                            ).join('')}
-                        </select>
-                    </div>
-
+                    ${createModeSpecificFields()}
                     <div class="stickywork-row">
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.date}</label>
-                            <input type="date" class="stickywork-input" name="date" required>
+                            <input type="date" class="stickywork-input" name="date" required min="${new Date().toISOString().split('T')[0]}">
                         </div>
-
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.time}</label>
                             <select class="stickywork-select" name="time" required>
@@ -368,64 +526,77 @@
                             </select>
                         </div>
                     </div>
-
+                    ${showNotes ? `
+                        <div class="stickywork-field">
+                            <label class="stickywork-label">${t.notes}</label>
+                            <textarea class="stickywork-textarea" name="notes" placeholder="${t.notesPlaceholder}"></textarea>
+                        </div>
+                    ` : ''}
                     <button type="submit" class="stickywork-button">${t.submit}</button>
-
                     ${isDemoMode ? `<p class="stickywork-note">${t.demoNote}</p>` : ''}
                 </form>
             </div>
         `;
     }
 
-    // Crear HTML de confirmación
+    // Crear HTML de confirmacion
     function createSuccessHTML(formData) {
         const t = translations[config.language];
+        let details = `
+            <p class="stickywork-success-detail"><strong>${t.name}:</strong> ${formData.name}</p>
+            <p class="stickywork-success-detail"><strong>${t.email}:</strong> ${formData.email}</p>
+            ${formData.phone ? `<p class="stickywork-success-detail"><strong>${t.phone}:</strong> ${formData.phone}</p>` : ''}
+        `;
+
+        if (config.bookingMode === 'tables') {
+            details += `
+                <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
+                ${formData.zone ? `<p class="stickywork-success-detail"><strong>${t.zone}:</strong> ${formData.zone}</p>` : ''}
+            `;
+        } else if (config.bookingMode === 'classes') {
+            details += `<p class="stickywork-success-detail"><strong>${t.class}:</strong> ${formData.class}</p>`;
+        } else {
+            details += `<p class="stickywork-success-detail"><strong>${t.service}:</strong> ${formData.service}</p>`;
+            if (formData.professional) {
+                details += `<p class="stickywork-success-detail"><strong>${t.professional}:</strong> ${formData.professional}</p>`;
+            }
+        }
+
+        details += `
+            <p class="stickywork-success-detail"><strong>${t.date}:</strong> ${formData.date}</p>
+            <p class="stickywork-success-detail"><strong>${t.time}:</strong> ${formData.time}</p>
+        `;
 
         return `
             <div class="stickywork-widget">
                 <div class="stickywork-success">
                     <div class="stickywork-success-icon">✓</div>
                     <h3 class="stickywork-success-title">${t.success}</h3>
-
-                    <div class="stickywork-success-details">
-                        <p class="stickywork-success-detail"><strong>${t.name}:</strong> ${formData.name}</p>
-                        <p class="stickywork-success-detail"><strong>${t.email}:</strong> ${formData.email}</p>
-                        ${formData.phone ? `<p class="stickywork-success-detail"><strong>${t.phone}:</strong> ${formData.phone}</p>` : ''}
-                        <p class="stickywork-success-detail"><strong>${t.service}:</strong> ${formData.service}</p>
-                        <p class="stickywork-success-detail"><strong>${t.date}:</strong> ${formData.date}</p>
-                        <p class="stickywork-success-detail"><strong>${t.time}:</strong> ${formData.time}</p>
-                    </div>
-
+                    <div class="stickywork-success-details">${details}</div>
                     <p class="stickywork-success-message">${t.successMessage}</p>
-
                     <button onclick="StickyWork.reset()" class="stickywork-button">${t.newBooking}</button>
                 </div>
             </div>
         `;
     }
 
-    // Enviar reserva al backend
+    // Enviar reserva
     async function submitBooking(formData) {
         if (!config.apiUrl) {
-            // Modo demo: simular éxito después de 1 segundo
             return new Promise(resolve => {
                 setTimeout(() => resolve({ success: true }), 1000);
             });
         }
 
-        // Modo producción: enviar al backend
         try {
             const response = await fetch(`${config.apiUrl}/api/bookings`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
                     business_id: config.businessId
                 })
             });
-
             return await response.json();
         } catch (error) {
             console.error('Error al enviar reserva:', error);
@@ -433,86 +604,106 @@
         }
     }
 
-    // Manejar envío del formulario
+    // Manejar submit
     function handleSubmit(e) {
         e.preventDefault();
-
         const form = e.target;
+
         const formData = {
             name: form.name.value,
             email: form.email.value,
-            phone: form.phone.value || '',
-            service: form.service.value,
+            phone: form.phone?.value || '',
             date: form.date.value,
             time: form.time.value
         };
 
-        // Deshabilitar botón
+        // Campos segun modo
+        if (config.bookingMode === 'tables') {
+            formData.numPeople = parseInt(form.numPeople.value) || 2;
+            formData.zone = form.zone?.value || '';
+        } else if (config.bookingMode === 'classes') {
+            formData.class = form.class?.value || '';
+        } else {
+            formData.service = form.service?.value || '';
+            formData.professional = form.professional?.value || '';
+            formData.notes = form.notes?.value || '';
+        }
+
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
-        submitBtn.textContent = '⏳ Enviando...';
+        submitBtn.textContent = 'Enviando...';
         submitBtn.disabled = true;
 
-        // Enviar
         submitBooking(formData)
             .then(response => {
                 if (response.success !== false) {
-                    // Mostrar confirmación
                     widgetContainer.innerHTML = createSuccessHTML(formData);
                 } else {
-                    alert('Error al crear la reserva. Por favor, inténtalo de nuevo.');
+                    alert('Error al crear la reserva. Por favor, intentalo de nuevo.');
                     submitBtn.textContent = originalText;
                     submitBtn.disabled = false;
                 }
             })
-            .catch(error => {
-                alert('Error al enviar la reserva. Por favor, verifica tu conexión.');
+            .catch(() => {
+                alert('Error al enviar la reserva. Por favor, verifica tu conexion.');
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
             });
     }
 
-    // Renderizar widget en modo embedded
+    // Contador de personas
+    let peopleCount = 2;
+
+    window.StickyWork.incrementPeople = function() {
+        if (peopleCount < 20) {
+            peopleCount++;
+            updatePeopleCount();
+        }
+    };
+
+    window.StickyWork.decrementPeople = function() {
+        if (peopleCount > 1) {
+            peopleCount--;
+            updatePeopleCount();
+        }
+    };
+
+    function updatePeopleCount() {
+        const countEl = document.getElementById('stickywork-people-count');
+        const inputEl = document.getElementById('stickywork-num-people');
+        if (countEl) countEl.textContent = peopleCount;
+        if (inputEl) inputEl.value = peopleCount;
+    }
+
+    // Renderizar embedded
     function renderEmbedded() {
         widgetContainer = document.getElementById('stickywork-widget');
-
         if (!widgetContainer) {
-            console.error('StickyWork: No se encontró el contenedor #stickywork-widget');
+            console.error('StickyWork: No se encontro el contenedor #stickywork-widget');
             return;
         }
 
         widgetContainer.innerHTML = createFormHTML();
-
-        // Agregar event listener al formulario
         const form = document.getElementById('stickywork-form');
-        if (form) {
-            form.addEventListener('submit', handleSubmit);
-        }
+        if (form) form.addEventListener('submit', handleSubmit);
     }
 
-    // Renderizar widget en modo modal
+    // Renderizar modal
     function renderModal() {
-        // Buscar el botón trigger
         const triggerBtn = document.getElementById('stickywork-btn');
-
         if (!triggerBtn) {
-            console.error('StickyWork: No se encontró el botón #stickywork-btn');
+            console.error('StickyWork: No se encontro el boton #stickywork-btn');
             return;
         }
-
-        // Agregar evento al botón
         triggerBtn.addEventListener('click', openModal);
     }
 
-    // Abrir modal
     function openModal() {
-        // Crear overlay
         const overlay = document.createElement('div');
         overlay.className = 'stickywork-modal-overlay';
         overlay.id = 'stickywork-overlay';
         overlay.onclick = closeModal;
 
-        // Crear modal
         const modal = document.createElement('div');
         modal.className = 'stickywork-modal';
         modal.id = 'stickywork-modal';
@@ -521,44 +712,44 @@
             ${createFormHTML()}
         `;
 
-        // Agregar al DOM
         document.body.appendChild(overlay);
         document.body.appendChild(modal);
 
-        // Event listener para el formulario en el modal
         const form = modal.querySelector('#stickywork-form');
-        if (form) {
-            form.addEventListener('submit', handleSubmit);
-        }
-
+        if (form) form.addEventListener('submit', handleSubmit);
         widgetContainer = modal.querySelector('.stickywork-widget');
     }
 
-    // Cerrar modal
     function closeModal() {
         const overlay = document.getElementById('stickywork-overlay');
         const modal = document.getElementById('stickywork-modal');
-
         if (overlay) overlay.remove();
         if (modal) modal.remove();
     }
 
-    // Reiniciar widget
     function reset() {
+        peopleCount = 2;
         if (config.mode === 'embedded') {
             renderEmbedded();
         } else {
             widgetContainer.innerHTML = createFormHTML();
             const form = widgetContainer.querySelector('#stickywork-form');
-            if (form) {
-                form.addEventListener('submit', handleSubmit);
-            }
+            if (form) form.addEventListener('submit', handleSubmit);
         }
     }
 
-    // Función de inicialización pública
-    window.StickyWork.init = function(userConfig) {
+    // Inicializacion
+    window.StickyWork.init = async function(userConfig) {
         config = { ...defaultConfig, ...userConfig };
+
+        // Cargar configuracion del backend si hay API
+        if (config.apiUrl && config.businessId) {
+            const loaded = await loadBusinessConfig();
+            if (loaded) {
+                businessConfig = loaded;
+                config = { ...config, ...loaded };
+            }
+        }
 
         injectStyles();
 
@@ -566,12 +757,9 @@
             renderEmbedded();
         } else if (config.mode === 'modal') {
             renderModal();
-        } else {
-            console.error('StickyWork: Modo no válido. Usa "embedded" o "modal"');
         }
     };
 
-    // Funciones públicas adicionales
     window.StickyWork.closeModal = closeModal;
     window.StickyWork.reset = reset;
 

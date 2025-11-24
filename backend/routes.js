@@ -709,6 +709,277 @@ router.delete('/api/contact/:id', requireAuth, async (req, res) => {
     }
 });
 
+// ==================== WIDGET - CONFIGURACIÓN PÚBLICA ====================
+
+/**
+ * GET /api/widget/:businessId
+ * Obtener configuración completa del widget para un negocio (público)
+ * El widget usa este endpoint para cargar servicios, profesionales, etc.
+ */
+router.get('/api/widget/:businessId', async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        // Obtener negocio
+        const businesses = await db.query(
+            `SELECT id, name, type_key, type, email, phone, address,
+                    widget_settings, booking_settings
+             FROM businesses WHERE id = ?`,
+            [businessId]
+        );
+
+        if (businesses.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Negocio no encontrado'
+            });
+        }
+
+        const business = businesses[0];
+
+        // Parsear configuraciones JSON
+        let widgetSettings = {};
+        let bookingSettings = {};
+        try {
+            widgetSettings = business.widget_settings ? JSON.parse(business.widget_settings) : {};
+            bookingSettings = business.booking_settings ? JSON.parse(business.booking_settings) : {};
+        } catch (e) {
+            console.log('Error parseando settings:', e);
+        }
+
+        // Obtener tipo de negocio para el booking_mode
+        const businessTypes = await db.query(
+            'SELECT booking_mode FROM business_types WHERE type_key = ?',
+            [business.type_key]
+        );
+        const bookingMode = businessTypes.length > 0 ? businessTypes[0].booking_mode : 'services';
+
+        // Obtener servicios activos
+        const services = await db.query(
+            `SELECT id, name, description, duration, price, capacity
+             FROM services WHERE business_id = ? AND is_active = TRUE
+             ORDER BY display_order, name`,
+            [businessId]
+        );
+
+        // Obtener profesionales activos
+        const professionals = await db.query(
+            `SELECT id, name, role
+             FROM professionals WHERE business_id = ? AND is_active = TRUE
+             ORDER BY display_order, name`,
+            [businessId]
+        );
+
+        // Para restaurantes, los servicios actúan como zonas/mesas
+        const zones = bookingMode === 'tables' ? services.map(s => ({
+            id: s.id,
+            name: s.name,
+            capacity: s.capacity
+        })) : [];
+
+        // Para gimnasios, los servicios actúan como clases
+        const classes = bookingMode === 'classes' ? services.map(s => ({
+            id: s.id,
+            name: s.name,
+            duration: s.duration,
+            capacity: s.capacity
+        })) : [];
+
+        res.json({
+            success: true,
+            businessId: business.id,
+            businessName: business.name,
+            bookingMode,
+            // Configuración del widget
+            primaryColor: widgetSettings.primaryColor || '#3b82f6',
+            secondaryColor: widgetSettings.secondaryColor || '#ef4444',
+            language: widgetSettings.language || 'es',
+            showPrices: widgetSettings.showPrices !== false,
+            showDuration: widgetSettings.showDuration !== false,
+            // Configuración de horarios
+            workHoursStart: bookingSettings.workHoursStart || '09:00',
+            workHoursEnd: bookingSettings.workHoursEnd || '20:00',
+            workDays: bookingSettings.workDays || [1, 2, 3, 4, 5, 6],
+            slotDuration: bookingSettings.slotDuration || 30,
+            // Datos
+            services: bookingMode === 'services' ? services : [],
+            professionals,
+            zones,
+            classes
+        });
+    } catch (error) {
+        console.error('Error obteniendo config del widget:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener configuración del widget'
+        });
+    }
+});
+
+// ==================== ONBOARDING ====================
+
+/**
+ * POST /api/business/:businessId/complete-onboarding
+ * Marcar el onboarding como completado
+ */
+router.post('/api/business/:businessId/complete-onboarding', requireAuth, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (req.user.businessId != businessId) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        await db.query(
+            'UPDATE businesses SET onboarding_completed = TRUE WHERE id = ?',
+            [businessId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Onboarding completado'
+        });
+    } catch (error) {
+        console.error('Error completando onboarding:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al completar onboarding'
+        });
+    }
+});
+
+/**
+ * PUT /api/business/:businessId/settings
+ * Actualizar configuración del negocio (widget_settings, booking_settings)
+ */
+router.put('/api/business/:businessId/settings', requireAuth, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { widgetSettings, bookingSettings } = req.body;
+
+        // Verificar acceso
+        if (req.user.businessId != businessId) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        const updates = [];
+        const params = [];
+
+        if (widgetSettings) {
+            updates.push('widget_settings = ?');
+            params.push(JSON.stringify(widgetSettings));
+        }
+
+        if (bookingSettings) {
+            updates.push('booking_settings = ?');
+            params.push(JSON.stringify(bookingSettings));
+        }
+
+        if (updates.length > 0) {
+            params.push(businessId);
+            await db.query(
+                `UPDATE businesses SET ${updates.join(', ')} WHERE id = ?`,
+                params
+            );
+        }
+
+        res.json({
+            success: true,
+            message: 'Configuración actualizada'
+        });
+    } catch (error) {
+        console.error('Error actualizando settings:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar configuración'
+        });
+    }
+});
+
+// ==================== PROFESIONALES ====================
+
+/**
+ * GET /api/professionals/:businessId
+ * Obtener profesionales de un negocio
+ */
+router.get('/api/professionals/:businessId', async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        const professionals = await db.query(
+            `SELECT id, name, email, phone, role, avatar_url, bio, services, schedule, is_active
+             FROM professionals WHERE business_id = ?
+             ORDER BY display_order, name`,
+            [businessId]
+        );
+
+        res.json({
+            success: true,
+            data: professionals
+        });
+    } catch (error) {
+        console.error('Error obteniendo profesionales:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener profesionales'
+        });
+    }
+});
+
+/**
+ * POST /api/professionals
+ * Crear un nuevo profesional
+ */
+router.post('/api/professionals', requireAuth, async (req, res) => {
+    try {
+        const { businessId, name, email, phone, role, bio } = req.body;
+
+        if (!businessId || !name) {
+            return res.status(400).json({
+                success: false,
+                error: 'businessId y name son obligatorios'
+            });
+        }
+
+        // Verificar acceso
+        if (req.user.businessId != businessId) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        const result = await db.query(
+            `INSERT INTO professionals (business_id, name, email, phone, role, bio)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [businessId, name, email || null, phone || null, role || null, bio || null]
+        );
+
+        const professional = await db.query(
+            'SELECT * FROM professionals WHERE id = ?',
+            [result.insertId]
+        );
+
+        res.status(201).json({
+            success: true,
+            data: professional[0]
+        });
+    } catch (error) {
+        console.error('Error creando profesional:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al crear profesional'
+        });
+    }
+});
+
 // ==================== SETUP TEMPORAL (Solo para inicialización) ====================
 
 // Endpoint temporal para inicializar la base de datos
