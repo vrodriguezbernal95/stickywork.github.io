@@ -18,7 +18,9 @@
       "Bash(git commit:*)",
       "WebFetch(domain:stickywork-github-io.onrender.com)",
       "Bash(curl:*)",
-      "Bash(taskkill //F //PID 12252)"
+      "Bash(taskkill //F //PID 12252)",
+      "Bash(node setup-production.js:*)",
+      "Bash(node -e \"\nconst mysql = require(''mysql2/promise'');\nasync function test() {\n    const conn = await mysql.createConnection(''mysql://root:KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ@switchback.proxy.rlwy.net:26447/railway'');\n    const [rows] = await conn.query(''SELECT COUNT(*) as count FROM business_types'');\n    console.log(''Tipos de negocio en Railway:'', rows[0].count);\n    await conn.end();\n}\ntest();\n\")"
     ],
     "deny": [],
     "ask": []

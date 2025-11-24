@@ -5,18 +5,25 @@ require('dotenv').config();
 // Prioriza MYSQL_URL (Railway) sobre variables individuales
 let dbConfig;
 
-if (process.env.MYSQL_URL) {
+if (process.env.MYSQL_URL || process.env.MYSQLURL) {
     // Usar URL de conexión directa (Railway)
-    console.log('📦 Usando MYSQL_URL para conexión');
-    dbConfig = process.env.MYSQL_URL;
+    const url = process.env.MYSQL_URL || process.env.MYSQLURL;
+    console.log('📦 Conectando vía MYSQL_URL');
+    dbConfig = {
+        uri: url,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0
+    };
 } else {
     // Usar variables individuales (desarrollo local)
+    console.log('📦 Conectando vía variables individuales');
     dbConfig = {
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'stickywork',
-        port: parseInt(process.env.DB_PORT) || 3306,
+        host: process.env.DB_HOST || process.env.MYSQLHOST || 'localhost',
+        user: process.env.DB_USER || process.env.MYSQLUSER || 'root',
+        password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || '',
+        database: process.env.DB_NAME || process.env.MYSQLDATABASE || 'stickywork',
+        port: parseInt(process.env.DB_PORT || process.env.MYSQLPORT) || 3306,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0
@@ -28,7 +35,12 @@ let pool;
 
 async function createPool() {
     try {
-        pool = mysql.createPool(dbConfig);
+        // Si dbConfig tiene 'uri', usarla directamente
+        if (dbConfig.uri) {
+            pool = mysql.createPool(dbConfig.uri);
+        } else {
+            pool = mysql.createPool(dbConfig);
+        }
         console.log('✓ Pool de conexiones MySQL creado');
         return pool;
     } catch (error) {
