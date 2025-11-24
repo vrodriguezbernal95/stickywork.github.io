@@ -121,52 +121,60 @@ app.use((err, req, res, next) => {
 // ==================== INICIAR SERVIDOR ====================
 
 async function startServer() {
-    try {
-        // Crear pool de conexiones a la base de datos
-        await db.createPool();
+    // Iniciar servidor HTTP primero (sin esperar DB)
+    app.listen(PORT, () => {
+        console.log('\n' + '='.repeat(50));
+        console.log('🚀 SERVIDOR STICKYWORK INICIADO');
+        console.log('='.repeat(50));
+        console.log(`\n📍 URL: http://localhost:${PORT}`);
+        console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`💾 Base de datos: ${process.env.DB_NAME || 'stickywork'}`);
+        console.log('\n📄 Páginas disponibles:');
+        console.log(`   - Home: http://localhost:${PORT}`);
+        console.log(`   - Cómo funciona: http://localhost:${PORT}/como-funciona`);
+        console.log(`   - Planes: http://localhost:${PORT}/planes`);
+        console.log(`   - Demo: http://localhost:${PORT}/demo`);
+        console.log(`   - Contacto: http://localhost:${PORT}/contacto`);
+        console.log('\n🔌 API Endpoints:');
+        console.log(`   - GET  /api/health - Estado del servidor`);
+        console.log(`   - GET  /api/services/:businessId - Obtener servicios`);
+        console.log(`   - POST /api/bookings - Crear reserva`);
+        console.log(`   - GET  /api/bookings/:businessId - Listar reservas`);
+        console.log(`   - GET  /api/availability/:businessId - Horarios disponibles`);
+        console.log('\n' + '='.repeat(50) + '\n');
+    });
 
-        // Verificar conexión a la base de datos
-        const isConnected = await db.testConnection();
+    // Configurar DB en segundo plano (sin bloquear el inicio)
+    setTimeout(async () => {
+        try {
+            console.log('🔄 Configurando base de datos en segundo plano...');
 
-        if (!isConnected) {
-            console.error('\n⚠️  ADVERTENCIA: No se pudo conectar a MySQL');
-            console.error('El servidor se iniciará, pero las funciones de base de datos no estarán disponibles.');
-            console.error('Por favor, verifica la configuración en el archivo .env\n');
+            // Crear pool de conexiones a la base de datos
+            await db.createPool();
+
+            // Verificar conexión a la base de datos
+            const isConnected = await db.testConnection();
+
+            if (!isConnected) {
+                console.error('\n⚠️  ADVERTENCIA: No se pudo conectar a MySQL');
+                console.error('El servidor está funcionando, pero las funciones de base de datos no están disponibles.');
+                console.error('Por favor, verifica la configuración en el archivo .env\n');
+                return;
+            }
+
+            // Ejecutar migraciones de BD
+            await runMigrations();
+
+            // Verificar configuración de email
+            await emailService.verifyEmailService();
+
+            console.log('✅ Base de datos configurada correctamente\n');
+
+        } catch (error) {
+            console.error('⚠️  Error configurando base de datos:', error.message);
+            console.error('El servidor continuará funcionando sin funcionalidad de BD\n');
         }
-
-        // Ejecutar migraciones de BD
-        await runMigrations();
-
-        // Verificar configuración de email
-        await emailService.verifyEmailService();
-
-        // Iniciar servidor
-        app.listen(PORT, () => {
-            console.log('\n' + '='.repeat(50));
-            console.log('🚀 SERVIDOR STICKYWORK INICIADO');
-            console.log('='.repeat(50));
-            console.log(`\n📍 URL: http://localhost:${PORT}`);
-            console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
-            console.log(`💾 Base de datos: ${process.env.DB_NAME || 'stickywork'}`);
-            console.log('\n📄 Páginas disponibles:');
-            console.log(`   - Home: http://localhost:${PORT}`);
-            console.log(`   - Cómo funciona: http://localhost:${PORT}/como-funciona`);
-            console.log(`   - Planes: http://localhost:${PORT}/planes`);
-            console.log(`   - Demo: http://localhost:${PORT}/demo`);
-            console.log(`   - Contacto: http://localhost:${PORT}/contacto`);
-            console.log('\n🔌 API Endpoints:');
-            console.log(`   - GET  /api/health - Estado del servidor`);
-            console.log(`   - GET  /api/services/:businessId - Obtener servicios`);
-            console.log(`   - POST /api/bookings - Crear reserva`);
-            console.log(`   - GET  /api/bookings/:businessId - Listar reservas`);
-            console.log(`   - GET  /api/availability/:businessId - Horarios disponibles`);
-            console.log('\n' + '='.repeat(50) + '\n');
-        });
-
-    } catch (error) {
-        console.error('❌ Error al iniciar el servidor:', error);
-        process.exit(1);
-    }
+    }, 100);
 }
 
 // Manejo de cierre graceful
