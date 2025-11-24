@@ -4,7 +4,7 @@
   "description": "Sistema de reservas online para negocios físicos",
   "main": "server.js",
   "scripts": {
-    "start": "node backend/setup-database-universal.js && node server.js",
+    "start": "node server.js",
     "start:sqlite": "node server-sqlite.js",
     "dev": "nodemon server.js",
     "dev:sqlite": "nodemon server-sqlite.js",
