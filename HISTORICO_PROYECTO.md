@@ -189,14 +189,46 @@
 
 ---
 
+### 2025-01-24 (tarde) - Sistema de Registro Funcionando 100%
+**Estado:** Completado ✓
+**Objetivo:** Solucionar errores finales y verificar funcionamiento completo del registro
+
+**Problemas encontrados y solucionados:**
+
+1. **Error: Table 'business_types' doesn't exist**
+   - Causa: Servidor iniciado antes de ejecutar setup de BD
+   - Solución: Ejecutar `npm run setup` y reiniciar servidor
+
+2. **Error: Unknown column 'website' in 'field list'**
+   - Causa: Script de ALTER TABLE no incluía todas las columnas nuevas
+   - Solución: Añadidas columnas faltantes (website, logo_url, description, widget_settings)
+   - Archivo: `backend/setup-database.js:108-119`
+
+3. **Puerto 3000 en uso después de reiniciar**
+   - Solución: `taskkill //F //PID [PID]` para matar proceso zombie
+
+**Resultado final:**
+- ✅ Sistema de registro funciona perfectamente en local
+- ✅ Usuario puede crear cuenta desde `/registro.html`
+- ✅ Redirección automática a onboarding
+- ✅ Base de datos local con todas las columnas necesarias
+- ✅ Cambios desplegados a Railway
+
+**Archivos modificados:**
+- `backend/setup-database.js` - ALTER TABLE mejorado con todas las columnas
+
+**Commits:**
+- `2535787` - fix: Añadir columnas website, logo_url, description y widget_settings
+- `562cdd0` - fix: Añadir ALTER TABLE para actualizar tablas existentes
+
+---
+
 ### Commits Recientes
+- `2535787` - fix: Añadir columnas website, logo_url, description y widget_settings
+- `562cdd0` - fix: Añadir ALTER TABLE para actualizar tablas existentes
 - `6cc11d8` - fix: Prevenir timeout en Railway iniciando servidor antes de conectar DB
 - `61c7f52` - feat: Mejorar detección de variables MySQL y añadir debug endpoint
 - `369a6fa` - feat: Implementar CMP (Consent Management Platform) para cumplimiento RGPD
-- `2a158c8` - fix: Mejorar ajuste responsive del código QR
-- `e3ad3d8` - feat: Optimizar sección QR para móviles y actualizar URL
-- `04640ba` - feat: Añadir configuración para deploy en Railway
-- `8481e85` - feat: Añadir modo Código QR como tercera opción de integración
 
 ---
 
@@ -225,6 +257,64 @@
 - [x] Widget adaptativo según tipo de negocio
 - [x] **COMPLETADO:** Ejecutar setup en producción (Railway MySQL)
 - [x] **COMPLETADO:** Solucionar timeout SIGTERM en Railway
+- [x] **COMPLETADO:** Sistema funcionando 100% en local y producción
+
+### 📧 Correo Empresarial con Zoho Mail (PENDIENTE - PRÓXIMA SESIÓN)
+**Decisión:** Usar Zoho Mail plan gratuito (hasta 5 usuarios)
+**Objetivo:** Configurar correos profesionales @stickywork.com
+
+**Pasos a seguir:**
+
+1. **Crear cuenta en Zoho Mail**
+   - URL: https://www.zoho.com/es-xl/mail/zohomail-pricing.html
+   - Plan: Forever Free
+   - Registrar con dominio: stickywork.com
+
+2. **Verificar dominio en Zoho**
+   - Zoho pedirá verificación por TXT o CNAME
+   - Añadir registro en Porkbun DNS según lo que indique Zoho
+
+3. **Configurar registros MX en Porkbun**
+   - ⚠️ Eliminar MX actuales (fwd1 y fwd2.porkbun.com)
+   - Añadir 3 registros MX de Zoho:
+     - mx.zoho.com (prioridad 10)
+     - mx2.zoho.com (prioridad 20)
+     - mx3.zoho.com (prioridad 50)
+
+4. **Configurar SPF, DKIM y DMARC**
+   - SPF: `v=spf1 include:zoho.com ~all`
+   - DKIM: Zoho proporcionará el valor (host: zmail._domainkey)
+   - DMARC: `v=DMARC1; p=none; rua=mailto:postmaster@stickywork.com`
+
+5. **Crear cuentas de correo**
+   - contacto@stickywork.com
+   - info@stickywork.com
+   - soporte@stickywork.com
+   - noreply@stickywork.com (para emails automáticos)
+
+6. **Configurar SMTP en la aplicación**
+   - Actualizar `.env` con credenciales de noreply@stickywork.com
+   - Variables necesarias:
+     ```
+     SMTP_HOST=smtp.zoho.com
+     SMTP_PORT=465
+     SMTP_SECURE=true
+     SMTP_USER=noreply@stickywork.com
+     SMTP_PASS=[contraseña de Zoho]
+     EMAIL_FROM=noreply@stickywork.com
+     EMAIL_FROM_NAME=StickyWork
+     ```
+
+**Documentación de referencia:**
+- Guía Zoho MX: https://www.zoho.com/mail/help/adminconsole/configure-email-delivery.html
+- Verificación de dominio: https://www.zoho.com/mail/help/adminconsole/domain-verification.html
+
+**Estado actual:**
+- [ ] Cuenta Zoho creada
+- [ ] Dominio verificado
+- [ ] Registros DNS configurados
+- [ ] Cuentas de correo creadas
+- [ ] SMTP configurado en la app
 
 ### Seguridad (pendiente)
 - [ ] Implementar rate limiting en login
