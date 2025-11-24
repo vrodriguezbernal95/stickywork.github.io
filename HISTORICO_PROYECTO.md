@@ -125,7 +125,73 @@
 
 ---
 
-### Commits Recientes (al iniciar esta sesión)
+### 2025-01-24 - Deploy a Producción y Fix SIGTERM
+**Estado:** Completado ✓
+**Objetivo:** Desplegar sistema de registro a Railway y solucionar timeout en inicio del servidor
+
+**Problema inicial:**
+- Servidor desplegado en Railway obtenía error SIGTERM (timeout)
+- No se conectaba a la base de datos MySQL de Railway
+- Variables de entorno no estaban configuradas correctamente
+
+**Solución paso a paso:**
+
+1. **Configuración de variables de entorno en Railway:**
+   - Problema: Variables solo estaban en servicio "mysql", no en "stickywork api"
+   - Solución: Añadir variables directamente al servicio de la API:
+     ```
+     MYSQL_URL=mysql://root:KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ@mysql.railway.internal:3306/railway
+     DB_HOST=mysql.railway.internal
+     DB_USER=root
+     DB_PASSWORD=KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ
+     DB_NAME=railway
+     DB_PORT=3306
+     ```
+
+2. **Mejora en config/database-mysql.js:**
+   - Modificado para priorizar `MYSQL_URL` sobre variables individuales
+   - Añadidos fallbacks a `MYSQLHOST`, `MYSQLUSER`, etc.
+   - Soporte para URI strings y configuración por parámetros
+
+3. **Setup de tablas en producción:**
+   - Creado `setup-production.js` para ejecutar migraciones directamente en Railway
+   - Ejecutado localmente: `node setup-production.js`
+   - Resultado: ✓ Tabla business_types creada con 8 tipos
+   - Resultado: ✓ Tabla professionals creada
+   - Resultado: ✓ Tabla businesses actualizada con nuevas columnas
+
+4. **Fix del timeout SIGTERM (server.js):**
+   - Problema: `startServer()` esperaba conexión DB antes de iniciar HTTP server
+   - Solución: Invertir el orden - iniciar HTTP server primero, DB en segundo plano
+   - Cambios en `server.js:123-178`:
+     - HTTP server inicia inmediatamente con `app.listen()`
+     - Conexión DB se configura después en `setTimeout(..., 100)`
+     - Servidor funciona aunque DB falle
+
+5. **Endpoint de debug añadido:**
+   - `GET /api/debug/env` - Muestra qué variables de entorno están disponibles
+   - Útil para diagnosticar problemas de configuración
+
+**Archivos modificados:**
+- `server.js` - Lógica de inicio no bloqueante
+- `config/database-mysql.js` - Detección mejorada de MYSQL_URL
+- `setup-production.js` (nuevo) - Script para setup directo en Railway
+
+**Commits:**
+- `6cc11d8` - fix: Prevenir timeout en Railway iniciando servidor antes de conectar DB
+- `61c7f52` - feat: Mejorar detección de variables MySQL y añadir debug endpoint
+
+**Estado de producción:**
+- ✓ Código desplegado en Railway
+- ✓ Tablas de base de datos creadas
+- ✓ Variables de entorno configuradas
+- ⏳ Verificar que el endpoint /api/auth/business-types funcione
+
+---
+
+### Commits Recientes
+- `6cc11d8` - fix: Prevenir timeout en Railway iniciando servidor antes de conectar DB
+- `61c7f52` - feat: Mejorar detección de variables MySQL y añadir debug endpoint
 - `369a6fa` - feat: Implementar CMP (Consent Management Platform) para cumplimiento RGPD
 - `2a158c8` - fix: Mejorar ajuste responsive del código QR
 - `e3ad3d8` - feat: Optimizar sección QR para móviles y actualizar URL
@@ -157,7 +223,8 @@
 - [x] Crear endpoint de registro completo
 - [x] Flujo de onboarding post-registro
 - [x] Widget adaptativo según tipo de negocio
-- [ ] **PENDIENTE:** Ejecutar setup-database.js en producción para crear nuevas tablas
+- [x] **COMPLETADO:** Ejecutar setup en producción (Railway MySQL)
+- [x] **COMPLETADO:** Solucionar timeout SIGTERM en Railway
 
 ### Seguridad (pendiente)
 - [ ] Implementar rate limiting en login
