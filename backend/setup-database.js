@@ -104,6 +104,29 @@ async function setupDatabase() {
         `);
         console.log('✓ Tabla "businesses" creada/verificada');
 
+        // Añadir columnas nuevas a businesses si no existen (para actualizar tablas antiguas)
+        const businessColumns = [
+            ['slug', 'VARCHAR(255) UNIQUE'],
+            ['type_key', "VARCHAR(50) NOT NULL DEFAULT 'other'"],
+            ['subscription_status', "ENUM('trial', 'active', 'cancelled', 'expired') DEFAULT 'trial'"],
+            ['trial_ends_at', 'TIMESTAMP NULL'],
+            ['onboarding_completed', 'BOOLEAN DEFAULT FALSE'],
+            ['booking_settings', 'JSON']
+        ];
+
+        for (const [col, type] of businessColumns) {
+            try {
+                await connection.query(`ALTER TABLE businesses ADD COLUMN ${col} ${type}`);
+                console.log(`  ✓ Columna "${col}" añadida a businesses`);
+            } catch (e) {
+                if (e.code === 'ER_DUP_FIELDNAME') {
+                    // Columna ya existe, ok
+                } else {
+                    console.log(`  ⚠ Error añadiendo columna ${col}:`, e.message);
+                }
+            }
+        }
+
         // Crear tabla de servicios (mejorada)
         await connection.query(`
             CREATE TABLE IF NOT EXISTS services (
@@ -127,6 +150,27 @@ async function setupDatabase() {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
         console.log('✓ Tabla "services" creada/verificada');
+
+        // Añadir columnas nuevas a services si no existen
+        const serviceColumns = [
+            ['capacity', 'INT DEFAULT 1'],
+            ['category', 'VARCHAR(100)'],
+            ['color', "VARCHAR(7) DEFAULT '#3b82f6'"],
+            ['display_order', 'INT DEFAULT 0']
+        ];
+
+        for (const [col, type] of serviceColumns) {
+            try {
+                await connection.query(`ALTER TABLE services ADD COLUMN ${col} ${type}`);
+                console.log(`  ✓ Columna "${col}" añadida a services`);
+            } catch (e) {
+                if (e.code === 'ER_DUP_FIELDNAME') {
+                    // Columna ya existe, ok
+                } else {
+                    console.log(`  ⚠ Error añadiendo columna ${col}:`, e.message);
+                }
+            }
+        }
 
         // Crear tabla de profesionales/empleados
         await connection.query(`
@@ -185,6 +229,27 @@ async function setupDatabase() {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         `);
         console.log('✓ Tabla "bookings" creada/verificada');
+
+        // Añadir columnas nuevas a bookings si no existen
+        const bookingColumns = [
+            ['professional_id', 'INT'],
+            ['num_people', 'INT DEFAULT 1'],
+            ['zone', 'VARCHAR(100)'],
+            ['custom_fields', 'JSON']
+        ];
+
+        for (const [col, type] of bookingColumns) {
+            try {
+                await connection.query(`ALTER TABLE bookings ADD COLUMN ${col} ${type}`);
+                console.log(`  ✓ Columna "${col}" añadida a bookings`);
+            } catch (e) {
+                if (e.code === 'ER_DUP_FIELDNAME') {
+                    // Columna ya existe, ok
+                } else {
+                    console.log(`  ⚠ Error añadiendo columna ${col}:`, e.message);
+                }
+            }
+        }
 
         // Crear tabla de administradores
         await connection.query(`
