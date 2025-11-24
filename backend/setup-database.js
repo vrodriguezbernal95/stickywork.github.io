@@ -108,9 +108,13 @@ async function setupDatabase() {
         const businessColumns = [
             ['slug', 'VARCHAR(255) UNIQUE'],
             ['type_key', "VARCHAR(50) NOT NULL DEFAULT 'other'"],
+            ['website', 'VARCHAR(255)'],
+            ['logo_url', 'VARCHAR(500)'],
+            ['description', 'TEXT'],
             ['subscription_status', "ENUM('trial', 'active', 'cancelled', 'expired') DEFAULT 'trial'"],
             ['trial_ends_at', 'TIMESTAMP NULL'],
             ['onboarding_completed', 'BOOLEAN DEFAULT FALSE'],
+            ['widget_settings', 'JSON'],
             ['booking_settings', 'JSON']
         ];
 
