@@ -9,8 +9,12 @@ if (process.env.MYSQL_URL || process.env.MYSQLURL) {
     // Usar URL de conexión directa (Railway)
     const url = process.env.MYSQL_URL || process.env.MYSQLURL;
     console.log('📦 Conectando vía MYSQL_URL');
+    // Añadir charset a la URL si no lo tiene
+    const urlWithCharset = url.includes('?')
+        ? `${url}&charset=utf8mb4`
+        : `${url}?charset=utf8mb4`;
     dbConfig = {
-        uri: url,
+        uri: urlWithCharset,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0
@@ -24,6 +28,7 @@ if (process.env.MYSQL_URL || process.env.MYSQLURL) {
         password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || '',
         database: process.env.DB_NAME || process.env.MYSQLDATABASE || 'stickywork',
         port: parseInt(process.env.DB_PORT || process.env.MYSQLPORT) || 3306,
+        charset: 'utf8mb4',
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0

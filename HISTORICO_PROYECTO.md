@@ -223,6 +223,166 @@
 
 ---
 
+### 2025-01-26 - Sistema de Email con Brevo
+**Estado:** Completado ✓
+**Objetivo:** Implementar sistema completo de emails transaccionales y recepción de emails corporativos
+
+**Problema inicial:**
+- No había sistema de emails configurado
+- Necesitaba enviar confirmaciones de reserva automáticas
+- Necesitaba recibir emails en direcciones corporativas (@stickywork.com)
+
+**Solución implementada:**
+
+1. **Proveedor de email seleccionado: Brevo (antes Sendinblue)**
+   - Plan gratuito: 300 emails/día (9,000/mes)
+   - Razón: Zoho Mail cambió a solo de pago
+   - Alternativas evaluadas: Resend, SendGrid
+
+2. **Configuración de Brevo:**
+   - Cuenta creada y verificada
+   - Dominio stickywork.com autenticado
+   - Registros DNS configurados automáticamente por Brevo:
+     - TXT: Código de verificación
+     - CNAME: DKIM 1 y DKIM 2
+     - TXT: DMARC
+   - SMTP Key generada (tipo estándar para mayor seguridad)
+
+3. **Email Forwarding en Porkbun:**
+   - Configurado para recibir emails corporativos
+   - Redirección a v.rodriguezbernal95@gmail.com:
+     - contacto@stickywork.com
+     - info@stickywork.com
+     - soporte@stickywork.com
+
+4. **Servicio de email implementado:**
+   - Archivo: `backend/email-service.js` (ya existía)
+   - Plantillas HTML responsive implementadas:
+     - Confirmación de reserva al cliente
+     - Recordatorio 24h antes
+     - Notificación al admin de nueva reserva
+   - Integración con Nodemailer
+
+5. **Variables de entorno configuradas:**
+   - Local: `.env` actualizado con credenciales Brevo
+   - Producción: Variables añadidas en Railway
+   - Variables configuradas:
+     - EMAIL_HOST=smtp-relay.brevo.com
+     - EMAIL_PORT=587
+     - EMAIL_USER=9c91da001@smtp-brevo.com
+     - EMAIL_PASSWORD=[SMTP Key de Brevo]
+     - EMAIL_FROM=StickyWork <noreply@stickywork.com>
+
+6. **Pruebas realizadas:**
+   - Script de prueba creado: `test-email.js`
+   - Email de prueba enviado exitosamente
+   - Email recibido y verificado en bandeja de entrada
+   - Conexión SMTP verificada ✓
+
+**Resultado:**
+- ✅ Sistema de emails 100% funcional en desarrollo y producción
+- ✅ Confirmaciones de reserva se envían automáticamente
+- ✅ Recepción de emails corporativos configurada
+- ✅ Alta tasa de entrega (Brevo tiene buena reputación)
+- ✅ 300 emails/día gratis (suficiente para empezar)
+
+**Archivos creados/modificados:**
+- `.env` - Variables de entorno actualizadas
+- `test-email.js` - Nuevo script de pruebas
+- `HISTORICO_PROYECTO.md` - Documentación actualizada
+
+**Próximos pasos sugeridos:**
+- [ ] Implementar cron job para recordatorios 24h antes
+- [ ] Monitorear estadísticas de envío en panel de Brevo
+- [ ] Considerar upgrade a plan de pago si se superan 300 emails/día
+
+---
+
+### 2025-01-26 (tarde) - Mejoras UX: Dark Mode Admin + Emails en Footer + Fix UTF-8
+**Estado:** Completado ✓
+**Objetivo:** Mejorar la experiencia de usuario del panel administrativo y añadir información de contacto visible
+
+**Problemas identificados:**
+- Panel de administración con diseño light mode básico
+- Caracteres especiales (ñ, acentos) mostrándose como símbolos raros (�)
+- Falta de información de contacto visible en la web
+
+**Soluciones implementadas:**
+
+1. **Dark Mode Profesional en Panel Administrativo**
+   - Paleta de colores inspirada en el dark mode de la web principal
+   - Colores aplicados:
+     - Fondos: #0a0e2e, #111533, #1a1f45
+     - Textos: #f1f5f9, #cbd5e1 (excelente contraste)
+     - Acentos: #2E35F5 (azul), #FF3D1A (rojo/naranja)
+   - Efectos visuales mejorados:
+     - Glassmorphism en tarjetas y sidebar
+     - Gradientes en enlaces activos y botones
+     - Hover effects con colores vibrantes
+     - Sombras profesionales con efecto glow
+     - Líneas animadas en tarjetas estadísticas
+   - Mejoras específicas:
+     - Sidebar con backdrop-filter blur
+     - Topbar sticky con sombra
+     - Tablas con hover effect
+     - Iconos de stats con gradientes de colores
+   - Archivo modificado: `admin/css/admin.css`
+
+2. **Fix de Codificación UTF-8**
+   - Problema: Datos guardados antes mostraban caracteres corruptos (Mar�a)
+   - Solución implementada:
+     - Añadido `charset: 'utf8mb4'` en configuración MySQL
+     - Actualizado `config/database-mysql.js`
+     - Soporte para conexión local y Railway (URL)
+     - Datos corruptos existentes corregidos manualmente
+   - Verificación: Ningún otro dato corrupto encontrado
+   - Resultado: Todos los caracteres especiales se guardan y muestran correctamente
+
+3. **Emails Corporativos en Footer**
+   - Sección "Contacto" añadida en footer de todas las páginas
+   - Emails con iconos visuales:
+     - 📧 contacto@stickywork.com
+     - 📨 info@stickywork.com
+     - 🛠️ soporte@stickywork.com
+   - Enlaces mailto clicables (abren cliente de email)
+   - Ubicación lógica: entre "Empresa" y "Legal"
+   - Páginas actualizadas:
+     - index.html
+     - como-funciona.html
+     - planes.html
+     - demo.html
+     - contacto.html
+   - Accesibilidad: aria-labels en todos los enlaces
+
+**Configuración de Emails (recordatorio):**
+- Envío: Brevo SMTP (300 emails/día gratis)
+- Recepción: Porkbun Email Forwarding → v.rodriguezbernal95@gmail.com
+- Estado: ✅ Funcionando en desarrollo y producción
+
+**Impacto en UX:**
+- ✅ Panel administrativo más moderno y profesional
+- ✅ Mejor legibilidad con dark mode (reduce cansancio visual)
+- ✅ Caracteres especiales funcionando perfectamente
+- ✅ Información de contacto fácilmente accesible
+- ✅ Consistencia visual en toda la plataforma
+
+**Archivos modificados:**
+- `admin/css/admin.css` - Dark mode completo
+- `config/database-mysql.js` - UTF-8 charset
+- `index.html` - Footer con emails
+- `como-funciona.html` - Footer con emails
+- `planes.html` - Footer con emails
+- `demo.html` - Footer con emails
+- `contacto.html` - Footer con emails
+
+**Testing realizado:**
+- ✅ Dark mode probado en diferentes resoluciones
+- ✅ UTF-8 verificado con nombre "María"
+- ✅ Enlaces mailto funcionando correctamente
+- ✅ Responsive en móvil, tablet y desktop
+
+---
+
 ### Commits Recientes
 - `2535787` - fix: Añadir columnas website, logo_url, description y widget_settings
 - `562cdd0` - fix: Añadir ALTER TABLE para actualizar tablas existentes
@@ -259,62 +419,60 @@
 - [x] **COMPLETADO:** Solucionar timeout SIGTERM en Railway
 - [x] **COMPLETADO:** Sistema funcionando 100% en local y producción
 
-### 📧 Correo Empresarial con Zoho Mail (PENDIENTE - PRÓXIMA SESIÓN)
-**Decisión:** Usar Zoho Mail plan gratuito (hasta 5 usuarios)
-**Objetivo:** Configurar correos profesionales @stickywork.com
+### 📧 Sistema de Email con Brevo (COMPLETADO 2025-01-26)
+**Decisión:** Usar Brevo (antes Sendinblue) plan gratuito - 300 emails/día
+**Objetivo:** Configurar sistema completo de emails transaccionales y recepción
 
-**Pasos a seguir:**
+**✅ Configuración completada:**
 
-1. **Crear cuenta en Zoho Mail**
-   - URL: https://www.zoho.com/es-xl/mail/zohomail-pricing.html
-   - Plan: Forever Free
-   - Registrar con dominio: stickywork.com
+1. **Cuenta Brevo creada y dominio verificado**
+   - Plan: Gratuito (300 emails/día)
+   - Dominio: stickywork.com autenticado
+   - Acceso: https://www.brevo.com/
 
-2. **Verificar dominio en Zoho**
-   - Zoho pedirá verificación por TXT o CNAME
-   - Añadir registro en Porkbun DNS según lo que indique Zoho
+2. **Registros DNS configurados en Porkbun (automático vía Brevo)**
+   - Código verificación: `brevo-code:947041f8cdc63287f8774103e06860cd` (TXT)
+   - DKIM 1: `brevo1._domainkey` → `b1.stickywork-com.dkim.brevo.com` (CNAME)
+   - DKIM 2: `brevo2._domainkey` → `b2.stickywork-com.dkim.brevo.com` (CNAME)
+   - DMARC: `_dmarc` → `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com` (TXT)
 
-3. **Configurar registros MX en Porkbun**
-   - ⚠️ Eliminar MX actuales (fwd1 y fwd2.porkbun.com)
-   - Añadir 3 registros MX de Zoho:
-     - mx.zoho.com (prioridad 10)
-     - mx2.zoho.com (prioridad 20)
-     - mx3.zoho.com (prioridad 50)
+3. **Email Forwarding en Porkbun (para recibir emails)**
+   - `contacto@stickywork.com` → v.rodriguezbernal95@gmail.com
+   - `info@stickywork.com` → v.rodriguezbernal95@gmail.com
+   - `soporte@stickywork.com` → v.rodriguezbernal95@gmail.com
 
-4. **Configurar SPF, DKIM y DMARC**
-   - SPF: `v=spf1 include:zoho.com ~all`
-   - DKIM: Zoho proporcionará el valor (host: zmail._domainkey)
-   - DMARC: `v=DMARC1; p=none; rua=mailto:postmaster@stickywork.com`
+4. **Credenciales SMTP configuradas**
+   - Host: `smtp-relay.brevo.com`
+   - Port: `587`
+   - Login: `9c91da001@smtp-brevo.com`
+   - SMTP Key: Configurada (estándar)
+   - From: `StickyWork <noreply@stickywork.com>`
 
-5. **Crear cuentas de correo**
-   - contacto@stickywork.com
-   - info@stickywork.com
-   - soporte@stickywork.com
-   - noreply@stickywork.com (para emails automáticos)
+5. **Variables de entorno configuradas**
+   - ✅ Local (.env actualizado)
+   - ✅ Producción (Railway variables actualizadas)
 
-6. **Configurar SMTP en la aplicación**
-   - Actualizar `.env` con credenciales de noreply@stickywork.com
-   - Variables necesarias:
-     ```
-     SMTP_HOST=smtp.zoho.com
-     SMTP_PORT=465
-     SMTP_SECURE=true
-     SMTP_USER=noreply@stickywork.com
-     SMTP_PASS=[contraseña de Zoho]
-     EMAIL_FROM=noreply@stickywork.com
-     EMAIL_FROM_NAME=StickyWork
-     ```
+6. **Plantillas de email implementadas**
+   - ✅ Confirmación de reserva al cliente
+   - ✅ Recordatorio 24h antes de la cita
+   - ✅ Notificación al administrador de nueva reserva
+   - Diseño: HTML responsive con gradientes corporativos
 
-**Documentación de referencia:**
-- Guía Zoho MX: https://www.zoho.com/mail/help/adminconsole/configure-email-delivery.html
-- Verificación de dominio: https://www.zoho.com/mail/help/adminconsole/domain-verification.html
+7. **Pruebas realizadas**
+   - ✅ Conexión SMTP verificada
+   - ✅ Email de prueba enviado y recibido exitosamente
+   - ✅ Script de prueba: `test-email.js`
 
-**Estado actual:**
-- [ ] Cuenta Zoho creada
-- [ ] Dominio verificado
-- [ ] Registros DNS configurados
-- [ ] Cuentas de correo creadas
-- [ ] SMTP configurado en la app
+**Funcionalidades activas:**
+- 📧 Envío automático de confirmaciones de reserva
+- ⏰ Sistema de recordatorios (preparado para implementar cron)
+- 🔔 Notificaciones a administradores
+- 📬 Recepción de emails corporativos vía forwarding
+
+**Archivos relacionados:**
+- `backend/email-service.js` - Servicio completo con plantillas
+- `test-email.js` - Script de pruebas
+- `.env` - Variables configuradas
 
 ### Seguridad (pendiente)
 - [ ] Implementar rate limiting en login
