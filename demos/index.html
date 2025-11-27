@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Entorno de Prueba - Modelos de Negocio | StickyWork</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        /* Estilos específicos para la página de demos */
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 80px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .demo-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .demo-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .models-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .model-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid #f0f0f0;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .model-card.active {
+            border-color: #667eea;
+        }
+
+        .model-card.coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .model-card.coming-soon:hover {
+            transform: none;
+        }
+
+        .model-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            text-align: center;
+            font-size: 4rem;
+        }
+
+        .model-content {
+            padding: 30px;
+        }
+
+        .model-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .model-content p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .model-features {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .model-features li {
+            padding: 8px 0;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .model-features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .model-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
+        }
+
+        .model-button:hover {
+            opacity: 0.9;
+        }
+
+        .model-button.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .coming-soon-badge {
+            display: inline-block;
+            background: #FFC107;
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Badge Header -->
+    <div class="demo-header">
+        <div class="demo-badge">🎨 ENTORNO DE PRUEBA</div>
+        <h1>Modelos de Negocio</h1>
+        <p>Explora cómo StickyWork se adapta a diferentes tipos de negocios. Cada demo incluye un widget totalmente funcional.</p>
+    </div>
+
+    <!-- Models Grid -->
+    <div class="models-container">
+        <h2 class="section-title">Elige un modelo para explorar</h2>
+        <p class="section-subtitle">Haz clic en cualquier modelo para ver una demo interactiva con el widget de reservas funcionando</p>
+
+        <div class="models-grid">
+            <!-- 1. Peluquería -->
+            <div class="model-card active">
+                <div class="model-icon">💇</div>
+                <div class="model-content">
+                    <h3>Peluquería / Salón de Belleza</h3>
+                    <p>Gestión de citas con selección de servicio y profesional preferido.</p>
+                    <ul class="model-features">
+                        <li>Selección de profesional</li>
+                        <li>Catálogo de servicios</li>
+                        <li>Duración y precios visibles</li>
+                        <li>Horarios personalizados</li>
+                    </ul>
+                    <a href="peluqueria.html" class="model-button">Ver Demo →</a>
+                </div>
+            </div>
+
+            <!-- 2. Psicólogo -->
+            <div class="model-card active">
+                <div class="model-icon">🧠</div>
+                <div class="model-content">
+                    <h3>Psicólogo / Terapeuta</h3>
+                    <p>Reserva de sesiones con gestión de privacidad y confidencialidad.</p>
+                    <ul class="model-features">
+                        <li>Sesiones individuales</li>
+                        <li>Tipos de terapia</li>
+                        <li>Recordatorios automáticos</li>
+                        <li>Notas privadas</li>
+                    </ul>
+                    <a href="psicologo.html" class="model-button">Ver Demo →</a>
+                </div>
+            </div>
+
+            <!-- 3. Restaurante -->
+            <div class="model-card active">
+                <div class="model-icon">🍽️</div>
+                <div class="model-content">
+                    <h3>Restaurante / Bar</h3>
+                    <p>Reservas de mesa con gestión de comensales y zonas del local.</p>
+                    <ul class="model-features">
+                        <li>Número de comensales</li>
+                        <li>Selección de zona</li>
+                        <li>Turnos (almuerzo/cena)</li>
+                        <li>Notas especiales</li>
+                    </ul>
+                    <a href="restaurante.html" class="model-button">Ver Demo →</a>
+                </div>
+            </div>
+
+            <!-- 4. Centro de Nutrición -->
+            <div class="model-card active">
+                <div class="model-icon">🥗</div>
+                <div class="model-content">
+                    <h3>Centro de Nutrición</h3>
+                    <p>Consultas nutricionales personalizadas con seguimiento.</p>
+                    <ul class="model-features">
+                        <li>Primera consulta vs seguimiento</li>
+                        <li>Valoración nutricional</li>
+                        <li>Planes personalizados</li>
+                        <li>Recordatorios de citas</li>
+                    </ul>
+                    <a href="nutricion.html" class="model-button">Ver Demo →</a>
+                </div>
+            </div>
+
+            <!-- 5. Gimnasio / Entrenador Personal -->
+            <div class="model-card active">
+                <div class="model-icon">💪</div>
+                <div class="model-content">
+                    <h3>Gimnasio / Entrenador Personal</h3>
+                    <p>Clases grupales y sesiones personales de entrenamiento.</p>
+                    <ul class="model-features">
+                        <li>Clases grupales</li>
+                        <li>Entrenamiento personal</li>
+                        <li>Aforo limitado</li>
+                        <li>Reserva de horarios</li>
+                    </ul>
+                    <a href="gimnasio.html" class="model-button">Ver Demo →</a>
+                </div>
+            </div>
+
+            <!-- 6. Centro de Estética -->
+            <div class="model-card active">
+                <div class="model-icon">💅</div>
+                <div class="model-content">
+                    <h3>Centro de Estética</h3>
+                    <p>Tratamientos faciales, manicura, pedicura y más.</p>
+                    <ul class="model-features">
+                        <li>Tratamientos faciales</li>
+                        <li>Manicura y pedicura</li>
+                        <li>Múltiples especialidades</li>
+                        <li>Paquetes de servicios</li>
+                    </ul>
+                    <a href="estetica.html" class="model-button">Ver Demo →</a>
+                </div>
+            </div>
+
+            <!-- 7. Despacho de Abogados -->
+            <div class="model-card active">
+                <div class="model-icon">⚖️</div>
+                <div class="model-content">
+                    <h3>Despacho de Abogados</h3>
+                    <p>Consultas legales con especialización por área del derecho.</p>
+                    <ul class="model-features">
+                        <li>Especialidades legales</li>
+                        <li>Consultas iniciales</li>
+                        <li>Abogados especializados</li>
+                        <li>Confidencialidad garantizada</li>
+                    </ul>
+                    <a href="abogados.html" class="model-button">Ver Demo →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div style="text-align: center; margin-top: 60px; padding: 40px 20px; background: #f8f9fa; border-radius: 12px;">
+            <h3 style="margin-bottom: 15px;">¿Quieres implementar StickyWork en tu negocio?</h3>
+            <p style="color: #666; margin-bottom: 25px;">Comienza tu prueba gratuita de 14 días sin necesidad de tarjeta de crédito</p>
+            <a href="../registro.html" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Empezar Gratis →
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>StickyWork</h3>
+                <p>Sistema de reservas online profesional para negocios físicos.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Producto</h4>
+                <ul>
+                    <li><a href="../como-funciona.html">Cómo funciona</a></li>
+                    <li><a href="../planes.html">Planes y precios</a></li>
+                    <li><a href="../demo.html">Demo interactiva</a></li>
+                    <li><a href="index.html">Entorno de prueba</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="../privacidad.html">Privacidad</a></li>
+                    <li><a href="../terminos.html">Términos</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 StickyWork. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>

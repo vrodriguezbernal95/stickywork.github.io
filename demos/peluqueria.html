@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Salón Bella Vista - Reserva tu cita online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Demo Badge */
+        .demo-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(233, 30, 99, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #E91E63 0%, #9C27B0 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 500;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .nav a:hover {
+            opacity: 1;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.95) 0%, rgba(156, 39, 176, 0.95) 100%),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><rect fill="%23f0f0f0" width="1200" height="400"/><circle fill="%23e0e0e0" cx="200" cy="100" r="80"/><circle fill="%23d0d0d0" cx="800" cy="250" r="120"/><circle fill="%23e0e0e0" cx="1000" cy="150" r="60"/></svg>');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 80px 40px;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 50px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .service-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .service-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #E91E63;
+        }
+
+        .service-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .service-details {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* Booking Section */
+        .booking {
+            padding: 80px 40px;
+            background: white;
+        }
+
+        .booking-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .booking-intro {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .booking-intro h2 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+        }
+
+        .booking-intro p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Team Section */
+        .team {
+            padding: 80px 40px;
+            background: #f8f9fa;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .team-member {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .team-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E91E63 0%, #9C27B0 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .team-member h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .team-member p {
+            color: #666;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h4 {
+            margin-bottom: 15px;
+            color: #E91E63;
+        }
+
+        .footer-section p, .footer-section a {
+            color: #aaa;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            text-align: center;
+            color: #888;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav a {
+                margin-left: 0;
+            }
+
+            .demo-badge {
+                top: 10px;
+                right: 10px;
+                font-size: 0.8rem;
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Badge -->
+    <div class="demo-badge">🎨 DEMO - Entorno de Prueba</div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">💇 Salón Bella Vista</div>
+            <nav class="nav">
+                <a href="#servicios">Servicios</a>
+                <a href="#reservas">Reservar Cita</a>
+                <a href="#equipo">Nuestro Equipo</a>
+                <a href="../demos/index.html">← Volver a Demos</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Tu Belleza, Nuestra Pasión</h1>
+        <p>Más de 15 años cuidando de tu imagen con profesionalidad y dedicación</p>
+        <div class="hero-features">
+            <div class="hero-feature">
+                <span>✓</span> Profesionales Certificados
+            </div>
+            <div class="hero-feature">
+                <span>✓</span> Productos de Calidad
+            </div>
+            <div class="hero-feature">
+                <span>✓</span> Reserva Online 24/7
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section class="services" id="servicios">
+        <div class="container">
+            <h2 class="section-title">Nuestros Servicios</h2>
+            <p class="section-subtitle">Ofrecemos una amplia gama de servicios para realzar tu belleza</p>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">✂️</div>
+                    <h3>Corte de Cabello</h3>
+                    <p>Corte profesional personalizado según tu estilo y tipo de cabello</p>
+                    <div class="service-details">
+                        <span>⏱️ 30 min</span>
+                        <span>💰 25€</span>
+                    </div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">🎨</div>
+                    <h3>Tinte Completo</h3>
+                    <p>Tinte de raíces y puntas con productos de alta calidad</p>
+                    <div class="service-details">
+                        <span>⏱️ 120 min</span>
+                        <span>💰 65€</span>
+                    </div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">✨</div>
+                    <h3>Mechas</h3>
+                    <p>Mechas californianas o balayage para un look radiante</p>
+                    <div class="service-details">
+                        <span>⏱️ 150 min</span>
+                        <span>💰 85€</span>
+                    </div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">💧</div>
+                    <h3>Tratamiento Capilar</h3>
+                    <p>Hidratación profunda y reparación del cabello dañado</p>
+                    <div class="service-details">
+                        <span>⏱️ 45 min</span>
+                        <span>💰 35€</span>
+                    </div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">👑</div>
+                    <h3>Peinado para Eventos</h3>
+                    <p>Recogido o peinado profesional para ocasiones especiales</p>
+                    <div class="service-details">
+                        <span>⏱️ 60 min</span>
+                        <span>💰 45€</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team -->
+    <section class="team" id="equipo">
+        <div class="container">
+            <h2 class="section-title">Nuestro Equipo</h2>
+            <p class="section-subtitle">Profesionales apasionados dedicados a tu belleza</p>
+
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="team-avatar">👩</div>
+                    <h3>Ana García</h3>
+                    <p>Estilista Senior</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">15 años de experiencia en cortes y estilos modernos</p>
+                </div>
+
+                <div class="team-member">
+                    <div class="team-avatar">👨</div>
+                    <h3>Carlos Ruiz</h3>
+                    <p>Colorista Experto</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">Especialista en técnicas de coloración avanzadas</p>
+                </div>
+
+                <div class="team-member">
+                    <div class="team-avatar">👩</div>
+                    <h3>María López</h3>
+                    <p>Especialista en Tratamientos</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">Experta en cuidado y recuperación capilar</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section class="booking" id="reservas">
+        <div class="booking-content">
+            <div class="booking-intro">
+                <h2>Reserva tu Cita</h2>
+                <p>Elige tu servicio favorito, selecciona a tu profesional de confianza y reserva la fecha que mejor te convenga</p>
+            </div>
+
+            <!-- Widget Container -->
+            <div id="stickywork-widget"></div>
+
+            <!-- Load Widget Script -->
+            <script src="../public/widget/stickywork-widget.js"></script>
+            <script>
+                // Initialize StickyWork Widget for Bella Vista
+                StickyWork.init({
+                    businessId: 4,  // ID de Salón Bella Vista
+                    apiUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                        ? 'http://localhost:3000'
+                        : 'https://stickywork.com',
+                    primaryColor: '#E91E63',
+                    secondaryColor: '#9C27B0',
+                    language: 'es',
+                    containerId: 'stickywork-widget'
+                });
+            </script>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Salón Bella Vista</h4>
+                <p>Tu belleza, nuestra pasión</p>
+                <p>Más de 15 años cuidando de ti</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Contacto</h4>
+                <p>📍 Calle Mayor 123, Madrid</p>
+                <p>📞 +34 912 345 678</p>
+                <p>✉️ contacto@bellavista.demo</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>Horario</h4>
+                <p>Lunes a Sábado</p>
+                <p>09:00 - 20:00</p>
+                <p>Domingo cerrado</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Salón Bella Vista - Demo powered by <a href="../index.html" style="color: #E91E63;">StickyWork</a></p>
+        </div>
+    </footer>
+</body>
+</html>

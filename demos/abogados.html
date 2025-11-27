@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>Despacho Jurídico Lex & Partners - Reserva tu consulta</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+
+        .demo-badge { position: fixed; top: 20px; right: 20px; background: rgba(25, 118, 210, 0.9); color: white; padding: 10px 20px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; z-index: 1000; box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3); }
+
+        .header { background: linear-gradient(135deg, #1976D2 0%, #424242 100%); color: white; padding: 20px 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: bold; }
+        .nav a { color: white; text-decoration: none; margin-left: 30px; font-weight: 500; opacity: 0.9; transition: opacity 0.3s; }
+        .nav a:hover { opacity: 1; }
+
+        .hero { background: linear-gradient(135deg, rgba(25, 118, 210, 0.95) 0%, rgba(123, 104, 238, 0.95) 100%); color: white; padding: 100px 40px; text-align: center; }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); }
+        .hero p { font-size: 1.3rem; margin-bottom: 30px; opacity: 0.95; }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { padding: 80px 40px; }
+        .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 20px; color: #1a1a1a; }
+        .section-subtitle { text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 50px; }
+
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .service-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; }
+        .service-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15); }
+        .service-icon { font-size: 3rem; margin-bottom: 15px; }
+        .service-card h3 { font-size: 1.4rem; margin-bottom: 10px; color: #1976D2; }
+        .service-card p { color: #666; margin-bottom: 15px; }
+        .service-details { display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid #eee; color: #333; font-weight: 600; }
+
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+        .team-member { background: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .team-avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #1976D2 0%, #424242 100%); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; }
+
+        .booking-content { max-width: 900px; margin: 0 auto; }
+        .booking-intro { text-align: center; margin-bottom: 40px; }
+
+        .footer { background: #1a1a1a; color: white; padding: 40px; text-align: center; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; text-align: left; margin-bottom: 30px; }
+        .footer-section h4 { margin-bottom: 15px; color: #1976D2; }
+        .footer-section p { color: #aaa; margin-bottom: 8px; }
+        .footer-bottom { border-top: 1px solid #333; padding-top: 20px; color: #888; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .header-content { flex-direction: column; gap: 20px; }
+            .nav { display: flex; flex-direction: column; gap: 10px; }
+            .nav a { margin-left: 0; }
+            .demo-badge { top: 10px; right: 10px; font-size: 0.8rem; padding: 8px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">🎨 DEMO - Entorno de Prueba</div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">⚖️ Lex & Partners</div>
+            <nav class="nav">
+                <a href="#servicios">Servicios</a>
+                <a href="#reservas">Reservar Cita</a>
+                <a href="#equipo">Equipo</a>
+                <a href="../demos/index.html">← Volver a Demos</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Asesoramiento Legal Profesional</h1>
+        <p>Abogados especializados con más de 20 años de experiencia defendiendo tus derechos</p>
+    </section>
+
+    <section class="section" style="background: #f8f9fa;" id="servicios">
+        <div class="container">
+                        <h2 class="section-title">Áreas de Práctica</h2>
+            <p class="section-subtitle">Asesoramiento legal especializado</p>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">📋</div>
+                    <h3>Consulta Inicial</h3>
+                    <p>Primera consulta legal sin compromiso</p>
+                    <div class="service-details"><span>⏱️ 30 min</span><span>💰 Gratis</span></div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🏛️</div>
+                    <h3>Asesoramiento Civil</h3>
+                    <p>Consulta sobre derecho civil</p>
+                    <div class="service-details"><span>⏱️ 60 min</span><span>💰 Consultar</span></div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">💼</div>
+                    <h3>Asesoramiento Mercantil</h3>
+                    <p>Consulta sobre derecho mercantil y empresarial</p>
+                    <div class="service-details"><span>⏱️ 60 min</span><span>💰 Consultar</span></div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">👔</div>
+                    <h3>Asesoramiento Laboral</h3>
+                    <p>Consulta sobre derecho laboral</p>
+                    <div class="service-details"><span>⏱️ 60 min</span><span>💰 Consultar</span></div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">⚖️</div>
+                    <h3>Defensa Penal</h3>
+                    <p>Consulta sobre procesos penales</p>
+                    <div class="service-details"><span>⏱️ 60 min</span><span>💰 Consultar</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="equipo">
+        <div class="container">
+                        <h2 class="section-title">Nuestro Equipo</h2>
+            <p class="section-subtitle">Profesionales con amplia experiencia</p>
+
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="team-avatar">👤</div>
+                    <h3>Letrado Miguel Ángel Pérez</h3>
+                    <p>Abogado Civilista</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">Especializado en derecho civil y de familia</p>
+                </div>
+                <div class="team-member">
+                    <div class="team-avatar">👤</div>
+                    <h3>Letrada Isabel Fernández</h3>
+                    <p>Abogada Mercantilista</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">Experta en derecho mercantil y societario</p>
+                </div>
+                <div class="team-member">
+                    <div class="team-avatar">👤</div>
+                    <h3>Letrado Antonio Castro</h3>
+                    <p>Abogado Penalista</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">Más de 15 años en defensa penal</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="background: white;" id="reservas">
+        <div class="booking-content">
+            <div class="booking-intro">
+                <h2>Reserva tu Consulta Legal</h2>
+                <p>Agenda tu cita con nuestros abogados especializados. Primera consulta sin compromiso</p>
+            </div>
+
+            <div id="stickywork-widget"></div>
+
+            <script src="../public/widget/stickywork-widget.js"></script>
+            <script>
+                StickyWork.init({
+                    businessId: 10,
+                    apiUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                        ? 'http://localhost:3000'
+                        : 'https://stickywork.com',
+                    primaryColor: '#1976D2',
+                    secondaryColor: '#424242',
+                    language: 'es',
+                    containerId: 'stickywork-widget'
+                });
+            </script>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Lex & Partners</h4>
+                <p>Tu defensa legal, nuestra misión</p>
+                <p>Asesoramiento jurídico de confianza</p>
+            </div>
+            <div class="footer-section">
+                <h4>Contacto</h4>
+                <p>📍 Paseo de la Castellana 95, Madrid</p>
+                <p>📞 +34 917 890 234</p>
+                <p>✉️ consultas@lexpartners.demo</p>
+            </div>
+            <div class="footer-section">
+                <h4>Horario</h4>
+                <p>Lunes a Viernes</p>
+                <p>09:00 - 19:00</p>
+                <p>Con cita previa</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Lex & Partners - Demo powered by <a href="../index.html" style="color: #1976D2;">StickyWork</a></p>
+        </div>
+    </footer>
+</body>
+</html>

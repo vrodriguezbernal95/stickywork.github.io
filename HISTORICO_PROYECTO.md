@@ -475,12 +475,32 @@
 - `.env` - Variables configuradas
 
 ### Seguridad (pendiente)
-- [ ] Implementar rate limiting en login
-- [ ] Considerar 2FA para admins
+- [ ] **Rate Limiting**: Implementar limitación de peticiones para prevenir ataques
+  - Login: Máximo 5 intentos cada 15 minutos por IP
+  - Registro: Máximo 3 registros por hora por IP
+  - Crear reserva: Máximo 10 reservas por hora por usuario
+  - API general: Máximo 100 peticiones por minuto por IP
+  - Protección contra: Fuerza bruta, DDoS, abuso de recursos
+  - Librería recomendada: `express-rate-limit`
+- [ ] **2FA (Two-Factor Authentication)**: Añadir autenticación de dos factores para admins
+  - Mayor seguridad en cuentas de administradores
+  - Opciones: TOTP (Google Authenticator), SMS, Email
+
+### Automatización (pendiente)
+- [ ] **Cron Job de Recordatorios**: Implementar sistema automático de recordatorios
+  - Enviar email 24 horas antes de cada reserva
+  - Verificar reservas pendientes diariamente
+  - Librería recomendada: `node-cron`
 
 ### Monetización (pendiente)
-- [ ] Integrar Stripe para pagos
-- [ ] Sistema de gestión de suscripciones
+- [ ] **Integración con Stripe**: Implementar sistema de pagos
+  - Checkout de suscripciones
+  - Webhooks para gestionar eventos de pago
+  - Planes: Básico, Pro, Premium
+- [ ] **Sistema de gestión de suscripciones**
+  - Control de límites por plan (reservas/mes, servicios, profesionales)
+  - Renovación automática
+  - Gestión de pruebas gratuitas (14 días)
 
 ---
 
