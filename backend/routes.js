@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authRoutes = require('./routes/auth');
+const setupDemosRoutes = require('./routes/setup-demos');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
@@ -17,6 +18,9 @@ router.setDatabase = setDatabase;
 
 // ==================== AUTENTICACIÓN ====================
 router.use(authRoutes);
+
+// ==================== SETUP DEMOS ====================
+router.use(setupDemosRoutes);
 
 // ==================== SERVICIOS ====================
 
