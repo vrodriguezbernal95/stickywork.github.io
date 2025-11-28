@@ -81,46 +81,46 @@ router.post('/login', async (req, res) => {
 router.get('/stats', requireSuperAdmin, async (req, res) => {
     try {
         // Total de negocios
-        const [totalBusinessesResult] = await db.query(
+        const totalBusinessesResult = await db.query(
             'SELECT COUNT(*) as total FROM businesses'
         );
-        const totalBusinesses = totalBusinessesResult[0]?.total || 0;
+        const totalBusinesses = totalBusinessesResult?.[0]?.total || 0;
 
         // Negocios activos (con trial activo o suscripción activa)
-        const [activeBusinessesResult] = await db.query(
+        const activeBusinessesResult = await db.query(
             `SELECT COUNT(*) as total FROM businesses
              WHERE (trial_ends_at > NOW() OR subscription_status = 'active')
              AND is_active = TRUE`
         );
-        const activeBusinesses = activeBusinessesResult[0]?.total || 0;
+        const activeBusinesses = activeBusinessesResult?.[0]?.total || 0;
 
         // Negocios nuevos este mes
-        const [newThisMonthResult] = await db.query(
+        const newThisMonthResult = await db.query(
             `SELECT COUNT(*) as total FROM businesses
              WHERE MONTH(created_at) = MONTH(CURRENT_DATE())
              AND YEAR(created_at) = YEAR(CURRENT_DATE())`
         );
-        const newThisMonth = newThisMonthResult[0]?.total || 0;
+        const newThisMonth = newThisMonthResult?.[0]?.total || 0;
 
         // Total de reservas en toda la plataforma
-        const [totalBookingsResult] = await db.query(
+        const totalBookingsResult = await db.query(
             'SELECT COUNT(*) as total FROM bookings'
         );
-        const totalBookings = totalBookingsResult[0]?.total || 0;
+        const totalBookings = totalBookingsResult?.[0]?.total || 0;
 
         // Reservas este mes (todas las empresas)
-        const [bookingsThisMonthResult] = await db.query(
+        const bookingsThisMonthResult = await db.query(
             `SELECT COUNT(*) as total FROM bookings
              WHERE MONTH(booking_date) = MONTH(CURRENT_DATE())
              AND YEAR(booking_date) = YEAR(CURRENT_DATE())`
         );
-        const bookingsThisMonth = bookingsThisMonthResult[0]?.total || 0;
+        const bookingsThisMonth = bookingsThisMonthResult?.[0]?.total || 0;
 
         // Mensajes de contacto sin leer
-        const [unreadMessagesResult] = await db.query(
+        const unreadMessagesResult = await db.query(
             "SELECT COUNT(*) as total FROM contact_messages WHERE status = 'unread'"
         );
-        const unreadMessages = unreadMessagesResult[0]?.total || 0;
+        const unreadMessages = unreadMessagesResult?.[0]?.total || 0;
 
         // Negocios por tipo
         const businessesByType = await db.query(
@@ -227,8 +227,8 @@ router.get('/businesses', requireSuperAdmin, async (req, res) => {
             countParams.push(`%${search}%`);
         }
 
-        const [totalResult] = await db.query(countQuery, countParams);
-        const total = totalResult[0]?.total || 0;
+        const totalResult = await db.query(countQuery, countParams);
+        const total = totalResult?.[0]?.total || 0;
 
         res.json({
             success: true,
@@ -256,9 +256,9 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
         const { id } = req.params;
 
         // Obtener negocio
-        const [businesses] = await db.query('SELECT * FROM businesses WHERE id = ?', [id]);
+        const businesses = await db.query('SELECT * FROM businesses WHERE id = ?', [id]);
 
-        if (businesses.length === 0) {
+        if (!businesses || businesses.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Negocio no encontrado'
@@ -268,17 +268,17 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
         const business = businesses[0];
 
         // Obtener estadísticas del negocio
-        const [bookingsCount] = await db.query(
+        const bookingsCount = await db.query(
             'SELECT COUNT(*) as total FROM bookings WHERE business_id = ?',
             [id]
         );
 
-        const [admins] = await db.query(
+        const admins = await db.query(
             'SELECT id, email, full_name, role, is_active, created_at FROM admin_users WHERE business_id = ?',
             [id]
         );
 
-        const [services] = await db.query(
+        const services = await db.query(
             'SELECT COUNT(*) as total FROM services WHERE business_id = ? AND is_active = TRUE',
             [id]
         );
@@ -288,9 +288,9 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
             data: {
                 ...business,
                 stats: {
-                    totalBookings: bookingsCount[0]?.total || 0,
-                    activeServices: services[0]?.total || 0,
-                    admins: admins
+                    totalBookings: bookingsCount?.[0]?.total || 0,
+                    activeServices: services?.[0]?.total || 0,
+                    admins: admins || []
                 }
             }
         });
@@ -342,7 +342,7 @@ router.patch('/businesses/:id', requireSuperAdmin, async (req, res) => {
             params
         );
 
-        const [updatedBusiness] = await db.query('SELECT * FROM businesses WHERE id = ?', [id]);
+        const updatedBusiness = await db.query('SELECT * FROM businesses WHERE id = ?', [id]);
 
         res.json({
             success: true,
@@ -433,7 +433,7 @@ router.patch('/messages/:id', requireSuperAdmin, async (req, res) => {
             [status, id]
         );
 
-        const [message] = await db.query('SELECT * FROM contact_messages WHERE id = ?', [id]);
+        const message = await db.query('SELECT * FROM contact_messages WHERE id = ?', [id]);
 
         res.json({
             success: true,
