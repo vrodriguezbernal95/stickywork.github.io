@@ -1073,6 +1073,141 @@ Implementar la arquitectura multi-tenant completa con los dos dashboards separad
 
 ---
 
+### 2025-11-28 - Fix Completo Super Admin Dashboard en Producción
+**Estado:** Completado ✓
+**Objetivo:** Resolver errores críticos del Super Admin Dashboard desplegado en Railway
+
+**Contexto:**
+Después de implementar el Super Admin Dashboard completo (login, estadísticas, gestión de clientes, mensajes), el deployment en Railway presentaba múltiples errores que impedían el funcionamiento correcto.
+
+**Problemas encontrados y solucionados:**
+
+**1. Error de Safe Navigation en Queries**
+- **Error:** `TypeError: Cannot read properties of undefined (reading 'total')`
+- **Causa:** Falta de safe navigation en acceso a resultados de queries
+- **Solución:** Cambiar `result[0]?.total` a `result?.[0]?.total`
+- **Commit:** `ffa3375` - Remove all references to non-existent is_active column
+
+**2. Error de Import Path Incorrecto**
+- **Error:** `Error: Cannot find module '../config/database-mysql'`
+- **Causa:** Rutas relativas incorrectas en:
+  - `backend/routes/super-admin.js` línea 6
+  - `backend/middleware/super-admin.js` línea 3
+- **Solución:** Cambiar de `require('../config/database-mysql')` a `require('../../config/database')`
+- **Impacto:** Este error hacía que Railway crasheara completamente
+
+**3. Super Admin User No Existía**
+- **Problema:** Login fallaba porque no había usuario super-admin en producción
+- **Causa:** MySQL URL de Railway (`mysql.railway.internal`) no accesible desde local
+- **Solución:** Crear endpoint temporal `/api/setup/create-super-admin`
+- **Ejecución:** PowerShell command con secret de seguridad
+- **Resultado:** Usuario creado exitosamente:
+  - Email: `admin@stickywork.com`
+  - Password: `StickyAdmin2025!`
+  - URL: https://stickywork.com/super-admin-login.html
+
+**4. Error de Array Destructuring en Queries**
+- **Error:** `500 Internal Server Error` en login
+- **Causa:** Doble destructuring de resultados de queries
+- **Explicación técnica:**
+  - `database-mysql.js` línea 67 ya hace: `const [results] = await connection.execute(...)`
+  - Por lo tanto `db.query()` retorna el array directamente
+  - Código erróneo: `const [superAdmins] = await db.query(...)`
+  - Código correcto: `const superAdmins = await db.query(...)`
+- **Archivos afectados:**
+  - `backend/routes/super-admin.js` (login endpoint)
+  - `backend/middleware/super-admin.js` (auth middleware)
+  - Múltiples endpoints de stats (~13 queries)
+- **Commit:** `7cb0714`, `8eca211`
+
+**5. Columna `is_active` No Existe**
+- **Error:** `Error: Unknown column 'is_active' in 'where clause'`
+- **Descubrimiento:** Endpoint debug `/api/debug/table-structure` reveló que las tablas:
+  - `businesses` - NO tiene columna `is_active`
+  - `admin_users` - NO tiene columna `is_active`
+  - `services` - NO tiene columna `is_active`
+  - Solo `platform_admins` tiene `is_active`
+- **Solución:** Eliminar todas las referencias a `is_active` en queries:
+  - Stats query (línea 90-93): Active businesses sin filtro is_active
+  - Business filters (líneas 182-186, 213-217): Usar solo `subscription_status`
+  - Admin count (línea 175): Sin filtro is_active
+  - Services count (línea 281): Sin filtro is_active
+  - PATCH endpoint (líneas 310-318): Remover parámetro is_active
+  - DELETE endpoint (líneas 361-365): Cambiar a `subscription_status = 'cancelled'`
+- **Commits:** `ffa3375`, `8eca211`
+
+**6. Error MySQL LIMIT/OFFSET con Prepared Statements**
+- **Error:** `ER_WRONG_ARGUMENTS: Incorrect arguments to mysqld_stmt_execute`
+- **Causa:** MySQL tiene incompatibilidades con prepared statements (`?`) en cláusulas LIMIT y OFFSET
+- **Query problemático:**
+  ```sql
+  LIMIT ? OFFSET ?
+  params.push(parseInt(limit), parseInt(offset))
+  ```
+- **Solución:** Usar valores directos en lugar de placeholders:
+  ```javascript
+  const limitNum = parseInt(limit) || 50;
+  const offsetNum = parseInt(offset) || 0;
+  query += ` LIMIT ${limitNum} OFFSET ${offsetNum}`;
+  ```
+- **Seguridad:** Uso de `parseInt()` garantiza que sean números válidos
+- **Commit:** `018d5ac`
+
+**7. Railway Cache Issue**
+- **Problema:** Deployment marcado como "Active" pero seguía usando código antiguo
+- **Evidencia:** Logs mostraban SQL con `LIMIT ? OFFSET ?` en lugar del código corregido
+- **Solución:** Forzar redeploy con commit vacío:
+  ```bash
+  git commit --allow-empty -m "chore: force Railway redeploy" && git push
+  ```
+- **Commit:** `b142fdf`
+- **Resultado:** Railway desplegó código actualizado correctamente
+
+**Endpoints creados para debugging:**
+- `POST /api/setup/create-super-admin` - Crear super-admin en producción
+- `GET /api/debug/table-structure?table=NOMBRE` - Inspeccionar estructura de tablas
+
+**Archivos modificados:**
+- `backend/routes/super-admin.js` - Múltiples fixes (destructuring, is_active, LIMIT/OFFSET)
+- `backend/middleware/super-admin.js` - Fix destructuring y import path
+- `backend/routes.js` - Endpoints de setup y debug
+
+**Commits (en orden cronológico):**
+1. `ffa3375` - fix: Remove all references to non-existent is_active column in businesses table
+2. `8eca211` - fix: Remove is_active references from admin_users and services tables
+3. `7cb0714` - fix: Remove array destructuring in super-admin middleware
+4. `018d5ac` - fix: Use direct values instead of placeholders for LIMIT and OFFSET in MySQL query
+5. `b142fdf` - chore: force Railway redeploy
+
+**Estado final:**
+- ✅ Super Admin Dashboard 100% funcional en producción
+- ✅ Login funcionando correctamente
+- ✅ Sección Dashboard con estadísticas globales
+- ✅ Sección Clientes con listado y filtros
+- ✅ Sección Mensajes funcional
+- ✅ Todos los endpoints respondiendo correctamente
+- ✅ Sin errores en logs de Railway
+
+**Funcionalidades del Super Admin Dashboard:**
+- 📊 **Dashboard:** Estadísticas globales (negocios, reservas, mensajes)
+- 🏢 **Clientes:** Lista de negocios con filtros (activo/inactivo, tipo, búsqueda)
+- 📧 **Mensajes:** Gestión de mensajes de contacto de stickywork.com
+- 📈 **Estadísticas:** Gráficos de crecimiento y distribución
+
+**Lecciones aprendidas:**
+1. MySQL `db.query()` adapter ya retorna array directamente (no destructurar)
+2. Verificar esquema de BD en producción antes de asumir columnas
+3. MySQL prepared statements incompatibles con LIMIT/OFFSET (usar valores directos)
+4. Railway puede cachear código (forzar redeploy con commit vacío)
+5. Crear endpoints de debug/setup para diagnosticar issues en producción
+
+**URLs de producción:**
+- Super Admin Login: https://stickywork.com/super-admin-login.html
+- Super Admin Dashboard: https://stickywork.com/super-admin.html
+- Credenciales: admin@stickywork.com / StickyAdmin2025!
+
+---
+
 ## Cómo usar este archivo
 Este archivo sirve como memoria del proyecto entre sesiones de Claude Code.
 Al iniciar una nueva sesión, pide a Claude que lea este archivo para tener contexto.
