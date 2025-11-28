@@ -383,12 +383,133 @@
 
 ---
 
+### 2025-01-28 - Entorno de Demos Completo Desplegado en Producción
+**Estado:** Completado ✓
+**Objetivo:** Crear un entorno de prueba con 7 modelos de negocio diferentes, cada uno con su landing page y widget funcional
+
+**Contexto:**
+- Necesitábamos mostrar cómo StickyWork se adapta a diferentes tipos de negocios
+- Los demos deben ser accesibles pero no indexables por buscadores (noindex)
+- Cada demo debe tener un negocio funcional en la base de datos con acceso al dashboard
+
+**Implementación realizada:**
+
+1. **Estructura de demos creada:**
+   - Carpeta `/demos/` con página índice (`index.html`)
+   - 7 landing pages personalizadas, una por tipo de negocio
+   - Cada página incluye: hero, servicios, equipo, widget funcional
+   - Meta tag `<meta name="robots" content="noindex">` en todas las páginas demo
+   - Badge "DEMO - Entorno de Prueba" en todas las páginas
+
+2. **7 Negocios demo creados en base de datos (IDs 1-7 en Railway):**
+
+   | ID | Negocio | Tipo | Slug | Email Admin | Password |
+   |----|---------|------|------|-------------|----------|
+   | 1 | Salón Bella Vista | Peluquería | salon-bella-vista-demo | admin@bellavista.demo | demo123 |
+   | 2 | Restaurante El Buen Sabor | Restaurante | restaurante-buen-sabor-demo | admin@buensabor.demo | demo123 |
+   | 3 | Centro de Psicología Mente Clara | Psicólogo | psicologo-mente-clara-demo | admin@menteclara.demo | demo123 |
+   | 4 | NutriVida - Centro de Nutrición | Nutrición | nutrivida-demo | admin@nutrivida.demo | demo123 |
+   | 5 | PowerFit Gym & Training | Gimnasio | powerfit-gym-demo | admin@powerfit.demo | demo123 |
+   | 6 | Estética Bella & Bella | Estética | estetica-bella-demo | admin@bellabella.demo | demo123 |
+   | 7 | Despacho Jurídico Lex & Partners | Abogados | despacho-lex-partners-demo | admin@lexpartners.demo | demo123 |
+
+3. **Cada negocio incluye:**
+   - Servicios personalizados (3-6 servicios según tipo)
+   - Profesionales del equipo (0-3 según tipo de negocio)
+   - Usuario administrador con acceso al dashboard
+   - Configuración de colores personalizada (widget_settings)
+   - Trial de 365 días (1 año)
+   - Onboarding marcado como completado
+
+4. **Landing pages creadas:**
+   - `/demos/index.html` - Índice con grid de 7 modelos de negocio
+   - `/demos/peluqueria.html` - Salón Bella Vista (rosa/morado)
+   - `/demos/restaurante.html` - Restaurante El Buen Sabor (naranja/amarillo)
+   - `/demos/psicologo.html` - Mente Clara (azul)
+   - `/demos/nutricion.html` - NutriVida (verde)
+   - `/demos/gimnasio.html` - PowerFit Gym (naranja/rojo)
+   - `/demos/estetica.html` - Bella & Bella (rosa/morado)
+   - `/demos/abogados.html` - Lex & Partners (azul/gris)
+
+5. **Scripts de generación creados:**
+   - `create-demo-businesses.js` - Creó los primeros 2 negocios (peluquería, restaurante)
+   - `create-remaining-demos.js` - Creó los 5 negocios restantes (IDs 6-10 local, 3-7 producción)
+   - `generate-remaining-pages.js` - Generó automáticamente las últimas 3 landing pages
+
+6. **Deployment a Railway (producción):**
+   - Creado endpoint API: `POST /api/setup/create-demo-businesses`
+     - Archivo: `backend/routes/setup-demos.js`
+     - Crea los 7 negocios con servicios, profesionales y admin
+     - Detecta negocios existentes para evitar duplicados
+   - Registrado endpoint en `backend/routes.js`
+   - Inicialización completa de base de datos MySQL en Railway:
+     - Script: `setup-railway-db.js` - Crea todas las tablas
+     - Script: `fix-professionals-table.js` - Añade columna 'role'
+     - Tablas creadas: businesses, services, professionals, bookings, admin_users, contact_messages
+   - Negocios demo creados exitosamente en producción (IDs 1-7)
+
+7. **Enlaces añadidos al footer:**
+   - Todas las páginas principales ahora tienen link "Entorno de prueba"
+   - Páginas actualizadas: index.html, como-funciona.html, planes.html, demo.html, contacto.html
+
+**URLs públicas en producción:**
+- Índice de demos: https://stickywork.com/demos/index.html
+- Cada demo individual: https://stickywork.com/demos/[tipo].html
+- Dashboard admin: https://stickywork.com/admin.html (usar credenciales de arriba)
+
+**Archivos creados:**
+- `/demos/index.html` - Página índice de demos
+- `/demos/peluqueria.html` - Demo peluquería
+- `/demos/restaurante.html` - Demo restaurante
+- `/demos/psicologo.html` - Demo psicólogo
+- `/demos/nutricion.html` - Demo nutrición
+- `/demos/gimnasio.html` - Demo gimnasio
+- `/demos/estetica.html` - Demo estética
+- `/demos/abogados.html` - Demo abogados
+- `backend/routes/setup-demos.js` - Endpoint para crear demos
+- `create-demo-businesses.js` - Script de creación local
+- `create-remaining-demos.js` - Script para demos restantes
+- `generate-remaining-pages.js` - Generador de páginas
+- `setup-railway-db.js` - Inicialización BD Railway
+- `fix-professionals-table.js` - Fix columna role
+
+**Archivos modificados:**
+- `backend/routes.js` - Registrado setup-demos route
+- `index.html` - Link a demos en footer
+- `como-funciona.html` - Link a demos en footer
+- `planes.html` - Link a demos en footer
+- `demo.html` - Link a demos en footer
+- `contacto.html` - Link a demos en footer
+
+**Commits:**
+- `2e16c43` - feat: Add API endpoint to create demo businesses in production
+
+**Estado final:**
+- ✅ 7 negocios demo funcionando en producción
+- ✅ 7 landing pages con widgets funcionales
+- ✅ Base de datos Railway completamente inicializada
+- ✅ Todos los demos accesibles desde https://stickywork.com/demos/
+- ✅ Enlaces en footer de todas las páginas principales
+- ✅ Credenciales admin funcionando para acceder al dashboard
+- ✅ Cada demo muestra servicios y profesionales específicos
+
+**Beneficios:**
+- Los clientes potenciales pueden ver demos reales funcionando
+- Cada tipo de negocio tiene su ejemplo personalizado
+- Widgets totalmente funcionales para probar el sistema
+- Fácil acceso desde el footer de todas las páginas
+- No indexable por buscadores (solo para mostrar a clientes)
+
+---
+
 ### Commits Recientes
+- `2e16c43` - feat: Add API endpoint to create demo businesses in production
+- `62f403c` - feat: Add demo environment with 7 business models
+- `8ca1771` - feat: Dark mode admin + UTF-8 fix + emails en footer
 - `2535787` - fix: Añadir columnas website, logo_url, description y widget_settings
 - `562cdd0` - fix: Añadir ALTER TABLE para actualizar tablas existentes
 - `6cc11d8` - fix: Prevenir timeout en Railway iniciando servidor antes de conectar DB
 - `61c7f52` - feat: Mejorar detección de variables MySQL y añadir debug endpoint
-- `369a6fa` - feat: Implementar CMP (Consent Management Platform) para cumplimiento RGPD
 
 ---
 
