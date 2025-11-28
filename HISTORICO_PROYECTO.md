@@ -768,6 +768,311 @@ Los 7 demos ahora están completamente funcionales con:
 
 ---
 
+### 2025-01-28 (continuación 2) - Mejoras Masivas al Dashboard Admin
+**Estado:** Completado ✓
+**Objetivo:** Mejorar significativamente el dashboard administrativo con funcionalidades que los negocios realmente necesitan
+
+**Problemas identificados:**
+- Dashboard básico con estadísticas simples
+- No había forma de crear reservas manualmente (para clientes que llaman o vienen presencialmente)
+- Falta de visión clara de la agenda del día
+- No había indicadores de crecimiento o tendencias
+- Sin comparativas temporales para evaluar desempeño
+
+**Soluciones implementadas:**
+
+**1. Creación Manual de Reservas** (`admin/js/bookings.js`)
+- **Problema:** Negocios reciben llamadas o clientes presenciales que quieren reservar, pero solo podían hacerlo vía widget
+- **Solución implementada:**
+  - Botón "Nueva Reserva" en vista de reservas
+  - Modal completo con formulario para:
+    - Datos del cliente (nombre, email, teléfono)
+    - Selector de servicio con información de duración y precio
+    - Selector de fecha (desde hoy en adelante) con validación
+    - Selector de hora (09:00-20:00, intervalos de 30 min)
+    - Campo de notas opcional
+  - Validación de formulario en tiempo real
+  - Notificaciones animadas de éxito/error
+  - Recarga automática de lista de reservas tras crear
+  - Diseño modal con animaciones (fadeIn, slideDown) y backdrop blur
+- **Beneficio:** Los negocios ahora pueden registrar todas sus reservas en el sistema, no solo las que vienen del widget
+
+**2. Widget "Agenda de Hoy"** (`admin/js/dashboard.js`)
+- **Problema:** Admin no podía ver de un vistazo qué tiene programado para hoy
+- **Solución implementada:**
+  - Widget destacado en dashboard principal
+  - Muestra solo las reservas del día actual (excluyendo canceladas)
+  - Ordenamiento automático por hora
+  - Características visuales:
+    - Indicador "¡PRÓXIMA!" para reservas en las siguientes 2 horas (borde amarillo)
+    - Reservas pasadas con menor opacidad y etiqueta "PASADA"
+    - Hora destacada en cada card
+    - Información completa: cliente, servicio, email, teléfono, estado, notas
+    - Diseño con gradiente atractivo (azul a morado)
+    - Efectos hover suaves
+  - Header con fecha actual en español (ej: "martes, 28 de enero")
+  - Mensaje amigable cuando no hay reservas: "¡Día libre! No hay reservas programadas para hoy"
+- **Beneficio:** El negocio puede prepararse para el día viendo toda su agenda de un vistazo
+
+**3. Gráfico de Tendencias de Reservas** (`admin/js/dashboard.js`)
+- **Problema:** Sin visibilidad de crecimiento a lo largo del tiempo
+- **Solución implementada:**
+  - Gráfico de barras mostrando últimas 7 semanas
+  - Procesamiento automático de datos:
+    - Agrupa reservas por semana
+    - Excluye reservas canceladas
+    - Calcula periodos desde hoy hacia atrás
+  - Características visuales:
+    - Barras animadas con altura proporcional al número de reservas
+    - Semana actual destacada con gradiente especial (azul-morado)
+    - Efectos hover interactivos (escala y sombra)
+    - Números visibles encima de cada barra
+    - Etiquetas de fecha debajo (ej: "Esta semana", "20/1 - 26/1")
+  - Estadísticas de resumen:
+    - Reservas esta semana (destacado en azul)
+    - Promedio semanal de las últimas 7 semanas
+    - Semana pico (máximo histórico en naranja)
+  - Diseño responsive y adaptativo
+- **Beneficio:** Los negocios pueden ver fácilmente si están creciendo o necesitan mejorar su estrategia
+
+**4. Comparativas con Mes Anterior** (`admin/js/dashboard.js`)
+- **Problema:** Sin indicadores de si el negocio va bien o mal comparado con periodos anteriores
+- **Solución implementada:**
+  - **Indicador en tarjeta "Reservas Este Mes":**
+    - Flecha arriba (▲) verde para crecimiento
+    - Flecha abajo (▼) roja para decrecimiento
+    - Porcentaje de cambio destacado
+    - Texto "vs mes anterior"
+
+  - **Panel completo de comparativa mensual:**
+    - Barras horizontales comparando mes actual vs anterior
+    - Barra mes actual: gradiente azul-morado (100% ancho)
+    - Barra mes anterior: gris (ancho proporcional)
+    - Indicador visual grande con:
+      - Emoji según tendencia (📈 crecimiento / 📉 decrecimiento / ➡️ sin cambios)
+      - Cambio absoluto en número de reservas (ej: +5, -3)
+      - Porcentaje de cambio (ej: +25%, -15%)
+      - Mensaje contextual ("¡Crecimiento!", "Decrecimiento", "Sin cambios")
+    - Nombres de meses en español (ej: "enero vs diciembre")
+    - Background con color semántico (verde/rojo/gris según tendencia)
+
+  - **Cálculos implementados:**
+    - Maneja correctamente cambios de año (diciembre → enero)
+    - Excluye reservas canceladas del conteo
+    - Calcula porcentaje con caso especial si mes anterior = 0 (100% crecimiento)
+
+  - **Casos especiales manejados:**
+    - Mensaje informativo cuando no hay datos suficientes
+    - Indicador neutro cuando no hay cambio (0%)
+
+- **Beneficio:** Los negocios saben inmediatamente si están mejorando o empeorando mes a mes
+
+**Archivos creados/modificados:**
+- `admin/js/bookings.js` - Reescritura completa con modal de creación (+285 líneas)
+- `admin/js/dashboard.js` - Añadidos 3 widgets nuevos (+450 líneas aproximadamente):
+  - `calculateMonthComparison()` - Calcula estadísticas mes a mes
+  - `renderMonthComparison()` - Renderiza panel de comparativa
+  - `processTrendData()` - Procesa datos para gráfico de tendencias
+  - `renderTrendChart()` - Renderiza gráfico de barras
+  - `renderTodayBooking()` - Renderiza cada reserva del día
+  - `getStatusColor()` - Colores para estados de reservas
+
+**Commits:**
+- `acd9e6e` - feat: Implementar creación manual de reservas en panel admin
+- `aaad4a2` - feat: Añadir widget 'Agenda de Hoy' en dashboard
+- `f3b43e0` - feat: Implementar gráfico de tendencias de reservas
+- `3590f5b` - feat: Añadir comparativas con mes anterior
+
+**Impacto:**
+- ✅ Dashboard mucho más completo y útil para gestión diaria
+- ✅ Los negocios pueden crear reservas desde cualquier canal (widget, teléfono, presencial)
+- ✅ Visibilidad clara de la agenda diaria
+- ✅ Métricas de crecimiento visualizadas
+- ✅ Toma de decisiones informada con datos históricos
+
+**Diseño y UX:**
+- Animaciones suaves y profesionales
+- Colores consistentes con el dark mode
+- Efectos hover para mejor feedback
+- Diseño responsive adaptado a móvil/tablet/desktop
+- Notificaciones con slide-in/slide-out
+
+---
+
+### 2025-01-28 (continuación 3) - Descubrimiento: Sistema de Mensajes y Necesidad de Arquitectura Multi-tenant
+**Estado:** En análisis / Planificación
+**Objetivo:** Investigar funcionalidad de mensajes y definir arquitectura correcta para SaaS
+
+**Descubrimientos:**
+
+**1. Sistema de Mensajes Existente:**
+- **Archivo:** `admin/js/messages.js` (ya implementado)
+- **Funcionalidad:**
+  - Vista de mensajes con estadísticas (no leídos, leídos, respondidos, total)
+  - Cards detalladas por mensaje mostrando:
+    - Nombre, email, teléfono del remitente
+    - Nombre y tipo de negocio
+    - Interés (demo, precios, información, etc.)
+    - Mensaje completo
+    - Fecha de creación
+  - Acciones disponibles:
+    - Marcar como leído
+    - Marcar como respondido
+    - Eliminar mensaje
+  - Estados: `unread`, `read`, `replied`
+
+- **Backend:** Endpoints completamente funcionales
+  - `POST /api/contact` - Enviar mensaje (público)
+  - `GET /api/contact` - Listar todos los mensajes (requiere auth)
+  - `GET /api/contact/:id` - Ver mensaje específico (requiere auth)
+  - `PATCH /api/contact/:id` - Actualizar estado (requiere auth)
+  - `DELETE /api/contact/:id` - Eliminar mensaje (requiere auth)
+  - Tabla: `contact_messages`
+
+- **Formulario de contacto:**
+  - URL: `https://stickywork.com/contacto.html`
+  - JavaScript: `js/main.js` - función `handleContactFormSubmit()`
+  - Campos: nombre, email, teléfono, nombre negocio, tipo negocio, interés, mensaje
+
+**⚠️ PROBLEMA CRÍTICO DETECTADO:**
+- Backend URL incorrecta en `js/main.js:118`
+- Apunta a: `https://stickywork-github-io.onrender.com` (URL antigua, no existe)
+- Debería apuntar a: `https://stickywork.com`
+- **Impacto:** Los mensajes de contacto NO están llegando a la base de datos
+
+**2. Problema Arquitectónico Identificado:**
+
+**Confusión actual:**
+El sistema tiene UN SOLO dashboard (`/admin`) que mezcla:
+- ❌ Mensajes de contacto de stickywork.com → Deberían ir al DUEÑO de la plataforma
+- ❌ Gestión de reservas/servicios → Es para los CLIENTES (negocios)
+
+**Arquitectura necesaria para SaaS:**
+
+Se requieren **DOS DASHBOARDS SEPARADOS:**
+
+**A) SUPER ADMIN Dashboard (para el dueño de StickyWork - tú):**
+```
+URL sugerida: /super-admin o /platform-admin
+```
+
+**Funcionalidades necesarias:**
+- 📧 **Mensajes de Contacto**: Gente interesada en contratar StickyWork
+  - Ver todos los mensajes de contacto.html
+  - Responder consultas de potenciales clientes
+  - Gestionar leads de ventas
+
+- 👥 **Gestión de Clientes (Negocios Registrados)**:
+  - Lista de todos los negocios usando la plataforma
+  - Información por negocio:
+    - Nombre del negocio
+    - Tipo (peluquería, restaurante, etc.)
+    - Email del admin
+    - Fecha de registro
+    - Plan contratado (Básico, Pro, Empresarial)
+    - Estado de suscripción (trial, activo, inactivo, cancelado)
+    - Fecha de fin de trial
+  - Acciones:
+    - Activar/desactivar negocios
+    - Ver detalles completos
+    - Cambiar plan
+    - Eliminar cuenta
+
+- 📊 **Estadísticas Globales de la Plataforma**:
+  - Total de negocios registrados
+  - Negocios activos vs inactivos
+  - Total de reservas en toda la plataforma (todas las empresas)
+  - Crecimiento de usuarios mes a mes
+  - Reservas totales por mes (todas las empresas)
+  - Ingresos proyectados (basados en planes)
+  - Tasa de conversión trial → pago
+  - Negocios nuevos hoy/esta semana/este mes
+
+- ⚙️ **Gestión de la Plataforma**:
+  - Configuración global
+  - Logs del sistema
+  - Uso de recursos (BD, storage, emails enviados)
+  - Monitor de salud del sistema
+
+**B) CLIENTE Dashboard (para los negocios - actual `/admin`):**
+```
+URL actual: /admin
+```
+
+**Funcionalidades (ya implementadas):**
+- ✅ Gestión de sus propias reservas
+- ✅ Gestión de sus propios servicios
+- ✅ Gestión de sus propios profesionales
+- ✅ Su calendario individual
+- ✅ Sus estadísticas (solo de su negocio)
+- ✅ Widget "Agenda de Hoy" (solo sus reservas)
+- ✅ Gráfico de tendencias (solo sus datos)
+- ✅ Comparativas mes anterior (solo su negocio)
+
+**Lo que NO deben ver:**
+- ❌ Mensajes de contacto de stickywork.com
+- ❌ Otros negocios de la plataforma
+- ❌ Estadísticas globales
+- ❌ Gestión de plataforma
+
+**3. Cambios Técnicos Necesarios:**
+
+**Base de datos:**
+- Tabla `businesses` ya existe ✓
+- Tabla `contact_messages` ya existe ✓
+- Necesario: Tabla `platform_admins` para super-admins
+- Necesario: Columna `role` en `admin_users` para diferenciar super-admin vs business-admin
+
+**Nuevos archivos a crear:**
+- `/super-admin.html` - Login y dashboard para super admin
+- `/super-admin-login.html` - Página de login específica
+- `/admin/js/super-dashboard.js` - Lógica del super dashboard
+- `/admin/js/clients.js` - Gestión de clientes (negocios)
+- `/admin/css/super-admin.css` - Estilos específicos
+
+**Backend:**
+- Nuevo endpoint: `GET /api/super-admin/businesses` - Listar todos los negocios
+- Nuevo endpoint: `GET /api/super-admin/stats` - Estadísticas globales
+- Nuevo endpoint: `PATCH /api/super-admin/business/:id` - Actualizar negocio
+- Nuevo endpoint: `DELETE /api/super-admin/business/:id` - Eliminar negocio
+- Middleware: `requireSuperAdmin` - Verificar permisos super-admin
+- Modificar: Mover endpoints de contacto a super-admin
+
+**Migraciones:**
+- Mover mensajes de `/admin` a `/super-admin`
+- Crear usuario super-admin inicial
+- Actualizar permisos de endpoints existentes
+
+**4. Plan de Implementación Propuesto:**
+
+**Fase 1: Fix urgente (inmediato)**
+- [ ] Corregir URL del backend en `js/main.js` (stickywork.com)
+- [ ] Verificar que mensajes de contacto llegan correctamente
+
+**Fase 2: Separación de dashboards (próxima sesión)**
+- [ ] Crear tabla `platform_admins`
+- [ ] Crear super-admin dashboard básico
+- [ ] Mover funcionalidad de mensajes a super-admin
+- [ ] Añadir vista de clientes registrados
+- [ ] Implementar estadísticas globales
+
+**Fase 3: Refinamiento (futuro)**
+- [ ] Añadir gestión avanzada de clientes
+- [ ] Implementar métricas de negocio
+- [ ] Sistema de notificaciones para super-admin
+- [ ] Dashboard de ingresos y facturación
+
+**Estado actual:**
+- ⏳ Arquitectura multi-tenant identificada pero NO implementada
+- ⚠️ URL de contacto incorrecta (bloqueante)
+- ✅ Sistema de mensajes ya implementado (solo falta moverlo)
+- ✅ Dashboard de clientes muy completo y funcional
+
+**Próximo paso:**
+Implementar la arquitectura multi-tenant completa con los dos dashboards separados.
+
+---
+
 ## Cómo usar este archivo
 Este archivo sirve como memoria del proyecto entre sesiones de Claude Code.
 Al iniciar una nueva sesión, pide a Claude que lea este archivo para tener contexto.
