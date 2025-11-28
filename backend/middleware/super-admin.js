@@ -1,6 +1,6 @@
 // Middleware para verificar permisos de super-admin
 const jwt = require('jsonwebtoken');
-const db = require('../config/database-mysql');
+const db = require('../../config/database');
 
 // Verificar que el usuario es un super-admin
 async function requireSuperAdmin(req, res, next) {

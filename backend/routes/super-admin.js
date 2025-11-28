@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database-mysql');
+const db = require('../../config/database');
 const { requireSuperAdmin } = require('../middleware/super-admin');
 
 // Login de super-admin
