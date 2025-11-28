@@ -494,10 +494,11 @@ router.get('/api/stats/:businessId', requireAuth, requireBusinessAccess, async (
         const { businessId } = req.params;
 
         // Total de reservas
-        const [totalBookings] = await db.query(
+        const totalBookingsResult = await db.query(
             'SELECT COUNT(*) as total FROM bookings WHERE business_id = ?',
             [businessId]
         );
+        const totalBookings = totalBookingsResult[0]?.total || 0;
 
         // Reservas por estado
         const bookingsByStatus = await db.query(
@@ -505,21 +506,22 @@ router.get('/api/stats/:businessId', requireAuth, requireBusinessAccess, async (
             [businessId]
         );
 
-        // Reservas este mes
-        const [thisMonth] = await db.query(
+        // Reservas este mes (usando CURDATE() para MySQL)
+        const thisMonthResult = await db.query(
             `SELECT COUNT(*) as total FROM bookings
              WHERE business_id = ?
-             AND MONTH(booking_date) = MONTH(CURRENT_DATE())
-             AND YEAR(booking_date) = YEAR(CURRENT_DATE())`,
+             AND MONTH(booking_date) = MONTH(CURDATE())
+             AND YEAR(booking_date) = YEAR(CURDATE())`,
             [businessId]
         );
+        const thisMonth = thisMonthResult[0]?.total || 0;
 
         res.json({
             success: true,
             data: {
-                totalBookings: totalBookings[0].total,
+                totalBookings,
                 bookingsByStatus,
-                thisMonth: thisMonth[0].total
+                thisMonth
             }
         });
     } catch (error) {
