@@ -20,12 +20,12 @@ router.post('/login', async (req, res) => {
         }
 
         // Buscar super-admin
-        const [superAdmins] = await db.query(
+        const superAdmins = await db.query(
             'SELECT * FROM platform_admins WHERE email = ? AND is_active = TRUE',
             [email]
         );
 
-        if (superAdmins.length === 0) {
+        if (!superAdmins || superAdmins.length === 0) {
             return res.status(401).json({
                 success: false,
                 message: 'Credenciales inválidas'
