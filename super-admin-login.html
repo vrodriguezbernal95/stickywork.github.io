@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Super Admin Login - StickyWork</title>
+    <link rel="stylesheet" href="admin/css/admin.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0e2e 0%, #1a1f45 50%, #2E35F5 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(46, 53, 245, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 61, 26, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(46, 53, 245, 0.05) 0%, transparent 50%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 450px;
+            background: rgba(17, 21, 51, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 1px rgba(46, 53, 245, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(46, 53, 245, 0.2);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            margin: 0;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #2E35F5, #FF3D1A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p {
+            margin: 0.5rem 0 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .super-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(26, 31, 69, 0.6);
+            border: 1px solid rgba(46, 53, 245, 0.3);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(46, 53, 245, 0.1);
+            background: rgba(26, 31, 69, 0.8);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(46, 53, 245, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(46, 53, 245, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ff6b6b;
+            padding: 0.875rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-link a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .back-link a:hover {
+            color: var(--primary-color);
+        }
+
+        .security-note {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .security-note p {
+            margin: 0;
+            color: #FFD700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🔐 StickyWork</h1>
+            <p>Panel de Administración</p>
+            <span class="super-badge">⭐ SUPER ADMIN</span>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    class="form-input"
+                    placeholder="admin@stickywork.com"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Contraseña</label>
+                <input
+                    type="password"
+                    id="password"
+                    class="form-input"
+                    placeholder="••••••••"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="btn-login" id="loginButton">
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <div class="security-note">
+            <p>
+                <span>🛡️</span>
+                Acceso restringido solo para administradores de la plataforma
+            </p>
+        </div>
+
+        <div class="back-link">
+            <a href="index.html">← Volver a la página principal</a>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de API
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://stickywork.com';
+
+        const loginForm = document.getElementById('loginForm');
+        const loginButton = document.getElementById('loginButton');
+        const errorMessage = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Limpiar mensaje de error
+            errorMessage.style.display = 'none';
+            errorMessage.textContent = '';
+
+            // Obtener valores
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Deshabilitar botón
+            loginButton.disabled = true;
+            loginButton.textContent = 'Iniciando sesión...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/super-admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Guardar token y datos del super-admin
+                    localStorage.setItem('superAdminToken', data.token);
+                    localStorage.setItem('superAdminData', JSON.stringify(data.superAdmin));
+
+                    // Redireccionar al dashboard
+                    window.location.href = 'super-admin.html';
+                } else {
+                    // Mostrar error
+                    showError(data.message || 'Credenciales inválidas');
+                }
+            } catch (error) {
+                console.error('Error en login:', error);
+                showError('Error al conectar con el servidor. Por favor, intenta de nuevo.');
+            } finally {
+                // Rehabilitar botón
+                loginButton.disabled = false;
+                loginButton.textContent = 'Iniciar Sesión';
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Auto-focus en el campo de email
+        document.getElementById('email').focus();
+    </script>
+</body>
+</html>

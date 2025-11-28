@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Super Admin Dashboard - StickyWork</title>
+    <link rel="stylesheet" href="admin/css/admin.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🔐 Super Admin</h2>
+            <p id="superAdminName" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;"></p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-link active" data-page="dashboard">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="#" class="nav-link" data-page="clients">
+                <span class="nav-icon">🏢</span>
+                <span class="nav-text">Clientes</span>
+            </a>
+            <a href="#" class="nav-link" data-page="messages">
+                <span class="nav-icon">📧</span>
+                <span class="nav-text">Mensajes</span>
+                <span id="unreadBadge" class="badge" style="display: none;"></span>
+            </a>
+            <a href="#" class="nav-link" data-page="stats">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text">Estadísticas</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="superAuth.logout()">
+                <span>🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <h1 id="pageTitle">Dashboard</h1>
+            <div class="topbar-actions">
+                <div class="user-info">
+                    <span id="topbarName"></span>
+                    <span class="super-badge">⭐ SUPER ADMIN</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="contentArea" class="content-area">
+            <div class="loading">
+                <p>Cargando...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="admin/js/api.js"></script>
+    <script>
+        // Super Admin Authentication Module
+        const superAuth = {
+            getToken() {
+                return localStorage.getItem('superAdminToken');
+            },
+
+            getSuperAdminData() {
+                const data = localStorage.getItem('superAdminData');
+                return data ? JSON.parse(data) : null;
+            },
+
+            logout() {
+                if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                    localStorage.removeItem('superAdminToken');
+                    localStorage.removeItem('superAdminData');
+                    window.location.href = 'super-admin-login.html';
+                }
+            },
+
+            checkAuth() {
+                const token = this.getToken();
+                if (!token) {
+                    window.location.href = 'super-admin-login.html';
+                    return false;
+                }
+                return true;
+            }
+        };
+
+        // Super Admin API Module
+        const superApi = {
+            async fetch(endpoint, options = {}) {
+                const token = superAuth.getToken();
+
+                const config = {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        ...options.headers
+                    }
+                };
+
+                const response = await fetch(`${API_URL}${endpoint}`, config);
+
+                if (response.status === 401) {
+                    // Token inválido o expirado
+                    superAuth.logout();
+                    throw new Error('Sesión expirada');
+                }
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
+                    throw new Error(error.message || `HTTP error ${response.status}`);
+                }
+
+                return response.json();
+            },
+
+            async get(endpoint) {
+                return this.fetch(endpoint, { method: 'GET' });
+            },
+
+            async post(endpoint, data) {
+                return this.fetch(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+            },
+
+            async patch(endpoint, data) {
+                return this.fetch(endpoint, {
+                    method: 'PATCH',
+                    body: JSON.stringify(data)
+                });
+            },
+
+            async delete(endpoint) {
+                return this.fetch(endpoint, { method: 'DELETE' });
+            }
+        };
+
+        // Verificar autenticación al cargar
+        if (!superAuth.checkAuth()) {
+            throw new Error('No autorizado');
+        }
+
+        // Cargar información del super-admin
+        const superAdminData = superAuth.getSuperAdminData();
+        if (superAdminData) {
+            document.getElementById('superAdminName').textContent = superAdminData.email;
+            document.getElementById('topbarName').textContent = superAdminData.fullName;
+        }
+    </script>
+    <script src="admin/js/super-dashboard.js"></script>
+    <script src="admin/js/super-clients.js"></script>
+    <script src="admin/js/super-messages.js"></script>
+    <script src="admin/js/super-stats.js"></script>
+    <script>
+        // Navigation handling
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Update active state
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                // Load page
+                const page = link.getAttribute('data-page');
+                loadPage(page);
+            });
+        });
+
+        function loadPage(page) {
+            switch (page) {
+                case 'dashboard':
+                    superDashboard.load();
+                    break;
+                case 'clients':
+                    superClients.load();
+                    break;
+                case 'messages':
+                    superMessages.load();
+                    break;
+                case 'stats':
+                    superStats.load();
+                    break;
+                default:
+                    superDashboard.load();
+            }
+        }
+
+        // Load dashboard on startup
+        superDashboard.load();
+
+        // Check for unread messages periodically
+        async function checkUnreadMessages() {
+            try {
+                const data = await superApi.get('/api/super-admin/messages?status=unread');
+                const unreadCount = data.data.length;
+
+                const badge = document.getElementById('unreadBadge');
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error checking messages:', error);
+            }
+        }
+
+        // Check immediately and then every 30 seconds
+        checkUnreadMessages();
+        setInterval(checkUnreadMessages, 30000);
+    </script>
+    <style>
+        .super-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: #ef4444;
+            color: white;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: auto;
+        }
+    </style>
+</body>
+</html>
