@@ -43,13 +43,13 @@ const calendar = {
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <!-- Navigation -->
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <button class="btn-small" onclick="calendar.previousPeriod()" style="background: var(--bg-primary);">
+                        <button class="btn-small" onclick="calendar.previousPeriod()">
                             ◀ Anterior
                         </button>
-                        <button class="btn-small" onclick="calendar.today()" style="background: var(--bg-primary);">
+                        <button class="btn-small" onclick="calendar.today()">
                             Hoy
                         </button>
-                        <button class="btn-small" onclick="calendar.nextPeriod()" style="background: var(--bg-primary);">
+                        <button class="btn-small" onclick="calendar.nextPeriod()">
                             Siguiente ▶
                         </button>
                     </div>
@@ -62,13 +62,11 @@ const calendar = {
                     <!-- View Toggle -->
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="btn-small ${this.currentView === 'month' ? 'btn-primary-small' : ''}"
-                                onclick="calendar.switchView('month')"
-                                style="${this.currentView !== 'month' ? 'background: var(--bg-primary);' : ''}">
+                                onclick="calendar.switchView('month')">
                             📅 Mes
                         </button>
                         <button class="btn-small ${this.currentView === 'day' ? 'btn-primary-small' : ''}"
-                                onclick="calendar.switchView('day')"
-                                style="${this.currentView !== 'day' ? 'background: var(--bg-primary);' : ''}">
+                                onclick="calendar.switchView('day')">
                             📆 Día
                         </button>
                     </div>

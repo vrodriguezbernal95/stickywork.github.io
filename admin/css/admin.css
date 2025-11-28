@@ -365,24 +365,98 @@ body::before {
 }
 
 /* Buttons */
+
+/* Botón principal grande (para "Añadir Servicio", etc.) */
+.btn-primary {
+    padding: 0.875rem 1.75rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    box-shadow: 0 4px 12px rgba(46, 53, 245, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-primary:hover::before {
+    left: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(46, 53, 245, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(46, 53, 245, 0.3);
+}
+
+/* Botón secundario grande */
+.btn-secondary {
+    padding: 0.875rem 1.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 53, 245, 0.2);
+}
+
+/* Botones pequeños (para calendario, acciones rápidas) */
 .btn-small {
     padding: 0.5rem 1rem;
-    border: none;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.btn-small:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(46, 53, 245, 0.2);
 }
 
 .btn-primary-small {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
+    border: none;
 }
 
 .btn-primary-small:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 5px 15px rgba(46, 53, 245, 0.4);
 }
 
 .btn-logout {
