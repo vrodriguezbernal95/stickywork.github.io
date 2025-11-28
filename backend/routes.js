@@ -1025,4 +1025,90 @@ router.post('/api/setup-database', async (req, res) => {
     }
 });
 
+// ==================== SETUP SUPER ADMIN (TEMPORAL) ====================
+router.post('/api/setup/create-super-admin', async (req, res) => {
+    try {
+        const bcrypt = require('bcrypt');
+
+        // Protección: requiere clave secreta
+        const { secret } = req.body;
+        if (secret !== 'setup-super-admin-2025') {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso denegado'
+            });
+        }
+
+        console.log('🔧 Creando tabla platform_admins...');
+
+        // 1. Crear tabla si no existe
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS platform_admins (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                full_name VARCHAR(255) NOT NULL,
+                role ENUM('super_admin', 'support', 'viewer') DEFAULT 'super_admin',
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_email (email)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+
+        console.log('✅ Tabla creada/verificada');
+
+        // 2. Crear super-admin
+        const email = 'admin@stickywork.com';
+        const password = 'StickyAdmin2025!';
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Verificar si existe
+        const existing = await db.query(
+            'SELECT id FROM platform_admins WHERE email = ?',
+            [email]
+        );
+
+        if (existing && existing.length > 0) {
+            // Actualizar
+            await db.query(
+                `UPDATE platform_admins
+                 SET password_hash = ?,
+                     full_name = ?,
+                     is_active = TRUE,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE email = ?`,
+                [passwordHash, 'Super Admin StickyWork', email]
+            );
+            console.log('✅ Usuario actualizado');
+        } else {
+            // Crear nuevo
+            await db.query(
+                `INSERT INTO platform_admins (email, password_hash, full_name, role, is_active)
+                 VALUES (?, ?, ?, 'super_admin', TRUE)`,
+                [email, passwordHash, 'Super Admin StickyWork']
+            );
+            console.log('✅ Usuario creado');
+        }
+
+        res.json({
+            success: true,
+            message: 'Super admin configurado correctamente',
+            credentials: {
+                email: email,
+                password: password,
+                url: 'https://stickywork.com/super-admin-login.html'
+            }
+        });
+
+    } catch (error) {
+        console.error('Error creando super admin:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al crear super admin',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
