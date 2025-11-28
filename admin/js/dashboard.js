@@ -23,6 +23,9 @@ const dashboard = {
                 booking.status !== 'cancelled'
             ).sort((a, b) => a.booking_time.localeCompare(b.booking_time));
 
+            // Process trend data (last 7 weeks)
+            const trendData = this.processTrendData(allBookings);
+
             // Load business info
             const businessData = await api.get(`/api/business/${auth.getBusinessId()}`);
             document.getElementById('businessName').textContent = businessData.data.name;
@@ -90,6 +93,23 @@ const dashboard = {
                     </div>
                 </div>
 
+                <!-- Trends Chart Widget -->
+                <div style="margin: 2rem 0;">
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <div style="margin-bottom: 1.5rem;">
+                            <h2 style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-size: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                                <span style="font-size: 2rem;">📈</span>
+                                Tendencia de Reservas
+                            </h2>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                                Evolución semanal de las últimas 7 semanas
+                            </p>
+                        </div>
+
+                        ${this.renderTrendChart(trendData)}
+                    </div>
+                </div>
+
                 <!-- Recent Bookings Table -->
                 <div class="table-container">
                     <div class="table-header">
@@ -145,6 +165,148 @@ const dashboard = {
                 </div>
             `;
         }
+    },
+
+    // Process booking data for trend chart (last 7 weeks)
+    processTrendData(bookings) {
+        const weeks = [];
+        const now = new Date();
+
+        // Generate last 7 weeks
+        for (let i = 6; i >= 0; i--) {
+            const weekEnd = new Date(now);
+            weekEnd.setDate(now.getDate() - (i * 7));
+            const weekStart = new Date(weekEnd);
+            weekStart.setDate(weekEnd.getDate() - 6);
+
+            const weekLabel = i === 0
+                ? 'Esta semana'
+                : `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`;
+
+            weeks.push({
+                label: weekLabel,
+                start: weekStart,
+                end: weekEnd,
+                count: 0
+            });
+        }
+
+        // Count bookings per week (excluding cancelled)
+        bookings.forEach(booking => {
+            if (booking.status === 'cancelled') return;
+
+            const bookingDate = new Date(booking.booking_date);
+            weeks.forEach(week => {
+                if (bookingDate >= week.start && bookingDate <= week.end) {
+                    week.count++;
+                }
+            });
+        });
+
+        return weeks;
+    },
+
+    // Render trend chart
+    renderTrendChart(trendData) {
+        const maxCount = Math.max(...trendData.map(w => w.count), 1);
+
+        return `
+            <div style="padding: 1rem;">
+                <!-- Chart Bars -->
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; height: 200px; margin-bottom: 1rem;">
+                    ${trendData.map((week, index) => {
+                        const height = maxCount > 0 ? (week.count / maxCount) * 100 : 0;
+                        const isCurrentWeek = index === trendData.length - 1;
+
+                        return `
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                                <!-- Bar -->
+                                <div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-end; height: 100%;">
+                                    ${week.count > 0 ? `
+                                        <div style="
+                                            width: 100%;
+                                            height: ${height}%;
+                                            background: ${isCurrentWeek ? 'linear-gradient(180deg, var(--primary-color), var(--secondary-color))' : 'linear-gradient(180deg, rgba(59, 130, 246, 0.8), rgba(59, 130, 246, 0.5))'};
+                                            border-radius: 8px 8px 0 0;
+                                            transition: all 0.3s ease;
+                                            position: relative;
+                                            cursor: pointer;
+                                            box-shadow: 0 -2px 8px rgba(59, 130, 246, 0.3);
+                                        "
+                                        onmouseover="this.style.transform='scaleY(1.05)'; this.style.boxShadow='0 -4px 12px rgba(59, 130, 246, 0.5)'"
+                                        onmouseout="this.style.transform='scaleY(1)'; this.style.boxShadow='0 -2px 8px rgba(59, 130, 246, 0.3)'">
+                                            <div style="
+                                                position: absolute;
+                                                top: -30px;
+                                                left: 50%;
+                                                transform: translateX(-50%);
+                                                background: var(--bg-tertiary);
+                                                color: var(--text-primary);
+                                                padding: 0.25rem 0.5rem;
+                                                border-radius: 6px;
+                                                font-weight: 700;
+                                                font-size: 0.9rem;
+                                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                                                white-space: nowrap;
+                                            ">
+                                                ${week.count}
+                                            </div>
+                                        </div>
+                                    ` : `
+                                        <div style="
+                                            width: 100%;
+                                            height: 5px;
+                                            background: var(--border-color);
+                                            border-radius: 4px;
+                                        "></div>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Chart Labels -->
+                <div style="display: flex; justify-content: space-between; gap: 0.5rem;">
+                    ${trendData.map((week, index) => {
+                        const isCurrentWeek = index === trendData.length - 1;
+                        return `
+                            <div style="flex: 1; text-align: center; font-size: 0.75rem; color: ${isCurrentWeek ? 'var(--primary-color)' : 'var(--text-secondary)'}; font-weight: ${isCurrentWeek ? '700' : '500'}; line-height: 1.2;">
+                                ${week.label}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <!-- Summary Stats -->
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--primary-color);">
+                            ${trendData[trendData.length - 1].count}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Esta semana
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary);">
+                            ${Math.round(trendData.reduce((sum, w) => sum + w.count, 0) / trendData.length)}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Promedio semanal
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--secondary-color);">
+                            ${Math.max(...trendData.map(w => w.count))}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Semana pico
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     },
 
     // Render a single today booking card
