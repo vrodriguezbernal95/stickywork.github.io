@@ -26,6 +26,9 @@ const dashboard = {
             // Process trend data (last 7 weeks)
             const trendData = this.processTrendData(allBookings);
 
+            // Calculate month comparison
+            const monthComparison = this.calculateMonthComparison(allBookings);
+
             // Load business info
             const businessData = await api.get(`/api/business/${auth.getBusinessId()}`);
             document.getElementById('businessName').textContent = businessData.data.name;
@@ -48,6 +51,28 @@ const dashboard = {
                         </div>
                         <div class="stat-value">${stats.thisMonth || 0}</div>
                         <div class="stat-label">Reservas Este Mes</div>
+                        ${monthComparison.change !== 0 ? `
+                            <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                <span style="
+                                    color: ${monthComparison.change > 0 ? '#22c55e' : '#ef4444'};
+                                    font-weight: 700;
+                                    font-size: 0.9rem;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 0.25rem;
+                                ">
+                                    ${monthComparison.change > 0 ? '▲' : '▼'}
+                                    ${Math.abs(monthComparison.percentage)}%
+                                </span>
+                                <span style="color: var(--text-tertiary); font-size: 0.8rem;">
+                                    vs mes anterior
+                                </span>
+                            </div>
+                        ` : monthComparison.lastMonth > 0 ? `
+                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
+                                ≈ Igual que mes anterior
+                            </div>
+                        ` : ''}
                     </div>
 
                     <div class="stat-card">
@@ -110,6 +135,18 @@ const dashboard = {
                     </div>
                 </div>
 
+                <!-- Month Comparison Widget -->
+                <div style="margin: 2rem 0;">
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary); font-size: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 2rem;">📊</span>
+                            Comparativa Mensual
+                        </h2>
+
+                        ${this.renderMonthComparison(monthComparison)}
+                    </div>
+                </div>
+
                 <!-- Recent Bookings Table -->
                 <div class="table-container">
                     <div class="table-header">
@@ -165,6 +202,150 @@ const dashboard = {
                 </div>
             `;
         }
+    },
+
+    // Calculate month-over-month comparison
+    calculateMonthComparison(bookings) {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // Calculate last month (handle year boundary)
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+        // Count bookings for this month (excluding cancelled)
+        const thisMonthCount = bookings.filter(booking => {
+            if (booking.status === 'cancelled') return false;
+            const bookingDate = new Date(booking.booking_date);
+            return bookingDate.getMonth() === currentMonth &&
+                   bookingDate.getFullYear() === currentYear;
+        }).length;
+
+        // Count bookings for last month (excluding cancelled)
+        const lastMonthCount = bookings.filter(booking => {
+            if (booking.status === 'cancelled') return false;
+            const bookingDate = new Date(booking.booking_date);
+            return bookingDate.getMonth() === lastMonth &&
+                   bookingDate.getFullYear() === lastMonthYear;
+        }).length;
+
+        // Calculate change
+        const change = thisMonthCount - lastMonthCount;
+
+        // Calculate percentage change
+        let percentage = 0;
+        if (lastMonthCount > 0) {
+            percentage = Math.round((change / lastMonthCount) * 100);
+        } else if (thisMonthCount > 0) {
+            percentage = 100; // If no bookings last month, 100% growth
+        }
+
+        return {
+            thisMonth: thisMonthCount,
+            lastMonth: lastMonthCount,
+            change: change,
+            percentage: percentage
+        };
+    },
+
+    // Render month comparison panel
+    renderMonthComparison(comparison) {
+        const now = new Date();
+        const currentMonthName = now.toLocaleDateString('es-ES', { month: 'long' });
+        const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthName = lastMonthDate.toLocaleDateString('es-ES', { month: 'long' });
+
+        const isGrowing = comparison.change > 0;
+        const isEqual = comparison.change === 0;
+
+        return `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                <!-- Months Comparison Bars -->
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- This Month -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; color: var(--text-primary); text-transform: capitalize;">
+                                ${currentMonthName}
+                            </span>
+                            <span style="font-weight: 700; color: var(--primary-color); font-size: 1.25rem;">
+                                ${comparison.thisMonth}
+                            </span>
+                        </div>
+                        <div style="background: var(--bg-tertiary); border-radius: 10px; height: 40px; overflow: hidden; position: relative;">
+                            <div style="
+                                height: 100%;
+                                width: ${comparison.thisMonth > 0 ? '100%' : '0%'};
+                                background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+                                border-radius: 10px;
+                                transition: width 1s ease;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-weight: 600;
+                            ">
+                                ${comparison.thisMonth > 0 ? 'Mes Actual' : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Last Month -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span style="font-weight: 600; color: var(--text-secondary); text-transform: capitalize;">
+                                ${lastMonthName}
+                            </span>
+                            <span style="font-weight: 700; color: var(--text-secondary); font-size: 1.25rem;">
+                                ${comparison.lastMonth}
+                            </span>
+                        </div>
+                        <div style="background: var(--bg-tertiary); border-radius: 10px; height: 40px; overflow: hidden; position: relative;">
+                            <div style="
+                                height: 100%;
+                                width: ${comparison.lastMonth > 0 && comparison.thisMonth > 0 ? (comparison.lastMonth / comparison.thisMonth * 100) + '%' : comparison.lastMonth > 0 ? '100%' : '0%'};
+                                background: linear-gradient(90deg, rgba(107, 114, 128, 0.6), rgba(107, 114, 128, 0.4));
+                                border-radius: 10px;
+                                transition: width 1s ease;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-weight: 600;
+                            ">
+                                ${comparison.lastMonth > 0 ? 'Mes Anterior' : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Indicator -->
+                <div style="text-align: center; padding: 2rem; background: ${isGrowing ? 'rgba(34, 197, 94, 0.1)' : isEqual ? 'rgba(107, 114, 128, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border-radius: 15px; border: 2px solid ${isGrowing ? 'rgba(34, 197, 94, 0.3)' : isEqual ? 'rgba(107, 114, 128, 0.3)' : 'rgba(239, 68, 68, 0.3)'};">
+                    <div style="font-size: 4rem; margin-bottom: 0.5rem;">
+                        ${isGrowing ? '📈' : isEqual ? '➡️' : '📉'}
+                    </div>
+                    <div style="font-size: 3rem; font-weight: 700; color: ${isGrowing ? '#22c55e' : isEqual ? '#6b7280' : '#ef4444'}; margin-bottom: 0.5rem;">
+                        ${isGrowing ? '+' : ''}${comparison.change}
+                    </div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: ${isGrowing ? '#22c55e' : isEqual ? '#6b7280' : '#ef4444'}; margin-bottom: 0.5rem;">
+                        ${isEqual ? '0' : (isGrowing ? '+' : '')}${comparison.percentage}%
+                    </div>
+                    <div style="font-size: 1rem; color: var(--text-secondary); font-weight: 600;">
+                        ${isGrowing ? '¡Crecimiento!' : isEqual ? 'Sin cambios' : 'Decrecimiento'}
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-tertiary); margin-top: 0.5rem;">
+                        vs ${lastMonthName}
+                    </div>
+                </div>
+            </div>
+
+            ${comparison.thisMonth === 0 && comparison.lastMonth === 0 ? `
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(234, 179, 8, 0.1); border-radius: 10px; text-align: center; color: var(--text-secondary);">
+                    💡 Todavía no hay suficientes datos para comparar. ¡Sigue trabajando!
+                </div>
+            ` : ''}
+        `;
     },
 
     // Process booking data for trend chart (last 7 weeks)
