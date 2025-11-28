@@ -172,7 +172,7 @@ router.get('/businesses', requireSuperAdmin, async (req, res) => {
             SELECT
                 b.*,
                 (SELECT COUNT(*) FROM bookings WHERE business_id = b.id) as total_bookings,
-                (SELECT COUNT(*) FROM admin_users WHERE business_id = b.id AND is_active = TRUE) as admin_count
+                (SELECT COUNT(*) FROM admin_users WHERE business_id = b.id) as admin_count
             FROM businesses b
             WHERE 1=1
         `;
@@ -273,12 +273,12 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
         );
 
         const admins = await db.query(
-            'SELECT id, email, full_name, role, is_active, created_at FROM admin_users WHERE business_id = ?',
+            'SELECT id, email, full_name, role, created_at FROM admin_users WHERE business_id = ?',
             [id]
         );
 
         const services = await db.query(
-            'SELECT COUNT(*) as total FROM services WHERE business_id = ? AND is_active = TRUE',
+            'SELECT COUNT(*) as total FROM services WHERE business_id = ?',
             [id]
         );
 
