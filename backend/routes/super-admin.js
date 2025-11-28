@@ -200,9 +200,10 @@ router.get('/businesses', requireSuperAdmin, async (req, res) => {
         // Ordenar por fecha de creación (más recientes primero)
         query += ` ORDER BY b.created_at DESC`;
 
-        // Paginación
-        query += ` LIMIT ? OFFSET ?`;
-        params.push(parseInt(limit), parseInt(offset));
+        // Paginación (usar valores directos en lugar de placeholders por compatibilidad con MySQL)
+        const limitNum = parseInt(limit) || 50;
+        const offsetNum = parseInt(offset) || 0;
+        query += ` LIMIT ${limitNum} OFFSET ${offsetNum}`;
 
         const businesses = await db.query(query, params);
 
