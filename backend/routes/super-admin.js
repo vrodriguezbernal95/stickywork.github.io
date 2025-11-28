@@ -89,8 +89,7 @@ router.get('/stats', requireSuperAdmin, async (req, res) => {
         // Negocios activos (con trial activo o suscripción activa)
         const activeBusinessesResult = await db.query(
             `SELECT COUNT(*) as total FROM businesses
-             WHERE (trial_ends_at > NOW() OR subscription_status = 'active')
-             AND is_active = TRUE`
+             WHERE (trial_ends_at > NOW() OR subscription_status = 'active')`
         );
         const activeBusinesses = activeBusinessesResult?.[0]?.total || 0;
 
@@ -181,9 +180,9 @@ router.get('/businesses', requireSuperAdmin, async (req, res) => {
 
         // Filtro por estado
         if (status === 'active') {
-            query += ` AND ((b.trial_ends_at > NOW() OR b.subscription_status = 'active') AND b.is_active = TRUE)`;
+            query += ` AND (b.trial_ends_at > NOW() OR b.subscription_status = 'active')`;
         } else if (status === 'inactive') {
-            query += ` AND (b.trial_ends_at <= NOW() AND b.subscription_status != 'active') OR b.is_active = FALSE`;
+            query += ` AND (b.trial_ends_at <= NOW() AND b.subscription_status != 'active')`;
         }
 
         // Filtro por tipo
@@ -212,9 +211,9 @@ router.get('/businesses', requireSuperAdmin, async (req, res) => {
         const countParams = [];
 
         if (status === 'active') {
-            countQuery += ` AND ((b.trial_ends_at > NOW() OR b.subscription_status = 'active') AND b.is_active = TRUE)`;
+            countQuery += ` AND (b.trial_ends_at > NOW() OR b.subscription_status = 'active')`;
         } else if (status === 'inactive') {
-            countQuery += ` AND (b.trial_ends_at <= NOW() AND b.subscription_status != 'active') OR b.is_active = FALSE`;
+            countQuery += ` AND (b.trial_ends_at <= NOW() AND b.subscription_status != 'active')`;
         }
 
         if (type) {
@@ -308,15 +307,10 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
 router.patch('/businesses/:id', requireSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { is_active, subscription_status, trial_ends_at } = req.body;
+        const { subscription_status, trial_ends_at } = req.body;
 
         const updates = [];
         const params = [];
-
-        if (typeof is_active !== 'undefined') {
-            updates.push('is_active = ?');
-            params.push(is_active);
-        }
 
         if (subscription_status) {
             updates.push('subscription_status = ?');
@@ -364,9 +358,9 @@ router.delete('/businesses/:id', requireSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Desactivar el negocio en lugar de eliminarlo
+        // Desactivar el negocio cambiando su subscription_status a 'cancelled'
         await db.query(
-            'UPDATE businesses SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            "UPDATE businesses SET subscription_status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
             [id]
         );
 
