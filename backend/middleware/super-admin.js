@@ -27,12 +27,12 @@ async function requireSuperAdmin(req, res, next) {
         }
 
         // Verificar que el super-admin existe y está activo
-        const [superAdmins] = await db.query(
+        const superAdmins = await db.query(
             'SELECT * FROM platform_admins WHERE id = ? AND is_active = TRUE',
             [decoded.super_admin_id]
         );
 
-        if (superAdmins.length === 0) {
+        if (!superAdmins || superAdmins.length === 0) {
             return res.status(403).json({
                 success: false,
                 message: 'Super-admin no encontrado o inactivo'
