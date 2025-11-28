@@ -1025,6 +1025,22 @@ router.post('/api/setup-database', async (req, res) => {
     }
 });
 
+// ==================== DEBUG: Ver estructura de tabla (TEMPORAL) ====================
+router.get('/api/debug/table-structure', async (req, res) => {
+    try {
+        const structure = await db.query('DESCRIBE businesses');
+        res.json({
+            success: true,
+            structure: structure
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // ==================== SETUP SUPER ADMIN (TEMPORAL) ====================
 router.post('/api/setup/create-super-admin', async (req, res) => {
     try {
