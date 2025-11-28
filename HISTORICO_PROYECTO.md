@@ -32,8 +32,17 @@
 ## Información Técnica
 - **Dominio:** stickywork.com / www.stickywork.com
 - **Registrador de dominio:** Porkbun
-- **Hosting Backend:** Railway (ipghzvhi.up.railway.app)
+- **Hosting Backend:** Railway
+  - **Servicios en Railway:**
+    - `stickywork-api` (backend Node.js/Express)
+    - `stickywork-db` (MySQL)
+  - **URLs públicas del backend:**
+    - https://stickywork.com (producción principal)
+    - https://www.stickywork.com
+    - https://stickywork-api-production-a2d8.up.railway.app (Railway generada)
+  - **URL privada:** stickywork-api.railway.internal
 - **Frontend estático:** GitHub Pages (vrodriguezbernal95.github.io)
+- **Base de datos MySQL:** Railway (switchback.proxy.rlwy.net:26447)
 
 ## Configuración DNS (Porkbun)
 | Tipo | Host | Destino |
@@ -499,6 +508,140 @@
 - Widgets totalmente funcionales para probar el sistema
 - Fácil acceso desde el footer de todas las páginas
 - No indexable por buscadores (solo para mostrar a clientes)
+
+---
+
+### 2025-01-28 (continuación) - Fix Completo del Entorno de Demos y Sistema de Login
+**Estado:** Completado ✓
+**Objetivo:** Corregir problemas con los widgets de demos y habilitar el sistema de login administrativo
+
+**Problemas identificados:**
+
+1. **Widgets mostrando servicios incorrectos**
+   - Peluquería mostraba servicios de nutrición
+   - Psicólogo mostraba servicios de manicura/spa
+   - Otros demos también mezclaban servicios
+
+2. **Admin users inexistentes**
+   - Usuarios intentaban hacer login pero no había cuentas admin en la BD
+   - El endpoint `/api/setup/create-demo-businesses` creaba negocios pero NO admin_users
+
+3. **Backend URL incorrecta en admin-login.html**
+   - Apuntaba a: `https://stickywork-github-io.onrender.com` (no existe)
+   - Backend real en Railway no era accesible
+
+**Soluciones implementadas:**
+
+**1. Corrección de Business IDs en demos:**
+   - **Problema:** Los archivos HTML usaban IDs de desarrollo local (4-10) en vez de producción (1-7)
+   - **Causa:** Durante desarrollo local se crearon con IDs diferentes a producción
+   - **Solución:**
+     - Actualizados los 7 archivos HTML con IDs correctos de producción
+     - Mapeado: peluqueria.html (4→1), restaurante.html (5→2), psicologo.html (6→3), etc.
+
+**2. Adición de profesionales faltantes:**
+   - **Script creado:** `fix-peluqueria-professionals.js`
+     - Añadidos 3 profesionales a Salón Bella Vista (ID 1)
+     - Actualizados colores del widget (#E91E63/#9C27B0)
+
+   - **Script creado:** `fix-psicologo.js`
+     - Añadidos 2 profesionales a Centro Mente Clara (ID 3)
+     - Actualizados colores del widget (#4A90E2/#7B68EE)
+
+   - **Script creado:** `fix-all-demos.js`
+     - Procesó los 5 demos restantes en batch:
+       - Restaurante (ID 2): Solo colores (no necesita profesionales)
+       - Nutrición (ID 4): 2 profesionales + colores
+       - Gimnasio (ID 5): 3 profesionales + colores
+       - Estética (ID 6): 3 profesionales + colores
+       - Abogados (ID 7): 3 profesionales + colores
+
+**3. Creación de usuarios administradores:**
+   - **Problema detectado:** 0 admin_users en base de datos de producción
+   - **Script creado:** `check-admin-users.js` - Verificar usuarios en BD
+   - **Script creado:** `create-admin-users.js` - Crear los 7 admin users
+   - **Resultado:** 7 usuarios admin creados con:
+     - Password: `demo123` (hash bcrypt con 10 rounds)
+     - Role: `owner`
+     - Estado: `is_active = TRUE`
+
+   | Business ID | Email | Nombre |
+   |-------------|-------|--------|
+   | 1 | admin@bellavista.demo | Admin Salón Bella Vista |
+   | 2 | admin@buensabor.demo | Admin Restaurante El Buen Sabor |
+   | 3 | admin@menteclara.demo | Admin Centro Mente Clara |
+   | 4 | admin@nutrivida.demo | Admin NutriVida |
+   | 5 | admin@powerfit.demo | Admin PowerFit Gym |
+   | 6 | admin@bellabella.demo | Admin Bella & Bella |
+   | 7 | admin@lexpartners.demo | Admin Lex & Partners |
+
+**4. Corrección de Backend URL:**
+   - **Primer intento:** Cambiar a `https://ipghzvhi.up.railway.app`
+     - Error: "Application not found" (URL obsoleta o incorrecta)
+
+   - **Investigación en Railway:**
+     - Servicios encontrados: `stickywork-api`, `stickywork-db`, `MySQL`
+     - URLs públicas del backend:
+       - `stickywork-api-production-a2d8.up.railway.app`
+       - `stickywork.com`
+       - `www.stickywork.com`
+
+   - **Solución final:**
+     - Actualizado `admin-login.html` a: `https://stickywork.com`
+     - Verificado que backend responde correctamente
+     - API endpoint `/api/auth/business-types` funcionando ✓
+
+**5. Issue de caché del navegador:**
+   - **Problema:** Usuario veía servicios antiguos tras los fixes
+   - **Causa:** Navegador cachea respuestas de la API
+   - **Solución:** Instrucción de hard refresh (Ctrl+Shift+R)
+
+**Archivos creados:**
+- `check-peluqueria-services.js` - Diagnóstico de servicios
+- `check-widget-settings.js` - Diagnóstico de widget_settings
+- `fix-peluqueria-professionals.js` - Fix peluquería
+- `fix-psicologo.js` - Fix psicólogo
+- `fix-all-demos.js` - Fix batch de 5 demos
+- `check-admin-users.js` - Verificar admin users
+- `create-admin-users.js` - Crear admin users
+
+**Archivos modificados:**
+- `demos/peluqueria.html` - businessId: 4 → 1
+- `demos/restaurante.html` - businessId: 5 → 2
+- `demos/psicologo.html` - businessId: 6 → 3
+- `demos/nutricion.html` - businessId: 7 → 4
+- `demos/gimnasio.html` - businessId: 8 → 5
+- `demos/estetica.html` - businessId: 9 → 6
+- `demos/abogados.html` - businessId: 10 → 7
+- `admin-login.html` - Backend URL corregida a stickywork.com
+
+**Commits:**
+- `fbcdf26` - fix: Corregir IDs de negocios en todos los demos y añadir profesionales faltantes
+- `abfa64d` - fix: Corregir URL del backend en admin login
+- `3ceaed0` - fix: Actualizar URL del backend a stickywork.com
+
+**Estado final:**
+- ✅ Todos los widgets de demos muestran los servicios correctos
+- ✅ Profesionales asignados a cada negocio según corresponde
+- ✅ Colores del widget personalizados por negocio
+- ✅ 7 usuarios admin creados y funcionales
+- ✅ Sistema de login funcionando correctamente
+- ✅ Backend accesible en https://stickywork.com
+- ✅ Todos los endpoints API respondiendo correctamente
+
+**Resultado:**
+Los 7 demos ahora están completamente funcionales con:
+- Servicios correctos para cada tipo de negocio
+- Profesionales asignados (cuando aplica)
+- Widgets con colores corporativos personalizados
+- Acceso administrativo funcional para cada demo
+- Sistema de login operativo en producción
+
+**Lecciones aprendidas:**
+- Verificar IDs de base de datos entre desarrollo y producción
+- Importancia de crear admin users junto con los negocios demo
+- Railway genera URLs específicas por servicio (no usar URLs antiguas)
+- El caché del navegador puede ocultar fixes de API (hard refresh necesario)
 
 ---
 
