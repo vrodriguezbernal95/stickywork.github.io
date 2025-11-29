@@ -289,4 +289,93 @@ router.post('/api/setup/create-demo-businesses', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/setup/add-business-controls
+ * Agrega columnas is_active y free_access a la tabla businesses
+ * NOTA: Este endpoint debería protegerse o eliminarse después del primer uso
+ */
+router.post('/api/setup/add-business-controls', async (req, res) => {
+    try {
+        console.log('🔄 Starting migration: Add business control columns...');
+
+        const results = {
+            actions: [],
+            errors: []
+        };
+
+        // Check if columns already exist
+        const columns = await db.query(`
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'businesses'
+        `);
+
+        const existingColumns = columns.map(c => c.COLUMN_NAME);
+        console.log(`Found ${existingColumns.length} columns in businesses table`);
+
+        // Add is_active column if it doesn't exist
+        if (!existingColumns.includes('is_active')) {
+            await db.query(`
+                ALTER TABLE businesses
+                ADD COLUMN is_active BOOLEAN DEFAULT TRUE
+                COMMENT 'Manual control by super-admin to activate/deactivate business'
+            `);
+            results.actions.push('is_active column added');
+            console.log('✅ is_active column added');
+        } else {
+            results.actions.push('is_active column already exists');
+            console.log('⏭️ is_active column already exists');
+        }
+
+        // Add free_access column if it doesn't exist
+        if (!existingColumns.includes('free_access')) {
+            await db.query(`
+                ALTER TABLE businesses
+                ADD COLUMN free_access BOOLEAN DEFAULT FALSE
+                COMMENT 'Permanent free access for sponsored projects, NGOs, special cases'
+            `);
+            results.actions.push('free_access column added');
+            console.log('✅ free_access column added');
+        } else {
+            results.actions.push('free_access column already exists');
+            console.log('⏭️ free_access column already exists');
+        }
+
+        // Set all existing businesses to active by default
+        const updateResult = await db.query(`
+            UPDATE businesses
+            SET is_active = TRUE
+            WHERE is_active IS NULL
+        `);
+        results.actions.push(`Updated ${updateResult.affectedRows || 0} businesses to active`);
+        console.log(`✅ Updated ${updateResult.affectedRows || 0} businesses to active`);
+
+        // Verify the changes
+        const newColumns = await db.query(`
+            SHOW COLUMNS FROM businesses
+            WHERE Field IN ('is_active', 'free_access')
+        `);
+
+        res.json({
+            success: true,
+            message: 'Migration completed successfully',
+            data: {
+                actions: results.actions,
+                columns: newColumns
+            }
+        });
+
+        console.log('✅ Migration completed successfully!');
+
+    } catch (error) {
+        console.error('❌ Migration failed:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 module.exports = router;
