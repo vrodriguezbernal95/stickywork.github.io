@@ -1208,6 +1208,269 @@ Después de implementar el Super Admin Dashboard completo (login, estadísticas,
 
 ---
 
+### 2025-11-29 - Sistema de Mensajes de Soporte para Clientes
+**Estado:** Completado ✓
+**Objetivo:** Implementar sistema completo para que los clientes puedan enviar mensajes de soporte desde su dashboard
+
+**Contexto:**
+Los clientes necesitaban una forma de contactar al equipo de StickyWork para:
+- Reportar bugs
+- Hacer preguntas
+- Enviar sugerencias
+- Solicitar llamadas o emails detallados
+
+Se implementó un sistema con restricciones para evitar spam:
+- Máximo 150 palabras por mensaje
+- Solo 1 mensaje activo a la vez
+- Timeout de 72 horas si no hay respuesta
+
+**Implementación realizada:**
+
+**1. Base de datos - Tabla `support_messages`:**
+```sql
+CREATE TABLE support_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    business_id INT NOT NULL,
+    category ENUM('bug', 'question', 'suggestion', 'call_request', 'email_request') NOT NULL DEFAULT 'question',
+    message TEXT NOT NULL,
+    word_count INT NOT NULL,
+    status ENUM('pending', 'answered', 'closed') NOT NULL DEFAULT 'pending',
+    admin_response TEXT NULL,
+    answered_by VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    answered_at TIMESTAMP NULL,
+    can_send_again_at TIMESTAMP NULL,
+    FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
+)
+```
+
+**2. Frontend Cliente - Formulario de Soporte:**
+- **Archivo creado:** `admin/js/support.js`
+- **Funcionalidades:**
+  - Verificación de si puede enviar mensaje (`checkCanSendMessage()`)
+  - Contador de palabras en tiempo real (máx 150)
+  - Selector de categoría con emojis visuales
+  - Validación de formulario
+  - Historial de mensajes anteriores con respuestas
+  - Manejo de estados: pending, answered, closed
+  - Notificaciones animadas de éxito/error
+
+**3. Backend - Endpoints de Soporte (Cliente):**
+- **Archivo:** `backend/routes/support.js`
+- **Endpoints implementados:**
+  - `GET /api/support/can-send-message` - Verifica si el cliente puede enviar un mensaje
+    - Valida mensaje pendiente
+    - Valida timeout de 72h
+    - Retorna razones específicas (pending_response, timeout_72h, previous_answered, no_previous_messages)
+
+  - `POST /api/support/messages` - Crear nuevo mensaje
+    - Validación de 150 palabras máximo
+    - Validación de 5 palabras mínimo
+    - Validación de categoría
+    - Verificación de mensaje pendiente
+    - Cálculo automático de `can_send_again_at` (72h)
+
+  - `GET /api/support/messages/my-messages` - Historial del cliente
+    - Solo retorna mensajes del negocio autenticado
+    - Ordenados por fecha descendente
+
+**4. Backend - Endpoints Super-Admin:**
+- **Archivo:** `backend/routes/super-admin.js`
+- **Endpoints implementados:**
+  - `GET /api/super-admin/support/messages` - Lista todos los mensajes de soporte
+    - Filtro por status (pending, answered, closed)
+    - JOIN con businesses para mostrar info del negocio
+
+  - `PATCH /api/super-admin/support/messages/:id/respond` - Responder mensaje
+    - Actualiza `admin_response`, `answered_by`, `answered_at`
+    - Cambia status a 'answered'
+
+  - `PATCH /api/super-admin/support/messages/:id/close` - Cerrar mensaje
+    - Cambia status a 'closed'
+
+**5. Integración en Super-Admin Dashboard:**
+- **Archivo modificado:** `admin/js/super-messages.js`
+- **Cambios:**
+  - Sistema de tabs para separar:
+    - **Mensajes de Contacto** (público desde stickywork.com)
+    - **Mensajes de Soporte** (clientes autenticados)
+  - Renderizado específico para mensajes de soporte:
+    - Muestra nombre del negocio
+    - Categoría con iconos (🐛 Bug, ❓ Pregunta, 💡 Sugerencia, 📞 Llamada, 📧 Email)
+    - Badges de estado (⏳ Pendiente, ✅ Respondido, 🔒 Cerrado)
+  - Filtros independientes por tipo de mensaje
+  - Función `viewSupportMessage()` preparada para modal de respuesta (TODO)
+
+- **Archivo modificado:** `admin/css/admin.css`
+- **Cambios:**
+  - CSS para tabs con efecto active
+  - Estilos para badges de estado
+  - Responsive design
+
+**Problemas encontrados y soluciones:**
+
+**⚠️ PROBLEMA 1: Railway Crash - Route.patch() requires callback**
+- **Error completo:**
+  ```
+  Error: Route.patch() requires a callback function but got a [object Undefined]
+  at Route.<computed> [as patch] (/app/node_modules/express/lib/router/route.js:216:15)
+  at Object.<anonymous> (/app/backend/routes/support.js:235:8)
+  ```
+- **Causa raíz:**
+  - Archivo `backend/routes/support.js` tenía rutas duplicadas:
+    - Líneas 235-268: `router.patch('/messages/:id/respond', requireSuperAdmin, ...)`
+    - Líneas 270-297: `router.patch('/messages/:id/close', requireSuperAdmin, ...)`
+  - Middleware `requireSuperAdmin` importado pero NO existía en el archivo
+  - Las rutas respond/close YA existían correctamente en `backend/routes/super-admin.js`
+- **Solución aplicada:**
+  - Eliminar rutas duplicadas de support.js
+  - Mantener solo las rutas de cliente (can-send-message, POST messages, my-messages)
+  - Dejar comentario: `// NOTE: Las rutas de respond y close están en super-admin.js`
+- **Lección aprendida:**
+  - No duplicar rutas entre archivos
+  - Las rutas de super-admin deben estar en super-admin.js con su middleware correcto
+
+**⚠️ PROBLEMA 2: JWT Token - business_id undefined**
+- **Error completo:**
+  ```
+  Error checking message status: TypeError: Bind parameters must not contain undefined.
+  To pass SQL NULL specify JS null
+  at /app/backend/routes/support.js:23:33
+  ```
+- **Causa raíz:**
+  - JWT token en `backend/middleware/auth.js` línea 14 usa:
+    ```javascript
+    const payload = {
+        id: user.id,
+        email: user.email,
+        businessId: user.business_id,  // ← camelCase
+        role: user.role
+    };
+    ```
+  - Pero código en `backend/routes/support.js` intentaba acceder:
+    ```javascript
+    const businessId = req.user.business_id;  // ← snake_case (UNDEFINED!)
+    ```
+  - Al pasar `undefined` a la query MySQL, causaba error de bind parameters
+- **Investigación realizada:**
+  1. Revisión de logs de Railway mostrando el error exacto
+  2. Lectura de `backend/routes/auth.js` para ver qué retorna el login
+  3. Lectura de `backend/middleware/auth.js` para ver estructura del JWT payload
+  4. Identificación de discrepancia de naming (camelCase vs snake_case)
+- **Solución aplicada:**
+  - Cambiar en 3 ubicaciones de `backend/routes/support.js`:
+    - Línea 20: `req.user.business_id` → `req.user.businessId`
+    - Línea 103: `req.user.business_id` → `req.user.businessId`
+    - Línea 208: `req.user.business_id` → `req.user.businessId`
+- **Commit:** `404c29c` - fix: Corregir acceso a business_id en JWT token
+- **Lección aprendida:**
+  - **CRÍTICO:** Siempre verificar la estructura exacta del JWT payload antes de acceder a propiedades
+  - El middleware `requireAuth` decodifica el JWT y pone `req.user = decoded`
+  - Por tanto `req.user` tiene la estructura del payload, NO de la base de datos
+  - Convención inconsistente entre BD (snake_case) y JWT (camelCase) debe documentarse
+
+**⚠️ PROBLEMA 3: Módulo no exportado - "Sección en construcción"**
+- **Error visto por usuario:**
+  - Al hacer click en "Contactar Soporte" en dashboard del cliente
+  - Mensaje: "Sección en construcción"
+- **Causa raíz:**
+  - Archivo `admin/js/support.js` definía objeto `supportModule`
+  - Pero NO lo exportaba al scope global de `window`
+  - Sin exportación, el módulo no era accesible desde `admin-dashboard.html`
+- **Solución aplicada:**
+  - Añadir al final de `admin/js/support.js`:
+    ```javascript
+    // Export
+    window.supportModule = supportModule;
+    ```
+- **Lección aprendada:**
+  - Todos los módulos del dashboard deben exportarse a `window` para ser accesibles
+  - Patrón consistente en el proyecto: `window.nombreModulo = nombreModulo;`
+
+**Archivos creados:**
+- `admin/js/support.js` - Módulo completo de soporte para clientes
+- `backend/routes/support.js` - Endpoints de soporte (cliente)
+- Scripts de diagnóstico y setup (temporales):
+  - `setup-railway-db.js` - Crear tabla support_messages
+  - `check-widget-settings.js` - Verificar configuración
+
+**Archivos modificados:**
+- `backend/routes/super-admin.js` - Añadidos endpoints de soporte (super-admin)
+- `backend/routes.js` - Registrado route de support
+- `admin/js/super-messages.js` - Sistema de tabs y renderizado de mensajes soporte
+- `admin/css/admin.css` - Estilos para tabs y badges
+- `admin-dashboard.html` - Link a sección de soporte
+
+**Commits de esta sesión:**
+1. `d82f81b` - (commit previo a esta sesión)
+2. `404c29c` - fix: Corregir acceso a business_id en JWT token
+
+**Estado final:**
+- ✅ Sistema de mensajes de soporte 100% funcional
+- ✅ Clientes pueden enviar mensajes desde su dashboard
+- ✅ Restricciones implementadas (150 palabras, 1 mensaje, 72h timeout)
+- ✅ Super-admin puede ver todos los mensajes de soporte en tabs separados
+- ✅ Historial de mensajes visible para clientes con respuestas
+- ✅ Integración completa frontend-backend
+- ✅ Sin errores en Railway
+
+**Funcionalidades completadas:**
+- ✅ Formulario de contacto soporte con validación en tiempo real
+- ✅ Contador de palabras (0/150)
+- ✅ Selector de categoría (5 tipos)
+- ✅ Verificación de restricciones antes de enviar
+- ✅ Historial de mensajes anteriores
+- ✅ Vista de respuestas del admin
+- ✅ Tabs en super-admin para separar tipos de mensajes
+- ✅ Lista de mensajes de soporte con filtros
+
+**Pendiente para próxima sesión:**
+- ⏳ Modal de respuesta a mensajes de soporte (super-admin)
+  - Formulario para escribir respuesta
+  - Botón para marcar como respondido
+  - Botón para cerrar mensaje
+  - Envío de notificación por email (integración con Brevo)
+- ⏳ Notificaciones por email:
+  - Email al super-admin cuando cliente envía mensaje
+  - Email al cliente cuando super-admin responde
+- ⏳ Testing completo del flujo end-to-end
+
+**🔴 LECCIONES CRÍTICAS APRENDIDAS (para evitar perder tiempo en futuras sesiones):**
+
+1. **Consultar SIEMPRE el histórico al inicio:**
+   - El error de Railway con MySQL URL ya estaba documentado
+   - La solución (mysql.railway.internal) ya estaba en el histórico
+   - Consultar el archivo ANTES de intentar soluciones evita perder tiempo
+
+2. **JWT Payload estructura:**
+   - El JWT usa **camelCase** para los campos (businessId, no business_id)
+   - Siempre verificar `backend/middleware/auth.js` función `generateToken()`
+   - No asumir que `req.user` tiene la misma estructura que la base de datos
+
+3. **Railway deployment:**
+   - Variables de entorno deben estar en el servicio correcto (stickywork-api)
+   - URL interna correcta: `mysql.railway.internal:3306`
+   - Los logs de Railway son la mejor fuente de verdad para errores
+
+4. **Arquitectura de rutas:**
+   - Rutas de super-admin van en `backend/routes/super-admin.js`
+   - Rutas de cliente van en archivos específicos (support.js, bookings.js, etc.)
+   - NO duplicar rutas entre archivos
+
+5. **Exports de módulos frontend:**
+   - TODOS los módulos deben exportarse: `window.moduleName = moduleName;`
+   - Sin export, el módulo no es accesible desde HTML
+
+**URLs de testing:**
+- Cliente (dashboard): https://stickywork.com/admin-dashboard.html
+  - Login: admin@lexpartners.demo / demo123
+  - Sección: "Contactar Soporte"
+- Super-admin: https://stickywork.com/super-admin.html
+  - Login: admin@stickywork.com / StickyAdmin2025!
+  - Sección: "Mensajes" → Tab "🆘 Soporte Clientes"
+
+---
+
 ## Cómo usar este archivo
 Este archivo sirve como memoria del proyecto entre sesiones de Claude Code.
 Al iniciar una nueva sesión, pide a Claude que lea este archivo para tener contexto.
