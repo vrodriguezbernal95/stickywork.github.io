@@ -169,21 +169,23 @@ const superClients = {
                                             onclick="superClients.viewDetails(${business.id})"
                                             class="btn-icon"
                                             title="Ver detalles"
+                                            style="font-size: 1.2rem;"
                                         >
                                             👁️
                                         </button>
                                         <button
                                             onclick="superClients.toggleActiveStatus(${business.id}, ${business.is_active || 1})"
                                             class="btn-icon"
-                                            title="${business.is_active === 0 || business.is_active === false ? 'Activar negocio' : 'Desactivar negocio'}"
+                                            title="${business.is_active === 0 || business.is_active === false ? 'Activar negocio' : 'Suspender negocio'}"
+                                            style="font-size: 1.2rem;"
                                         >
                                             ${business.is_active === 0 || business.is_active === false ? '🟢' : '🔴'}
                                         </button>
                                         <button
                                             onclick="superClients.toggleFreeAccess(${business.id}, ${business.free_access || 0})"
                                             class="btn-icon"
-                                            title="${business.free_access === 1 || business.free_access === true ? 'Quitar acceso gratuito' : 'Dar acceso gratuito permanente'}"
-                                            style="filter: ${business.free_access === 1 || business.free_access === true ? 'grayscale(0)' : 'grayscale(1) opacity(0.5)'};"
+                                            title="${business.free_access === 1 || business.free_access === true ? 'QUITAR acceso gratuito' : 'DAR acceso gratuito permanente'}"
+                                            style="font-size: 1.3rem; ${business.free_access === 1 || business.free_access === true ? 'opacity: 1; filter: drop-shadow(0 0 3px #fbbf24);' : 'opacity: 0.4; filter: grayscale(1);'}"
                                         >
                                             ⭐
                                         </button>
@@ -229,29 +231,29 @@ const superClients = {
     getStatusBadge(business) {
         // Suspendido manualmente
         if (business.is_active === 0 || business.is_active === false) {
-            return '<span class="badge" style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">⛔ Suspendido</span>';
+            return '<span class="badge" style="background: rgba(239, 68, 68, 0.25); color: #ff6b6b; border: 1px solid rgba(239, 68, 68, 0.5); font-weight: 700;">⛔ Suspendido</span>';
         }
 
         // Acceso gratuito permanente
         if (business.free_access === 1 || business.free_access === true) {
-            return '<span class="badge" style="background: rgba(251, 191, 36, 0.25); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4);">⭐ Gratuito</span>';
+            return '<span class="badge" style="background: rgba(251, 191, 36, 0.3); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.6); font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">⭐ Gratuito</span>';
         }
 
-        // Suscripción activa (pagada)
+        // Suscripción activa (pagada) - VERDE BRILLANTE
         if (business.subscription_status === 'active') {
-            return '<span class="badge badge-success">🟢 Activo</span>';
+            return '<span class="badge" style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;">✅ Activo</span>';
         }
 
-        // Trial válido
+        // Trial válido - VERDE también (activo)
         const now = new Date();
         const trialEnds = business.trial_ends_at ? new Date(business.trial_ends_at) : null;
         if (business.subscription_status === 'trial' && trialEnds && trialEnds > now) {
             const daysLeft = Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24));
-            return `<span class="badge badge-info">🔵 Trial (${daysLeft}d)</span>`;
+            return `<span class="badge" style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;">✅ Trial (${daysLeft}d)</span>`;
         }
 
         // Trial expirado o cancelado
-        return '<span class="badge badge-inactive">⚪ Inactivo</span>';
+        return '<span class="badge" style="background: rgba(148, 163, 184, 0.25); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); font-weight: 700;">⚪ Inactivo</span>';
     },
 
     renderPagination(pagination) {
