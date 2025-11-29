@@ -2,6 +2,7 @@
 const superMessages = {
     currentStatus: '',
     selectedMessage: null,
+    currentTab: 'contact', // 'contact' or 'support'
 
     async load() {
         // Update page title
@@ -10,9 +11,19 @@ const superMessages = {
         // Render layout
         const contentArea = document.getElementById('contentArea');
         contentArea.innerHTML = `
+            <!-- Tabs -->
+            <div class="tabs" style="margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color);">
+                <button class="tab-btn active" data-tab="contact" onclick="superMessages.switchTab('contact')">
+                    💬 Mensajes de Contacto
+                </button>
+                <button class="tab-btn" data-tab="support" onclick="superMessages.switchTab('support')">
+                    🆘 Soporte Clientes
+                </button>
+            </div>
+
             <div class="card">
                 <div class="card-header">
-                    <h3>Mensajes de Contacto</h3>
+                    <h3 id="tabTitle">Mensajes de Contacto</h3>
                     <div class="filters-container">
                         <select id="statusFilter" class="filter-select" onchange="superMessages.filterByStatus()">
                             <option value="">Todos los mensajes</option>
@@ -57,6 +68,41 @@ const superMessages = {
         await this.loadMessages();
     },
 
+    switchTab(tab) {
+        this.currentTab = tab;
+        this.currentStatus = '';
+
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+
+        // Update title and filter options
+        const tabTitle = document.getElementById('tabTitle');
+        const statusFilter = document.getElementById('statusFilter');
+
+        if (tab === 'contact') {
+            tabTitle.textContent = 'Mensajes de Contacto';
+            statusFilter.innerHTML = `
+                <option value="">Todos los mensajes</option>
+                <option value="unread">Sin leer</option>
+                <option value="read">Leídos</option>
+                <option value="replied">Respondidos</option>
+            `;
+        } else {
+            tabTitle.textContent = 'Mensajes de Soporte de Clientes';
+            statusFilter.innerHTML = `
+                <option value="">Todos los mensajes</option>
+                <option value="pending">Pendientes</option>
+                <option value="answered">Respondidos</option>
+                <option value="closed">Cerrados</option>
+            `;
+        }
+
+        // Reload messages
+        this.loadMessages();
+    },
+
     filterByStatus() {
         this.currentStatus = document.getElementById('statusFilter').value;
         this.loadMessages();
@@ -67,7 +113,13 @@ const superMessages = {
         container.innerHTML = '<div class="loading">Cargando...</div>';
 
         try {
-            let url = '/api/super-admin/messages';
+            let url;
+            if (this.currentTab === 'contact') {
+                url = '/api/super-admin/messages';
+            } else {
+                url = '/api/super-admin/support/messages';
+            }
+
             if (this.currentStatus) {
                 url += `?status=${this.currentStatus}`;
             }
@@ -79,7 +131,11 @@ const superMessages = {
                 return;
             }
 
-            container.innerHTML = this.renderMessagesList(data.data);
+            if (this.currentTab === 'contact') {
+                container.innerHTML = this.renderMessagesList(data.data);
+            } else {
+                container.innerHTML = this.renderSupportMessagesList(data.data);
+            }
 
         } catch (error) {
             console.error('Error loading messages:', error);
@@ -319,6 +375,63 @@ const superMessages = {
             console.error('Error deleting message:', error);
             this.showNotification(`Error al eliminar el mensaje: ${error.message}`, 'error');
         }
+    },
+
+    renderSupportMessagesList(messages) {
+        return `
+            <div class="messages-list">
+                ${messages.map(msg => {
+                    const date = new Date(msg.created_at).toLocaleString('es-ES', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const categoryLabels = {
+                        'bug': '🐛 Bug',
+                        'question': '❓ Pregunta',
+                        'suggestion': '💡 Sugerencia',
+                        'call_request': '📞 Llamada',
+                        'email_request': '📧 Email'
+                    };
+
+                    const statusBadges = {
+                        'pending': '<span class="badge badge-warning">⏳ Pendiente</span>',
+                        'answered': '<span class="badge badge-success">✅ Respondido</span>',
+                        'closed': '<span class="badge" style="background: rgba(148, 163, 184, 0.25); color: #cbd5e1;">🔒 Cerrado</span>'
+                    };
+
+                    return `
+                        <div class="message-item ${msg.status === 'pending' ? 'message-unread' : ''}"
+                            onclick="superMessages.viewSupportMessage(${msg.id})">
+                            <div class="message-header">
+                                <div class="message-from">
+                                    <strong>${msg.business_name || 'Cliente'}</strong>
+                                    ${categoryLabels[msg.category] || msg.category}
+                                    ${statusBadges[msg.status]}
+                                </div>
+                                <div class="message-date">${date}</div>
+                            </div>
+                            <div class="message-contact">
+                                📧 ${msg.business_email || 'N/A'}
+                                ${msg.business_type ? `• 🏢 ${msg.business_type}` : ''}
+                            </div>
+                            <div class="message-preview">
+                                ${msg.message.substring(0, 150)}${msg.message.length > 150 ? '...' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    async viewSupportMessage(messageId) {
+        // TODO: Implement support message detail view with response form
+        console.log('View support message:', messageId);
+        this.showNotification('Función de respuesta en desarrollo', 'info');
     },
 
     showNotification(message, type = 'info') {
