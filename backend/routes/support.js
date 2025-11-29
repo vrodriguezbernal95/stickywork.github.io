@@ -17,7 +17,7 @@ router.setDatabase = setDatabase;
  */
 router.get('/can-send-message', requireAuth, async (req, res) => {
     try {
-        const businessId = req.user.business_id;
+        const businessId = req.user.businessId;
 
         // Buscar mensaje pendiente o respondido recientemente
         const existingMessage = await db.query(`
@@ -100,7 +100,7 @@ router.get('/can-send-message', requireAuth, async (req, res) => {
  */
 router.post('/messages', requireAuth, async (req, res) => {
     try {
-        const businessId = req.user.business_id;
+        const businessId = req.user.businessId;
         const { category, message } = req.body;
 
         // Validaciones
@@ -205,7 +205,7 @@ router.post('/messages', requireAuth, async (req, res) => {
  */
 router.get('/messages/my-messages', requireAuth, async (req, res) => {
     try {
-        const businessId = req.user.business_id;
+        const businessId = req.user.businessId;
 
         const messages = await db.query(`
             SELECT *
