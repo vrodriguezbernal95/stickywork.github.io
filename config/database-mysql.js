@@ -8,11 +8,27 @@ let dbConfig;
 if (process.env.MYSQL_URL || process.env.MYSQLURL) {
     // Usar URL de conexión directa (Railway)
     const url = process.env.MYSQL_URL || process.env.MYSQLURL;
-    console.log('📦 Conectando vía MYSQL_URL');
-    // Añadir charset a la URL si no lo tiene
-    dbConfig = url.includes('?')
-        ? `${url}&charset=utf8mb4`
-        : `${url}?charset=utf8mb4`;
+    console.log('📦 Conectando vía MYSQL_URL:', url.replace(/:[^:@]+@/, ':****@'));
+
+    // Parsear la URL manualmente
+    const urlMatch = url.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+    if (urlMatch) {
+        dbConfig = {
+            host: urlMatch[3],
+            port: parseInt(urlMatch[4]),
+            user: urlMatch[1],
+            password: urlMatch[2],
+            database: urlMatch[5],
+            charset: 'utf8mb4',
+            waitForConnections: true,
+            connectionLimit: 10,
+            queueLimit: 0
+        };
+        console.log('📦 Configuración parseada:', { host: dbConfig.host, port: dbConfig.port, database: dbConfig.database });
+    } else {
+        console.error('❌ No se pudo parsear MYSQL_URL');
+        dbConfig = url;
+    }
 } else {
     // Usar variables individuales (desarrollo local)
     console.log('📦 Conectando vía variables individuales');
