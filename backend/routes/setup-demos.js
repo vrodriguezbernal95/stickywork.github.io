@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 // Permitir inyección de la base de datos
 let db = require('../../config/database');
 
+console.log('📦 [SETUP-DEMOS] Module loaded, db config:', { hasQuery: !!db.query });
+
 function setDatabase(database) {
     db = database;
 }
@@ -384,7 +386,8 @@ router.post('/api/setup/add-business-controls', async (req, res) => {
  */
 router.post('/api/setup/create-support-messages-table', async (req, res) => {
     try {
-        console.log('🔄 Creating support_messages table...');
+        console.log('🔄 [ENDPOINT HIT] Creating support_messages table...');
+        console.log('🔄 [DB CHECK] db object:', { hasQuery: !!db.query, hasCreatePool: !!db.createPool });
 
         await db.query(`
             CREATE TABLE IF NOT EXISTS support_messages (
