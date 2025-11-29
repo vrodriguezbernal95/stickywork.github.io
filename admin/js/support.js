@@ -368,3 +368,6 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
         }, 5000);
     }
 };
+
+// Export
+window.supportModule = supportModule;
