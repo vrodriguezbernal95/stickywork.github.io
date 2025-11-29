@@ -1,16 +1,20 @@
-// Support Messages Module for Client Dashboard
+// Support Module for Client Dashboard
 const supportModule = {
     currentStatus: null,
+    currentTab: 'send', // 'send' or 'history'
 
     async load() {
         // Update page title
-        document.getElementById('pageTitle').textContent = 'Contactar Soporte';
+        document.getElementById('pageTitle').textContent = 'Soporte';
 
         // Check if can send message
         await this.checkCanSendMessage();
 
-        // Render interface
-        this.render();
+        // Render layout with tabs
+        this.renderLayout();
+
+        // Load content based on current tab
+        this.loadTabContent();
     },
 
     async checkCanSendMessage() {
@@ -27,15 +31,54 @@ const supportModule = {
         }
     },
 
-    render() {
+    renderLayout() {
         const contentArea = document.getElementById('contentArea');
 
+        contentArea.innerHTML = `
+            <!-- Tabs -->
+            <div class="tabs" style="margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color);">
+                <button class="tab-btn ${this.currentTab === 'send' ? 'active' : ''}" data-tab="send" onclick="supportModule.switchTab('send')">
+                    📤 Enviar Mensaje
+                </button>
+                <button class="tab-btn ${this.currentTab === 'history' ? 'active' : ''}" data-tab="history" onclick="supportModule.switchTab('history')">
+                    📜 Mis Mensajes
+                </button>
+            </div>
+
+            <!-- Tab Content Container -->
+            <div id="tabContent"></div>
+        `;
+    },
+
+    switchTab(tab) {
+        this.currentTab = tab;
+
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+
+        // Load content for the selected tab
+        this.loadTabContent();
+    },
+
+    loadTabContent() {
+        const container = document.getElementById('tabContent');
+
+        if (this.currentTab === 'send') {
+            this.renderSendMessageTab(container);
+        } else {
+            this.renderHistoryTab(container);
+        }
+    },
+
+    renderSendMessageTab(container) {
         if (!this.currentStatus) {
-            contentArea.innerHTML = '<div class="loading">Cargando...</div>';
+            container.innerHTML = '<div class="loading">Cargando...</div>';
             return;
         }
 
-        contentArea.innerHTML = `
+        container.innerHTML = `
             <div class="card" style="max-width: 800px; margin: 0 auto;">
                 <div class="card-header">
                     <h3>💬 Contactar Equipo de StickyWork</h3>
@@ -46,14 +89,28 @@ const supportModule = {
                     ${this.currentStatus.canSend ? this.renderForm() : this.renderBlockedMessage()}
                 </div>
             </div>
-
-            ${this.renderPreviousMessages()}
         `;
 
         // Add event listeners if form is visible
         if (this.currentStatus.canSend) {
-            this.attachEventListeners();
+            this.attachFormEventListeners();
         }
+    },
+
+    renderHistoryTab(container) {
+        container.innerHTML = `
+            <div class="card" style="max-width: 800px; margin: 0 auto;">
+                <div class="card-header">
+                    <h3>📜 Historial de Mensajes</h3>
+                </div>
+                <div id="messagesHistory" class="card-body">
+                    <div class="loading">Cargando historial...</div>
+                </div>
+            </div>
+        `;
+
+        // Load messages
+        this.loadPreviousMessages();
     },
 
     renderStatusMessage() {
@@ -93,6 +150,13 @@ const supportModule = {
                 <p style="color: var(--text-tertiary); font-size: 0.9rem; margin-top: 1rem;">
                     Si no recibes respuesta en 72 horas, podrás enviar otro mensaje.
                 </p>
+                <button
+                    onclick="supportModule.switchTab('history')"
+                    class="btn-secondary"
+                    style="margin-top: 1.5rem; padding: 0.75rem 1.5rem;"
+                >
+                    📜 Ver Mis Mensajes
+                </button>
             </div>
         `;
     },
@@ -148,11 +212,11 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
                 <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                     <button
                         type="button"
-                        onclick="supportModule.cancel()"
+                        onclick="supportModule.switchTab('history')"
                         class="btn-secondary"
                         style="padding: 0.75rem 1.5rem;"
                     >
-                        Cancelar
+                        Ver Historial
                     </button>
                     <button
                         type="submit"
@@ -180,20 +244,7 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
         `;
     },
 
-    renderPreviousMessages() {
-        return `
-            <div class="card" style="max-width: 800px; margin: 2rem auto 0;">
-                <div class="card-header">
-                    <h3>📜 Historial de Mensajes</h3>
-                </div>
-                <div id="messagesHistory" class="card-body">
-                    <div class="loading">Cargando historial...</div>
-                </div>
-            </div>
-        `;
-    },
-
-    attachEventListeners() {
+    attachFormEventListeners() {
         const form = document.getElementById('supportForm');
         const textarea = document.getElementById('message');
         const wordCountSpan = document.getElementById('wordCount');
@@ -221,13 +272,9 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
             e.preventDefault();
             this.submitMessage();
         });
-
-        // Load previous messages
-        this.loadPreviousMessages();
     },
 
     async submitMessage() {
-        const form = document.getElementById('supportForm');
         const submitBtn = document.getElementById('submitBtn');
         const category = document.getElementById('category').value;
         const message = document.getElementById('message').value.trim();
@@ -253,9 +300,10 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
 
             this.showNotification('¡Mensaje enviado correctamente! Te responderemos lo antes posible.', 'success');
 
-            // Reload page
+            // Switch to history tab after a delay
             setTimeout(() => {
-                this.load();
+                this.switchTab('history');
+                this.load(); // Reload to update status
             }, 2000);
 
         } catch (error) {
@@ -278,6 +326,13 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
                     <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
                         <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
                         <p>No tienes mensajes anteriores</p>
+                        <button
+                            onclick="supportModule.switchTab('send')"
+                            class="btn-primary"
+                            style="margin-top: 1rem; padding: 0.75rem 1.5rem;"
+                        >
+                            📤 Enviar Primer Mensaje
+                        </button>
                     </div>
                 `;
                 return;
@@ -339,10 +394,6 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
                 ` : ''}
             </div>
         `;
-    },
-
-    cancel() {
-        window.location.href = 'admin-dashboard.html';
     },
 
     showNotification(message, type = 'info') {
