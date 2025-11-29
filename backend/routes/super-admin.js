@@ -454,7 +454,7 @@ router.patch('/support/messages/:id/respond', requireSuperAdmin, async (req, res
                 answered_at = NOW(),
                 status = 'answered'
             WHERE id = ?
-        `, [response.trim(), req.user.email, id]);
+        `, [response.trim(), req.superAdmin.email, id]);
 
         // Get updated message with business info
         const updatedMessage = await db.query(`
