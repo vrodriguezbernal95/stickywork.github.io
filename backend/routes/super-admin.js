@@ -274,7 +274,7 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
         );
 
         const admins = await db.query(
-            'SELECT id, email, full_name, role, created_at FROM admin_users WHERE business_id = ?',
+            'SELECT id, email, full_name, role, is_active, created_at FROM admin_users WHERE business_id = ?',
             [id]
         );
 
