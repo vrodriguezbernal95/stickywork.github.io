@@ -391,6 +391,118 @@ router.delete('/businesses/:id', requireSuperAdmin, async (req, res) => {
     }
 });
 
+// ==================== SUPPORT MESSAGES ====================
+
+// Listar mensajes de soporte de clientes
+router.get('/support/messages', requireSuperAdmin, async (req, res) => {
+    try {
+        const { status } = req.query;
+
+        let query = `
+            SELECT
+                sm.*,
+                b.name as business_name,
+                b.email as business_email,
+                b.type as business_type
+            FROM support_messages sm
+            JOIN businesses b ON sm.business_id = b.id
+        `;
+
+        const params = [];
+
+        if (status) {
+            query += ' WHERE sm.status = ?';
+            params.push(status);
+        }
+
+        query += ' ORDER BY sm.created_at DESC';
+
+        const messages = await db.query(query, params);
+
+        res.json({
+            success: true,
+            data: messages
+        });
+
+    } catch (error) {
+        console.error('Error fetching support messages:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener mensajes de soporte'
+        });
+    }
+});
+
+// Responder a un mensaje de soporte
+router.patch('/support/messages/:id/respond', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { response } = req.body;
+
+        if (!response || response.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'La respuesta no puede estar vacía'
+            });
+        }
+
+        await db.query(`
+            UPDATE support_messages
+            SET
+                admin_response = ?,
+                answered_by = ?,
+                answered_at = NOW(),
+                status = 'answered'
+            WHERE id = ?
+        `, [response.trim(), req.user.email, id]);
+
+        // Get updated message with business info
+        const updatedMessage = await db.query(`
+            SELECT sm.*, b.name as business_name, b.email as business_email
+            FROM support_messages sm
+            JOIN businesses b ON sm.business_id = b.id
+            WHERE sm.id = ?
+        `, [id]);
+
+        res.json({
+            success: true,
+            message: 'Respuesta enviada correctamente',
+            data: updatedMessage[0]
+        });
+
+    } catch (error) {
+        console.error('Error responding to support message:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al enviar respuesta'
+        });
+    }
+});
+
+// Cerrar mensaje de soporte
+router.patch('/support/messages/:id/close', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await db.query(
+            "UPDATE support_messages SET status = 'closed' WHERE id = ?",
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Mensaje cerrado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error closing support message:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al cerrar mensaje'
+        });
+    }
+});
+
 // Listar mensajes de contacto (mover desde /api/contact)
 router.get('/messages', requireSuperAdmin, async (req, res) => {
     try {
