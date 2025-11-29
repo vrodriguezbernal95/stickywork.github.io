@@ -5,7 +5,7 @@ const supportModule = {
 
     async load() {
         // Update page title
-        document.getElementById('pageTitle').textContent = 'Soporte';
+        document.getElementById('pageTitle').textContent = 'Mensajes';
 
         // Check if can send message
         await this.checkCanSendMessage();
