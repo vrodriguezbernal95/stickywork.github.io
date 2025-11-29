@@ -76,6 +76,14 @@ const app = {
                 }
                 break;
 
+            case 'support':
+                if (window.supportModule) {
+                    await supportModule.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             case 'settings':
                 this.showUnderConstruction();
                 break;
