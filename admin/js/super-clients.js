@@ -141,10 +141,10 @@ const superClients = {
                             <th>Negocio</th>
                             <th>Tipo</th>
                             <th>Estado</th>
-                            <th>Reservas</th>
-                            <th>Admins</th>
+                            <th style="text-align: center;">Reservas</th>
+                            <th style="text-align: center;">Admins</th>
                             <th>Registro</th>
-                            <th>Acciones</th>
+                            <th style="text-align: center;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -161,17 +161,17 @@ const superClients = {
                                     </td>
                                     <td>${typeLabels[business.type] || business.type}</td>
                                     <td>${statusBadge}</td>
-                                    <td>${business.total_bookings || 0}</td>
-                                    <td>${business.admin_count || 0}</td>
+                                    <td style="text-align: center; font-weight: 600;">${business.total_bookings || 0}</td>
+                                    <td style="text-align: center; font-weight: 600;">${business.admin_count || 0}</td>
                                     <td>${createdDate}</td>
-                                    <td style="white-space: nowrap;">
+                                    <td style="white-space: nowrap; text-align: center;">
                                         <button
                                             onclick="superClients.viewDetails(${business.id})"
                                             class="btn-icon"
                                             title="Ver detalles"
                                             style="font-size: 1.2rem;"
                                         >
-                                            👁️
+                                            🗒️
                                         </button>
                                         <button
                                             onclick="superClients.toggleActiveStatus(${business.id}, ${business.is_active || 1})"
@@ -241,7 +241,7 @@ const superClients = {
 
         // Suscripción activa (pagada) - VERDE BRILLANTE
         if (business.subscription_status === 'active') {
-            return '<span class="badge" style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;">✅ Activo</span>';
+            return '<span class="badge" style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;">Activo</span>';
         }
 
         // Trial válido - VERDE también (activo)
@@ -249,7 +249,7 @@ const superClients = {
         const trialEnds = business.trial_ends_at ? new Date(business.trial_ends_at) : null;
         if (business.subscription_status === 'trial' && trialEnds && trialEnds > now) {
             const daysLeft = Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24));
-            return `<span class="badge" style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;">✅ Trial (${daysLeft}d)</span>`;
+            return `<span class="badge" style="background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;">Trial (${daysLeft}d)</span>`;
         }
 
         // Trial expirado o cancelado
@@ -339,9 +339,7 @@ const superClients = {
                             <div class="detail-item">
                                 <span class="detail-label">Estado:</span>
                                 <span class="detail-value">
-                                    ${this.isBusinessActive(business)
-                                        ? '<span class="badge badge-success">Activo</span>'
-                                        : '<span class="badge badge-inactive">Inactivo</span>'}
+                                    ${this.getStatusBadge(business)}
                                 </span>
                             </div>
                             <div class="detail-item">
@@ -394,7 +392,7 @@ const superClients = {
                                             <span class="admin-email">${admin.email}</span>
                                         </div>
                                         <div class="admin-meta">
-                                            <span class="badge ${admin.is_active ? 'badge-success' : 'badge-inactive'}">
+                                            <span class="badge" style="${admin.is_active ? 'background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;' : 'background: rgba(148, 163, 184, 0.25); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); font-weight: 700;'}">
                                                 ${admin.is_active ? 'Activo' : 'Inactivo'}
                                             </span>
                                             <span class="admin-role">${admin.role}</span>
