@@ -378,4 +378,55 @@ router.post('/api/setup/add-business-controls', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/setup/create-support-messages-table
+ * Crea la tabla support_messages para el sistema de mensajes de soporte
+ */
+router.post('/api/setup/create-support-messages-table', async (req, res) => {
+    try {
+        console.log('🔄 Creating support_messages table...');
+
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS support_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                business_id INT NOT NULL,
+                category ENUM('bug', 'question', 'suggestion', 'call_request', 'email_request') NOT NULL DEFAULT 'question',
+                message TEXT NOT NULL,
+                word_count INT NOT NULL,
+                status ENUM('pending', 'answered', 'closed') NOT NULL DEFAULT 'pending',
+                admin_response TEXT NULL,
+                answered_by VARCHAR(255) NULL COMMENT 'Email del super-admin que respondió',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                answered_at TIMESTAMP NULL,
+                can_send_again_at TIMESTAMP NULL COMMENT 'Fecha después de la cual puede enviar otro mensaje si no hay respuesta',
+                FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+                INDEX idx_business_id (business_id),
+                INDEX idx_status (status),
+                INDEX idx_created_at (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            COMMENT='Mensajes de soporte de clientes a super-admin'
+        `);
+
+        console.log('✅ support_messages table created');
+
+        const columns = await db.query('SHOW COLUMNS FROM support_messages');
+
+        res.json({
+            success: true,
+            message: 'Tabla support_messages creada correctamente',
+            data: {
+                columns: columns
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error creating table:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 module.exports = router;

@@ -3,6 +3,7 @@ const router = express.Router();
 const authRoutes = require('./routes/auth');
 const setupDemosRoutes = require('./routes/setup-demos');
 const superAdminRoutes = require('./routes/super-admin');
+const supportRoutes = require('./routes/support');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
@@ -22,6 +23,9 @@ router.use(authRoutes);
 
 // ==================== SUPER ADMIN ====================
 router.use('/api/super-admin', superAdminRoutes);
+
+// ==================== SUPPORT MESSAGES ====================
+router.use('/api/support', supportRoutes);
 
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);
