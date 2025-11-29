@@ -150,10 +150,7 @@ const superClients = {
                     <tbody>
                         ${businesses.map(business => {
                             const isActive = this.isBusinessActive(business);
-                            const statusBadge = isActive
-                                ? '<span class="badge badge-success">Activo</span>'
-                                : '<span class="badge badge-inactive">Inactivo</span>';
-
+                            const statusBadge = this.getStatusBadge(business);
                             const createdDate = new Date(business.created_at).toLocaleDateString('es-ES');
 
                             return `
@@ -167,7 +164,7 @@ const superClients = {
                                     <td>${business.total_bookings || 0}</td>
                                     <td>${business.admin_count || 0}</td>
                                     <td>${createdDate}</td>
-                                    <td>
+                                    <td style="white-space: nowrap;">
                                         <button
                                             onclick="superClients.viewDetails(${business.id})"
                                             class="btn-icon"
@@ -176,11 +173,19 @@ const superClients = {
                                             👁️
                                         </button>
                                         <button
-                                            onclick="superClients.toggleBusinessStatus(${business.id}, ${business.is_active})"
+                                            onclick="superClients.toggleActiveStatus(${business.id}, ${business.is_active || 1})"
                                             class="btn-icon"
-                                            title="${business.is_active ? 'Desactivar' : 'Activar'}"
+                                            title="${business.is_active === 0 || business.is_active === false ? 'Activar negocio' : 'Desactivar negocio'}"
                                         >
-                                            ${business.is_active ? '🔴' : '🟢'}
+                                            ${business.is_active === 0 || business.is_active === false ? '🟢' : '🔴'}
+                                        </button>
+                                        <button
+                                            onclick="superClients.toggleFreeAccess(${business.id}, ${business.free_access || 0})"
+                                            class="btn-icon"
+                                            title="${business.free_access === 1 || business.free_access === true ? 'Quitar acceso gratuito' : 'Dar acceso gratuito permanente'}"
+                                            style="filter: ${business.free_access === 1 || business.free_access === true ? 'grayscale(0)' : 'grayscale(1) opacity(0.5)'};"
+                                        >
+                                            ⭐
                                         </button>
                                     </td>
                                 </tr>
@@ -195,13 +200,58 @@ const superClients = {
     },
 
     isBusinessActive(business) {
-        if (!business.is_active) return false;
+        // 1. Si está desactivado manualmente → INACTIVO (máxima prioridad)
+        if (business.is_active === 0 || business.is_active === false) {
+            return false;
+        }
 
+        // 2. Si tiene acceso gratuito permanente → ACTIVO
+        if (business.free_access === 1 || business.free_access === true) {
+            return true;
+        }
+
+        // 3. Si tiene suscripción de pago activa → ACTIVO
+        if (business.subscription_status === 'active') {
+            return true;
+        }
+
+        // 4. Si tiene trial válido (14 días o 365 días para demos) → ACTIVO
         const now = new Date();
         const trialEnds = business.trial_ends_at ? new Date(business.trial_ends_at) : null;
+        if (business.subscription_status === 'trial' && trialEnds && trialEnds > now) {
+            return true;
+        }
 
-        // Active if trial is still valid OR subscription is active
-        return (trialEnds && trialEnds > now) || business.subscription_status === 'active';
+        // 5. En cualquier otro caso → INACTIVO
+        return false;
+    },
+
+    getStatusBadge(business) {
+        // Suspendido manualmente
+        if (business.is_active === 0 || business.is_active === false) {
+            return '<span class="badge" style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">⛔ Suspendido</span>';
+        }
+
+        // Acceso gratuito permanente
+        if (business.free_access === 1 || business.free_access === true) {
+            return '<span class="badge" style="background: rgba(251, 191, 36, 0.25); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4);">⭐ Gratuito</span>';
+        }
+
+        // Suscripción activa (pagada)
+        if (business.subscription_status === 'active') {
+            return '<span class="badge badge-success">🟢 Activo</span>';
+        }
+
+        // Trial válido
+        const now = new Date();
+        const trialEnds = business.trial_ends_at ? new Date(business.trial_ends_at) : null;
+        if (business.subscription_status === 'trial' && trialEnds && trialEnds > now) {
+            const daysLeft = Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24));
+            return `<span class="badge badge-info">🔵 Trial (${daysLeft}d)</span>`;
+        }
+
+        // Trial expirado o cancelado
+        return '<span class="badge badge-inactive">⚪ Inactivo</span>';
     },
 
     renderPagination(pagination) {
@@ -387,24 +437,57 @@ const superClients = {
         document.getElementById('businessDetailsModal').style.display = 'none';
     },
 
-    async toggleBusinessStatus(businessId, currentStatus) {
-        const action = currentStatus ? 'desactivar' : 'activar';
+    async toggleActiveStatus(businessId, currentStatus) {
+        const isCurrentlyActive = currentStatus === 1 || currentStatus === true;
+        const action = isCurrentlyActive ? 'suspender' : 'activar';
+        const actionPast = isCurrentlyActive ? 'suspendido' : 'activado';
 
-        if (!confirm(`¿Estás seguro de que quieres ${action} este negocio?`)) {
+        const message = isCurrentlyActive
+            ? '⚠️ ¿Estás seguro de que quieres SUSPENDER este negocio?\n\nEl negocio NO podrá:\n- Acceder al panel de administración\n- Recibir nuevas reservas\n- Usar el widget de reservas'
+            : '✅ ¿Activar este negocio?\n\nEl negocio podrá volver a usar la plataforma normalmente.';
+
+        if (!confirm(message)) {
             return;
         }
 
         try {
             await superApi.patch(`/api/super-admin/businesses/${businessId}`, {
-                is_active: !currentStatus
+                is_active: !isCurrentlyActive
             });
 
-            this.showNotification(`Negocio ${action === 'desactivar' ? 'desactivado' : 'activado'} correctamente`, 'success');
+            this.showNotification(`Negocio ${actionPast} correctamente`, 'success');
             this.loadBusinesses();
 
         } catch (error) {
             console.error('Error updating business:', error);
             this.showNotification(`Error al ${action} el negocio: ${error.message}`, 'error');
+        }
+    },
+
+    async toggleFreeAccess(businessId, currentStatus) {
+        const hasAccess = currentStatus === 1 || currentStatus === true;
+        const action = hasAccess ? 'quitar' : 'dar';
+        const actionPast = hasAccess ? 'quitado' : 'otorgado';
+
+        const message = hasAccess
+            ? '⚠️ ¿Quitar acceso gratuito permanente?\n\nEste negocio volverá a estar sujeto a:\n- Expiración del trial\n- Necesidad de suscripción de pago'
+            : '⭐ ¿Dar acceso GRATUITO PERMANENTE?\n\nEste negocio tendrá:\n- Acceso ilimitado sin pagar\n- Sin expiración de trial\n- Todas las funciones activas\n\n💡 Útil para: ONGs, proyectos patrocinados, beta testers, etc.';
+
+        if (!confirm(message)) {
+            return;
+        }
+
+        try {
+            await superApi.patch(`/api/super-admin/businesses/${businessId}`, {
+                free_access: !hasAccess
+            });
+
+            this.showNotification(`Acceso gratuito ${actionPast} correctamente ${!hasAccess ? '⭐' : ''}`, 'success');
+            this.loadBusinesses();
+
+        } catch (error) {
+            console.error('Error updating business:', error);
+            this.showNotification(`Error al ${action} acceso gratuito: ${error.message}`, 'error');
         }
     },
 

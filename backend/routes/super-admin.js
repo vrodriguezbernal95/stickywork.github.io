@@ -308,7 +308,7 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
 router.patch('/businesses/:id', requireSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { subscription_status, trial_ends_at } = req.body;
+        const { subscription_status, trial_ends_at, is_active, free_access } = req.body;
 
         const updates = [];
         const params = [];
@@ -321,6 +321,18 @@ router.patch('/businesses/:id', requireSuperAdmin, async (req, res) => {
         if (trial_ends_at) {
             updates.push('trial_ends_at = ?');
             params.push(trial_ends_at);
+        }
+
+        // Nueva columna: is_active (control manual de activación/desactivación)
+        if (is_active !== undefined) {
+            updates.push('is_active = ?');
+            params.push(is_active ? 1 : 0);
+        }
+
+        // Nueva columna: free_access (acceso gratuito permanente)
+        if (free_access !== undefined) {
+            updates.push('free_access = ?');
+            params.push(free_access ? 1 : 0);
         }
 
         if (updates.length === 0) {
