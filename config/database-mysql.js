@@ -10,15 +10,9 @@ if (process.env.MYSQL_URL || process.env.MYSQLURL) {
     const url = process.env.MYSQL_URL || process.env.MYSQLURL;
     console.log('📦 Conectando vía MYSQL_URL');
     // Añadir charset a la URL si no lo tiene
-    const urlWithCharset = url.includes('?')
+    dbConfig = url.includes('?')
         ? `${url}&charset=utf8mb4`
         : `${url}?charset=utf8mb4`;
-    dbConfig = {
-        uri: urlWithCharset,
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0
-    };
 } else {
     // Usar variables individuales (desarrollo local)
     console.log('📦 Conectando vía variables individuales');
@@ -40,12 +34,8 @@ let pool;
 
 async function createPool() {
     try {
-        // Si dbConfig tiene 'uri', usarla directamente
-        if (dbConfig.uri) {
-            pool = mysql.createPool(dbConfig.uri);
-        } else {
-            pool = mysql.createPool(dbConfig);
-        }
+        // dbConfig puede ser un string (URL) o un objeto (config individual)
+        pool = mysql.createPool(dbConfig);
         console.log('✓ Pool de conexiones MySQL creado');
         return pool;
     } catch (error) {
