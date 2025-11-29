@@ -1471,6 +1471,129 @@ CREATE TABLE support_messages (
 
 ---
 
+### 2025-11-29 (continuación) - Completar Sistema de Mensajes de Soporte
+**Estado:** Completado ✓
+**Objetivo:** Finalizar funcionalidad de respuesta a mensajes y mejorar UX del dashboard del cliente
+
+**Trabajo realizado después de la primera actualización del histórico:**
+
+**1. Modal de Respuesta a Mensajes de Soporte (Super-Admin):**
+- **Archivo modificado:** `admin/js/super-messages.js`
+- **Función implementada:** `viewSupportMessage(messageId)`
+  - Modal completo con detalles del mensaje
+  - Información del cliente: negocio, tipo, email, categoría
+  - Mensaje del cliente con contador de palabras
+  - Formulario de respuesta con textarea (si está pendiente)
+  - Vista de respuesta enviada (si ya fue respondido)
+  - Botones dinámicos según estado del mensaje:
+    - **Pendiente:** Botón "📤 Enviar Respuesta"
+    - **Respondido:** Botón "🔒 Cerrar Mensaje"
+    - **Cerrado:** Sin botón de acción
+
+- **Función implementada:** `sendSupportResponse()`
+  - Validación de respuesta (mínimo 10 caracteres)
+  - Envío al endpoint PATCH /api/super-admin/support/messages/:id/respond
+  - Recarga automática del modal para mostrar respuesta enviada
+  - Actualización de la lista de mensajes
+
+- **Función implementada:** `closeSupportMessage()`
+  - Confirmación antes de cerrar
+  - Envío al endpoint PATCH /api/super-admin/support/messages/:id/close
+  - Cierre del modal tras completar
+
+- **Commit:** `075aa61` - feat: Implementar modal de respuesta a mensajes de soporte
+
+**2. Fix Critical: req.superAdmin.email en Endpoint de Respuesta:**
+- **Problema detectado:** Al intentar enviar respuesta desde super-admin, fallaba
+- **Error:** `answered_by` se guardaba como NULL en la base de datos
+- **Causa raíz:**
+  - Middleware `requireSuperAdmin` guarda datos en `req.superAdmin` (línea 43 de super-admin.js)
+  - Endpoint usaba `req.user.email` (que era undefined)
+- **Solución aplicada:**
+  - Cambiar en `backend/routes/super-admin.js` línea 457:
+  - `req.user.email` → `req.superAdmin.email`
+- **Archivo modificado:** `backend/routes/super-admin.js`
+- **Commit:** `28ae2df` - fix: Usar req.superAdmin.email en endpoint de respuesta
+- **Lección aprendida:** Siempre verificar qué objeto usa cada middleware para guardar datos del usuario autenticado
+
+**3. Reestructuración del Dashboard del Cliente con Tabs:**
+- **Problema identificado por usuario:**
+  - Dashboard tenía 2 secciones: "Mensajes" y "Contactar Soporte"
+  - Estructura confusa y duplicada
+  - No consistente con super-admin dashboard
+
+- **Solución implementada:**
+  - Eliminada sección "💬 Mensajes" del menú lateral
+  - Renombrada "Contactar Soporte" → "Soporte" (luego cambiado a "Mensajes")
+  - Reestructurado `admin/js/support.js` con sistema de tabs similar a super-admin
+
+- **Nueva estructura con tabs:**
+  - **Tab "📤 Enviar Mensaje":**
+    - Formulario de contacto completo
+    - Mensaje de estado (puede enviar / pendiente / respondido)
+    - Contador de palabras en tiempo real
+    - Validación de 150 palabras máximo
+    - Si no puede enviar: botón "Ver Mis Mensajes" para revisar historial
+    - Botón "Ver Historial" en formulario
+
+  - **Tab "📜 Mis Mensajes":**
+    - Historial completo de conversaciones con StickyWork
+    - Mensajes con respuestas destacadas visualmente
+    - Si no hay mensajes: botón "Enviar Primer Mensaje"
+
+- **Mejoras de navegación:**
+  - Función `switchTab(tab)` para cambiar entre tabs
+  - Al enviar mensaje, cambia automáticamente a tab de historial después de 2 segundos
+  - Botones contextuales según estado
+
+- **Archivos modificados:**
+  - `admin-dashboard.html` - Eliminada sección "Mensajes", simplificado menú
+  - `admin/js/support.js` - Reescritura completa con sistema de tabs
+
+- **Commits:**
+  - `6a2ddfa` - feat: Reestructurar Soporte del cliente con tabs
+  - `f355d19` - refactor: Cambiar nombre de Soporte a Mensajes en dashboard cliente
+
+**Beneficios de la reestructuración:**
+- ✅ Consistencia total con super-admin dashboard
+- ✅ UX más intuitiva y organizada
+- ✅ Todo relacionado con soporte/mensajes en un solo lugar
+- ✅ Navegación clara y fluida
+- ✅ Menos confusión para el usuario
+- ✅ Reduce secciones del menú (más limpio)
+
+**Estado final de la sesión:**
+- ✅ Sistema de mensajes de soporte 100% funcional end-to-end
+- ✅ Super-admin puede ver, responder y cerrar mensajes
+- ✅ Clientes pueden enviar mensajes y ver respuestas
+- ✅ Dashboard del cliente con tabs profesionales
+- ✅ Navegación consistente en toda la plataforma
+- ✅ Sin errores en producción
+
+**Archivos modificados en esta continuación:**
+- `admin/js/super-messages.js` (+210 líneas, -3 líneas)
+- `backend/routes/super-admin.js` (1 línea cambiada)
+- `admin-dashboard.html` (eliminadas 4 líneas)
+- `admin/js/support.js` (reescritura completa con nueva arquitectura)
+
+**Commits de esta continuación:**
+1. `075aa61` - feat: Implementar modal de respuesta a mensajes de soporte
+2. `28ae2df` - fix: Usar req.superAdmin.email en endpoint de respuesta
+3. `6a2ddfa` - feat: Reestructurar Soporte del cliente con tabs
+4. `f355d19` - refactor: Cambiar nombre de Soporte a Mensajes en dashboard cliente
+
+**Pendiente para próxima sesión:**
+- ⏳ Notificaciones por email con Brevo:
+  - Email al super-admin cuando cliente envía mensaje
+  - Email al cliente cuando super-admin responde
+  - Integración con servicio de email existente (backend/email-service.js)
+  - Plantillas HTML para ambos tipos de email
+
+**Tokens utilizados en esta sesión:** ~112,000 / 200,000 (56%)
+**Tokens restantes:** ~88,000
+
+---
+
 ## Cómo usar este archivo
 Este archivo sirve como memoria del proyecto entre sesiones de Claude Code.
 Al iniciar una nueva sesión, pide a Claude que lea este archivo para tener contexto.
