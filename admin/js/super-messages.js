@@ -429,9 +429,216 @@ const superMessages = {
     },
 
     async viewSupportMessage(messageId) {
-        // TODO: Implement support message detail view with response form
-        console.log('View support message:', messageId);
-        this.showNotification('Función de respuesta en desarrollo', 'info');
+        this.selectedMessage = messageId;
+
+        const modal = document.getElementById('messageDetailsModal');
+        const content = document.getElementById('messageDetailsContent');
+
+        modal.style.display = 'flex';
+        content.innerHTML = '<div class="loading">Cargando...</div>';
+
+        try {
+            // Fetch all support messages and find the one we need
+            const data = await superApi.get('/api/super-admin/support/messages');
+            const message = data.data.find(m => m.id === messageId);
+
+            if (!message) {
+                throw new Error('Mensaje no encontrado');
+            }
+
+            const date = new Date(message.created_at).toLocaleString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const categoryLabels = {
+                'bug': '🐛 Bug/Error',
+                'question': '❓ Pregunta General',
+                'suggestion': '💡 Sugerencia/Mejora',
+                'call_request': '📞 Solicitar Llamada',
+                'email_request': '📧 Solicitar Email Detallado'
+            };
+
+            const statusBadges = {
+                'pending': '<span class="badge badge-warning">⏳ Pendiente</span>',
+                'answered': '<span class="badge badge-success">✅ Respondido</span>',
+                'closed': '<span class="badge" style="background: rgba(148, 163, 184, 0.25); color: #cbd5e1;">🔒 Cerrado</span>'
+            };
+
+            content.innerHTML = `
+                <div class="message-details">
+                    <div class="message-detail-header">
+                        <div class="message-status-badge">
+                            <span style="font-size: 2rem;">${categoryLabels[message.category].split(' ')[0]}</span>
+                            <div>
+                                ${statusBadges[message.status]}
+                                <div class="message-detail-date">${date}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Información del Cliente</h3>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Negocio:</span>
+                                <span class="detail-value">${message.business_name || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Tipo:</span>
+                                <span class="detail-value">${message.business_type || 'N/A'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Email:</span>
+                                <span class="detail-value">
+                                    <a href="mailto:${message.business_email}">${message.business_email}</a>
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Categoría:</span>
+                                <span class="detail-value">${categoryLabels[message.category]}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>Mensaje del Cliente</h3>
+                        <div class="message-content" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--primary-color);">
+                            ${message.message.replace(/\n/g, '<br>')}
+                        </div>
+                        <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
+                            ${message.word_count} palabras
+                        </p>
+                    </div>
+
+                    ${message.admin_response ? `
+                        <div class="detail-section">
+                            <h3>✅ Respuesta Enviada</h3>
+                            <div class="message-content" style="background: rgba(77, 83, 255, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--primary-color);">
+                                ${message.admin_response.replace(/\n/g, '<br>')}
+                            </div>
+                            <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
+                                Respondido por ${message.answered_by} el ${new Date(message.answered_at).toLocaleString('es-ES')}
+                            </p>
+                        </div>
+                    ` : message.status !== 'closed' ? `
+                        <div class="detail-section">
+                            <h3>💬 Escribir Respuesta</h3>
+                            <form id="responseForm">
+                                <textarea
+                                    id="responseText"
+                                    rows="6"
+                                    placeholder="Escribe aquí tu respuesta al cliente. El cliente recibirá esta respuesta por email y podrá verla en su dashboard..."
+                                    style="width: 100%; padding: 1rem; background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 1rem; font-family: inherit; resize: vertical; line-height: 1.5;"
+                                    required
+                                ></textarea>
+                                <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
+                                    💡 Sé claro y profesional. Esta respuesta se enviará por email al cliente.
+                                </p>
+                            </form>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Update button visibility based on status
+            const markReadBtn = document.getElementById('markReadBtn');
+            const markRepliedBtn = document.getElementById('markRepliedBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+
+            // Hide "Mark as read" button (not applicable for support messages)
+            if (markReadBtn) markReadBtn.style.display = 'none';
+
+            // Show/hide respond button
+            if (markRepliedBtn) {
+                if (message.status === 'pending') {
+                    markRepliedBtn.style.display = 'inline-block';
+                    markRepliedBtn.innerHTML = '📤 Enviar Respuesta';
+                    markRepliedBtn.onclick = () => this.sendSupportResponse();
+                } else if (message.status === 'answered') {
+                    markRepliedBtn.style.display = 'inline-block';
+                    markRepliedBtn.innerHTML = '🔒 Cerrar Mensaje';
+                    markRepliedBtn.onclick = () => this.closeSupportMessage();
+                } else {
+                    markRepliedBtn.style.display = 'none';
+                }
+            }
+
+            // Delete button always visible
+            if (deleteBtn) {
+                deleteBtn.style.display = 'inline-block';
+            }
+
+        } catch (error) {
+            console.error('Error loading support message details:', error);
+            content.innerHTML = `
+                <div class="error-message">
+                    <p>⚠️ Error al cargar el mensaje: ${error.message}</p>
+                </div>
+            `;
+        }
+    },
+
+    async sendSupportResponse() {
+        if (!this.selectedMessage) return;
+
+        const responseText = document.getElementById('responseText');
+        if (!responseText) return;
+
+        const response = responseText.value.trim();
+
+        if (!response) {
+            this.showNotification('Por favor, escribe una respuesta antes de enviar', 'error');
+            return;
+        }
+
+        if (response.length < 10) {
+            this.showNotification('La respuesta es demasiado corta. Proporciona más detalles.', 'error');
+            return;
+        }
+
+        try {
+            await superApi.patch(`/api/super-admin/support/messages/${this.selectedMessage}/respond`, {
+                response: response
+            });
+
+            this.showNotification('✅ Respuesta enviada correctamente. El cliente la verá en su dashboard.', 'success');
+
+            // Reload message details to show the response
+            setTimeout(() => {
+                this.viewSupportMessage(this.selectedMessage);
+            }, 1500);
+
+            // Refresh the list
+            this.loadMessages();
+
+        } catch (error) {
+            console.error('Error sending response:', error);
+            this.showNotification(`Error al enviar respuesta: ${error.message}`, 'error');
+        }
+    },
+
+    async closeSupportMessage() {
+        if (!this.selectedMessage) return;
+
+        if (!confirm('¿Estás seguro de que quieres cerrar este mensaje? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        try {
+            await superApi.patch(`/api/super-admin/support/messages/${this.selectedMessage}/close`);
+
+            this.showNotification('Mensaje cerrado correctamente', 'success');
+            this.closeDetailsModal();
+
+        } catch (error) {
+            console.error('Error closing message:', error);
+            this.showNotification(`Error al cerrar el mensaje: ${error.message}`, 'error');
+        }
     },
 
     showNotification(message, type = 'info') {
