@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth, requireSuperAdmin } = require('../middleware/auth');
+const { supportLimiter } = require('../middleware/rate-limit');
 
 // Permitir inyección de la base de datos
 let db = require('../../config/database');
@@ -98,7 +99,7 @@ router.get('/can-send-message', requireAuth, async (req, res) => {
  * POST /api/support/messages
  * Crear un nuevo mensaje de soporte (cliente)
  */
-router.post('/messages', requireAuth, async (req, res) => {
+router.post('/messages', requireAuth, supportLimiter, async (req, res) => {
     try {
         const businessId = req.user.businessId;
         const { category, message } = req.body;

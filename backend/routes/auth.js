@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { generateToken, requireAuth } = require('../middleware/auth');
+const { loginLimiter, registerLimiter } = require('../middleware/rate-limit');
 
 // Permitir inyección de la base de datos
 let db = require('../../config/database');
@@ -119,7 +120,7 @@ router.post('/api/auth/register', async (req, res) => {
  * Registrar un nuevo negocio con su administrador
  * Este es el endpoint principal para el flujo de registro público
  */
-router.post('/api/auth/register-business', async (req, res) => {
+router.post('/api/auth/register-business', registerLimiter, async (req, res) => {
     try {
         const {
             // Datos del negocio
@@ -377,7 +378,7 @@ router.get('/api/auth/business-types', async (req, res) => {
  * POST /api/auth/login
  * Iniciar sesión
  */
-router.post('/api/auth/login', async (req, res) => {
+router.post('/api/auth/login', loginLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
 

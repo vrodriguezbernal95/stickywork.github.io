@@ -5,9 +5,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../../config/database');
 const { requireSuperAdmin } = require('../middleware/super-admin');
+const { superAdminLoginLimiter } = require('../middleware/rate-limit');
 
 // Login de super-admin
-router.post('/login', async (req, res) => {
+router.post('/login', superAdminLoginLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
 

@@ -7,6 +7,7 @@ const supportRoutes = require('./routes/support');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
+const { createBookingLimiter, contactLimiter } = require('./middleware/rate-limit');
 
 // Permitir inyección de la base de datos (MySQL o SQLite)
 let db = require('../config/database');
@@ -197,7 +198,7 @@ router.get('/api/services/:businessId', async (req, res) => {
 // ==================== RESERVAS ====================
 
 // Crear una nueva reserva
-router.post('/api/bookings', async (req, res) => {
+router.post('/api/bookings', createBookingLimiter, async (req, res) => {
     try {
         const {
             businessId,
@@ -545,7 +546,7 @@ router.get('/api/stats/:businessId', requireAuth, requireBusinessAccess, async (
 // ==================== MENSAJES DE CONTACTO ====================
 
 // Crear un nuevo mensaje de contacto
-router.post('/api/contact', async (req, res) => {
+router.post('/api/contact', contactLimiter, async (req, res) => {
     try {
         const {
             name,
