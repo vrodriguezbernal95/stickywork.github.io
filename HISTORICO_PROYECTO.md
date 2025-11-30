@@ -1594,6 +1594,366 @@ CREATE TABLE support_messages (
 
 ---
 
+# 📅 Sesión 30 de Noviembre de 2025 - Mejoras de Seguridad y UX
+
+## Contexto
+Sesión enfocada en implementar mejoras rápidas de alto impacto en seguridad, UX y profesionalismo de la plataforma.
+
+## Resumen de cambios
+
+### 🔐 1. Rate Limiting (Protección contra ataques)
+
+**Problema:** La plataforma era vulnerable a:
+- Ataques de fuerza bruta en logins
+- Spam de registros
+- Spam de reservas y mensajes
+- Ataques DDoS básicos
+
+**Solución implementada:**
+- Instalado `express-rate-limit`
+- Creado middleware `backend/middleware/rate-limit.js` con 7 limiters:
+  * **Login clientes:** 5 intentos/15min por IP
+  * **Login super-admin:** 3 intentos/15min (más restrictivo)
+  * **Registro:** 3 registros/hora por IP
+  * **Reservas:** 10/hora por IP
+  * **Contacto:** 5 mensajes/hora por IP
+  * **Soporte:** 10 mensajes/día por IP
+  * **API general:** 100 peticiones/min por IP
+
+**Beneficios:**
+- ✅ Protección contra fuerza bruta
+- ✅ Prevención de spam
+- ✅ Headers RateLimit-* estándar (informan al cliente)
+- ✅ Compatible con IPv4 e IPv6
+- ✅ Sin necesidad de Redis (para escala actual)
+
+**Archivos modificados:**
+- `backend/middleware/rate-limit.js` (nuevo)
+- `backend/routes/auth.js`
+- `backend/routes/super-admin.js`
+- `backend/routes/support.js`
+- `backend/routes.js`
+- `package.json`
+
+---
+
+### 🛡️ 2. Security Headers con Helmet.js
+
+**Implementación:**
+- Instalado `helmet` para headers de seguridad HTTP
+- Configurado en `server.js` con:
+  * Content Security Policy (CSP)
+  * X-Frame-Options (anti-clickjacking)
+  * X-Content-Type-Options
+  * Strict-Transport-Security
+  * X-XSS-Protection
+
+**Configuración personalizada:**
+- CSP permite Google Fonts y estilos inline (necesario para el diseño actual)
+- `crossOriginEmbedderPolicy: false` para permitir embedding del widget
+
+**Beneficios:**
+- ✅ Protección contra XSS
+- ✅ Anti-clickjacking
+- ✅ Prevención de MIME type sniffing
+- ✅ Cumple estándares de seguridad modernos
+
+---
+
+### 🌙 3. Modo Oscuro en Web Principal
+
+**Implementación:**
+- Creado `js/dark-mode.js` - Sistema completo y reutilizable
+- Toggle en navbar de todas las páginas principales
+- Persistencia con `localStorage`
+- Detección automática de preferencia del sistema
+
+**Características:**
+- Botón toggle con iconos 🌙 / ☀️
+- Transiciones suaves entre modos
+- Se aplica inmediatamente al cargar la página
+- Compatible con todo el CSS existente (variables CSS)
+
+**Páginas con dark mode:**
+- index.html
+- planes.html
+- como-funciona.html
+- demo.html
+- contacto.html
+- registro.html
+
+**Beneficios:**
+- ✅ Mejora UX significativa
+- ✅ Reduce fatiga visual
+- ✅ Más profesional
+- ✅ Sigue tendencias modernas de diseño
+
+---
+
+### 📱 4. Meta Tags Open Graph Completos
+
+**Implementación:**
+- Tags personalizados para cada página principal
+- Soporte para Facebook, Twitter, LinkedIn
+- Imágenes optimizadas 1200x630
+
+**Tags incluidos:**
+- `og:title`, `og:description`, `og:image`
+- `og:url`, `og:type`, `og:site_name`
+- Twitter Card con `summary_large_image`
+- Configuración de locale (es_ES)
+
+**Beneficios:**
+- ✅ Previews bonitos al compartir en redes sociales
+- ✅ Mejor conversión de tráfico social
+- ✅ Profesionalismo en redes
+- ✅ SEO mejorado
+
+---
+
+### ⏳ 5. Loading Spinners en Formularios
+
+**Problema:**
+- Usuarios hacían doble-click en botones de envío
+- Se creaban reservas/mensajes duplicados
+- Sin feedback visual durante peticiones
+
+**Solución:**
+- Creado `js/loading-spinner.js` - Sistema reutilizable
+- 3 funciones globales:
+  * `showButtonLoading(button)` - Muestra spinner
+  * `hideButtonLoading(button)` - Oculta spinner
+  * `showButtonFeedback(button, msg, type)` - Mensaje temporal
+
+**Características:**
+- Spinner CSS animado (sin imágenes)
+- Deshabilita botón durante carga
+- Auto-aplicable con `data-loading="true"`
+
+**Formularios protegidos:**
+- Contacto
+- Registro
+- Login admin
+- Login super-admin
+
+**Beneficios:**
+- ✅ Previene doble-submit
+- ✅ Feedback visual profesional
+- ✅ Mejor experiencia de usuario
+- ✅ Reduce bugs
+
+---
+
+### ↑ 6. Botón Scroll to Top
+
+**Implementación:**
+- Creado `js/scroll-to-top.js`
+- Botón flotante en esquina inferior derecha
+- Aparece después de 300px de scroll
+- Animación suave con `window.scrollTo({ behavior: 'smooth' })`
+- Optimizado con `requestAnimationFrame` (mejor performance)
+
+**Características:**
+- Icono ↑ con gradiente de colores de la marca
+- Animaciones de hover y click
+- Responsive (más pequeño en móvil)
+- Transiciones fluidas
+
+**Beneficios:**
+- ✅ Mejora UX en páginas largas
+- ✅ Estándar esperado en sitios profesionales
+- ✅ Reduce fricción de navegación
+
+---
+
+### 🎨 7. Favicons Completos + PWA Manifest
+
+**Implementación:**
+- Configurados tags para todos los dispositivos:
+  * Desktop: 16x16, 32x32, favicon.ico
+  * Android: 192x192, 512x512
+  * iOS: 180x180 (apple-touch-icon)
+  * Windows: tiles configurados
+- Creado `manifest.json` para PWA
+- Theme colors definidos (#0F16A3)
+
+**Páginas con favicons:**
+- Todas las páginas principales
+- Admin dashboards
+- Logins
+
+**Beneficios:**
+- ✅ Profesionalismo en pestañas del navegador
+- ✅ Reconocimiento de marca rápido
+- ✅ PWA ready (instalable como app)
+- ✅ Cumple todos los estándares modernos
+
+**Pendiente:**
+- Generar imágenes de favicon reales (usar https://realfavicongenerator.net/)
+
+---
+
+### 🔍 8. Página 404 Personalizada
+
+**Implementación:**
+- Creado `404.html` con diseño profesional
+- Configurado `server.js` para servir 404 en rutas HTML
+- APIs siguen devolviendo JSON 404
+
+**Características:**
+- Diseño atractivo con animaciones
+- Icono 🔍 animado (floating)
+- Número 404 con gradiente
+- 4 links útiles:
+  * 🏠 Volver al Inicio
+  * 💎 Ver Planes
+  * 🎮 Ver Demo
+  * 📞 Contactar
+- Compatible con dark mode
+- Responsive
+
+**Beneficios:**
+- ✅ Retiene usuarios (en vez de perderlos)
+- ✅ Profesionalismo
+- ✅ Ofrece alternativas útiles
+- ✅ Mejora SEO (Google valora buenas páginas 404)
+
+---
+
+### ✅ 9. Lazy Loading (Verificado)
+
+**Estado:** Ya implementado en todas las imágenes
+- Atributo `loading="lazy"` presente
+- No requirió cambios adicionales
+
+---
+
+## Estadísticas de la sesión
+
+**Archivos nuevos creados:**
+- `backend/middleware/rate-limit.js` (127 líneas)
+- `js/dark-mode.js` (76 líneas)
+- `js/loading-spinner.js` (91 líneas)
+- `js/scroll-to-top.js` (94 líneas)
+- `manifest.json` (20 líneas)
+- `404.html` (215 líneas)
+
+**Archivos modificados:**
+- 14 archivos HTML (pages + dashboards)
+- 5 archivos backend (routes + server.js)
+- package.json
+
+**Total:**
+- **20 archivos modificados**
+- **881+ líneas añadidas**
+- **9 mejoras implementadas**
+- **~45 minutos de trabajo**
+
+---
+
+## Commits realizados
+
+### Commit 1: `95cef31`
+```
+feat: Implementar rate limiting para protección contra ataques
+
+- Instalar express-rate-limit
+- Crear middleware rate-limit.js con limiters personalizados
+- Aplicar limiters a endpoints críticos
+- Protección contra fuerza bruta y spam
+- Headers RateLimit-* estándar
+- Compatible con IPv4 e IPv6
+```
+
+### Commit 2: `d00fd37`
+```
+feat: Implementar 8 mejoras de UX/UI y seguridad
+
+🔐 SEGURIDAD:
+- Helmet.js configurado con CSP y security headers
+
+🌙 MODO OSCURO:
+- Sistema completo de dark mode en web principal
+
+📱 OPEN GRAPH:
+- Meta tags personalizados por página
+
+⏳ LOADING SPINNERS:
+- Sistema reutilizable, previene doble-submit
+
+↑ SCROLL TO TOP:
+- Botón flotante animado
+
+🎨 FAVICONS COMPLETOS:
+- Tags para todos los dispositivos + PWA manifest
+
+🔍 PÁGINA 404:
+- Diseño profesional con animaciones
+```
+
+---
+
+## Estado actual del proyecto
+
+### ✅ Completado
+- Rate limiting en todos los endpoints críticos
+- Security headers con Helmet.js
+- Dark mode funcional en 6 páginas
+- Open Graph en todas las páginas públicas
+- Loading spinners en 4 formularios
+- Scroll to top en 6 páginas
+- Favicons configurados (tags)
+- Página 404 personalizada
+- Lazy loading verificado
+
+### ⏳ Pendiente (opcional)
+- Generar imágenes de favicon (5 min con generador online)
+- Implementar analytics (Google Analytics o Plausible)
+- Crear sitemap.xml automático
+- Configurar CDN para assets estáticos (si crece tráfico)
+
+---
+
+## Impacto de las mejoras
+
+| Categoría | Antes | Ahora |
+|-----------|-------|-------|
+| **Seguridad** | Rate limiting | + Helmet + Security Headers |
+| **UX** | Básico | + Dark Mode + Scroll Top + 404 |
+| **Performance** | Bueno | + Lazy Loading verificado |
+| **Profesionalismo** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Prevención bugs** | - | + Loading Spinners anti doble-submit |
+| **SEO/Social** | Básico | + Open Graph completo |
+| **PWA Ready** | No | Sí (manifest.json) |
+
+---
+
+## Próximas recomendaciones
+
+1. **Generar favicons reales** (5 min)
+   - Usar https://realfavicongenerator.net/
+   - Subir logo de StickyWork
+   - Descargar pack completo
+   - Colocar en `/images/`
+
+2. **Probar en producción** (Railway)
+   - Verificar que dark mode funciona
+   - Probar página 404
+   - Confirmar que rate limiting está activo
+   - Ver headers de seguridad en DevTools
+
+3. **Considerar para próximas sesiones:**
+   - Analytics (saber qué páginas se visitan más)
+   - Sitemap.xml para SEO
+   - Testimonios de clientes en homepage
+   - Blog/Recursos (artículos sobre gestión de reservas)
+   - Chatbot o widget de soporte en vivo
+
+**Tokens utilizados en esta sesión:** ~106,000 / 200,000 (53%)
+**Tokens restantes:** ~94,000
+
+---
+
 ## Cómo usar este archivo
 Este archivo sirve como memoria del proyecto entre sesiones de Claude Code.
 Al iniciar una nueva sesión, pide a Claude que lea este archivo para tener contexto.
