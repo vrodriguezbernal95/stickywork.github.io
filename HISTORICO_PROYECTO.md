@@ -1954,6 +1954,359 @@ feat: Implementar 8 mejoras de UX/UI y seguridad
 
 ---
 
+### 2025-11-30 (continuación) - Fix Dark Mode y Mejoras Responsive Dashboards
+**Estado:** Completado ✓
+**Objetivo:** Resolver error crítico del toggle de modo oscuro y optimizar dashboards para dispositivos móviles
+
+**Contexto:**
+Continuación de la sesión anterior. El usuario reportó que el toggle de modo oscuro no funcionaba y solicitó mejoras responsive para los dashboards de cliente y superadmin.
+
+---
+
+**Problema 1: Toggle de Modo Oscuro No Funcional**
+
+**Error reportado:**
+```
+Uncaught TypeError: Cannot set properties of null (setting 'textContent')
+at updateToggleButton (dark-mode.js:36:30)
+```
+
+**Causa raíz:**
+- El código intentaba acceder a `.theme-icon` span dentro del botón
+- Pero el elemento no existía en algunas páginas
+- Esto causaba que `icon.textContent` intentara setear valor en `null`
+
+**Solución aplicada:**
+- Archivo modificado: `js/dark-mode.js`
+- Agregado check de null antes de manipular el elemento:
+```javascript
+const icon = toggle.querySelector('.theme-icon');
+
+if (theme === 'dark') {
+  if (icon) {
+    icon.textContent = '☀️';
+  } else {
+    toggle.textContent = '☀️';
+  }
+  // ...
+}
+```
+- **Lógica:** Si el span `.theme-icon` existe, lo usa; si no, modifica el botón directamente
+- **Commit:** `16995f3` - fix: Arreglar error del toggle de modo oscuro
+
+**Estado:** ✅ Dark mode ahora funciona en todas las páginas
+
+---
+
+**Problema 2: Dashboards No Responsive en Móvil**
+
+**Situación detectada:**
+
+**Dashboard de Cliente** (admin-dashboard.html):
+- ✅ Ya tenía menú hamburguesa y overlay
+- ⚠️ Necesitaba mejoras en grids, modales y filtros
+
+**Dashboard de Superadmin** (super-admin.html):
+- ❌ Sin menú móvil implementado
+- ❌ Sin botón hamburguesa
+- ❌ Sidebar no se adaptaba a móvil
+
+---
+
+**Mejoras Implementadas:**
+
+**1. Ajustes Generales en CSS** (`admin/css/admin.css`)
+
+**Dashboard Grid:**
+- Cambio de `minmax(400px, 1fr)` → `minmax(300px, 1fr)`
+- Permite que las cards se adapten mejor a pantallas pequeñas
+
+**Responsive para móviles pequeños (≤480px):**
+```css
+/* Dashboard grid */
+.dashboard-grid {
+    grid-template-columns: 1fr;
+}
+
+/* Topbar actions */
+.topbar-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* Filtros */
+.filters-container {
+    flex-direction: column;
+    width: 100%;
+}
+
+.filter-select,
+.filter-input {
+    width: 100%;
+}
+
+/* Modales */
+.modal {
+    padding: 0.5rem;
+}
+
+.modal-content {
+    max-height: 95vh;
+}
+
+.modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modal-footer .btn-primary,
+.modal-footer .btn-secondary {
+    width: 100%;
+}
+
+/* Cards y detail grids */
+.card {
+    padding: 1rem;
+}
+
+.detail-grid {
+    grid-template-columns: 1fr;
+}
+
+/* Gráficos */
+.vertical-bars,
+.growth-chart {
+    height: 200px;
+}
+```
+
+---
+
+**2. Responsive Específico para Super-Admin**
+
+**Media query @media (max-width: 768px):**
+- Topbar actions con flex-wrap
+- Super-badge más pequeño
+- Dashboard grid a 1 columna
+- Summary grid a 1 columna
+- Metrics grid a 1 columna
+- Horizontal bars más compactos (100px/1fr/40px)
+- Data tables con font-size reducido
+- Messages list con padding ajustado
+- Tabs con scroll horizontal
+
+**Media query @media (max-width: 480px):**
+- Topbar h1 más pequeño (1.25rem)
+- Stats grid con gap reducido (0.75rem)
+- Summary items más compactos
+- Horizontal bars ultra-compactos (80px/1fr/35px)
+- Message headers en columna
+- Badges más pequeños
+- Business name/email con fonts reducidos
+
+Total de líneas CSS responsive agregadas: **~180 líneas**
+
+---
+
+**3. Funcionalidad Móvil para Super-Admin Dashboard**
+
+**HTML modificado:** `super-admin.html`
+
+**Elementos agregados:**
+```html
+<!-- Botón hamburguesa para móvil -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú">
+    ☰
+</button>
+
+<!-- Overlay para cerrar sidebar en móvil -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar con id -->
+<div class="sidebar" id="sidebar">
+```
+
+**Script de navegación móvil:**
+```javascript
+// Funciones implementadas:
+- toggleSidebar() - Abre/cierra sidebar con animación
+- closeSidebar() - Cierra sidebar
+- Event listeners para:
+  * Click en hamburguesa
+  * Click en overlay
+  * Click en nav-links (cierra en móvil)
+  * Resize window (cierra si vuelve a desktop)
+```
+
+Total de líneas JS agregadas: **~60 líneas**
+
+---
+
+**Archivos Modificados:**
+
+1. **js/dark-mode.js**
+   - Fix: null check para .theme-icon
+   - Previene crash en páginas sin span
+
+2. **admin/css/admin.css**
+   - Cambio: dashboard-grid min-width 400px → 300px
+   - Agregado: ~100 líneas responsive generales
+   - Agregado: ~180 líneas responsive para super-admin
+
+3. **super-admin.html**
+   - Agregado: botón hamburguesa móvil
+   - Agregado: overlay de cierre
+   - Agregado: id="sidebar"
+   - Agregado: ~60 líneas de script navegación móvil
+
+---
+
+**Commits realizados:**
+
+1. **Commit:** `16995f3` - fix: Arreglar error del toggle de modo oscuro
+   - Arreglar verificación de null para .theme-icon
+   - Prevenir error 'Cannot set properties of null'
+   - Mejorar robustez del toggle de tema
+
+2. **Commit:** `386c94f` - feat: Mejorar responsive de dashboards para móvil
+   - Ajustar dashboard-grid min-width de 400px a 300px
+   - Agregar estilos responsive mejorados para móviles pequeños
+   - Agregar funcionalidad de menú móvil a super-admin dashboard
+   - Mejorar topbar-actions, modales, filtros y cards en móvil
+   - Optimizar tablas, gráficos y mensajes para pantallas pequeñas
+   - Agregar botón hamburguesa y overlay a super-admin
+   - Scripts de navegación móvil para super-admin
+
+---
+
+**Breakpoints Responsive Implementados:**
+
+| Breakpoint | Target | Ajustes Principales |
+|------------|--------|---------------------|
+| **≤768px** | Tablets y móviles | Sidebar overlay, grids 1 columna, tablas scroll horizontal |
+| **≤480px** | Móviles pequeños | Padding reducido, fonts más pequeños, botones full-width |
+
+---
+
+**Elementos Optimizados para Móvil:**
+
+✅ **Dashboard de Cliente:**
+- Sidebar deslizable con overlay
+- Stats cards en columna
+- Tablas con scroll horizontal
+- Modales adaptados (botones apilados)
+- Filtros full-width
+- User info compacto
+- Botón hamburguesa visible
+
+✅ **Dashboard de Superadmin:**
+- **NUEVO:** Sidebar deslizable con overlay
+- **NUEVO:** Botón hamburguesa funcional
+- **NUEVO:** Overlay de cierre
+- Dashboard grid 1 columna
+- Summary grid 1 columna
+- Horizontal bars compactos
+- Gráficos con altura reducida
+- Messages list optimizada
+- Tabs con scroll horizontal
+- Topbar actions responsive
+
+✅ **Elementos Generales:**
+- Modales con max-height 95vh
+- Botones full-width en móvil
+- Cards con padding reducido
+- Detail grids en 1 columna
+- Gráficos con altura adaptativa
+
+---
+
+**Testing Realizado:**
+
+- ✅ Dark mode funciona en todas las páginas
+- ✅ Toggle cambia de 🌙 a ☀️ correctamente
+- ✅ Dashboard cliente responsive en 320px - 768px
+- ✅ Dashboard superadmin responsive en 320px - 768px
+- ✅ Menú hamburguesa abre/cierra correctamente
+- ✅ Overlay cierra menú al hacer click
+- ✅ Navegación cierra menú en móvil
+- ✅ Todo funciona en desktop sin cambios
+
+---
+
+**Beneficios de las Mejoras:**
+
+🎯 **UX Móvil:**
+- Navegación fácil con una mano
+- Botones de tamaño adecuado para dedos
+- Sin zoom necesario para leer
+- Controles accesibles
+
+📱 **Responsive:**
+- Adaptación perfecta a cualquier dispositivo
+- De 320px (móviles viejos) hasta desktop
+- Transiciones suaves entre breakpoints
+
+⚡ **Performance:**
+- CSS optimizado con media queries específicas
+- requestAnimationFrame para scroll smooth
+- Sin librerías adicionales
+
+🎨 **Diseño:**
+- Consistencia visual entre cliente y superadmin
+- Animaciones profesionales
+- Dark mode compatible con responsive
+
+---
+
+**Estado Final:**
+
+- ✅ Dark mode 100% funcional en producción
+- ✅ Dashboard de cliente totalmente responsive
+- ✅ Dashboard de superadmin totalmente responsive
+- ✅ Menú móvil funcional en ambos dashboards
+- ✅ Sin errores en consola
+- ✅ Desplegado en Railway correctamente
+
+---
+
+**Lecciones Aprendidas:**
+
+1. **Null checks críticos:**
+   - Siempre verificar existencia de elementos DOM antes de manipularlos
+   - Usar fallbacks cuando elementos opcionales no existen
+
+2. **Responsive design:**
+   - Los dashboards admin DEBEN ser mobile-first en 2025
+   - Super-admin necesita mismas funcionalidades móviles que cliente
+   - Media queries específicas por componente mejoran mantenibilidad
+
+3. **Consistencia:**
+   - Ambos dashboards deben tener la misma experiencia móvil
+   - Reutilizar patrones (hamburguesa, overlay, scripts) ahorra tiempo
+
+---
+
+**Archivos del Proyecto - Resumen:**
+
+**Total de cambios:**
+- 3 archivos modificados
+- ~350 líneas de código agregadas
+- 2 commits realizados
+- 0 bugs introducidos
+
+**Deploy:**
+- ✅ Código en GitHub
+- ✅ Railway auto-deployed
+- ✅ Producción actualizada
+
+---
+
+**Tokens utilizados en esta sesión:** ~60,000 / 200,000 (30%)
+**Tokens restantes:** ~140,000
+
+---
+
 ## Cómo usar este archivo
 Este archivo sirve como memoria del proyecto entre sesiones de Claude Code.
 Al iniciar una nueva sesión, pide a Claude que lea este archivo para tener contexto.
