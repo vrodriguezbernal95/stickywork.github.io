@@ -5,7 +5,7 @@
         #scroll-to-top {
             position: fixed;
             bottom: 30px;
-            right: 30px;
+            left: 30px;
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -46,7 +46,7 @@
                 width: 45px;
                 height: 45px;
                 bottom: 20px;
-                right: 20px;
+                left: 20px;
                 font-size: 20px;
             }
         }
