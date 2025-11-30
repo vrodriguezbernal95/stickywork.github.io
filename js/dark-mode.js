@@ -32,12 +32,21 @@
         if (!toggle) return;
 
         const icon = toggle.querySelector('.theme-icon');
+
         if (theme === 'dark') {
-            icon.textContent = '☀️';
+            if (icon) {
+                icon.textContent = '☀️';
+            } else {
+                toggle.textContent = '☀️';
+            }
             toggle.setAttribute('aria-label', 'Cambiar a modo claro');
             toggle.setAttribute('title', 'Modo claro');
         } else {
-            icon.textContent = '🌙';
+            if (icon) {
+                icon.textContent = '🌙';
+            } else {
+                toggle.textContent = '🌙';
+            }
             toggle.setAttribute('aria-label', 'Cambiar a modo oscuro');
             toggle.setAttribute('title', 'Modo oscuro');
         }
