@@ -722,6 +722,84 @@ body::before {
         top: 0.75rem;
         left: 0.75rem;
     }
+
+    /* Dashboard grid */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Topbar actions */
+    .topbar-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    /* Filters */
+    .filters-container {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .filter-select,
+    .filter-input {
+        width: 100%;
+    }
+
+    /* Modal */
+    .modal {
+        padding: 0.5rem;
+    }
+
+    .modal-content {
+        max-height: 95vh;
+    }
+
+    .modal-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-footer {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .modal-footer .btn-primary,
+    .modal-footer .btn-secondary {
+        width: 100%;
+    }
+
+    /* Cards */
+    .card {
+        padding: 1rem;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    /* Detail sections */
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Vertical bars */
+    .vertical-bars {
+        height: 200px;
+    }
+
+    /* Growth chart */
+    .growth-chart {
+        height: 200px;
+    }
 }
 
 /* ==========================================
@@ -833,7 +911,7 @@ body::before {
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-bottom: 1.5rem;
 }
@@ -1837,4 +1915,184 @@ body::before {
 .tab-btn.active {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
+}
+
+/* ==========================================
+   RESPONSIVE - SUPER ADMIN
+   ========================================== */
+
+@media (max-width: 768px) {
+    /* Responsive para dashboard de superadmin */
+
+    /* Ajustes de topbar-actions */
+    .topbar-actions {
+        flex-wrap: wrap;
+    }
+
+    .user-info {
+        font-size: 0.85rem;
+    }
+
+    .super-badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    /* Dashboard grid */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Summary grid */
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Summary item más compacto */
+    .summary-value {
+        font-size: 1.5rem;
+    }
+
+    .summary-label {
+        font-size: 0.85rem;
+    }
+
+    /* Metrics grid */
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Horizontal bars */
+    .bar-item {
+        grid-template-columns: 100px 1fr 40px;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .bar-label {
+        font-size: 0.85rem;
+    }
+
+    /* Vertical bars */
+    .vertical-bars,
+    .growth-chart {
+        height: 220px;
+    }
+
+    /* Data table */
+    .data-table {
+        font-size: 0.85rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 0.75rem 0.5rem;
+    }
+
+    /* Messages list */
+    .message-item {
+        padding: 0.85rem 1rem;
+    }
+
+    .message-from strong {
+        font-size: 0.9rem;
+    }
+
+    /* Tabs */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Super admin en móviles muy pequeños */
+
+    /* Topbar */
+    .topbar h1 {
+        font-size: 1.25rem;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+        gap: 0.75rem;
+    }
+
+    /* Summary item */
+    .summary-item {
+        padding: 0.75rem;
+    }
+
+    .summary-icon {
+        font-size: 1.5rem;
+    }
+
+    .summary-value {
+        font-size: 1.35rem;
+    }
+
+    /* Horizontal bars */
+    .bar-item {
+        grid-template-columns: 80px 1fr 35px;
+        font-size: 0.8rem;
+    }
+
+    /* Messages */
+    .messages-list {
+        gap: 0.5rem;
+    }
+
+    .message-item {
+        padding: 0.75rem;
+    }
+
+    .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    /* Badge */
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    /* Business name/email */
+    .business-name {
+        font-size: 0.9rem;
+    }
+
+    .business-email {
+        font-size: 0.8rem;
+    }
+
+    /* Metric card */
+    .metric-card {
+        padding: 1rem;
+    }
+
+    .metric-header h4 {
+        font-size: 0.95rem;
+    }
+
+    /* Distribution */
+    .distribution-label {
+        font-size: 0.85rem;
+    }
+
+    .distribution-count {
+        font-size: 0.95rem;
+    }
+
+    /* Activity */
+    .activity-value {
+        font-size: 1.5rem;
+    }
 }

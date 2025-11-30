@@ -8,8 +8,16 @@
     <link rel="stylesheet" href="admin/css/admin.css">
 </head>
 <body>
+    <!-- Botón hamburguesa para móvil -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú">
+        ☰
+    </button>
+
+    <!-- Overlay para cerrar sidebar en móvil -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>🔐 Super Admin</h2>
             <p id="superAdminName" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;"></p>
@@ -248,5 +256,64 @@
             margin-left: auto;
         }
     </style>
+
+    <!-- Script para menú móvil -->
+    <script>
+        (function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            // Abrir/cerrar sidebar
+            function toggleSidebar() {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+
+                // Cambiar icono del botón
+                if (sidebar.classList.contains('active')) {
+                    mobileMenuToggle.innerHTML = '✕';
+                    mobileMenuToggle.setAttribute('aria-label', 'Cerrar menú');
+                } else {
+                    mobileMenuToggle.innerHTML = '☰';
+                    mobileMenuToggle.setAttribute('aria-label', 'Abrir menú');
+                }
+            }
+
+            // Cerrar sidebar
+            function closeSidebar() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                mobileMenuToggle.innerHTML = '☰';
+                mobileMenuToggle.setAttribute('aria-label', 'Abrir menú');
+            }
+
+            // Event listeners
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleSidebar);
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
+
+            // Cerrar sidebar al hacer clic en un link (en móvil)
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    // Solo cerrar en móvil (cuando el overlay está visible)
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // Cerrar sidebar al redimensionar a desktop
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    closeSidebar();
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
