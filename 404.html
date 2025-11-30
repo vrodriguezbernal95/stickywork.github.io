@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Página No Encontrada | StickyWork</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .error-404-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+
+        .error-404-content {
+            max-width: 600px;
+            background: var(--bg-primary);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--border-color);
+        }
+
+        .error-404-number {
+            font-size: 8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .error-404-title {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .error-404-description {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .error-404-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .error-404-link {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .error-404-link-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .error-404-link-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .error-404-link-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .error-404-link-secondary:hover {
+            background: var(--bg-tertiary);
+            transform: translateY(-3px);
+        }
+
+        .error-404-illustration {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @media (max-width: 768px) {
+            .error-404-number {
+                font-size: 5rem;
+            }
+
+            .error-404-title {
+                font-size: 1.5rem;
+            }
+
+            .error-404-description {
+                font-size: 1rem;
+            }
+
+            .error-404-content {
+                padding: 2rem;
+            }
+
+            .error-404-links {
+                flex-direction: column;
+            }
+
+            .error-404-link {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-404-container">
+        <div class="error-404-content">
+            <div class="error-404-illustration">🔍</div>
+            <div class="error-404-number">404</div>
+            <h1 class="error-404-title">Oops! Página no encontrada</h1>
+            <p class="error-404-description">
+                Lo sentimos, la página que buscas no existe o ha sido movida.
+                <br>
+                Pero no te preocupes, tenemos muchas cosas interesantes para ti.
+            </p>
+            <div class="error-404-links">
+                <a href="index.html" class="error-404-link error-404-link-primary">
+                    🏠 Volver al Inicio
+                </a>
+                <a href="planes.html" class="error-404-link error-404-link-secondary">
+                    💎 Ver Planes
+                </a>
+                <a href="demo.html" class="error-404-link error-404-link-secondary">
+                    🎮 Ver Demo
+                </a>
+                <a href="contacto.html" class="error-404-link error-404-link-secondary">
+                    📞 Contactar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle Script -->
+    <script src="js/dark-mode.js"></script>
+</body>
+</html>

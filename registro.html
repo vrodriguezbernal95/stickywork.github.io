@@ -329,6 +329,44 @@
             margin: 0;
         }
     </style>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stickywork.com/registro.html">
+    <meta property="og:site_name" content="StickyWork">
+    <meta property="og:title" content="Registro Gratis - StickyWork">
+    <meta property="og:description" content="Crea tu cuenta gratis. 14 días de prueba sin tarjeta. Empieza a recibir reservas online hoy.">
+    <meta property="og:image" content="https://stickywork.com/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="StickyWork - Sistema de Reservas Online">
+    <meta property="og:locale" content="es_ES">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://stickywork.com/registro.html">
+    <meta name="twitter:title" content="Registro Gratis - StickyWork">
+    <meta name="twitter:description" content="Crea tu cuenta gratis. 14 días de prueba sin tarjeta. Empieza a recibir reservas online hoy.">
+    <meta name="twitter:image" content="https://stickywork.com/images/twitter-card.jpg">
+    <meta name="twitter:image:alt" content="StickyWork Dashboard">
+    <meta name="twitter:creator" content="@stickywork">
+    <meta name="twitter:site" content="@stickywork">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/images/favicon-512x512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0F16A3">
+    <meta name="msapplication-TileColor" content="#0F16A3">
+    <meta name="msapplication-TileImage" content="/images/favicon-512x512.png">
 </head>
 <body>
     <!-- Navegación -->
@@ -341,7 +379,7 @@
                 <li><a href="planes.html" class="nav-link">Planes</a></li>
                 <li><a href="demo.html" class="nav-link">Demo</a></li>
                 <li><a href="admin-login.html" class="nav-link" style="color: var(--primary-color);">Iniciar Sesión</a></li>
-                <li><button class="theme-toggle-nav" onclick="themeToggle()" aria-label="Toggle dark mode">☀️</button></li>
+                <li><button id="theme-toggle" class="theme-toggle-nav" aria-label="Cambiar a modo oscuro" role="menuitem"><span class="theme-icon">🌙</span></button></li>
             </ul>
         </div>
     </nav>
@@ -772,5 +810,11 @@
             window.location.href = 'onboarding.html';
         });
     </script>
+    <!-- Dark Mode Toggle Script -->
+    <script src="js/dark-mode.js"></script>
+    <!-- Loading Spinner System -->
+    <script src="js/loading-spinner.js"></script>
+    <!-- Scroll to Top Button -->
+    <script src="js/scroll-to-top.js"></script>
 </body>
 </html>

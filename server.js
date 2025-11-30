@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
 const path = require('path');
 require('dotenv').config();
 
@@ -28,6 +29,21 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==================== MIDDLEWARE ====================
+
+// Security Headers - Helmet (debe ir primero)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false // Permite embedding del widget
+}));
 
 // CORS - permitir peticiones desde cualquier origen
 app.use(cors());
@@ -102,10 +118,16 @@ app.get('/contacto', (req, res) => {
 
 // Ruta no encontrada
 app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: 'Ruta no encontrada'
-    });
+    // Si es una petición de API, devolver JSON
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({
+            success: false,
+            message: 'Ruta no encontrada'
+        });
+    }
+
+    // Para páginas HTML, devolver página 404 personalizada
+    res.status(404).sendFile(path.join(__dirname, '404.html'));
 });
 
 // Error handler global
