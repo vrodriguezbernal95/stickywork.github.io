@@ -22,15 +22,20 @@ const app = {
     setupNavigation() {
         document.querySelectorAll('.sidebar-link').forEach(link => {
             link.addEventListener('click', (e) => {
-                e.preventDefault();
-
-                // Update active state
-                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-
-                // Navigate to section
+                // Solo prevenir default si tiene data-section (navegación interna)
                 const section = link.dataset.section;
-                this.navigateTo(section);
+
+                if (section) {
+                    e.preventDefault();
+
+                    // Update active state
+                    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+
+                    // Navigate to section
+                    this.navigateTo(section);
+                }
+                // Si no tiene data-section, dejar que navegue normalmente (ej: 2FA)
             });
         });
     },
