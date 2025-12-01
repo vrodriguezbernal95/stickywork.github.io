@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { generateToken, requireAuth } = require('../middleware/auth');
+const {
+    generateToken,
+    generateRefreshToken,
+    getRefreshTokenExpiration,
+    requireAuth
+} = require('../middleware/auth');
 const { loginLimiter, registerLimiter } = require('../middleware/rate-limit');
 
 // Permitir inyección de la base de datos
@@ -390,9 +395,9 @@ router.post('/api/auth/login', loginLimiter, async (req, res) => {
             });
         }
 
-        // Buscar usuario
+        // Buscar usuario (incluir two_factor_enabled)
         const users = await db.query(
-            `SELECT id, business_id, email, password_hash, full_name, role, is_active
+            `SELECT id, business_id, email, password_hash, full_name, role, is_active, two_factor_enabled
              FROM admin_users WHERE email = ?`,
             [email]
         );
@@ -424,6 +429,19 @@ router.post('/api/auth/login', loginLimiter, async (req, res) => {
             });
         }
 
+        // Si el usuario tiene 2FA activado, NO generar tokens aún
+        if (user.two_factor_enabled) {
+            return res.json({
+                success: true,
+                requiresTwoFactor: true,
+                message: 'Ingresa el código de autenticación de dos factores',
+                data: {
+                    email: user.email // Necesario para el siguiente paso
+                }
+            });
+        }
+
+        // Si NO tiene 2FA, proceder con login normal
         // Actualizar último login
         await db.query(
             'UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
@@ -432,16 +450,36 @@ router.post('/api/auth/login', loginLimiter, async (req, res) => {
 
         // Eliminar password_hash antes de enviar
         delete user.password_hash;
+        delete user.two_factor_enabled;
 
-        // Generar token
-        const token = generateToken(user);
+        // Generar ACCESS TOKEN (15 minutos)
+        const accessToken = generateToken(user);
+
+        // Generar REFRESH TOKEN (7 días)
+        const { token: refreshToken, tokenHash } = generateRefreshToken();
+        const refreshExpiresAt = getRefreshTokenExpiration();
+
+        // Guardar refresh token en la base de datos
+        await db.query(
+            `INSERT INTO refresh_tokens (user_id, token, expires_at, ip_address, user_agent)
+             VALUES (?, ?, ?, ?, ?)`,
+            [
+                user.id,
+                tokenHash, // Guardamos el hash, no el token original
+                refreshExpiresAt,
+                req.ip || req.connection.remoteAddress,
+                req.headers['user-agent'] || null
+            ]
+        );
 
         res.json({
             success: true,
             message: 'Login exitoso',
             data: {
                 user,
-                token
+                accessToken,      // Token de 15 minutos
+                refreshToken,     // Token de 7 días
+                expiresIn: '15m'  // Info para el frontend
             }
         });
 
@@ -504,21 +542,130 @@ router.get('/api/auth/verify', requireAuth, async (req, res) => {
     }
 });
 
+// ==================== REFRESH TOKEN ====================
+
+/**
+ * POST /api/auth/refresh
+ * Renovar access token usando refresh token
+ */
+router.post('/api/auth/refresh', async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(400).json({
+                success: false,
+                message: 'Refresh token requerido'
+            });
+        }
+
+        // Hash del refresh token para buscar en DB
+        const crypto = require('crypto');
+        const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
+        // Buscar refresh token en la base de datos
+        const tokens = await db.query(
+            `SELECT rt.id, rt.user_id, rt.expires_at, rt.revoked,
+                    u.id as user_id, u.email, u.full_name, u.business_id, u.role, u.is_active
+             FROM refresh_tokens rt
+             INNER JOIN admin_users u ON rt.user_id = u.id
+             WHERE rt.token = ? AND rt.revoked = FALSE`,
+            [tokenHash]
+        );
+
+        if (tokens.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token inválido o revocado'
+            });
+        }
+
+        const tokenData = tokens[0];
+
+        // Verificar expiración
+        if (new Date() > new Date(tokenData.expires_at)) {
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token expirado. Por favor, inicia sesión de nuevo.'
+            });
+        }
+
+        // Verificar que el usuario está activo
+        if (!tokenData.is_active) {
+            return res.status(403).json({
+                success: false,
+                message: 'Usuario desactivado'
+            });
+        }
+
+        // Actualizar last_used_at del refresh token
+        await db.query(
+            'UPDATE refresh_tokens SET last_used_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [tokenData.id]
+        );
+
+        // Generar nuevo ACCESS TOKEN
+        const user = {
+            id: tokenData.user_id,
+            email: tokenData.email,
+            full_name: tokenData.full_name,
+            business_id: tokenData.business_id,
+            role: tokenData.role
+        };
+
+        const newAccessToken = generateToken(user);
+
+        res.json({
+            success: true,
+            message: 'Token renovado exitosamente',
+            data: {
+                accessToken: newAccessToken,
+                expiresIn: '15m'
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en refresh token:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al renovar token',
+            error: error.message
+        });
+    }
+});
+
 // ==================== LOGOUT ====================
 
 /**
  * POST /api/auth/logout
- * Cerrar sesión (en el frontend se elimina el token)
+ * Cerrar sesión y revocar refresh token
  */
-router.post('/api/auth/logout', requireAuth, (req, res) => {
-    // En un sistema JWT stateless, el logout es del lado del cliente
-    // Simplemente elimina el token del localStorage/cookie
+router.post('/api/auth/logout', requireAuth, async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
 
-    // Aquí podríamos registrar el logout en logs si fuera necesario
-    res.json({
-        success: true,
-        message: 'Sesión cerrada exitosamente'
-    });
+        // Si se proporciona refresh token, revocarlo
+        if (refreshToken) {
+            const crypto = require('crypto');
+            const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
+            await db.query(
+                'UPDATE refresh_tokens SET revoked = TRUE, revoked_at = CURRENT_TIMESTAMP WHERE token = ?',
+                [tokenHash]
+            );
+        }
+
+        res.json({
+            success: true,
+            message: 'Sesión cerrada exitosamente'
+        });
+    } catch (error) {
+        console.error('Error en logout:', error);
+        res.json({
+            success: true,
+            message: 'Sesión cerrada exitosamente'
+        });
+    }
 });
 
 // ==================== CAMBIAR CONTRASEÑA ====================
@@ -779,6 +926,502 @@ router.post('/api/auth/reset-password', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al restablecer contraseña',
+            error: error.message
+        });
+    }
+});
+
+// ==================== TWO-FACTOR AUTHENTICATION (2FA) ====================
+
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
+
+/**
+ * POST /api/auth/2fa/setup
+ * Generar secret y QR code para configurar 2FA
+ * Requiere autenticación
+ */
+router.post('/api/auth/2fa/setup', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Verificar que el usuario existe y obtener su info
+        const users = await db.query(
+            `SELECT id, email, full_name, two_factor_enabled
+             FROM admin_users WHERE id = ?`,
+            [userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        const user = users[0];
+
+        // Si ya tiene 2FA activado, retornar error
+        if (user.two_factor_enabled) {
+            return res.status(400).json({
+                success: false,
+                message: '2FA ya está activado. Desactívalo primero si quieres reconfigurarlo.'
+            });
+        }
+
+        // Generar secret TOTP
+        const secret = speakeasy.generateSecret({
+            name: `StickyWork (${user.email})`,
+            issuer: 'StickyWork',
+            length: 32
+        });
+
+        // Generar QR code
+        const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+
+        // Guardar el secret temporalmente (aún no activado)
+        await db.query(
+            `UPDATE admin_users
+             SET two_factor_secret = ?
+             WHERE id = ?`,
+            [secret.base32, userId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Secret generado. Escanea el QR con Google Authenticator.',
+            data: {
+                secret: secret.base32,
+                qrCode: qrCodeUrl,
+                manualEntry: secret.base32 // Para entrada manual si el QR no funciona
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en 2FA setup:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al configurar 2FA',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/auth/2fa/verify-setup
+ * Verificar el primer código para activar 2FA
+ * Requiere autenticación
+ */
+router.post('/api/auth/2fa/verify-setup', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { code } = req.body;
+
+        if (!code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Código requerido'
+            });
+        }
+
+        // Obtener secret del usuario
+        const users = await db.query(
+            `SELECT id, two_factor_secret, two_factor_enabled
+             FROM admin_users WHERE id = ?`,
+            [userId]
+        );
+
+        if (users.length === 0 || !users[0].two_factor_secret) {
+            return res.status(400).json({
+                success: false,
+                message: 'Primero debes iniciar el setup de 2FA'
+            });
+        }
+
+        const user = users[0];
+
+        // Verificar el código TOTP
+        const verified = speakeasy.totp.verify({
+            secret: user.two_factor_secret,
+            encoding: 'base32',
+            token: code,
+            window: 2 // Permite 2 pasos de tiempo de diferencia (60 segundos antes/después)
+        });
+
+        if (!verified) {
+            return res.status(401).json({
+                success: false,
+                message: 'Código inválido. Verifica que el código sea el actual.'
+            });
+        }
+
+        // Generar códigos de backup (10 códigos de 8 caracteres)
+        const backupCodes = [];
+        for (let i = 0; i < 10; i++) {
+            const code = crypto.randomBytes(4).toString('hex').toUpperCase();
+            backupCodes.push(code);
+        }
+
+        // Hash de los códigos de backup antes de guardarlos
+        const hashedBackupCodes = backupCodes.map(code =>
+            crypto.createHash('sha256').update(code).digest('hex')
+        );
+
+        // Activar 2FA
+        await db.query(
+            `UPDATE admin_users
+             SET two_factor_enabled = TRUE,
+                 two_factor_backup_codes = ?,
+                 two_factor_enabled_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [JSON.stringify(hashedBackupCodes), userId]
+        );
+
+        res.json({
+            success: true,
+            message: '¡2FA activado exitosamente!',
+            data: {
+                backupCodes: backupCodes // Estos se muestran UNA SOLA VEZ
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en 2FA verify-setup:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al verificar código',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/auth/2fa/validate
+ * Validar código 2FA durante el login
+ * NO requiere autenticación (se usa después de email/password)
+ */
+router.post('/api/auth/2fa/validate', async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!email || !code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email y código son requeridos'
+            });
+        }
+
+        // Obtener usuario con 2FA info
+        const users = await db.query(
+            `SELECT id, business_id, email, full_name, role, is_active,
+                    two_factor_enabled, two_factor_secret, two_factor_backup_codes
+             FROM admin_users
+             WHERE email = ? AND two_factor_enabled = TRUE`,
+            [email]
+        );
+
+        if (users.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Código inválido'
+            });
+        }
+
+        const user = users[0];
+
+        // Verificar si el usuario está activo
+        if (!user.is_active) {
+            return res.status(403).json({
+                success: false,
+                message: 'Usuario desactivado'
+            });
+        }
+
+        let isValid = false;
+        let usedBackupCode = false;
+
+        // Primero intentar validar como código TOTP
+        isValid = speakeasy.totp.verify({
+            secret: user.two_factor_secret,
+            encoding: 'base32',
+            token: code,
+            window: 2
+        });
+
+        // Si no es válido como TOTP, intentar con códigos de backup
+        if (!isValid && user.two_factor_backup_codes) {
+            const backupCodes = JSON.parse(user.two_factor_backup_codes);
+            const codeHash = crypto.createHash('sha256').update(code.toUpperCase()).digest('hex');
+
+            const codeIndex = backupCodes.indexOf(codeHash);
+            if (codeIndex !== -1) {
+                isValid = true;
+                usedBackupCode = true;
+
+                // Eliminar el código de backup usado
+                backupCodes.splice(codeIndex, 1);
+                await db.query(
+                    'UPDATE admin_users SET two_factor_backup_codes = ? WHERE id = ?',
+                    [JSON.stringify(backupCodes), user.id]
+                );
+            }
+        }
+
+        if (!isValid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Código inválido o expirado'
+            });
+        }
+
+        // Actualizar último login
+        await db.query(
+            'UPDATE admin_users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
+            [user.id]
+        );
+
+        // Eliminar datos sensibles
+        delete user.two_factor_secret;
+        delete user.two_factor_backup_codes;
+
+        // Generar tokens
+        const accessToken = generateToken(user);
+        const { token: refreshToken, tokenHash } = generateRefreshToken();
+        const refreshExpiresAt = getRefreshTokenExpiration();
+
+        // Guardar refresh token
+        await db.query(
+            `INSERT INTO refresh_tokens (user_id, token, expires_at, ip_address, user_agent)
+             VALUES (?, ?, ?, ?, ?)`,
+            [
+                user.id,
+                tokenHash,
+                refreshExpiresAt,
+                req.ip || req.connection.remoteAddress,
+                req.headers['user-agent'] || null
+            ]
+        );
+
+        const backupCodesRemaining = user.two_factor_backup_codes
+            ? JSON.parse(user.two_factor_backup_codes).length
+            : 0;
+
+        res.json({
+            success: true,
+            message: usedBackupCode
+                ? `Código de backup usado. Quedan ${backupCodesRemaining} códigos.`
+                : 'Autenticación 2FA exitosa',
+            data: {
+                user,
+                accessToken,
+                refreshToken,
+                expiresIn: '15m',
+                backupCodesRemaining: usedBackupCode ? backupCodesRemaining : undefined
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en 2FA validate:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al validar 2FA',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/auth/2fa/disable
+ * Desactivar 2FA para el usuario actual
+ * Requiere autenticación y contraseña
+ */
+router.post('/api/auth/2fa/disable', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { password } = req.body;
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Contraseña requerida para desactivar 2FA'
+            });
+        }
+
+        // Obtener usuario con password
+        const users = await db.query(
+            `SELECT id, password_hash, two_factor_enabled
+             FROM admin_users WHERE id = ?`,
+            [userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        const user = users[0];
+
+        // Verificar contraseña
+        const passwordMatch = await bcrypt.compare(password, user.password_hash);
+        if (!passwordMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Contraseña incorrecta'
+            });
+        }
+
+        // Desactivar 2FA
+        await db.query(
+            `UPDATE admin_users
+             SET two_factor_enabled = FALSE,
+                 two_factor_secret = NULL,
+                 two_factor_backup_codes = NULL,
+                 two_factor_enabled_at = NULL
+             WHERE id = ?`,
+            [userId]
+        );
+
+        res.json({
+            success: true,
+            message: '2FA desactivado exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error en 2FA disable:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al desactivar 2FA',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/auth/2fa/regenerate-backup-codes
+ * Regenerar códigos de backup
+ * Requiere autenticación y código 2FA actual
+ */
+router.post('/api/auth/2fa/regenerate-backup-codes', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { code } = req.body;
+
+        if (!code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Código 2FA requerido'
+            });
+        }
+
+        // Obtener usuario
+        const users = await db.query(
+            `SELECT id, two_factor_enabled, two_factor_secret
+             FROM admin_users WHERE id = ?`,
+            [userId]
+        );
+
+        if (users.length === 0 || !users[0].two_factor_enabled) {
+            return res.status(400).json({
+                success: false,
+                message: '2FA no está activado'
+            });
+        }
+
+        const user = users[0];
+
+        // Verificar código actual
+        const verified = speakeasy.totp.verify({
+            secret: user.two_factor_secret,
+            encoding: 'base32',
+            token: code,
+            window: 2
+        });
+
+        if (!verified) {
+            return res.status(401).json({
+                success: false,
+                message: 'Código inválido'
+            });
+        }
+
+        // Generar nuevos códigos de backup
+        const backupCodes = [];
+        for (let i = 0; i < 10; i++) {
+            const code = crypto.randomBytes(4).toString('hex').toUpperCase();
+            backupCodes.push(code);
+        }
+
+        const hashedBackupCodes = backupCodes.map(code =>
+            crypto.createHash('sha256').update(code).digest('hex')
+        );
+
+        // Actualizar códigos
+        await db.query(
+            'UPDATE admin_users SET two_factor_backup_codes = ? WHERE id = ?',
+            [JSON.stringify(hashedBackupCodes), userId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Códigos de backup regenerados',
+            data: {
+                backupCodes: backupCodes
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en regenerate-backup-codes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al regenerar códigos',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/auth/2fa/status
+ * Obtener estado de 2FA del usuario actual
+ * Requiere autenticación
+ */
+router.get('/api/auth/2fa/status', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const users = await db.query(
+            `SELECT two_factor_enabled, two_factor_enabled_at, two_factor_backup_codes
+             FROM admin_users WHERE id = ?`,
+            [userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        const user = users[0];
+        const backupCodesCount = user.two_factor_backup_codes
+            ? JSON.parse(user.two_factor_backup_codes).length
+            : 0;
+
+        res.json({
+            success: true,
+            data: {
+                enabled: user.two_factor_enabled,
+                enabledAt: user.two_factor_enabled_at,
+                backupCodesRemaining: user.two_factor_enabled ? backupCodesCount : 0
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en 2FA status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener estado 2FA',
             error: error.message
         });
     }

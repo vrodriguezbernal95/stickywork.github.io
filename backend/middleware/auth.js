@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // Secret para JWT - OBLIGATORIO en variables de entorno
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '15m'; // 15 minutos
+const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d'; // 7 días
 
 // Verificar que JWT_SECRET está configurado
 if (!JWT_SECRET) {
@@ -14,7 +16,7 @@ if (!JWT_SECRET) {
 }
 
 /**
- * Genera un token JWT para un usuario
+ * Genera un ACCESS TOKEN JWT para un usuario (15 minutos)
  */
 function generateToken(user) {
     const payload = {
@@ -25,8 +27,37 @@ function generateToken(user) {
     };
 
     return jwt.sign(payload, JWT_SECRET, {
-        expiresIn: JWT_EXPIRES_IN
+        expiresIn: ACCESS_TOKEN_EXPIRES_IN
     });
+}
+
+/**
+ * Genera un REFRESH TOKEN seguro (7 días)
+ * Retorna el token en texto plano (para enviar al cliente)
+ * y el hash SHA-256 (para guardar en DB)
+ */
+function generateRefreshToken() {
+    const token = crypto.randomBytes(64).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    return {
+        token,      // Token original para enviar al cliente
+        tokenHash   // Hash para guardar en DB
+    };
+}
+
+/**
+ * Calcula la fecha de expiración del refresh token
+ */
+function getRefreshTokenExpiration() {
+    const expiresAt = new Date();
+
+    // Parsear duración desde variable de entorno (ej: "7d" = 7 días)
+    const duration = REFRESH_TOKEN_EXPIRES_IN;
+    const days = parseInt(duration.replace('d', '')) || 7;
+
+    expiresAt.setDate(expiresAt.getDate() + days);
+    return expiresAt;
 }
 
 /**
@@ -126,9 +157,13 @@ function requireBusinessAccess(req, res, next) {
 
 module.exports = {
     generateToken,
+    generateRefreshToken,
+    getRefreshTokenExpiration,
     verifyToken,
     requireAuth,
     requireRole,
     requireBusinessAccess,
-    JWT_SECRET
+    JWT_SECRET,
+    ACCESS_TOKEN_EXPIRES_IN,
+    REFRESH_TOKEN_EXPIRES_IN
 };

@@ -218,6 +218,7 @@
             <!-- Alert messages -->
             <div id="alertContainer"></div>
 
+            <!-- Formulario de email y contraseña -->
             <form id="loginForm">
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
@@ -248,6 +249,35 @@
                 </button>
             </form>
 
+            <!-- Formulario de 2FA (oculto inicialmente) -->
+            <form id="twoFactorForm" style="display: none;">
+                <div class="form-group">
+                    <label for="twoFactorCode" class="form-label">Código de Autenticación</label>
+                    <input
+                        type="text"
+                        id="twoFactorCode"
+                        class="form-input"
+                        placeholder="000000"
+                        maxlength="8"
+                        pattern="[0-9A-Fa-f]{6,8}"
+                        required
+                        autocomplete="off"
+                        style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;"
+                    >
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">
+                        Ingresa el código de 6 dígitos de tu app de autenticación o un código de backup de 8 caracteres.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn-login" id="twoFactorBtn">
+                    Verificar Código
+                </button>
+
+                <button type="button" class="btn-login" id="backBtn" style="margin-top: 0.5rem; background: var(--bg-secondary); color: var(--text-primary);">
+                    ← Volver
+                </button>
+            </form>
+
             <div style="text-align: center; margin-top: 1rem;">
                 <a href="forgot-password.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s ease;">
                     ¿Olvidaste tu contraseña?
@@ -267,8 +297,14 @@
             : 'https://stickywork.com';  // URL del backend en Railway
 
         const loginForm = document.getElementById('loginForm');
+        const twoFactorForm = document.getElementById('twoFactorForm');
         const loginBtn = document.getElementById('loginBtn');
+        const twoFactorBtn = document.getElementById('twoFactorBtn');
+        const backBtn = document.getElementById('backBtn');
         const alertContainer = document.getElementById('alertContainer');
+
+        // Variable para almacenar el email durante el flujo 2FA
+        let userEmail = '';
 
         // Show alert message
         function showAlert(message, type = 'error') {
@@ -283,7 +319,7 @@
             }, 5000);
         }
 
-        // Handle form submission
+        // Handle login form submission
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -306,16 +342,26 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    // Save token and user data
-                    localStorage.setItem('authToken', data.data.token);
-                    localStorage.setItem('userData', JSON.stringify(data.data.user));
+                    // Verificar si requiere 2FA
+                    if (data.requiresTwoFactor) {
+                        // Guardar email y mostrar formulario 2FA
+                        userEmail = data.data.email;
+                        loginForm.style.display = 'none';
+                        twoFactorForm.style.display = 'block';
+                        showAlert(data.message, 'success');
+                        document.getElementById('twoFactorCode').focus();
+                    } else {
+                        // Login normal sin 2FA
+                        localStorage.setItem('accessToken', data.data.accessToken);
+                        localStorage.setItem('refreshToken', data.data.refreshToken);
+                        localStorage.setItem('userData', JSON.stringify(data.data.user));
 
-                    showAlert('¡Login exitoso! Redirigiendo...', 'success');
+                        showAlert('¡Login exitoso! Redirigiendo...', 'success');
 
-                    // Redirect to dashboard
-                    setTimeout(() => {
-                        window.location.href = 'admin-dashboard.html';
-                    }, 1000);
+                        setTimeout(() => {
+                            window.location.href = 'admin-dashboard.html';
+                        }, 1000);
+                    }
                 } else {
                     showAlert(data.message || 'Error al iniciar sesión');
                     loginBtn.disabled = false;
@@ -329,9 +375,68 @@
             }
         });
 
+        // Handle 2FA form submission
+        twoFactorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const code = document.getElementById('twoFactorCode').value;
+
+            // Disable button
+            twoFactorBtn.disabled = true;
+            twoFactorBtn.textContent = 'Verificando...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/auth/2fa/validate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: userEmail, code })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar tokens y usuario
+                    localStorage.setItem('accessToken', data.data.accessToken);
+                    localStorage.setItem('refreshToken', data.data.refreshToken);
+                    localStorage.setItem('userData', JSON.stringify(data.data.user));
+
+                    showAlert(data.message || '¡Autenticación exitosa! Redirigiendo...', 'success');
+
+                    setTimeout(() => {
+                        window.location.href = 'admin-dashboard.html';
+                    }, 1000);
+                } else {
+                    showAlert(data.message || 'Código inválido');
+                    twoFactorBtn.disabled = false;
+                    twoFactorBtn.textContent = 'Verificar Código';
+                    document.getElementById('twoFactorCode').value = '';
+                    document.getElementById('twoFactorCode').focus();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error de conexión. Verifica que el servidor esté en funcionamiento.');
+                twoFactorBtn.disabled = false;
+                twoFactorBtn.textContent = 'Verificar Código';
+            }
+        });
+
+        // Handle back button
+        backBtn.addEventListener('click', () => {
+            twoFactorForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            document.getElementById('twoFactorCode').value = '';
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Iniciar Sesión';
+            twoFactorBtn.disabled = false;
+            twoFactorBtn.textContent = 'Verificar Código';
+            userEmail = '';
+        });
+
         // Check if already logged in
         window.addEventListener('load', async () => {
-            const token = localStorage.getItem('authToken');
+            const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken'); // Compatibilidad
             if (token) {
                 try {
                     const response = await fetch(`${API_URL}/api/auth/verify`, {
