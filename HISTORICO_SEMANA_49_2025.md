@@ -1,7 +1,7 @@
 # Histórico Proyecto StickyWork - Semana 49
 
 **Año:** 2025
-**Período:** 2025-12-01 - 2025-12-01
+**Período:** 2025-12-01 - 2025-12-02
 
 ---
 
@@ -304,6 +304,251 @@ El usuario solicitó revisar el sistema de autenticación (auth) y se implementa
 3. Documentación de usuario para activar 2FA
 4. Monitoreo de refresh tokens activos
 5. Implementar endpoint para ver/revocar sesiones activas
+
+---
+
+### 2025-12-02 - Fix Critical CSP + Mejoras UX + Reorganización de Histórico
+**Estado:** Completado ✓
+
+---
+
+## PARTE 1: Fix Critical - Botones de Reservas No Funcionaban
+
+**Problema:**
+El usuario reportó que en el dashboard de reservas (admin@lexpartners.demo), los botones de acción para cambiar el estado de las reservas no respondían al hacer click. Específicamente:
+- Botón ✓ (confirmar reserva pendiente)
+- Botón ✓✓ (marcar como completada)
+- Botón ✕ (cancelar reserva)
+
+**Contexto:**
+- El backend tenía el endpoint PATCH /api/booking/:id correctamente implementado
+- El frontend tenía la función updateStatus() correctamente programada
+- Los botones se renderizaban correctamente con onclick="bookings.updateStatus(...)"
+- Pero al hacer click, no pasaba nada
+
+**Proceso de Diagnóstico:**
+
+1. **Verificación de datos en BD:**
+   - Conectado a Railway MySQL (switchback.proxy.rlwy.net:26447)
+   - Confirmado que admin@lexpartners.demo tiene business_id: 7
+   - Encontradas 3 reservas:
+     * ID 1: Judith (completed)
+     * ID 2: Víctor (confirmed) ✅
+     * ID 3: Carlos (confirmed) ✅
+   - Las reservas #2 y #3 deberían mostrar el botón ✓✓
+
+2. **Verificación de código:**
+   - Backend: Endpoint PATCH existe en backend/routes.js:429-463
+   - Frontend: Función updateStatus() en admin/js/bookings.js:285-316
+   - Botones: Renderizado correcto en renderActions()
+   - Todo el código estaba bien
+
+3. **Console del navegador reveló el problema:**
+   ```
+   Executing inline event handler violates the following Content Security Policy directive 'script-src-attr 'none''
+   ```
+
+**Causa Raíz:**
+Content Security Policy (CSP) configurado en Helmet bloqueaba los event handlers inline (onclick, onsubmit, etc.)
+
+**Solución Implementada:**
+
+Agregada directiva `scriptSrcAttr` a la configuración de Helmet:
+
+```javascript
+// server.js
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"], // ← AGREGADO
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+```
+
+**Archivos Modificados:**
+- server.js (línea 41: agregado scriptSrcAttr)
+- admin/js/bookings.js (agregados console.logs para debugging)
+
+**Resultado:**
+✅ Los botones de acción ahora funcionan correctamente
+✅ Los admins pueden cambiar el estado de las reservas
+✅ El CSP sigue siendo estricto en otras directivas
+
+**Commits:**
+- `456b9b6` - debug: Agregar console.logs para diagnosticar problema
+- `2f9f7e0` - fix: Agregar scriptSrcAttr a CSP para permitir eventos inline
+
+---
+
+## PARTE 2: Mejora UX - Eliminación de Burbuja en Header
+
+**Problema:**
+Al pasar el mouse sobre los enlaces del header de la web (Cómo funciona, Planes, Demo, etc.), aparecía una burbuja de colores (gradiente rojo/azul) que era visualmente intrusiva.
+
+**Solución:**
+Eliminado el pseudo-elemento `::after` del CSS que creaba el efecto de burbuja, manteniendo solo el efecto de línea inferior que es más sutil.
+
+**Código Eliminado:**
+```css
+.nav-link::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    opacity: 0.1;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    z-index: -1;
+}
+
+.nav-link:hover::after {
+    width: 120%;
+    height: 100%;
+}
+```
+
+**Efecto Mantenido:**
+Solo la línea inferior con gradiente:
+```css
+.nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 3px;
+}
+```
+
+**Archivos Modificados:**
+- css/styles.css (eliminadas líneas 259-282)
+
+**Resultado:**
+✅ Header más limpio y profesional
+✅ Hover sutil con línea inferior
+✅ Mejor experiencia de usuario
+
+**Commit:**
+- `1ea4c9d` - style: Eliminar efecto de burbuja en hover de navegación
+
+---
+
+## PARTE 3: Reorganización del Histórico del Proyecto
+
+**Problema:**
+El archivo HISTORICO_PROYECTO.md se había vuelto extremadamente grande:
+- **Tamaño:** 34,330 tokens
+- **Líneas:** 2,854
+- **Impacto:** Consumía muchos tokens en cada sesión
+- **Dificultad:** Difícil de navegar y encontrar información
+
+**Solución:**
+Reorganización completa del histórico dividiendo por semanas de trabajo.
+
+**Proceso:**
+
+1. **Script de reorganización automática:**
+   - Creado `reorganizar-historico.js`
+   - Lee el archivo original completo
+   - Extrae información estática (descripción, stack, DNS, etc.)
+   - Agrupa entradas por número de semana del año
+   - Genera archivos por semana automáticamente
+   - Crea resumen ejecutivo
+
+2. **Archivos Generados:**
+
+   **HISTORICO_RESUMEN.md** (~3,000 tokens)
+   - Información estática del proyecto
+   - Resumen ejecutivo por semana
+   - Referencias a archivos de detalle
+   - **Reducción del 91% en tokens**
+
+   **Archivos por Semana:**
+   - HISTORICO_SEMANA_04_2025.md (enero 24-26, 6 entradas)
+   - HISTORICO_SEMANA_05_2025.md (enero 26-28, 4 entradas)
+   - HISTORICO_SEMANA_48_2025.md (noviembre 24-28, 4 entradas)
+   - HISTORICO_SEMANA_49_2025.md (diciembre 1-2, 2 entradas)
+
+   **HISTORICO_README.md**
+   - Guía completa de uso
+   - Instrucciones para nuevas sesiones
+   - Formato de entradas
+   - Convención de numeración
+
+   **HISTORICO_PROYECTO_BACKUP.md**
+   - Backup completo del original
+   - Mantenido por seguridad
+
+**Estructura de Uso:**
+
+Para nuevas sesiones:
+```
+Usuario: "Lee el histórico resumen"
+Claude: [Lee HISTORICO_RESUMEN.md - 3,000 tokens]
+```
+
+Para detalles específicos:
+```
+Usuario: "Lee el histórico de la semana 49"
+Claude: [Lee HISTORICO_SEMANA_49_2025.md]
+```
+
+**Beneficios:**
+- ✅ Reducción del 91% en tokens (34,330 → 3,000)
+- ✅ Mejor organización cronológica
+- ✅ Fácil encontrar información por fechas
+- ✅ Sistema escalable a largo plazo
+- ✅ Mantiene toda la historia completa
+- ✅ Flexible: leer solo lo necesario
+
+**Archivos Creados:**
+- reorganizar-historico.js (temporal, eliminado después)
+- HISTORICO_RESUMEN.md
+- HISTORICO_SEMANA_04_2025.md
+- HISTORICO_SEMANA_05_2025.md
+- HISTORICO_SEMANA_48_2025.md
+- HISTORICO_SEMANA_49_2025.md
+- HISTORICO_README.md
+- HISTORICO_PROYECTO_BACKUP.md
+
+**Commits:**
+- `e126b32` - docs: Reorganizar histórico del proyecto por semanas
+- `bb559b6` - docs: Agregar guía de uso del histórico reorganizado
+
+---
+
+## Resumen del Día 2025-12-02
+
+### Bugs Críticos Resueltos
+✅ **Dashboard de reservas funcional** - CSP bloqueaba onclick
+
+### Mejoras de UX
+✅ **Header más limpio** - Eliminada burbuja de colores
+
+### Mejoras de Mantenimiento
+✅ **Histórico organizado** - Reducción del 91% en tokens
+✅ **Sistema escalable** - Archivos por semana
+
+### Estadísticas
+- **Commits:** 5
+- **Archivos modificados:** 2
+- **Archivos creados:** 7
+- **Reducción de tokens:** 31,330 (91%)
 
 ---
 
