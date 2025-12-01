@@ -256,29 +256,9 @@ body::after {
     border-radius: 3px;
 }
 
-.nav-link::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 0;
-    height: 0;
-    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-    opacity: 0.1;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    z-index: -1;
-}
-
 .nav-link:hover::before,
 .nav-link.active::before {
     width: 100%;
-}
-
-.nav-link:hover::after {
-    width: 120%;
-    height: 100%;
 }
 
 .nav-link:hover,
