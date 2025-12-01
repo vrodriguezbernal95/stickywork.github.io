@@ -226,6 +226,83 @@ const emailTemplates = {
         `
     }),
 
+    // Password reset email
+    passwordReset: (user, resetToken, resetUrl) => ({
+        subject: '🔐 Recuperación de Contraseña - StickyWork',
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .reset-box { background: #f8f9fa; border-left: 4px solid #6366f1; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+        .button:hover { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .code { background: #f1f3f5; padding: 10px 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 14px; margin: 10px 0; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🔐</div>
+            <h1>Recuperación de Contraseña</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name || user.email}</strong>,</p>
+            <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en StickyWork.</p>
+
+            <div class="reset-box">
+                <p><strong>Para restablecer tu contraseña, haz clic en el siguiente botón:</strong></p>
+
+                <div style="text-align: center;">
+                    <a href="${resetUrl}" class="button">Restablecer Contraseña</a>
+                </div>
+
+                <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                    O copia y pega este enlace en tu navegador:
+                </p>
+                <div class="code">${resetUrl}</div>
+            </div>
+
+            <div class="warning">
+                <p style="margin: 0;"><strong>⚠️ Importante:</strong></p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Este enlace <strong>expira en 1 hora</strong></li>
+                    <li>Solo puede usarse <strong>una vez</strong></li>
+                    <li>Si no solicitaste este cambio, ignora este email</li>
+                </ul>
+            </div>
+
+            <p style="margin-top: 20px; color: #666; font-size: 14px;">
+                Si tienes problemas con el botón, contacta con soporte.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong>StickyWork</strong> - Sistema de Gestión de Reservas</p>
+            <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                Este es un email automático, por favor no respondas a este mensaje.
+            </p>
+            <p style="font-size: 12px; color: #999;">
+                Si no solicitaste este cambio, tu cuenta sigue segura.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
     // New booking notification to admin
     adminNewBooking: (booking, business) => ({
         subject: `🔔 Nueva Reserva - ${booking.customer_name}`,
@@ -368,11 +445,18 @@ async function sendAdminNotification(booking, business, adminEmail) {
     return await sendEmail(adminEmail || business.email, template);
 }
 
+// Send password reset email
+async function sendPasswordResetEmail(user, resetToken, resetUrl) {
+    const template = emailTemplates.passwordReset(user, resetToken, resetUrl);
+    return await sendEmail(user.email, template);
+}
+
 module.exports = {
     verifyEmailService,
     sendBookingConfirmation,
     sendBookingReminder,
     sendAdminNotification,
+    sendPasswordResetEmail,
     sendEmail,
     emailTemplates
 };

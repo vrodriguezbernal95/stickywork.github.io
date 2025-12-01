@@ -1,8 +1,17 @@
 const jwt = require('jsonwebtoken');
 
-// Secret para JWT (en producción debe estar en .env)
-const JWT_SECRET = process.env.JWT_SECRET || 'stickywork-super-secret-key-change-in-production';
+// Secret para JWT - OBLIGATORIO en variables de entorno
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
+// Verificar que JWT_SECRET está configurado
+if (!JWT_SECRET) {
+    throw new Error(
+        '❌ SEGURIDAD: JWT_SECRET no está configurado en las variables de entorno.\n' +
+        'Por favor, configura JWT_SECRET en tu archivo .env con una clave segura.\n' +
+        'Ejemplo: JWT_SECRET=tu-clave-super-secreta-y-aleatoria-de-al-menos-32-caracteres'
+    );
+}
 
 /**
  * Genera un token JWT para un usuario

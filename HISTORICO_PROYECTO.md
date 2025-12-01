@@ -2310,3 +2310,242 @@ Total de líneas JS agregadas: **~60 líneas**
 ## Cómo usar este archivo
 Este archivo sirve como memoria del proyecto entre sesiones de Claude Code.
 Al iniciar una nueva sesión, pide a Claude que lea este archivo para tener contexto.
+
+
+---
+
+# Sesión 15 - Fix Crítico de Seguridad JWT
+**Fecha:** 2025-12-01
+**Modelo:** Claude Sonnet 4.5
+
+## Objetivo
+Eliminar vulnerabilidad crítica de seguridad en el sistema de autenticación JWT que permitía a atacantes falsificar tokens.
+
+---
+
+## Problema Identificado
+
+### Vulnerabilidad Crítica en `backend/middleware/auth.js`
+**Línea 4 original:**
+```javascript
+const JWT_SECRET = process.env.JWT_SECRET || 'stickywork-super-secret-key-change-in-production';
+```
+
+**¿Por qué es peligroso?**
+1. **Clave expuesta**: La clave secreta estaba hardcodeada en el código
+2. **Tokens falsificables**: Cualquiera con acceso al código puede crear tokens JWT válidos
+3. **Suplantación de identidad**: Atacantes pueden hacerse pasar por cualquier usuario sin conocer su contraseña
+4. **Escalada de privilegios**: Posibilidad de crear tokens con role='super_admin'
+5. **Acceso no autorizado**: Ver/modificar datos privados de todos los negocios
+
+**Impacto:** 🔴 CRÍTICO - Afecta a todos los usuarios de la plataforma
+
+---
+
+## Solución Implementada
+
+### 1. Eliminación del Fallback Inseguro
+**Archivo:** `backend/middleware/auth.js`
+
+**Antes:**
+```javascript
+const JWT_SECRET = process.env.JWT_SECRET || 'stickywork-super-secret-key-change-in-production';
+```
+
+**Después:**
+```javascript
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
+// Verificar que JWT_SECRET está configurado
+if (!JWT_SECRET) {
+    throw new Error(
+        '❌ SEGURIDAD: JWT_SECRET no está configurado en las variables de entorno.\n' +
+        'Por favor, configura JWT_SECRET en tu archivo .env con una clave segura.\n' +
+        'Ejemplo: JWT_SECRET=tu-clave-super-secreta-y-aleatoria-de-al-menos-32-caracteres'
+    );
+}
+```
+
+**Resultado:** Ahora el servidor NO arrancará si falta JWT_SECRET, forzando configuración segura.
+
+---
+
+### 2. Generación de Clave Segura
+**Comando usado:**
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+**Nueva clave generada:** 128 caracteres hexadecimales aleatorios
+- Entropía: 512 bits
+- Imposible de adivinar por fuerza bruta
+
+---
+
+### 3. Actualización de .env Local
+**Archivo:** `.env`
+
+```env
+# JWT Configuration (Sistema de Autenticación)
+# IMPORTANTE: Esta clave debe ser única y nunca compartirse públicamente
+# Genera una nueva con: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+JWT_SECRET=0c87ed02f2333c9ac8cd067231c2c921e0fb101f3d6ec32300d5331f3a6e95e61b492bb90c87833ad2ae63e1f4cafd0d269fa982984694313dc9476ad6862de9
+JWT_EXPIRES_IN=24h
+```
+
+---
+
+### 4. Mejora de .env.example
+**Archivo:** `.env.example`
+
+```env
+# JWT Configuration (Sistema de Autenticación)
+# ¡CRÍTICO! Esta clave DEBE ser única y aleatoria en producción
+# Genera una nueva con: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+# NUNCA uses un valor genérico ni compartas esta clave públicamente
+JWT_SECRET=GENERA_UNA_CLAVE_ALEATORIA_AQUI_CON_EL_COMANDO_DE_ARRIBA
+JWT_EXPIRES_IN=24h
+```
+
+---
+
+## Archivos Modificados
+
+| Archivo | Cambios | Líneas |
+|---------|---------|--------|
+| `backend/middleware/auth.js` | Eliminación fallback + validación obligatoria | +9 líneas |
+| `.env` | Nueva clave segura de 128 chars + documentación | ~4 líneas |
+| `.env.example` | Instrucciones mejoradas y warnings | ~4 líneas |
+
+---
+
+## Beneficios de Seguridad
+
+✅ **Imposible arrancar sin JWT_SECRET configurado**
+- El servidor falla al inicio si falta la variable
+- Error claro con instrucciones de cómo solucionarlo
+
+✅ **Clave criptográficamente segura**
+- 512 bits de entropía
+- Generada con crypto.randomBytes()
+- Imposible de adivinar
+
+✅ **Sin claves hardcodeadas**
+- Ninguna clave secreta en el código fuente
+- Seguro para repositorios públicos
+
+✅ **Documentación clara**
+- Instrucciones de cómo generar claves seguras
+- Warnings sobre la importancia de JWT_SECRET
+
+---
+
+## Próximos Pasos Críticos
+
+### ⚠️ IMPORTANTE: Configurar en Railway (Producción)
+
+**Debes configurar JWT_SECRET en Railway:**
+
+1. Ve a tu proyecto en Railway
+2. Dirígete a Variables de Entorno
+3. Agrega una nueva variable:
+   ```
+   Nombre: JWT_SECRET
+   Valor: [genera uno nuevo con el comando]
+   ```
+4. **NO uses la misma clave que en desarrollo**
+5. Guarda y redeploya
+
+**Comando para generar clave de producción:**
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+### 🔄 Implicaciones del Cambio
+
+**IMPORTANTE:** Al cambiar JWT_SECRET:
+- ❌ Todos los tokens JWT existentes se invalidan
+- ❌ Todos los usuarios logueados serán deslogueados
+- ✅ Esto es correcto - es parte del fix de seguridad
+- 📧 Los usuarios simplemente volverán a hacer login
+
+---
+
+## Testing Realizado
+
+✅ Servidor NO arranca sin JWT_SECRET
+```bash
+# Test: Sin JWT_SECRET
+Error: ❌ SEGURIDAD: JWT_SECRET no está configurado...
+```
+
+✅ Servidor arranca correctamente con JWT_SECRET válido
+```bash
+# Test: Con JWT_SECRET
+✓ Servidor iniciado correctamente
+```
+
+✅ Tokens generados correctamente
+- Login funciona
+- Verificación de tokens funciona
+- Protección de rutas funciona
+
+---
+
+## Resumen de la Vulnerabilidad y Fix
+
+| Aspecto | Antes | Después |
+|---------|-------|---------|
+| **JWT_SECRET** | Hardcodeado como fallback | Obligatorio desde .env |
+| **Seguridad** | 🔴 Crítica - tokens falsificables | 🟢 Segura - clave única |
+| **Entropía** | ~30 caracteres predecibles | 128 caracteres aleatorios (512 bits) |
+| **Startup** | Arranca con clave insegura | Falla si falta JWT_SECRET |
+| **Documentación** | Comentario básico | Instrucciones completas |
+
+---
+
+## Lecciones Aprendidas
+
+1. **NUNCA usar fallbacks para secrets**
+   - Mejor fallar al inicio que correr inseguro
+   - El principio "fail fast" aplica a seguridad
+
+2. **Usar crypto.randomBytes() para secrets**
+   - No inventar "claves aleatorias" manualmente
+   - Usar las herramientas criptográficas del sistema
+
+3. **Validar configuración al inicio**
+   - Verificar variables críticas antes de arrancar
+   - Proporcionar mensajes de error claros y accionables
+
+4. **Documentar seguridad en .env.example**
+   - Explicar POR QUÉ es importante cada variable
+   - Dar instrucciones exactas de cómo generar valores seguros
+
+5. **Diferentes secrets para diferentes entornos**
+   - Development, staging y production deben tener claves distintas
+   - NUNCA compartir secrets entre entornos
+
+---
+
+## Métricas de la Sesión
+
+- **Tiempo total:** ~15 minutos
+- **Líneas modificadas:** ~20 líneas
+- **Archivos modificados:** 3 archivos
+- **Vulnerabilidades corregidas:** 1 crítica
+- **Nivel de impacto:** 🔴 Crítico
+- **Tokens utilizados:** ~45,000 / 200,000
+
+---
+
+## Estado Final
+
+✅ Vulnerabilidad crítica eliminada
+✅ Clave segura generada para desarrollo
+✅ Documentación mejorada
+✅ Validación obligatoria implementada
+⚠️ Pendiente: Configurar en Railway (producción)
+
+---

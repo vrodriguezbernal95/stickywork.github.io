@@ -592,4 +592,196 @@ router.post('/api/auth/change-password', requireAuth, async (req, res) => {
     }
 });
 
+// ==================== RECUPERACIÓN DE CONTRASEÑA ====================
+
+const crypto = require('crypto');
+const { sendPasswordResetEmail } = require('../email-service');
+
+/**
+ * POST /api/auth/forgot-password
+ * Solicitar recuperación de contraseña
+ */
+router.post('/api/auth/forgot-password', loginLimiter, async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Validación
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: 'El email es obligatorio'
+            });
+        }
+
+        // Buscar usuario
+        const users = await db.query(
+            'SELECT id, email, full_name, is_active FROM admin_users WHERE email = ?',
+            [email]
+        );
+
+        // Por seguridad, siempre retornamos el mismo mensaje
+        // aunque el usuario no exista (evita enumeration attacks)
+        const successMessage = 'Si el email está registrado, recibirás un enlace de recuperación';
+
+        if (users.length === 0) {
+            return res.json({
+                success: true,
+                message: successMessage
+            });
+        }
+
+        const user = users[0];
+
+        // Verificar que el usuario está activo
+        if (!user.is_active) {
+            return res.json({
+                success: true,
+                message: successMessage
+            });
+        }
+
+        // Generar token seguro
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+        // Calcular expiración (1 hora)
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 1);
+
+        // Guardar token en la base de datos
+        await db.query(
+            `INSERT INTO password_reset_tokens (user_id, token, expires_at, ip_address, user_agent)
+             VALUES (?, ?, ?, ?, ?)`,
+            [
+                user.id,
+                tokenHash,
+                expiresAt,
+                req.ip || req.connection.remoteAddress,
+                req.headers['user-agent'] || null
+            ]
+        );
+
+        // Crear URL de reset
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
+
+        // Enviar email
+        const emailResult = await sendPasswordResetEmail(user, resetToken, resetUrl);
+
+        if (!emailResult.success) {
+            console.error('Error enviando email de reset:', emailResult.error);
+            // No revelamos al usuario que hubo un error de email por seguridad
+        }
+
+        res.json({
+            success: true,
+            message: successMessage
+        });
+
+    } catch (error) {
+        console.error('Error en forgot-password:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al procesar la solicitud. Inténtalo de nuevo.',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/auth/reset-password
+ * Restablecer contraseña con token
+ */
+router.post('/api/auth/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        // Validaciones
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token y contraseña nueva son obligatorios'
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'La contraseña debe tener al menos 6 caracteres'
+            });
+        }
+
+        // Hash del token para buscar en DB
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+        // Buscar token válido
+        const tokens = await db.query(
+            `SELECT rt.id, rt.user_id, rt.expires_at, rt.used,
+                    u.id as user_id, u.email, u.is_active
+             FROM password_reset_tokens rt
+             INNER JOIN admin_users u ON rt.user_id = u.id
+             WHERE rt.token = ? AND rt.used = FALSE`,
+            [tokenHash]
+        );
+
+        if (tokens.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token inválido o ya utilizado'
+            });
+        }
+
+        const tokenData = tokens[0];
+
+        // Verificar expiración
+        if (new Date() > new Date(tokenData.expires_at)) {
+            return res.status(400).json({
+                success: false,
+                message: 'El token ha expirado. Solicita uno nuevo.'
+            });
+        }
+
+        // Verificar que el usuario está activo
+        if (!tokenData.is_active) {
+            return res.status(403).json({
+                success: false,
+                message: 'Usuario desactivado'
+            });
+        }
+
+        // Hash de la nueva contraseña
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+        // Actualizar contraseña
+        await db.query(
+            'UPDATE admin_users SET password_hash = ? WHERE id = ?',
+            [newPasswordHash, tokenData.user_id]
+        );
+
+        // Marcar token como usado
+        await db.query(
+            'UPDATE password_reset_tokens SET used = TRUE, used_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [tokenData.id]
+        );
+
+        // Invalidar todos los otros tokens del usuario
+        await db.query(
+            'UPDATE password_reset_tokens SET used = TRUE WHERE user_id = ? AND id != ?',
+            [tokenData.user_id, tokenData.id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Contraseña actualizada exitosamente. Ya puedes iniciar sesión.'
+        });
+
+    } catch (error) {
+        console.error('Error en reset-password:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al restablecer contraseña',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
