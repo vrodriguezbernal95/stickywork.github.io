@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuración 2FA - StickyWork Super Admin</title>
+    <title>Configuración 2FA - StickyWork Admin</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="admin/css/dashboard.css">
+    <link rel="stylesheet" href="admin/css/admin.css">
     <style>
         .two-fa-container {
             max-width: 800px;
@@ -233,26 +233,42 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
 </head>
 <body>
-    <div class="dashboard-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>StickyWork</h2>
-                <p class="subtitle">Super Admin</p>
-            </div>
+    <!-- Botón hamburguesa para móvil -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú">
+        ☰
+    </button>
 
-            <nav class="sidebar-nav">
-                <a href="super-admin-dashboard.html" class="nav-item">
-                    <span>📊</span> Dashboard
-                </a>
-                <a href="super-admin-2fa.html" class="nav-item active">
-                    <span>🔐</span> Autenticación 2FA
-                </a>
-                <a href="admin-login.html" class="nav-item" id="logoutBtn">
-                    <span>🚪</span> Cerrar Sesión
-                </a>
-            </nav>
-        </aside>
+    <!-- Overlay para cerrar sidebar en móvil -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">StickyWork</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="admin-dashboard.html" class="sidebar-link">
+                📊 Dashboard
+            </a>
+            <a href="super-admin-2fa.html" class="sidebar-link active">
+                🔐 Autenticación 2FA
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Cargando...</div>
+                    <div class="user-email" id="userEmail"></div>
+                </div>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                Cerrar Sesión
+            </button>
+        </div>
+    </aside>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -600,6 +616,65 @@
 
         // Load status on page load
         load2FAStatus();
+
+        // Cargar información del usuario
+        const userData = api.getUserData();
+        if (userData && userData.email) {
+            document.getElementById('userName').textContent = userData.full_name || 'Usuario';
+            document.getElementById('userEmail').textContent = userData.email;
+            document.getElementById('userAvatar').textContent = (userData.full_name || 'U').charAt(0).toUpperCase();
+        }
+    </script>
+
+    <!-- Script para menú móvil -->
+    <script>
+        (function() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+            // Abrir/cerrar sidebar
+            function toggleSidebar() {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+
+                // Cambiar icono del botón
+                if (sidebar.classList.contains('active')) {
+                    mobileMenuToggle.innerHTML = '✕';
+                    mobileMenuToggle.setAttribute('aria-label', 'Cerrar menú');
+                } else {
+                    mobileMenuToggle.innerHTML = '☰';
+                    mobileMenuToggle.setAttribute('aria-label', 'Abrir menú');
+                }
+            }
+
+            // Cerrar sidebar
+            function closeSidebar() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                mobileMenuToggle.innerHTML = '☰';
+                mobileMenuToggle.setAttribute('aria-label', 'Abrir menú');
+            }
+
+            // Event listeners
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleSidebar);
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
+
+            // Cerrar sidebar al hacer clic en un link (en móvil)
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
+                });
+            });
+        })();
     </script>
 </body>
 </html>
