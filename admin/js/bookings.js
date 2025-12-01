@@ -283,6 +283,8 @@ const bookings = {
 
     // Update booking status
     async updateStatus(bookingId, newStatus) {
+        console.log('updateStatus called:', { bookingId, newStatus });
+
         const statusLabels = {
             'confirmed': 'confirmar',
             'cancelled': 'cancelar',
@@ -293,11 +295,14 @@ const bookings = {
 
         // Confirm action
         if (!confirm(`¿Estás seguro de que quieres ${actionLabel} esta reserva #${bookingId}?`)) {
+            console.log('User cancelled confirmation dialog');
             return;
         }
 
         try {
-            await api.patch(`/api/booking/${bookingId}`, { status: newStatus });
+            console.log('Sending PATCH request to /api/booking/' + bookingId);
+            const response = await api.patch(`/api/booking/${bookingId}`, { status: newStatus });
+            console.log('PATCH response:', response);
 
             // Show success message
             this.showNotification(`Reserva ${actionLabel}da exitosamente`, 'success');
