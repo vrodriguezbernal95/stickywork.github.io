@@ -5,6 +5,9 @@ const API_URL = window.location.hostname === 'localhost' || window.location.host
 
 // API Helper Functions
 const api = {
+    // Base URL
+    baseURL: API_URL,
+
     // Get access token from localStorage
     getToken() {
         return localStorage.getItem('accessToken');
