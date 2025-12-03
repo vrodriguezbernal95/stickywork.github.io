@@ -50,57 +50,37 @@ const superDashboard = {
 
     renderStatCards(stats) {
         return `
-            <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    🏢
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">${stats.totalBusinesses || 0}</div>
-                    <div class="stat-label">Total Negocios</div>
-                    <div class="stat-sublabel">
-                        ${stats.activeBusinesses || 0} activos
-                    </div>
-                </div>
-            </div>
+            ${createStatCard({
+                icon: '🏢',
+                value: stats.totalBusinesses || 0,
+                label: 'Total Negocios',
+                sublabel: `${stats.activeBusinesses || 0} activos`,
+                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            })}
 
-            <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    ✨
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">${stats.newThisMonth || 0}</div>
-                    <div class="stat-label">Nuevos Este Mes</div>
-                    <div class="stat-sublabel">
-                        Negocios registrados
-                    </div>
-                </div>
-            </div>
+            ${createStatCard({
+                icon: '✨',
+                value: stats.newThisMonth || 0,
+                label: 'Nuevos Este Mes',
+                sublabel: 'Negocios registrados',
+                gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+            })}
 
-            <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    📅
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">${stats.totalBookings || 0}</div>
-                    <div class="stat-label">Total Reservas</div>
-                    <div class="stat-sublabel">
-                        ${stats.bookingsThisMonth || 0} este mes
-                    </div>
-                </div>
-            </div>
+            ${createStatCard({
+                icon: '📅',
+                value: stats.totalBookings || 0,
+                label: 'Total Reservas',
+                sublabel: `${stats.bookingsThisMonth || 0} este mes`,
+                gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+            })}
 
-            <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                    📧
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">${stats.unreadMessages || 0}</div>
-                    <div class="stat-label">Mensajes Sin Leer</div>
-                    <div class="stat-sublabel">
-                        Desde formulario contacto
-                    </div>
-                </div>
-            </div>
+            ${createStatCard({
+                icon: '📧',
+                value: stats.unreadMessages || 0,
+                label: 'Mensajes Sin Leer',
+                sublabel: 'Desde formulario contacto',
+                gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+            })}
         `;
     },
 

@@ -37,59 +37,56 @@ const dashboard = {
             contentArea.innerHTML = `
                 <!-- Stats Grid -->
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">📊</div>
-                        </div>
-                        <div class="stat-value">${stats.totalBookings || 0}</div>
-                        <div class="stat-label">Total Reservas</div>
-                    </div>
+                    ${createStatCard({
+                        icon: '📊',
+                        value: stats.totalBookings || 0,
+                        label: 'Total Reservas',
+                        iconBg: 'rgba(59, 130, 246, 0.1)'
+                    })}
 
                     <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">📅</div>
+                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">📅</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${stats.thisMonth || 0}</div>
+                            <div class="stat-label">Reservas Este Mes</div>
+                            ${monthComparison.change !== 0 ? `
+                                <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <span style="
+                                        color: ${monthComparison.change > 0 ? '#22c55e' : '#ef4444'};
+                                        font-weight: 700;
+                                        font-size: 0.9rem;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 0.25rem;
+                                    ">
+                                        ${monthComparison.change > 0 ? '▲' : '▼'}
+                                        ${Math.abs(monthComparison.percentage)}%
+                                    </span>
+                                    <span style="color: var(--text-tertiary); font-size: 0.8rem;">
+                                        vs mes anterior
+                                    </span>
+                                </div>
+                            ` : monthComparison.lastMonth > 0 ? `
+                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
+                                    ≈ Igual que mes anterior
+                                </div>
+                            ` : ''}
                         </div>
-                        <div class="stat-value">${stats.thisMonth || 0}</div>
-                        <div class="stat-label">Reservas Este Mes</div>
-                        ${monthComparison.change !== 0 ? `
-                            <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                <span style="
-                                    color: ${monthComparison.change > 0 ? '#22c55e' : '#ef4444'};
-                                    font-weight: 700;
-                                    font-size: 0.9rem;
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 0.25rem;
-                                ">
-                                    ${monthComparison.change > 0 ? '▲' : '▼'}
-                                    ${Math.abs(monthComparison.percentage)}%
-                                </span>
-                                <span style="color: var(--text-tertiary); font-size: 0.8rem;">
-                                    vs mes anterior
-                                </span>
-                            </div>
-                        ` : monthComparison.lastMonth > 0 ? `
-                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
-                                ≈ Igual que mes anterior
-                            </div>
-                        ` : ''}
                     </div>
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(234, 179, 8, 0.1);">⏳</div>
-                        </div>
-                        <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'pending')?.count || 0}</div>
-                        <div class="stat-label">Pendientes</div>
-                    </div>
+                    ${createStatCard({
+                        icon: '⏳',
+                        value: stats.bookingsByStatus.find(s => s.status === 'pending')?.count || 0,
+                        label: 'Pendientes',
+                        iconBg: 'rgba(234, 179, 8, 0.1)'
+                    })}
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1);">✅</div>
-                        </div>
-                        <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'confirmed')?.count || 0}</div>
-                        <div class="stat-label">Confirmadas</div>
-                    </div>
+                    ${createStatCard({
+                        icon: '✅',
+                        value: stats.bookingsByStatus.find(s => s.status === 'confirmed')?.count || 0,
+                        label: 'Confirmadas',
+                        iconBg: 'rgba(239, 68, 68, 0.1)'
+                    })}
                 </div>
 
                 <!-- Today's Agenda Widget -->
