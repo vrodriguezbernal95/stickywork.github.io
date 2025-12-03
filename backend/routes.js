@@ -200,16 +200,15 @@ router.get('/api/services/:businessId', async (req, res) => {
 // Crear una nueva reserva
 router.post('/api/bookings', createBookingLimiter, async (req, res) => {
     try {
-        const {
-            businessId,
-            serviceId,
-            customerName,
-            customerEmail,
-            customerPhone,
-            bookingDate,
-            bookingTime,
-            notes
-        } = req.body;
+        // Soportar tanto businessId (camelCase) como business_id (snake_case) para compatibilidad con widget
+        const businessId = req.body.businessId || req.body.business_id;
+        const serviceId = req.body.serviceId || req.body.service_id;
+        const customerName = req.body.customerName || req.body.customer_name;
+        const customerEmail = req.body.customerEmail || req.body.customer_email;
+        const customerPhone = req.body.customerPhone || req.body.customer_phone;
+        const bookingDate = req.body.bookingDate || req.body.booking_date;
+        const bookingTime = req.body.bookingTime || req.body.booking_time;
+        const notes = req.body.notes;
 
         // Validaciones básicas
         if (!businessId || !customerName || !customerEmail || !customerPhone || !bookingDate || !bookingTime) {
