@@ -81,6 +81,14 @@ const app = {
                 }
                 break;
 
+            case 'widget':
+                if (window.widget) {
+                    await widget.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             case 'support':
                 if (window.supportModule) {
                     await supportModule.load();
@@ -90,7 +98,11 @@ const app = {
                 break;
 
             case 'settings':
-                this.showUnderConstruction();
+                if (window.settings) {
+                    await settings.load();
+                } else {
+                    this.showUnderConstruction();
+                }
                 break;
 
             default:
