@@ -589,13 +589,22 @@
         }
 
         try {
+            // Mapear campos del formulario a los nombres que espera el backend
+            const bookingData = {
+                business_id: config.businessId,
+                customer_name: formData.name,
+                customer_email: formData.email,
+                customer_phone: formData.phone || '',
+                booking_date: formData.date,
+                booking_time: formData.time,
+                service_id: formData.service || null,
+                notes: formData.notes || ''
+            };
+
             const response = await fetch(`${config.apiUrl}/api/bookings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    business_id: config.businessId
-                })
+                body: JSON.stringify(bookingData)
             });
             return await response.json();
         } catch (error) {
