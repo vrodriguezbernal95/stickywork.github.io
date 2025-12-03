@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,13 +124,25 @@
 
         .service-item {
             display: grid;
-            grid-template-columns: 1fr auto auto auto;
+            grid-template-columns: 1fr 120px 120px auto;
             gap: 1rem;
             align-items: center;
             background: var(--bg-primary);
             padding: 1rem;
             border-radius: 10px;
             border: 2px solid var(--border-color);
+        }
+
+        .service-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .service-field label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
         .service-item input,
@@ -181,7 +193,7 @@
 
         .schedule-row {
             display: grid;
-            grid-template-columns: 120px 1fr 80px 80px;
+            grid-template-columns: 120px 1fr 120px 120px;
             gap: 1rem;
             align-items: center;
             padding: 0.75rem;
@@ -200,11 +212,14 @@
         }
 
         .schedule-row input[type="time"] {
-            padding: 0.5rem;
+            padding: 0.6rem 0.75rem;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             background: var(--bg-primary);
             color: var(--text-primary);
+            width: 100%;
+            font-size: 0.95rem;
+            font-family: inherit;
         }
 
         .widget-preview {
@@ -291,9 +306,81 @@
             margin-bottom: 1rem;
         }
 
+        .widget-types-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .widget-types-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .widget-type-card {
+            background: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            border-radius: 15px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .widget-type-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+        }
+
+        .widget-type-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .widget-type-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .widget-type-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .widget-type-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .widget-type-card .badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
         @media (max-width: 600px) {
             .service-item {
                 grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .service-item .btn-remove {
+                width: 100%;
+                border-radius: 8px;
+                padding: 0.75rem;
+                font-size: 1rem;
             }
 
             .schedule-row {
@@ -327,7 +414,11 @@
                 </div>
                 <div class="progress-step" data-step="3">
                     <div class="step-circle">3</div>
-                    <span class="step-label">Widget</span>
+                    <span class="step-label">Tipo Widget</span>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">Código</span>
                 </div>
             </div>
 
@@ -379,13 +470,48 @@
                 </div>
             </div>
 
-            <!-- Paso 3: Widget -->
+            <!-- Paso 3: Tipo de Widget -->
             <div class="onboarding-step" id="step-3">
+                <div class="onboarding-card">
+                    <div class="step-header">
+                        <div class="icon">🎨</div>
+                        <h2>¿Cómo quieres mostrar tu widget?</h2>
+                        <p>Elige el formato que mejor se adapte a tu página web</p>
+                    </div>
+
+                    <div class="widget-types-grid">
+                        <div class="widget-type-card" data-widget-type="embedded">
+                            <div class="badge">Popular</div>
+                            <div class="icon">📋</div>
+                            <h3>Formulario Embebido</h3>
+                            <p>Se integra directamente en tu página web. Perfecto para landing pages y secciones de reservas.</p>
+                        </div>
+                        <div class="widget-type-card" data-widget-type="floating">
+                            <div class="icon">💬</div>
+                            <h3>Botón Flotante</h3>
+                            <p>Aparece en la esquina de tu web. Tus clientes pueden reservar desde cualquier página.</p>
+                        </div>
+                        <div class="widget-type-card" data-widget-type="qr">
+                            <div class="icon">📱</div>
+                            <h3>Código QR</h3>
+                            <p>Descarga un QR para imprimir en tu negocio o compartir en redes sociales.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-back" id="btn-back-3">Atrás</button>
+                    <button class="btn-next" id="btn-next-3" disabled>Continuar</button>
+                </div>
+            </div>
+
+            <!-- Paso 4: Código del Widget -->
+            <div class="onboarding-step" id="step-4">
                 <div class="onboarding-card">
                     <div class="step-header">
                         <div class="icon">🎉</div>
                         <h2>¡Tu widget está listo!</h2>
-                        <p>Copia este código y pégalo en tu página web</p>
+                        <p id="widget-instruction">Copia este código y pégalo en tu página web</p>
                     </div>
 
                     <div class="widget-preview">
@@ -426,6 +552,7 @@
         let currentStep = 1;
         let businessData = null;
         let services = [];
+        let selectedWidgetType = null;
 
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'
@@ -538,10 +665,19 @@
 
             container.innerHTML = services.map((service, index) => `
                 <div class="service-item" data-id="${service.id || index}">
-                    <input type="text" class="service-name" value="${service.name}" placeholder="Nombre del servicio">
-                    <input type="number" value="${service.duration || 30}" min="5" step="5" style="width: 80px;" placeholder="Min">
-                    <input type="number" value="${service.price || 0}" min="0" step="0.5" style="width: 80px;" placeholder="€">
-                    <button class="btn-remove" onclick="removeService(${index})">×</button>
+                    <div class="service-field">
+                        <label>Nombre del servicio</label>
+                        <input type="text" class="service-name" value="${service.name}" placeholder="Ej: Corte de pelo">
+                    </div>
+                    <div class="service-field">
+                        <label>Duración (min)</label>
+                        <input type="number" value="${service.duration || 30}" min="5" step="5" placeholder="30">
+                    </div>
+                    <div class="service-field">
+                        <label>Precio (€)</label>
+                        <input type="number" value="${service.price || 0}" min="0" step="0.5" placeholder="0">
+                    </div>
+                    <button class="btn-remove" onclick="removeService(${index})" title="Eliminar servicio">×</button>
                 </div>
             `).join('');
         }
@@ -669,21 +805,96 @@
 
         document.getElementById('btn-skip-2').addEventListener('click', () => goToStep(3));
 
+        // Selección de tipo de widget
+        document.querySelectorAll('.widget-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.widget-type-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedWidgetType = this.dataset.widgetType;
+                document.getElementById('btn-next-3').disabled = false;
+            });
+        });
+
+        document.getElementById('btn-back-3').addEventListener('click', () => goToStep(2));
+
+        document.getElementById('btn-next-3').addEventListener('click', () => {
+            if (!selectedWidgetType) return;
+            updateWidgetCode();
+            goToStep(4);
+        });
+
+        // Actualizar código del widget según el tipo seleccionado
+        function updateWidgetCode() {
+            const businessId = businessData?.id || 1;
+            const instruction = document.getElementById('widget-instruction');
+            const codeContainer = document.getElementById('widget-code');
+
+            let code = '';
+            let instructionText = '';
+
+            switch(selectedWidgetType) {
+                case 'embedded':
+                    instructionText = 'Copia este código y pégalo en tu página web donde quieras que aparezca el formulario';
+                    code = `&lt;!-- StickyWork Widget Embebido --&gt;
+&lt;div id="stickywork-widget"&gt;&lt;/div&gt;
+&lt;script src="${API_URL}/widget/stickywork-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  StickyWork.init({
+    businessId: ${businessId},
+    mode: 'embedded',
+    apiUrl: '${API_URL}'
+  });
+&lt;/script&gt;`;
+                    break;
+
+                case 'floating':
+                    instructionText = 'Copia este código y pégalo antes del cierre del &lt;/body&gt; en tu página web';
+                    code = `&lt;!-- StickyWork Widget Flotante --&gt;
+&lt;script src="${API_URL}/widget/stickywork-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  StickyWork.init({
+    businessId: ${businessId},
+    mode: 'floating',
+    apiUrl: '${API_URL}',
+    position: 'bottom-right', // Opciones: bottom-right, bottom-left
+    buttonText: 'Reservar', // Personaliza el texto del botón
+    buttonColor: '#3b82f6' // Personaliza el color
+  });
+&lt;/script&gt;`;
+                    break;
+
+                case 'qr':
+                    instructionText = 'Descarga este código QR para imprimirlo en tu negocio o compartirlo en redes sociales';
+                    code = `&lt;!-- Código QR para StickyWork --&gt;
+&lt;img src="${API_URL}/api/qr/${businessId}"
+     alt="Reserva con nosotros"
+     style="max-width: 300px;" /&gt;
+
+&lt;!-- O descárgalo directamente: --&gt;
+&lt;a href="${API_URL}/api/qr/${businessId}?download=true"
+   download="reservas-qr.png"&gt;
+  Descargar QR
+&lt;/a&gt;`;
+                    break;
+            }
+
+            instruction.innerHTML = instructionText;
+            codeContainer.innerHTML = code;
+        }
+
         // Copiar código
         document.getElementById('btn-copy').addEventListener('click', function() {
-            const code = `<!-- StickyWork Widget -->
-<div id="stickywork-widget"></div>
-<script src="https://stickywork.com/widget/stickywork-widget.js"><\/script>
-<script>
-  StickyWork.init({
-    businessId: ${businessData?.id || 1},
-    mode: 'embedded',
-    apiUrl: 'https://stickywork.com'
-  });
-<\/script>`;
+            const codeContainer = document.getElementById('widget-code');
+            const code = codeContainer.textContent;
 
             navigator.clipboard.writeText(code).then(() => {
                 this.textContent = '✓ Copiado!';
+                setTimeout(() => {
+                    this.textContent = '📋 Copiar código';
+                }, 2000);
+            }).catch(err => {
+                console.error('Error al copiar:', err);
+                this.textContent = '❌ Error';
                 setTimeout(() => {
                     this.textContent = '📋 Copiar código';
                 }, 2000);

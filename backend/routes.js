@@ -867,6 +867,191 @@ router.post('/api/business/:businessId/complete-onboarding', requireAuth, async 
     }
 });
 
+// ==================== BUSINESS MANAGEMENT ====================
+
+/**
+ * GET /api/business/:id
+ * Obtener información del negocio
+ */
+router.get('/api/business/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (req.user.businessId != id) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        const business = await db.query(
+            'SELECT * FROM businesses WHERE id = ?',
+            [id]
+        );
+
+        if (business.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Negocio no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: business[0]
+        });
+    } catch (error) {
+        console.error('Error al obtener negocio:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener información del negocio'
+        });
+    }
+});
+
+/**
+ * PUT /api/business/:id
+ * Actualizar información básica del negocio
+ */
+router.put('/api/business/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, email, phone, address, website } = req.body;
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (req.user.businessId != id) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        // Validaciones
+        if (!name || !email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Nombre y email son obligatorios'
+            });
+        }
+
+        // Actualizar negocio
+        await db.query(
+            `UPDATE businesses
+             SET name = ?, email = ?, phone = ?, address = ?, website = ?
+             WHERE id = ?`,
+            [name, email, phone || null, address || null, website || null, id]
+        );
+
+        // Obtener datos actualizados
+        const business = await db.query(
+            'SELECT * FROM businesses WHERE id = ?',
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Negocio actualizado correctamente',
+            data: business[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar negocio:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el negocio'
+        });
+    }
+});
+
+// ==================== USER PROFILE ====================
+
+/**
+ * PUT /api/user/profile
+ * Actualizar perfil del usuario
+ */
+router.put('/api/user/profile', requireAuth, async (req, res) => {
+    try {
+        const { full_name } = req.body;
+
+        // Validaciones
+        if (!full_name) {
+            return res.status(400).json({
+                success: false,
+                error: 'El nombre es obligatorio'
+            });
+        }
+
+        // Actualizar usuario
+        await db.query(
+            'UPDATE admin_users SET full_name = ? WHERE id = ?',
+            [full_name, req.user.id]
+        );
+
+        // Obtener datos actualizados
+        const user = await db.query(
+            `SELECT id, business_id, email, full_name, role, is_active, created_at
+             FROM admin_users WHERE id = ?`,
+            [req.user.id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Perfil actualizado correctamente',
+            data: user[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar perfil:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar el perfil'
+        });
+    }
+});
+
+/**
+ * PUT /api/business/:businessId/widget-settings
+ * Actualizar configuración del widget
+ */
+router.put('/api/business/:businessId/widget-settings', requireAuth, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { widgetSettings } = req.body;
+
+        // Verificar acceso
+        if (req.user.businessId != businessId) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        // Validaciones
+        if (!widgetSettings) {
+            return res.status(400).json({
+                success: false,
+                error: 'Configuración del widget es requerida'
+            });
+        }
+
+        // Actualizar widget_settings
+        await db.query(
+            'UPDATE businesses SET widget_settings = ? WHERE id = ?',
+            [JSON.stringify(widgetSettings), businessId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Configuración del widget actualizada correctamente'
+        });
+    } catch (error) {
+        console.error('Error actualizando widget settings:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar la configuración'
+        });
+    }
+});
+
 /**
  * PUT /api/business/:businessId/settings
  * Actualizar configuración del negocio (widget_settings, booking_settings)
@@ -1127,6 +1312,32 @@ router.post('/api/setup/create-super-admin', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al crear super admin',
+            error: error.message
+        });
+    }
+});
+
+// ==================== CÓDIGO QR ====================
+
+// Generar código QR para un negocio
+router.get('/api/qr/:businessId', async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        // URL de reservas del negocio
+        const bookingUrl = `https://stickywork.com/booking.html?business=${businessId}`;
+
+        // Usar API pública de quickchart.io para generar el QR
+        const qrApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(bookingUrl)}&size=300&margin=2`;
+
+        // Redirigir a la imagen del QR
+        res.redirect(qrApiUrl);
+
+    } catch (error) {
+        console.error('Error generando QR:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al generar código QR',
             error: error.message
         });
     }
