@@ -37,7 +37,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       scriptSrcAttr: ["'unsafe-inline'"], // Permite onclick, onsubmit, etc.
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"]
