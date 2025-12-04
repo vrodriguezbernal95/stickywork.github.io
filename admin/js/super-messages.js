@@ -151,13 +151,7 @@ const superMessages = {
         return `
             <div class="messages-list">
                 ${messages.map(message => {
-                    const date = new Date(message.created_at).toLocaleString('es-ES', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    const date = utils.formatDateTime(message.created_at);
 
                     const statusInfo = this.getStatusInfo(message.status);
                     const isUnread = message.status === 'unread';
@@ -228,14 +222,7 @@ const superMessages = {
                 throw new Error('Mensaje no encontrado');
             }
 
-            const date = new Date(message.created_at).toLocaleString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            const date = utils.formatDateTime(message.created_at);
 
             const statusInfo = this.getStatusInfo(message.status);
 
@@ -285,7 +272,7 @@ const superMessages = {
                     ${message.updated_at && message.updated_at !== message.created_at ? `
                         <div class="detail-section">
                             <div class="message-meta">
-                                Última actualización: ${new Date(message.updated_at).toLocaleString('es-ES')}
+                                Última actualización: ${utils.formatDateTime(message.updated_at)}
                             </div>
                         </div>
                     ` : ''}
@@ -361,9 +348,15 @@ const superMessages = {
     async deleteMessage() {
         if (!this.selectedMessage) return;
 
-        if (!confirm('¿Estás seguro de que quieres eliminar este mensaje? Esta acción no se puede deshacer.')) {
-            return;
-        }
+        const confirmed = await modal.confirm({
+            title: '¿Eliminar mensaje?',
+            message: 'Esta acción no se puede deshacer. El mensaje será eliminado permanentemente.',
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        });
+
+        if (!confirmed) return;
 
         try {
             await superApi.delete(`/api/super-admin/messages/${this.selectedMessage}`);
@@ -381,13 +374,7 @@ const superMessages = {
         return `
             <div class="messages-list">
                 ${messages.map(msg => {
-                    const date = new Date(msg.created_at).toLocaleString('es-ES', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    const date = utils.formatDateTime(msg.created_at);
 
                     const categoryLabels = {
                         'bug': '🐛 Bug',
@@ -446,14 +433,7 @@ const superMessages = {
                 throw new Error('Mensaje no encontrado');
             }
 
-            const date = new Date(message.created_at).toLocaleString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            const date = utils.formatDateTime(message.created_at);
 
             const categoryLabels = {
                 'bug': '🐛 Bug/Error',
@@ -522,7 +502,7 @@ const superMessages = {
                                 ${message.admin_response.replace(/\n/g, '<br>')}
                             </div>
                             <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
-                                Respondido por ${message.answered_by} el ${new Date(message.answered_at).toLocaleString('es-ES')}
+                                Respondido por ${message.answered_by} el ${utils.formatDateTime(message.answered_at)}
                             </p>
                         </div>
                     ` : message.status !== 'closed' ? `
@@ -625,9 +605,15 @@ const superMessages = {
     async closeSupportMessage() {
         if (!this.selectedMessage) return;
 
-        if (!confirm('¿Estás seguro de que quieres cerrar este mensaje? Esta acción no se puede deshacer.')) {
-            return;
-        }
+        const confirmed = await modal.confirm({
+            title: '¿Cerrar mensaje de soporte?',
+            message: 'Esta acción no se puede deshacer. El mensaje será marcado como cerrado.',
+            confirmText: 'Sí, cerrar',
+            cancelText: 'Cancelar',
+            type: 'warning'
+        });
+
+        if (!confirmed) return;
 
         try {
             await superApi.patch(`/api/super-admin/support/messages/${this.selectedMessage}/close`);
