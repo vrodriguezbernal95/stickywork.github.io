@@ -24,37 +24,33 @@ const messages = {
             contentArea.innerHTML = `
                 <!-- Stats Cards -->
                 <div class="stats-grid" style="margin-bottom: 2rem;">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1);">📬</div>
-                        </div>
-                        <div class="stat-value">${unreadCount}</div>
-                        <div class="stat-label">No Leídos</div>
-                    </div>
+                    ${createStatCard({
+                        icon: '📬',
+                        value: unreadCount,
+                        label: 'No Leídos',
+                        iconBg: 'rgba(239, 68, 68, 0.1)'
+                    })}
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">📭</div>
-                        </div>
-                        <div class="stat-value">${readCount}</div>
-                        <div class="stat-label">Leídos</div>
-                    </div>
+                    ${createStatCard({
+                        icon: '📭',
+                        value: readCount,
+                        label: 'Leídos',
+                        iconBg: 'rgba(59, 130, 246, 0.1)'
+                    })}
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">✅</div>
-                        </div>
-                        <div class="stat-value">${repliedCount}</div>
-                        <div class="stat-label">Respondidos</div>
-                    </div>
+                    ${createStatCard({
+                        icon: '✅',
+                        value: repliedCount,
+                        label: 'Respondidos',
+                        iconBg: 'rgba(34, 197, 94, 0.1)'
+                    })}
 
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1);">📊</div>
-                        </div>
-                        <div class="stat-value">${messagesList.length}</div>
-                        <div class="stat-label">Total Mensajes</div>
-                    </div>
+                    ${createStatCard({
+                        icon: '📊',
+                        value: messagesList.length,
+                        label: 'Total Mensajes',
+                        iconBg: 'rgba(139, 92, 246, 0.1)'
+                    })}
                 </div>
 
                 <!-- Messages List -->
