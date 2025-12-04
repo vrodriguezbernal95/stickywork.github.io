@@ -172,12 +172,10 @@ const bookings = {
                 <td style="font-size: 0.9rem;">${booking.customer_email}</td>
                 <td style="font-size: 0.9rem;">${booking.customer_phone}</td>
                 <td>${booking.service_name || 'Sin servicio'}</td>
-                <td>${new Date(booking.booking_date).toLocaleDateString('es-ES')}</td>
-                <td style="font-weight: 600;">${booking.booking_time}</td>
+                <td>${utils.formatDateShort(booking.booking_date)}</td>
+                <td style="font-weight: 600;">${utils.formatTime(booking.booking_time)}</td>
                 <td>
-                    <span class="status-badge status-${booking.status}">
-                        ${this.getStatusLabel(booking.status)}
-                    </span>
+                    ${createStatusBadge(booking.status, 'booking')}
                 </td>
                 <td>
                     <div class="booking-actions">
@@ -294,7 +292,15 @@ const bookings = {
         const actionLabel = statusLabels[newStatus];
 
         // Confirm action
-        if (!confirm(`¿Estás seguro de que quieres ${actionLabel} esta reserva #${bookingId}?`)) {
+        const confirmed = await modal.confirm({
+            title: `¿${utils.capitalize(actionLabel)} reserva?`,
+            message: `¿Estás seguro de que quieres ${actionLabel} la reserva #${bookingId}?`,
+            confirmText: `Sí, ${actionLabel}`,
+            cancelText: 'Cancelar',
+            type: newStatus === 'cancelled' ? 'danger' : newStatus === 'completed' ? 'success' : 'primary'
+        });
+
+        if (!confirmed) {
             console.log('User cancelled confirmation dialog');
             return;
         }
@@ -305,13 +311,19 @@ const bookings = {
             console.log('PATCH response:', response);
 
             // Show success message
-            this.showNotification(`Reserva ${actionLabel}da exitosamente`, 'success');
+            modal.toast({
+                message: `Reserva ${actionLabel}da exitosamente`,
+                type: 'success'
+            });
 
             // Reload bookings
             this.load();
         } catch (error) {
             console.error('Error updating booking status:', error);
-            this.showNotification(`Error al ${actionLabel} la reserva: ${error.message}`, 'error');
+            modal.toast({
+                message: `Error al ${actionLabel} la reserva`,
+                type: 'error'
+            });
         }
     },
 
@@ -342,17 +354,6 @@ const bookings = {
             notification.style.animation = 'slideOut 0.3s ease-out';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
-    },
-
-    // Helper function to get status label in Spanish
-    getStatusLabel(status) {
-        const labels = {
-            'pending': 'Pendiente',
-            'confirmed': 'Confirmada',
-            'cancelled': 'Cancelada',
-            'completed': 'Completada'
-        };
-        return labels[status] || status;
     }
 };
 

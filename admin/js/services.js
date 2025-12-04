@@ -81,11 +81,11 @@ const services = {
                 <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
                     <div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">Duración</div>
-                        <div style="font-weight: 600; color: var(--text-primary);">⏱️ ${service.duration} min</div>
+                        <div style="font-weight: 600; color: var(--text-primary);">⏱️ ${utils.formatDuration(service.duration)}</div>
                     </div>
                     <div>
                         <div style="font-size: 0.75rem; color: var(--text-secondary);">Precio</div>
-                        <div style="font-weight: 600; color: var(--primary-color);">💰 ${service.price ? service.price + '€' : 'Gratis'}</div>
+                        <div style="font-weight: 600; color: var(--primary-color);">💰 ${service.price ? utils.formatCurrency(service.price) : 'Gratis'}</div>
                     </div>
                 </div>
 
@@ -250,7 +250,10 @@ const services = {
             this.load(); // Reload services
         } catch (error) {
             console.error('Error adding service:', error);
-            alert('Error al añadir el servicio: ' + error.message);
+            modal.toast({
+                message: 'Error al añadir el servicio',
+                type: 'error'
+            });
         }
     },
 
@@ -273,22 +276,40 @@ const services = {
             this.load(); // Reload services
         } catch (error) {
             console.error('Error updating service:', error);
-            alert('Error al actualizar el servicio: ' + error.message);
+            modal.toast({
+                message: 'Error al actualizar el servicio',
+                type: 'error'
+            });
         }
     },
 
     // Delete service
     async deleteService(serviceId) {
-        if (!confirm('¿Estás seguro de que quieres eliminar este servicio?')) {
-            return;
-        }
+        const confirmed = await modal.confirm({
+            title: '¿Eliminar servicio?',
+            message: 'Esta acción no se puede deshacer. El servicio será eliminado permanentemente.',
+            confirmText: 'Sí, eliminar',
+            cancelText: 'Cancelar',
+            type: 'danger'
+        });
+
+        if (!confirmed) return;
 
         try {
             await api.delete(`/api/services/${serviceId}`);
+
+            modal.toast({
+                message: 'Servicio eliminado exitosamente',
+                type: 'success'
+            });
+
             this.load(); // Reload services
         } catch (error) {
             console.error('Error deleting service:', error);
-            alert('Error al eliminar el servicio: ' + error.message);
+            modal.toast({
+                message: 'Error al eliminar el servicio',
+                type: 'error'
+            });
         }
     }
 };
