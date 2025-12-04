@@ -552,4 +552,231 @@ Claude: [Lee HISTORICO_SEMANA_49_2025.md]
 
 ---
 
+### 2025-12-04 - Fix Críticos en Widget QR y Sistema de Reservas
+**Estado:** Completado ✓
+**Objetivo:** Resolver problemas críticos reportados en producción
+
+---
+
+## PARTE 1: QR Code No Visible en Dashboard
+
+**Problema:**
+El usuario reportó que en la sección de Widget del dashboard de administración, al seleccionar la opción "📱 Código QR", la imagen del QR no se mostraba.
+
+**Diagnóstico:**
+
+1. **Logs del servidor revelaron el problema:**
+   ```
+   GET /undefined/api/qr/1
+   ```
+   La URL tenía `/undefined/` en lugar de la URL base correcta.
+
+2. **Causa raíz:**
+   En `admin/js/widget.js` línea 17:
+   ```javascript
+   const apiUrl = api.baseURL;
+   ```
+   En algunos casos `api.baseURL` estaba siendo `undefined` cuando se renderizaba el widget.
+
+**Solución:**
+
+Modificado widget.js para usar `window.API_URL` como prioridad:
+```javascript
+// ANTES
+const apiUrl = api.baseURL;
+
+// DESPUÉS
+const apiUrl = window.API_URL || api.baseURL;
+```
+
+**Archivos Modificados:**
+- admin/js/widget.js (línea 18)
+
+**Resultado:**
+✅ El código QR ahora se muestra correctamente en el dashboard
+✅ La URL del QR se genera correctamente: `/api/qr/:businessId`
+
+**Commit:**
+- `86ba66b` - fix: Resolver problema de QR no visible en widget
+
+---
+
+## PARTE 2: Error CSP Bloqueando QRCode.js
+
+**Problema:**
+Al intentar usar el generador de QR en demo.html, la consola mostraba:
+```
+Loading the script 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'
+violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'"
+
+Uncaught ReferenceError: QRCode is not defined
+```
+
+**Causa:**
+El Content Security Policy (CSP) configurado en Helmet no permitía cargar scripts desde CDNs externos.
+
+**Solución:**
+
+Agregado `https://cdnjs.cloudflare.com` a la directiva `scriptSrc` del CSP:
+
+```javascript
+// server.js
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"], // ← AGREGADO
+      scriptSrcAttr: ["'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+```
+
+**Archivos Modificados:**
+- server.js (línea 40)
+
+**Resultado:**
+✅ El script qrcode.min.js se carga correctamente desde CDN
+✅ La función `QRCode` está disponible
+✅ El generador de QR funciona sin errores
+
+**Commit:**
+- `b170bd9` - fix: Permitir carga de scripts desde cdnjs.cloudflare.com
+
+---
+
+## PARTE 3: Error 500 al Crear Reservas desde QR
+
+**Problema Crítico:**
+El usuario (nutri@demo.com / NutriVida) intentó hacer una reserva a través del QR code pero obtuvo:
+```
+POST https://stickywork.com/api/bookings 500 (Internal Server Error)
+Error al crear la reserva, por favor inténtelo de nuevo
+```
+
+**Diagnóstico:**
+
+1. **Logs de Railway mostraron el error real:**
+   ```
+   Error: Incorrect integer value: 'Consulta' for column 'service_id' at row 1
+   errno: 1366
+   sql: INSERT INTO bookings (business_id, service_id, customer_name, ...)
+   ```
+
+2. **Causa raíz identificada:**
+   El widget estaba enviando **'Consulta'** (nombre/categoría del servicio) en lugar del **ID numérico** del servicio.
+
+3. **Localización del bug:**
+   En `widget/stickywork-widget.js` línea 405:
+   ```javascript
+   return `<option value="${s.id || s.name}">${s.name}${detailsStr}</option>`;
+   ```
+
+   Si `s.id` era `null` o `undefined`, usaba `s.name` como fallback.
+
+   Además, líneas 408-409 tenían opciones hardcodeadas con nombres:
+   ```javascript
+   <option value="Consulta">Consulta general - 30${t.minutes}</option>
+   <option value="Servicio">Servicio estandar - 45${t.minutes}</option>
+   ```
+
+**Solución:**
+
+1. **Corregido el fallback:**
+   ```javascript
+   // ANTES
+   return `<option value="${s.id || s.name}">${s.name}${detailsStr}</option>`;
+
+   // DESPUÉS
+   return `<option value="${s.id || ''}">${s.name}${detailsStr}</option>`;
+   ```
+
+2. **Eliminadas opciones hardcodeadas:**
+   ```javascript
+   // ANTES
+   : `
+       <option value="Consulta">Consulta general - 30${t.minutes}</option>
+       <option value="Servicio">Servicio estandar - 45${t.minutes}</option>
+   `;
+
+   // DESPUÉS
+   : '';
+   ```
+
+**Archivos Modificados:**
+- widget/stickywork-widget.js (líneas 405-407)
+
+**Resultado:**
+✅ El widget ahora siempre envía el ID numérico del servicio
+✅ Las reservas se crean correctamente desde el QR
+✅ Si no hay ID, envía cadena vacía (convertida a `null` por el backend)
+✅ Eliminados servicios hardcodeados que causaban problemas
+
+**Commit:**
+- `1322283` - fix: Corregir service_id enviando nombre en lugar de ID
+
+---
+
+## Testing y Verificación
+
+**Pruebas Locales Realizadas:**
+
+1. **Test con camelCase (control):**
+   ```bash
+   curl -X POST http://localhost:3000/api/bookings \
+   -H "Content-Type: application/json" \
+   -d '{"businessId": 7, "customerName": "Test", ...}'
+   ```
+   ✅ Resultado: success
+
+2. **Test con snake_case (usado por widget):**
+   ```bash
+   curl -X POST http://localhost:3000/api/bookings \
+   -H "Content-Type: application/json" \
+   -d '{"business_id": 7, "customer_name": "Test", ...}'
+   ```
+   ✅ Resultado: success (después del fix)
+
+3. **Verificación de servicios en BD:**
+   - Business ID 7: NutriVida - Centro de Nutrición
+   - 5 servicios configurados correctamente (IDs: 22-26)
+   - Todas las reservas de prueba creadas exitosamente
+
+**Pruebas en Producción:**
+✅ Usuario confirmó que todo funciona correctamente después del deploy
+
+---
+
+## Resumen del Día 2025-12-04
+
+### Bugs Críticos Resueltos
+✅ **QR no visible en widget** - apiUrl undefined
+✅ **CSP bloqueando QRCode.js** - CDN no permitido
+✅ **Error 500 al crear reservas** - service_id con nombre en lugar de ID
+
+### Archivos Modificados
+- admin/js/widget.js (1 línea)
+- server.js (1 línea)
+- widget/stickywork-widget.js (3 líneas)
+
+### Estadísticas
+- **Commits:** 3
+- **Archivos modificados:** 3
+- **Líneas de código cambiadas:** 5
+- **Tiempo de resolución:** ~2 horas
+- **Impacto:** Alto (funcionalidad crítica en producción)
+
+### Lecciones Aprendidas
+1. **Variables globales:** Usar `window.API_URL` es más confiable que confiar en el orden de carga de scripts
+2. **CSP estricto:** Siempre revisar CSP cuando se agregan nuevas librerías externas
+3. **Validación de tipos:** El backend debería validar tipos de datos antes de insertar en BD
+4. **Testing:** Probar con datos reales de servicios, no solo con IDs hardcodeados
+
+---
+
 

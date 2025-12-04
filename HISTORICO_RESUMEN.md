@@ -145,12 +145,24 @@
 📄 *Detalles completos en: HISTORICO_SEMANA_48_2025.md*
 
 ### Semana 49 (2025)
-**Período:** 2025-12-01 - 2025-12-01
+**Período:** 2025-12-01 - 2025-12-04
 
-- **2025-12-01 - Implementación Completa de Seguridad: Password Recovery, Refresh Tokens y 2FA**
-  ---
-  - Almacena tokens hasheados con SHA-256
-  - Expiración de 1 hora
+- **2025-12-01 - Implementación Completa de Seguridad: Password Recovery, Refresh Tokens y 2FA**
+  - Sistema de recuperación de contraseña con emails automáticos
+  - Refresh tokens (access token 15min, refresh token 7 días)
+  - Autenticación de dos factores (2FA) con TOTP y códigos de backup
+  - 6 nuevos endpoints de seguridad implementados
+
+- **2025-12-02 - Fix Critical CSP + Mejoras UX + Reorganización de Histórico**
+  - Fix crítico: Botones de reservas no funcionaban (CSP bloqueaba onclick)
+  - Mejora UX: Eliminado efecto de burbuja en hover de navegación
+  - Reorganización del histórico por semanas (reducción del 91% en tokens)
+
+- **2025-12-04 - Fix Críticos en Widget QR y Sistema de Reservas**
+  - Fix: QR code no visible en dashboard (apiUrl undefined)
+  - Fix: CSP bloqueando carga de QRCode.js desde CDN
+  - Fix crítico: Error 500 al crear reservas (service_id con nombre en lugar de ID)
+  - 3 bugs de producción resueltos
 
 📄 *Detalles completos en: HISTORICO_SEMANA_49_2025.md*
 
