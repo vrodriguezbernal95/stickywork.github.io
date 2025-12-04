@@ -15,7 +15,7 @@ const widget = {
     render() {
         const contentArea = document.getElementById('contentArea');
         const businessId = auth.getBusinessId();
-        const apiUrl = api.baseURL;
+        const apiUrl = window.API_URL || api.baseURL;
 
         contentArea.innerHTML = `
             <div class="widget-section">
