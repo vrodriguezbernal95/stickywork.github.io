@@ -402,12 +402,9 @@
                 if (config.showDuration && s.duration) details.push(`${s.duration}${t.minutes}`);
                 if (config.showPrices && s.price) details.push(`${s.price}€`);
                 const detailsStr = details.length > 0 ? ` - ${details.join(' / ')}` : '';
-                return `<option value="${s.id || s.name}">${s.name}${detailsStr}</option>`;
+                return `<option value="${s.id || ''}">${s.name}${detailsStr}</option>`;
             }).join('')
-            : `
-                <option value="Consulta">Consulta general - 30${t.minutes}</option>
-                <option value="Servicio">Servicio estandar - 45${t.minutes}</option>
-            `;
+            : '';
 
         const professionalField = config.professionals && config.professionals.length > 0
             ? `
