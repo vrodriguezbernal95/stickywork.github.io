@@ -197,8 +197,12 @@
                         <!-- Previsualización del QR -->
                         <div class="qr-preview-box">
                             <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: clamp(1.1rem, 2.5vw, 1.3rem);">Vista Previa del QR</h4>
-                            <div id="qrcode-container" class="qr-container">
-                                <!-- El QR se generará aquí -->
+                            <div id="qrcode-container" class="qr-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #ffffff; border-radius: 12px;">
+                                <img src="https://chart.googleapis.com/chart?cht=qr&chs=280x280&chl=https://stickywork.com"
+                                     alt="Código QR de StickyWork"
+                                     style="width: 280px; height: 280px; display: block;"
+                                     id="qr-image"
+                                     loading="eager">
                             </div>
                             <button onclick="descargarQR()" class="btn-download-qr">
                                 📥 Descargar QR en PNG
@@ -1038,30 +1042,19 @@
 
         // Función para descargar el QR como imagen PNG
         function descargarQR() {
-            const container = document.getElementById('qrcode');
-            const canvas = container.querySelector('canvas');
+            const qrImage = document.getElementById('qr-image');
 
-            if (canvas) {
-                // Crear canvas de alta resolución (2x)
-                const highResCanvas = document.createElement('canvas');
-                const ctx = highResCanvas.getContext('2d');
-
-                // Duplicar el tamaño para alta resolución
-                highResCanvas.width = canvas.width * 2;
-                highResCanvas.height = canvas.height * 2;
-
-                // Escalar y dibujar
-                ctx.scale(2, 2);
-                ctx.drawImage(canvas, 0, 0);
-
-                // Convertir a imagen y descargar
-                const url = highResCanvas.toDataURL('image/png');
+            if (qrImage) {
+                // Descargar QR en alta resolución (500x500)
                 const link = document.createElement('a');
-                link.download = 'stickywork-qr-alta-resolucion.png';
-                link.href = url;
+                link.href = 'https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=https://stickywork.com';
+                link.download = 'stickywork-qr.png';
+                link.target = '_blank';
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
             } else {
-                alert('Por favor, genera primero el código QR haciendo clic en "Generar Código QR"');
+                alert('No se encontró el código QR para descargar');
             }
         }
     </script>
