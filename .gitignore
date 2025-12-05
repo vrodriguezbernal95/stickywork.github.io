@@ -37,3 +37,11 @@ dist/
 build/
 .claude/settings.local.json
 css/styles-backup.css
+
+# Scripts de testing y migración
+check-*.js
+create-*.js
+fix-*.js
+setup-*.js
+test-*.html
+RAILWAY-MIGRATION.sql
