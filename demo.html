@@ -298,21 +298,32 @@
                         </button>
 
                         <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
-                            <div style="color: #888; margin-bottom: 1rem;"><!-- URL para generar el código QR --></div>
-                            <span style="color: #ffe66d;">https://vrodriguezbernal95.github.io/stickywork.github.io/</span><br><br>
+                            <div style="color: #888; margin-bottom: 1rem;"><!-- URL de tu widget --></div>
+                            <span style="color: #ffe66d;" id="qrUrlDisplay">https://vrodriguezbernal95.github.io/stickywork.github.io/</span><br><br>
 
-                            <div style="color: #888; margin: 1rem 0;"><!-- Instrucciones para generar el QR --></div>
-                            <div style="color: #e0e0e0; line-height: 1.8;">
-                                <span style="color: #4ecdc4;">1.</span> Usa cualquier generador de códigos QR online<br>
-                                <span style="color: #4ecdc4;">2.</span> Pega la URL de arriba<br>
-                                <span style="color: #4ecdc4;">3.</span> Descarga el QR en alta resolución (PNG o SVG)<br>
-                                <span style="color: #4ecdc4;">4.</span> Úsalo en tus materiales impresos<br><br>
+                            <div style="color: #888; margin: 1rem 0;"><!-- Generador de código QR integrado --></div>
+                            <div style="text-align: center; margin: 2rem 0;">
+                                <button onclick="generarQR()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                                    🎨 Generar Código QR
+                                </button>
+                            </div>
 
-                                <div style="color: #888; margin: 1rem 0;"><!-- Generadores recomendados --></div>
-                                <span style="color: #ff6b6b;">Generadores recomendados:</span><br>
-                                • <span style="color: #ffe66d;">qr-code-generator.com</span><br>
-                                • <span style="color: #ffe66d;">qrcode-monkey.com</span><br>
-                                • <span style="color: #ffe66d;">goqr.me</span><br>
+                            <!-- Contenedor del QR generado -->
+                            <div id="qrContainer" style="display: none; text-align: center; margin: 2rem 0; padding: 2rem; background: white; border-radius: 12px;">
+                                <div id="qrcode" style="display: inline-block;"></div>
+                                <div style="margin-top: 1.5rem;">
+                                    <button onclick="descargarQR()" style="background: linear-gradient(135deg, #06beb6, #48b1bf); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(6, 190, 182, 0.3);">
+                                        ⬇️ Descargar QR (Alta Resolución)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="color: #e0e0e0; line-height: 1.8; margin-top: 1rem;">
+                                <span style="color: #4ecdc4;">💡 Uso del QR:</span><br>
+                                • Imprímelo en carteles, flyers o tarjetas<br>
+                                • Colócalo en tu negocio físico<br>
+                                • Compártelo en redes sociales<br>
+                                • Tus clientes escanean y reservan al instante<br>
                             </div>
                         </div>
                     </div>
@@ -947,18 +958,24 @@
 
         // Función para generar el código QR
         function generarQR() {
-            const container = document.getElementById('qrcode-container');
+            const container = document.getElementById('qrcode');
+            const qrContainer = document.getElementById('qrContainer');
+
+            // Si ya existe el QR, solo mostrarlo
+            if (qrContainer.style.display !== 'none' && qrCodeInstance) {
+                return;
+            }
 
             // Limpiar QR anterior si existe
             container.innerHTML = '';
 
-            // URL del proyecto
-            const url = 'https://stickywork.com';
+            // Obtener la URL desde el display (o usar la del widget demo)
+            const urlDisplay = document.getElementById('qrUrlDisplay');
+            const url = urlDisplay ? urlDisplay.textContent.trim() : 'https://stickywork.com';
 
             // Calcular tamaño óptimo del QR según el ancho de pantalla
-            const containerWidth = container.offsetWidth;
             const isMobile = window.innerWidth <= 768;
-            const qrSize = isMobile ? Math.min(220, containerWidth - 32) : 240;
+            const qrSize = isMobile ? 220 : 280; // QR más grande para mejor calidad
 
             // Generar nuevo QR
             qrCodeInstance = new QRCode(container, {
@@ -967,24 +984,44 @@
                 height: qrSize,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.H // Máxima corrección de errores
             });
+
+            // Mostrar el contenedor del QR
+            qrContainer.style.display = 'block';
+
+            // Scroll suave al QR generado
+            setTimeout(() => {
+                qrContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
 
         // Función para descargar el QR como imagen PNG
         function descargarQR() {
-            const container = document.getElementById('qrcode-container');
+            const container = document.getElementById('qrcode');
             const canvas = container.querySelector('canvas');
 
             if (canvas) {
-                // Convertir canvas a imagen y descargar
-                const url = canvas.toDataURL('image/png');
+                // Crear canvas de alta resolución (2x)
+                const highResCanvas = document.createElement('canvas');
+                const ctx = highResCanvas.getContext('2d');
+
+                // Duplicar el tamaño para alta resolución
+                highResCanvas.width = canvas.width * 2;
+                highResCanvas.height = canvas.height * 2;
+
+                // Escalar y dibujar
+                ctx.scale(2, 2);
+                ctx.drawImage(canvas, 0, 0);
+
+                // Convertir a imagen y descargar
+                const url = highResCanvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.download = 'stickywork-qr-code.png';
+                link.download = 'stickywork-qr-alta-resolucion.png';
                 link.href = url;
                 link.click();
             } else {
-                alert('Por favor, genera primero el código QR');
+                alert('Por favor, genera primero el código QR haciendo clic en "Generar Código QR"');
             }
         }
     </script>
