@@ -193,34 +193,26 @@
                         <strong>Código QR para Reservas:</strong> Ideal para materiales impresos
                     </p>
 
-                    <div class="qr-grid">
-                        <!-- Previsualización del QR -->
-                        <div class="qr-preview-box">
-                            <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: clamp(1.1rem, 2.5vw, 1.3rem);">Vista Previa del QR</h4>
-                            <div style="text-align: center;">
-                                <div id="qrcode-container" class="qr-container" style="display: inline-block; background: white; padding: 0.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-                                    <img id="qr-image"
-                                         src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://stickywork.com"
-                                         alt="Código QR de StickyWork"
-                                         style="display: block; width: 250px; height: 250px; margin: 0;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <div style="display: none; width: 250px; height: 250px; background: #f7fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center;">
-                                        QR Code<br>stickywork.com
-                                    </div>
+                    <!-- Rectángulo único centrado -->
+                    <div class="qr-single-box">
+                        <!-- QR Code -->
+                        <div style="text-align: center; margin-bottom: 2rem;">
+                            <div id="qrcode-container" style="display: inline-block; background: white; padding: 0.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                                <img id="qr-image"
+                                     src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://stickywork.com"
+                                     alt="Código QR de StickyWork"
+                                     style="display: block; width: 250px; height: 250px; margin: 0;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div style="display: none; width: 250px; height: 250px; background: #f7fafc; border-radius: 8px; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; line-height: 1.4;">
+                                    QR Code<br>stickywork.com
                                 </div>
-                                <p style="color: var(--text-secondary); margin: 0.75rem 0 0 0; font-size: 0.85rem;">Escanea para probar StickyWork</p>
                             </div>
-                            <button onclick="descargarQR()" class="btn-download-qr">
-                                📥 Descargar QR en PNG
-                            </button>
-                            <p style="color: var(--text-secondary); font-size: clamp(0.8rem, 1.8vw, 0.9rem); margin: 0;">
-                                Listo para imprimir o compartir
-                            </p>
+                            <p style="color: var(--text-secondary); margin: 0.75rem 0 0 0; font-size: 0.85rem;">Escanea para probar StickyWork</p>
                         </div>
 
                         <!-- Usos del QR -->
-                        <div class="qr-uses-box">
-                            <h4 style="color: var(--text-primary); margin-bottom: 1rem; font-size: clamp(1.1rem, 2.5vw, 1.3rem);">¿Dónde usar el código QR?</h4>
+                        <div style="margin-bottom: 2rem;">
+                            <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.3rem; text-align: center;">¿Dónde usar el código QR?</h4>
                             <ul class="qr-uses-list">
                                 <li><strong>📇 Tarjetas de presentación:</strong> Los clientes escanean y reservan al instante</li>
                                 <li><strong>📄 Folletos y flyers:</strong> Facilita la conversión en campañas impresas</li>
@@ -229,11 +221,23 @@
                                 <li><strong>📱 Redes sociales:</strong> Comparte en Instagram, Facebook, etc.</li>
                                 <li><strong>🎫 Eventos:</strong> En stands o material promocional</li>
                             </ul>
-                            <div class="qr-tip-box">
-                                <p style="margin: 0; color: var(--text-primary); font-size: clamp(0.85rem, 1.8vw, 0.95rem);">
-                                    💡 <strong>Consejo PRO:</strong> El QR apunta directamente a tu página de reservas. Puedes regenerarlo con diferentes parámetros UTM para trackear conversiones.
-                                </p>
-                            </div>
+                        </div>
+
+                        <!-- Consejo PRO -->
+                        <div class="qr-tip-box" style="margin-bottom: 2rem;">
+                            <p style="margin: 0; color: var(--text-primary); font-size: 0.95rem;">
+                                💡 <strong>Consejo PRO:</strong> El QR apunta directamente a tu página de reservas. Puedes regenerarlo con diferentes parámetros UTM para trackear conversiones.
+                            </p>
+                        </div>
+
+                        <!-- CTA Principal -->
+                        <div style="text-align: center;">
+                            <a href="registro.html" class="btn-cta-qr">
+                                🚀 Crear mi QR Gratis
+                            </a>
+                            <p style="color: var(--text-secondary); margin: 1rem 0 0 0; font-size: 0.9rem;">
+                                Prueba gratuita de 14 días • Sin tarjeta de crédito
+                            </p>
                         </div>
                     </div>
 
@@ -303,84 +307,10 @@
 
                     <!-- Código Modo QR -->
                     <div id="codigoQR" style="position: relative; display: none;">
-                        <!-- Vista Previa del QR -->
-                        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 2.5rem; border-radius: 15px; margin-bottom: 2rem; border: 2px solid rgba(102, 126, 234, 0.3);">
-                            <h3 style="color: var(--text-primary); margin: 0 0 1rem 0; text-align: center; font-size: 1.5rem; font-weight: 700;">
-                                📱 Tu Código QR Único
-                            </h3>
-                            <p style="color: var(--text-secondary); text-align: center; margin: 0 0 2rem 0; font-size: 1rem; line-height: 1.6;">
-                                Recibe reservas desde cualquier lugar. Tus clientes escanean el código y reservan al instante.
-                            </p>
-
-                            <!-- QR de ejemplo estático -->
-                            <div style="text-align: center; margin-bottom: 2rem;">
-                                <div style="display: inline-block; background: white; padding: 0.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://stickywork.com"
-                                         alt="Código QR de StickyWork"
-                                         style="display: block; width: 250px; height: 250px; margin: 0;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <div style="display: none; width: 250px; height: 250px; background: #f7fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center;">
-                                        QR Code<br>stickywork.com
-                                    </div>
-                                </div>
-                                <p style="color: var(--text-secondary); margin: 0.75rem 0 0 0; font-size: 0.85rem;">
-                                    Escanea para probar StickyWork
-                                </p>
-                            </div>
-
-                            <!-- Casos de Uso -->
-                            <div style="background: var(--bg-primary); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid var(--border-color);">
-                                <h4 style="color: var(--text-primary); margin: 0 0 1.5rem 0; font-size: 1.1rem; font-weight: 600; text-align: center;">
-                                    ¿Dónde puedes usar tu QR?
-                                </h4>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 600px; margin: 0 auto;">
-                                    <div style="text-align: center;">
-                                        <div style="font-size: 3rem; margin-bottom: 0.75rem;">📱</div>
-                                        <p style="margin: 0; color: var(--text-primary); font-weight: 600; font-size: 1rem;">Redes Sociales</p>
-                                        <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">Instagram, Facebook, WhatsApp</p>
-                                    </div>
-                                    <div style="text-align: center;">
-                                        <div style="font-size: 3rem; margin-bottom: 0.75rem;">🖨️</div>
-                                        <p style="margin: 0; color: var(--text-primary); font-weight: 600; font-size: 1rem;">Material Impreso</p>
-                                        <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">Tarjetas, flyers, carteles</p>
-                                    </div>
-                                    <div style="text-align: center;">
-                                        <div style="font-size: 3rem; margin-bottom: 0.75rem;">🏪</div>
-                                        <p style="margin: 0; color: var(--text-primary); font-weight: 600; font-size: 1rem;">Local Físico</p>
-                                        <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">Escaparate, mostrador, mesa</p>
-                                    </div>
-                                    <div style="text-align: center;">
-                                        <div style="font-size: 3rem; margin-bottom: 0.75rem;">✉️</div>
-                                        <p style="margin: 0; color: var(--text-primary); font-weight: 600; font-size: 1rem;">Firma de Email</p>
-                                        <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">Contactos profesionales</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Beneficios -->
-                            <div style="background: rgba(102, 126, 234, 0.08); padding: 1.5rem; border-radius: 12px; border-left: 4px solid var(--primary-color); margin-bottom: 2rem;">
-                                <p style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1rem; font-weight: 600;">
-                                    ✨ Incluido en tu cuenta:
-                                </p>
-                                <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); line-height: 2; font-size: 0.95rem; list-style: none;">
-                                    <li style="padding-left: 0.5rem;">✓ QR único y permanente para tu negocio</li>
-                                    <li style="padding-left: 0.5rem;">✓ Descarga en alta resolución (300 DPI)</li>
-                                    <li style="padding-left: 0.5rem;">✓ Estadísticas de escaneos en tiempo real</li>
-                                    <li style="padding-left: 0.5rem;">✓ Sin marcas de agua, 100% personalizado</li>
-                                    <li style="padding-left: 0.5rem;">✓ Actualización automática sin reimprimir</li>
-                                </ul>
-                            </div>
-
-                            <!-- CTA Principal -->
-                            <div style="text-align: center;">
-                                <a href="registro.html" style="display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; padding: 1.2rem 3rem; border-radius: 10px; font-size: 1.1rem; font-weight: 700; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);">
-                                    🚀 Crear mi QR Gratis
-                                </a>
-                                <p style="color: var(--text-secondary); margin: 1rem 0 0 0; font-size: 0.9rem;">
-                                    Prueba gratuita de 14 días • Sin tarjeta de crédito • Activa en 2 minutos
-                                </p>
-                            </div>
-                        </div>
+                        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6;">
+                            El código QR se genera automáticamente en tu panel de administración. <br>
+                            Podrás descargarlo en alta resolución y personalizarlo según tus necesidades.
+                        </p>
                     </div>
 
                     <div style="margin-top: 2rem; padding: 1.5rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
@@ -559,18 +489,14 @@
     <!-- Estilos adicionales para demo móvil -->
     <style>
         /* Estilos base para QR */
-        .qr-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            align-items: start;
-        }
-
-        .qr-preview-box {
-            text-align: center;
-            padding: 2rem;
-            background: var(--bg-secondary);
-            border-radius: 15px;
+        .qr-single-box {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 3rem;
+            background: var(--bg-primary);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
         }
 
         .qr-container {
@@ -592,53 +518,47 @@
             display: block;
         }
 
-        .btn-download-qr {
-            width: 100%;
-            padding: 0.75rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-download-qr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn-download-qr:active {
-            transform: translateY(0);
-        }
-
-        .qr-uses-box {
-            padding: 2rem;
-            background: var(--bg-secondary);
-            border-radius: 15px;
-        }
-
         .qr-uses-list {
             color: var(--text-secondary);
             line-height: 2;
             text-align: left;
             padding-left: 1.5rem;
             margin: 0;
+            list-style: none;
         }
 
         .qr-uses-list li {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            padding-left: 0.5rem;
         }
 
         .qr-tip-box {
-            margin-top: 1.5rem;
-            padding: 1rem;
+            padding: 1.25rem;
             background: rgba(59, 130, 246, 0.1);
-            border-left: 3px solid var(--primary-color);
-            border-radius: 5px;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+        }
+
+        .btn-cta-qr {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2.5rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-cta-qr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-cta-qr:active {
+            transform: translateY(0);
         }
 
         /* Mejoras responsive para la página demo */
@@ -675,26 +595,13 @@
                 border-radius: 4px;
             }
 
-            /* Modo QR responsive - cambiar a columna única */
-            .qr-grid {
-                display: block !important;
-            }
-
-            .qr-preview-box,
-            .qr-uses-box {
-                margin-bottom: 1.5rem;
-                padding: 1.5rem !important;
+            /* Modo QR responsive - diseño compacto */
+            .qr-single-box {
+                padding: 2rem 1.5rem !important;
             }
 
             .qr-container {
-                padding: 1rem !important;
-                margin-left: auto;
-                margin-right: auto;
                 max-width: 280px;
-            }
-
-            #qrcode-container {
-                width: 100%;
             }
 
             .qr-uses-list {
@@ -702,9 +609,9 @@
                 line-height: 1.8 !important;
             }
 
-            .btn-download-qr {
-                font-size: 0.95rem !important;
-                padding: 0.85rem !important;
+            .btn-cta-qr {
+                font-size: 1rem !important;
+                padding: 0.9rem 2rem !important;
             }
         }
 
