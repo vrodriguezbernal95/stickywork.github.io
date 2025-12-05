@@ -197,16 +197,16 @@
                         <!-- Previsualización del QR -->
                         <div class="qr-preview-box">
                             <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: clamp(1.1rem, 2.5vw, 1.3rem);">Vista Previa del QR</h4>
-                            <div id="qrcode-container" class="qr-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: white; border-radius: 12px;">
+                            <div id="qrcode-container" class="qr-container" style="display: inline-block; text-align: center;">
                                 <img id="qr-image"
                                      src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com"
                                      alt="Código QR de StickyWork"
-                                     style="display: block; width: 280px; height: 280px;"
+                                     style="display: block; width: 280px; height: 280px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                <div style="display: none; width: 280px; height: 280px; background: #f7fafc; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
+                                <div style="display: none; width: 280px; height: 280px; background: #f7fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                                     QR Code<br>stickywork.com
                                 </div>
-                                <p style="color: #666; margin: 1rem 0 0 0; font-size: 0.9rem;">Escanea para probar StickyWork</p>
+                                <p style="color: var(--text-secondary); margin: 0.75rem 0 0 0; font-size: 0.9rem;">Escanea para probar StickyWork</p>
                             </div>
                             <button onclick="descargarQR()" class="btn-download-qr">
                                 📥 Descargar QR en PNG
@@ -311,15 +311,15 @@
                             </p>
 
                             <!-- QR de ejemplo estático -->
-                            <div style="text-align: center; padding: 2rem; background: white; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                            <div style="text-align: center; margin-bottom: 2rem;">
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com"
                                      alt="Código QR de StickyWork"
-                                     style="display: block; margin: 0 auto; width: 280px; height: 280px;"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                <div style="display: none; width: 280px; height: 280px; background: #f7fafc; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
+                                     style="display: inline-block; width: 280px; height: 280px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                                <div style="display: none; width: 280px; height: 280px; background: #f7fafc; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                                     QR Code<br>stickywork.com
                                 </div>
-                                <p style="color: #666; margin: 1rem 0 0 0; font-size: 0.9rem;">
+                                <p style="color: var(--text-secondary); margin: 0.75rem 0 0 0; font-size: 0.9rem;">
                                     Escanea para probar StickyWork
                                 </p>
                             </div>
