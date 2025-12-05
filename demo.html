@@ -197,18 +197,16 @@
                         <!-- Previsualización del QR -->
                         <div class="qr-preview-box">
                             <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: clamp(1.1rem, 2.5vw, 1.3rem);">Vista Previa del QR</h4>
-                            <div id="qrcode-container" class="qr-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
-                                <div style="background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                    <img id="qr-image"
-                                         src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com&color=2d3748&bgcolor=ffffff&margin=10"
-                                         alt="Código QR de StickyWork"
-                                         style="display: block; width: 280px; height: 280px; border-radius: 8px;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <div style="display: none; width: 280px; height: 280px; background: #f7fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
-                                        QR Code<br>stickywork.com
-                                    </div>
+                            <div id="qrcode-container" class="qr-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: white; border-radius: 12px;">
+                                <img id="qr-image"
+                                     src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com"
+                                     alt="Código QR de StickyWork"
+                                     style="display: block; width: 280px; height: 280px;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div style="display: none; width: 280px; height: 280px; background: #f7fafc; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
+                                    QR Code<br>stickywork.com
                                 </div>
-                                <p style="color: white; margin: 1.25rem 0 0 0; font-size: 0.95rem; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Escanea para probar StickyWork</p>
+                                <p style="color: #666; margin: 1rem 0 0 0; font-size: 0.9rem;">Escanea para probar StickyWork</p>
                             </div>
                             <button onclick="descargarQR()" class="btn-download-qr">
                                 📥 Descargar QR en PNG
@@ -313,17 +311,15 @@
                             </p>
 
                             <!-- QR de ejemplo estático -->
-                            <div style="text-align: center; padding: 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
-                                <div style="background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: inline-block;">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com&color=2d3748&bgcolor=ffffff&margin=10"
-                                         alt="Código QR de StickyWork"
-                                         style="display: block; width: 280px; height: 280px; border-radius: 8px;"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                    <div style="display: none; width: 280px; height: 280px; background: #f7fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
-                                        QR Code<br>stickywork.com
-                                    </div>
+                            <div style="text-align: center; padding: 2rem; background: white; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com"
+                                     alt="Código QR de StickyWork"
+                                     style="display: block; margin: 0 auto; width: 280px; height: 280px;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div style="display: none; width: 280px; height: 280px; background: #f7fafc; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
+                                    QR Code<br>stickywork.com
                                 </div>
-                                <p style="color: white; margin: 1.5rem 0 0 0; font-size: 0.95rem; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                <p style="color: #666; margin: 1rem 0 0 0; font-size: 0.9rem;">
                                     Escanea para probar StickyWork
                                 </p>
                             </div>
