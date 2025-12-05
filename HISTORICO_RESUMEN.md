@@ -145,7 +145,7 @@
 📄 *Detalles completos en: HISTORICO_SEMANA_48_2025.md*
 
 ### Semana 49 (2025)
-**Período:** 2025-12-01 - 2025-12-04
+**Período:** 2025-12-01 - 2025-12-06
 
 - **2025-12-01 - Implementación Completa de Seguridad: Password Recovery, Refresh Tokens y 2FA**
   - Sistema de recuperación de contraseña con emails automáticos
@@ -163,6 +163,13 @@
   - Fix: CSP bloqueando carga de QRCode.js desde CDN
   - Fix crítico: Error 500 al crear reservas (service_id con nombre en lugar de ID)
   - 3 bugs de producción resueltos
+
+- **2025-12-06 - Mejoras UX en Página Demo y Fix JWT_SECRET en Railway**
+  - Rediseño modo QR: layout único centrado, eliminado QR duplicado
+  - Optimización contenedor QR: de 266x516px a 266x266px
+  - CTAs añadidos en los 3 modos de demo (mejora conversión)
+  - Coherencia semántica: "Crea tu" en lugar de "Crear mi"
+  - Fix servidor crashed: JWT_SECRET configurado en Railway
 
 📄 *Detalles completos en: HISTORICO_SEMANA_49_2025.md*
 

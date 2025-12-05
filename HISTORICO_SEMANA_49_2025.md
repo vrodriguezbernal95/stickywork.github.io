@@ -1,7 +1,7 @@
 # Histórico Proyecto StickyWork - Semana 49
 
 **Año:** 2025
-**Período:** 2025-12-01 - 2025-12-02
+**Período:** 2025-12-01 - 2025-12-06
 
 ---
 
@@ -776,6 +776,296 @@ Error al crear la reserva, por favor inténtelo de nuevo
 2. **CSP estricto:** Siempre revisar CSP cuando se agregan nuevas librerías externas
 3. **Validación de tipos:** El backend debería validar tipos de datos antes de insertar en BD
 4. **Testing:** Probar con datos reales de servicios, no solo con IDs hardcodeados
+
+---
+
+### 2025-12-06 - Mejoras UX en Página Demo y Fix JWT_SECRET en Railway
+**Estado:** Completado ✓
+**Objetivo:** Optimizar conversión en página de demos y resolver crash del servidor
+
+---
+
+## PARTE 1: Rediseño del Modo QR en Demo
+
+**Problema:**
+El usuario identificó varios problemas de UX en https://stickywork.com/demo.html:
+1. **QR duplicado:** Aparecía 2 veces el mismo código QR en la página
+2. **Botón confuso:** "Descargar QR en PNG" podía hacer pensar al usuario que era su QR personal
+3. **Layout desbalanceado:** Grid de 2 columnas con tamaños desiguales se veía raro
+4. **Falta de CTA:** No había llamado a la acción claro para conversión
+5. **Contenedor sobredimensionado:** El QR ocupaba 266x516px (mitad era espacio vacío)
+
+**Solución Implementada:**
+
+### Cambios en Layout QR
+
+**ANTES:**
+```
+┌─────────────┬─────────────┐
+│ QR + Botón  │ Información │
+│ "Descargar" │ de usos     │
+└─────────────┴─────────────┘
++ QR duplicado abajo en sección código
+```
+
+**DESPUÉS:**
+```
+┌───────────────────────────┐
+│   Rectángulo único        │
+│   centrado y elegante     │
+├───────────────────────────┤
+│      [QR CODE]            │
+│                           │
+│  ¿Dónde usar el QR?       │
+│  • Tarjetas               │
+│  • Folletos               │
+│  • Local físico           │
+│  • Email marketing        │
+│  • Redes sociales         │
+│  • Eventos                │
+│                           │
+│  💡 Consejo PRO           │
+│                           │
+│  🚀 Crea tu QR Gratis     │
+│  (CTA principal)          │
+└───────────────────────────┘
+```
+
+### Cambios Específicos
+
+1. **Eliminado QR duplicado** (líneas 307-383 de demo.html)
+   - Reducción de 93 líneas de código redundante
+   - Sección de código ahora muestra solo texto explicativo
+
+2. **Nuevo layout unificado:**
+   ```css
+   .qr-single-box {
+       max-width: 700px;
+       margin: 0 auto;
+       padding: 3rem;
+       background: var(--bg-primary);
+       border-radius: 20px;
+       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+   }
+   ```
+
+3. **Optimizado contenedor QR:**
+   - ANTES: `qr-container` con clase que heredaba flex innecesario → 266x516px
+   - DESPUÉS: inline-block directo → 266x266px (cuadrado perfecto)
+
+   ```html
+   <!-- ANTES -->
+   <div id="qrcode-container" class="qr-container" style="...">
+
+   <!-- DESPUÉS -->
+   <div id="qrcode-container" style="display: inline-block; ...">
+   ```
+
+4. **Botón reemplazado:**
+   - ❌ ANTES: "📥 Descargar QR en PNG" (confuso, era solo demo)
+   - ✅ DESPUÉS: "🚀 Crea tu QR Gratis" (CTA claro que dirige a registro)
+
+**Archivos Modificados:**
+- demo.html (líneas 190-247, 305-314, 489-562)
+
+**Resultado:**
+✅ QR único, no duplicado
+✅ Layout limpio y centrado
+✅ Contenedor QR optimizado (266x266px)
+✅ CTA claro para conversión
+✅ Reducción de 93 líneas de código
+
+**Commit:**
+- `963b038` - fix: Mejorar UX del modo QR en demo.html eliminando duplicación y optimizando layout
+
+---
+
+## PARTE 2: Añadir CTAs en Todos los Modos de Demo
+
+**Contexto:**
+El usuario notó que el botón CTA "Crea tu QR Gratis" del modo QR era muy efectivo para conversión, y propuso implementarlo en los otros modos (Formulario Directo y Botón Flotante).
+
+**Problema:**
+Los modos Formulario Directo y Botón Flotante solo mostraban código de integración, pero no tenían ningún CTA que invitara al usuario a crear su cuenta.
+
+**Solución:**
+
+### CTAs Añadidos
+
+**1. Modo Formulario Directo (📄):**
+```html
+<div style="text-align: center; margin-top: 2rem; padding: 2rem;
+     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+     border-radius: 15px;">
+    <h4>¿Listo para integrar en tu web?</h4>
+    <p>Crea tu cuenta gratis y obtén tu código personalizado</p>
+    <a href="registro.html" class="btn-cta-qr">
+        🚀 Crea tu Widget Gratis
+    </a>
+    <p>Prueba gratuita de 14 días • Sin tarjeta de crédito</p>
+</div>
+```
+
+**2. Modo Botón Flotante (🎯):**
+```html
+<!-- Mismo diseño que Formulario Directo -->
+<a href="registro.html" class="btn-cta-qr">
+    🚀 Crea tu Widget Gratis
+</a>
+```
+
+**3. Modo QR (📱):**
+```html
+<!-- Actualizado para coherencia semántica -->
+<a href="registro.html" class="btn-cta-qr">
+    🚀 Crea tu QR Gratis  <!-- Cambiado de "Crear mi" a "Crea tu" -->
+</a>
+```
+
+### Coherencia Semántica
+
+**Corrección importante:**
+El usuario notó que "Crear mi..." no sonaba natural. Se cambió a segunda persona:
+- ❌ ANTES: "Crear mi QR Gratis"
+- ✅ DESPUÉS: "Crea tu QR Gratis"
+
+Esto es coherente con el tono usado en toda la web (segunda persona, directo al usuario).
+
+### Estilos del CTA
+
+Reutilizado el estilo `.btn-cta-qr` para todos los botones:
+```css
+.btn-cta-qr {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.btn-cta-qr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+}
+```
+
+**Archivos Modificados:**
+- demo.html (líneas 235-236, 280-290, 319-329)
+
+**Resultado:**
+✅ Todos los modos tienen CTA claro
+✅ Coherencia semántica en segunda persona
+✅ Mejora esperada en tasa de conversión
+✅ Diseño consistente en los 3 modos
+
+**Commit:**
+- `843989e` - feat: Añadir CTAs de conversión en todos los modos de demo
+
+---
+
+## PARTE 3: Fix Crash de Servidor por JWT_SECRET Faltante
+
+**Problema Crítico:**
+El servidor en Railway crasheaba con este error:
+```
+Error: ❌ SEGURIDAD: JWT_SECRET no está configurado en las variables de entorno.
+Por favor, configura JWT_SECRET en tu archivo .env con una clave segura.
+    at Object.<anonymous> (/app/backend/middleware/auth.js:11:11)
+```
+
+**Diagnóstico:**
+
+1. **Ya había pasado antes:** El mismo problema ocurrió en Semana 48 (2025-11-28)
+2. **Causa:** La variable de entorno `JWT_SECRET` no estaba configurada en Railway
+3. **Validación de seguridad:** El código de `auth.js` impide arrancar sin JWT_SECRET desde la Semana 48
+
+**Contexto del Histórico (Semana 48):**
+
+En 2025-11-28 se implementó validación obligatoria:
+```javascript
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    throw new Error(
+        '❌ SEGURIDAD: JWT_SECRET no está configurado en las variables de entorno.\n' +
+        'Por favor, configura JWT_SECRET en tu archivo .env con una clave segura.\n' +
+        'Ejemplo: JWT_SECRET=tu-clave-super-secreta-y-aleatoria-de-al-menos-32-caracteres'
+    );
+}
+```
+
+**Decisión del Usuario:**
+
+Se preguntó al usuario si quería:
+1. **Opción 1:** Usar la misma clave que tenía antes (usuarios siguen logueados)
+2. **Opción 2:** Generar nueva clave (todos deben hacer login de nuevo)
+
+El usuario eligió **Opción 1** para mantener sesiones activas.
+
+**Solución:**
+
+Configurada en Railway Dashboard la variable:
+```
+JWT_SECRET=0c87ed02f2333c9ac8cd067231c2c921e0fb101f3d6ec32300d5331f3a6e95e61b492bb90c87833ad2ae63e1f4cafd0d269fa982984694313dc9476ad6862de9
+```
+
+**Pasos Realizados:**
+1. Railway Dashboard → Proyecto `stickywork-api`
+2. Servicio `stickywork-api` → Variables
+3. New Variable:
+   - Name: `JWT_SECRET`
+   - Value: (clave de 128 caracteres hexadecimales)
+4. Guardar → Reinicio automático
+
+**Resultado:**
+✅ Servidor reiniciado correctamente
+✅ Estado: **Active** en Railway
+✅ API funcionando en https://stickywork.com
+✅ Usuarios mantienen sesiones activas
+
+**Importante:**
+Esta es la **misma clave** usada anteriormente, por lo que:
+- ✅ Tokens JWT existentes siguen siendo válidos
+- ✅ Usuarios logueados no necesitan volver a autenticarse
+- ✅ No hay interrupción del servicio para usuarios activos
+
+---
+
+## Resumen del Día 2025-12-06
+
+### Mejoras UX Implementadas
+✅ **Rediseño modo QR** - Layout único centrado, eliminado duplicación
+✅ **Optimización contenedor QR** - De 266x516px a 266x266px
+✅ **CTAs en todos los modos** - Mejora embudo de conversión
+✅ **Coherencia semántica** - Cambio de "mi" a "tu" en CTAs
+
+### Problemas Críticos Resueltos
+✅ **Servidor crasheado** - JWT_SECRET configurado en Railway
+✅ **QR duplicado** - Eliminado contenido redundante
+✅ **Falta de CTAs** - Añadidos en los 3 modos
+
+### Archivos Modificados
+- demo.html (2 commits)
+
+### Estadísticas
+- **Commits:** 2
+- **Archivos modificados:** 1
+- **Reducción de código:** 93 líneas eliminadas
+- **Código nuevo:** 25 líneas añadidas
+- **Impacto:** Mejora conversión + Estabilidad servidor
+
+### Configuración Railway
+- **Variables añadidas:** JWT_SECRET
+- **Estado servidor:** Active ✓
+
+### Mejoras de Conversión Esperadas
+1. **Página demo más limpia:** Sin duplicación, fácil de entender
+2. **CTAs claros:** Usuario sabe qué hacer en cada modo
+3. **Semántica natural:** "Crea tu" suena más directo que "Crear mi"
+4. **Diseño profesional:** Layout equilibrado y elegante
 
 ---
 
