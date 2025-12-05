@@ -198,112 +198,16 @@
                         <div class="qr-preview-box">
                             <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: clamp(1.1rem, 2.5vw, 1.3rem);">Vista Previa del QR</h4>
                             <div id="qrcode-container" class="qr-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
-                                <svg id="qr-image" width="280" height="280" viewBox="0 0 33 33" style="display: block; background: white; padding: 12px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                    <defs>
-                                        <style>
-                                            .qr-dot { fill: #2d3748; }
-                                            .qr-corner { fill: #667eea; rx: 3; }
-                                            .qr-center { fill: #764ba2; rx: 2; }
-                                        </style>
-                                        <filter id="shadow">
-                                            <feDropShadow dx="0" dy="0.5" stdDeviation="0.3" flood-opacity="0.2"/>
-                                        </filter>
-                                    </defs>
-
-                                    <!-- Fondo blanco -->
-                                    <rect width="33" height="33" fill="#ffffff" rx="2"/>
-
-                                    <!-- Esquinas decorativas (3 posiciones de los finder patterns) -->
-                                    <!-- Esquina superior izquierda -->
-                                    <rect class="qr-corner" x="2" y="2" width="7" height="7"/>
-                                    <rect fill="white" x="3" y="3" width="5" height="5" rx="2"/>
-                                    <rect class="qr-center" x="4" y="4" width="3" height="3"/>
-
-                                    <!-- Esquina superior derecha -->
-                                    <rect class="qr-corner" x="24" y="2" width="7" height="7"/>
-                                    <rect fill="white" x="25" y="3" width="5" height="5" rx="2"/>
-                                    <rect class="qr-center" x="26" y="4" width="3" height="3"/>
-
-                                    <!-- Esquina inferior izquierda -->
-                                    <rect class="qr-corner" x="2" y="24" width="7" height="7"/>
-                                    <rect fill="white" x="3" y="25" width="5" height="5" rx="2"/>
-                                    <rect class="qr-center" x="4" y="26" width="3" height="3"/>
-
-                                    <!-- Patrón QR simplificado con puntos redondeados -->
-                                    <g filter="url(#shadow)">
-                                        <circle class="qr-dot" cx="10.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="11.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="12.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="16.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="17.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="18.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="20.5" cy="2.5" r="0.4"/>
-
-                                        <circle class="qr-dot" cx="10.5" cy="4.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="13.5" cy="4.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="15.5" cy="4.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="18.5" cy="4.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="20.5" cy="4.5" r="0.4"/>
-
-                                        <circle class="qr-dot" cx="2.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="10.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="12.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="14.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="16.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="18.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="20.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="24.5" cy="10.5" r="0.4"/>
-
-                                        <circle class="qr-dot" cx="2.5" cy="12.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="4.5" cy="12.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="6.5" cy="12.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="10.5" cy="12.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="13.5" cy="12.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="16.5" cy="12.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="20.5" cy="12.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="22.5" cy="12.5" r="0.4"/>
-
-                                        <circle class="qr-dot" cx="2.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="6.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="10.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="13.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="15.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="18.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="22.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="24.5" cy="16.5" r="0.4"/>
-
-                                        <circle class="qr-dot" cx="2.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="6.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="8.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="12.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="15.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="18.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="22.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="24.5" cy="20.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="28.5" cy="20.5" r="0.4"/>
-
-                                        <circle class="qr-dot" cx="10.5" cy="24.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="12.5" cy="24.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="16.5" cy="24.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="20.5" cy="24.5" r="0.4"/>
-
-                                        <circle class="qr-dot" cx="10.5" cy="28.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="13.5" cy="28.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="16.5" cy="28.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="18.5" cy="28.5" r="0.4"/>
-                                        <circle class="qr-dot" cx="20.5" cy="28.5" r="0.4"/>
-                                    </g>
-
-                                    <!-- Logo en el centro -->
-                                    <circle cx="16.5" cy="16.5" r="4" fill="white" filter="url(#shadow)"/>
-                                    <text x="16.5" y="18.5" font-family="Arial, sans-serif" font-size="4" font-weight="bold" fill="url(#grad)" text-anchor="middle">SW</text>
-                                    <defs>
-                                        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
+                                <div style="background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    <img id="qr-image"
+                                         src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com&color=2d3748&bgcolor=ffffff&margin=10"
+                                         alt="Código QR de StickyWork"
+                                         style="display: block; width: 280px; height: 280px; border-radius: 8px;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div style="display: none; width: 280px; height: 280px; background: #f7fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
+                                        QR Code<br>stickywork.com
+                                    </div>
+                                </div>
                                 <p style="color: white; margin: 1.25rem 0 0 0; font-size: 0.95rem; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Escanea para probar StickyWork</p>
                             </div>
                             <button onclick="descargarQR()" class="btn-download-qr">
@@ -410,56 +314,15 @@
 
                             <!-- QR de ejemplo estático -->
                             <div style="text-align: center; padding: 2.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
-                                <svg width="280" height="280" viewBox="0 0 33 33" style="display: block; margin: 0 auto; background: white; padding: 12px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                                    <defs>
-                                        <style>
-                                            .qr-dot2 { fill: #2d3748; }
-                                            .qr-corner2 { fill: #667eea; rx: 3; }
-                                            .qr-center2 { fill: #764ba2; rx: 2; }
-                                        </style>
-                                        <filter id="shadow2">
-                                            <feDropShadow dx="0" dy="0.5" stdDeviation="0.3" flood-opacity="0.2"/>
-                                        </filter>
-                                    </defs>
-                                    <rect width="33" height="33" fill="#ffffff" rx="2"/>
-                                    <rect class="qr-corner2" x="2" y="2" width="7" height="7"/>
-                                    <rect fill="white" x="3" y="3" width="5" height="5" rx="2"/>
-                                    <rect class="qr-center2" x="4" y="4" width="3" height="3"/>
-                                    <rect class="qr-corner2" x="24" y="2" width="7" height="7"/>
-                                    <rect fill="white" x="25" y="3" width="5" height="5" rx="2"/>
-                                    <rect class="qr-center2" x="26" y="4" width="3" height="3"/>
-                                    <rect class="qr-corner2" x="2" y="24" width="7" height="7"/>
-                                    <rect fill="white" x="3" y="25" width="5" height="5" rx="2"/>
-                                    <rect class="qr-center2" x="4" y="26" width="3" height="3"/>
-                                    <g filter="url(#shadow2)">
-                                        <circle class="qr-dot2" cx="10.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="11.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="12.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="16.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="17.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="18.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="20.5" cy="2.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="10.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="12.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="16.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="20.5" cy="10.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="10.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="13.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="18.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="22.5" cy="16.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="10.5" cy="24.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="16.5" cy="24.5" r="0.4"/>
-                                        <circle class="qr-dot2" cx="20.5" cy="24.5" r="0.4"/>
-                                    </g>
-                                    <circle cx="16.5" cy="16.5" r="4" fill="white" filter="url(#shadow2)"/>
-                                    <text x="16.5" y="18.5" font-family="Arial, sans-serif" font-size="4" font-weight="bold" fill="url(#grad2)" text-anchor="middle">SW</text>
-                                    <defs>
-                                        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
+                                <div style="background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: inline-block;">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=https://stickywork.com&color=2d3748&bgcolor=ffffff&margin=10"
+                                         alt="Código QR de StickyWork"
+                                         style="display: block; width: 280px; height: 280px; border-radius: 8px;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div style="display: none; width: 280px; height: 280px; background: #f7fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; padding: 20px;">
+                                        QR Code<br>stickywork.com
+                                    </div>
+                                </div>
                                 <p style="color: white; margin: 1.5rem 0 0 0; font-size: 0.95rem; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
                                     Escanea para probar StickyWork
                                 </p>
