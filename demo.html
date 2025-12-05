@@ -997,47 +997,15 @@
             }
         });
 
-        // Variable global para almacenar el objeto QR
-        let qrCodeInstance = null;
-
-        // Función para generar el código QR
+        // Función para generar el código QR (ahora usa QR estático en HTML)
         function generarQR() {
-            const container = document.getElementById('qrcode');
-            const qrContainer = document.getElementById('qrContainer');
-
-            // Si ya existe el QR, solo mostrarlo
-            if (qrContainer.style.display !== 'none' && qrCodeInstance) {
-                return;
-            }
-
-            // Limpiar QR anterior si existe
-            container.innerHTML = '';
-
-            // Obtener la URL desde el display (o usar la del widget demo)
-            const urlDisplay = document.getElementById('qrUrlDisplay');
-            const url = urlDisplay ? urlDisplay.textContent.trim() : 'https://stickywork.com';
-
-            // Calcular tamaño óptimo del QR según el ancho de pantalla
-            const isMobile = window.innerWidth <= 768;
-            const qrSize = isMobile ? 220 : 280; // QR más grande para mejor calidad
-
-            // Generar nuevo QR
-            qrCodeInstance = new QRCode(container, {
-                text: url,
-                width: qrSize,
-                height: qrSize,
-                colorDark: '#000000',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H // Máxima corrección de errores
-            });
-
-            // Mostrar el contenedor del QR
-            qrContainer.style.display = 'block';
-
-            // Scroll suave al QR generado
-            setTimeout(() => {
+            // El QR ya está generado como imagen estática en el HTML
+            // No necesitamos generar nada dinámicamente
+            const qrContainer = document.getElementById('qrcode-container');
+            if (qrContainer) {
+                // Scroll suave al QR
                 qrContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
+            }
         }
 
         // Función para descargar el QR como imagen PNG
