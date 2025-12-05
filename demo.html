@@ -198,11 +198,12 @@
                         <div class="qr-preview-box">
                             <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: clamp(1.1rem, 2.5vw, 1.3rem);">Vista Previa del QR</h4>
                             <div id="qrcode-container" class="qr-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem; background: #ffffff; border-radius: 12px;">
-                                <img src="https://chart.googleapis.com/chart?cht=qr&chs=280x280&chl=https://stickywork.com"
-                                     alt="Código QR de StickyWork"
-                                     style="width: 280px; height: 280px; display: block;"
-                                     id="qr-image"
-                                     loading="eager">
+                                <svg id="qr-image" width="280" height="280" viewBox="0 0 29 29" style="display: block;">
+                                    <!-- QR Code para https://stickywork.com -->
+                                    <rect width="29" height="29" fill="#ffffff"/>
+                                    <path fill="#000000" d="M0,0h7v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h-7M8,0h1v7h-1M9,0h4v1h-4M14,0h1v1h1v-1h6v1h1v-1h1v1h-1v1h1v1h-1v1h1v1h-1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h1M15,0h5v1h-1v1h1v-1h1v1h-1v1h-1v-1h-1v-1h-2M22,0h7v7h-7M1,1h5v5h-5M23,1h5v5h-5M2,2h3v3h-3M24,2h3v3h-3M0,8h1v1h-1M8,8h1v1h2v1h-1v1h-1v-1h-1M14,8h1v2h-1M22,8h1v1h-1M0,9h1v-1h-1v2M1,9h1v1h-1M2,9h2v1h1v1h-1v-1h-1v1h-1M6,9h1v1h-1M10,9h2v1h-1v1h-2v-1h1M13,9h1v1h-1M23,9h2v1h-1v1h-1v1h2v-1h1v-1h1v2h-1v1h-2v-1h-1v-1h-1v1h1v1h-2v1h1v1h-1v2h-1v-1h-1v-1h1v-1h-1v-1h-2v-1h1v-1h1v-1h1v-1h1M1,10h1v1h-1M15,10h3v1h-1v2h-1v-2h-1M4,11h1v1h-1M6,11h2v1h1v1h-1v1h-1v-2h-1M11,11h1v1h1v1h-1v-1h-1M13,11h1v2h-1M3,12h1v2h-1M9,12h1v1h-1M20,12h1v1h-1M0,13h1v1h-1M4,13h1v1h1v1h-2M10,13h2v1h-2M15,13h1v1h-1M17,13h1v1h-1M27,13h1v1h-1M0,14h1v1h1v1h-1v-1h-1M6,14h2v1h-2M10,14h1v1h-1M12,14h1v2h-1v1h-1v-1h1v-1h-1M16,14h3v1h1v1h-1v-1h-1v1h1v1h-1v-1h-2M22,14h1v1h-1M26,14h1v1h-1M9,15h1v1h-1M20,15h1v2h-2v-1h1M23,15h1v1h-1M28,15h1v2h-1M1,16h1v1h-1M3,16h1v1h-1M5,16h3v1h-3M13,16h1v1h-1M22,16h1v2h-1M24,16h1v1h1v1h-2M0,17h1v1h-1M9,17h2v1h-1v1h-1M14,17h2v1h1v1h-2v1h-1v-2h-1v1h-1v-1h1M25,17h1v1h-1M3,18h2v1h-1v1h-1M8,18h1v1h-1M18,18h1v1h-1M26,18h1v2h-1M0,19h1v1h-1M6,19h1v1h-1M10,19h2v1h-1v1h-2v-1h1M19,19h2v1h-2M24,19h1v1h-1M2,20h2v1h-2M5,20h1v1h1v1h-1v-1h-1M12,20h1v1h-1M17,20h1v1h2v1h-2v1h-1v-2h-1v1h-1v-1h1M21,20h1v1h-1M23,20h1v1h1v1h-1v-1h-1M28,20h1v1h-1M0,21h1v1h-1M7,21h1v1h1v1h-1v-1h-1M13,21h2v1h-2M22,21h1v1h-1M0,22h7v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h-7M8,22h1v7h-1M9,22h4v1h-4M14,22h1v1h1v-1h6v1h1v-1h1v1h-1v1h1v1h-1v1h1v1h-1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h1M15,22h5v1h-1v1h1v-1h1v1h-1v1h-1v-1h-1v-1h-2M1,23h5v5h-5M23,23h5v5h-5M2,24h3v3h-3M24,24h3v3h-3"/>
+                                </svg>
+                                <p style="color: #666; margin: 1rem 0 0 0; font-size: 0.9rem; font-weight: 600;">Escanea para probar StickyWork</p>
                             </div>
                             <button onclick="descargarQR()" class="btn-download-qr">
                                 📥 Descargar QR en PNG
@@ -308,10 +309,11 @@
 
                             <!-- QR de ejemplo estático -->
                             <div style="text-align: center; padding: 2.5rem; background: #ffffff; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 8px 20px rgba(0,0,0,0.12);">
-                                <img src="https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=https://stickywork.com"
-                                     alt="Ejemplo de Código QR de StickyWork"
-                                     style="width: 280px; height: 280px; border-radius: 8px; display: block; margin: 0 auto;"
-                                     loading="eager">
+                                <svg width="280" height="280" viewBox="0 0 29 29" style="display: block; margin: 0 auto; border-radius: 8px;">
+                                    <!-- QR Code para https://stickywork.com -->
+                                    <rect width="29" height="29" fill="#ffffff"/>
+                                    <path fill="#000000" d="M0,0h7v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h-7M8,0h1v7h-1M9,0h4v1h-4M14,0h1v1h1v-1h6v1h1v-1h1v1h-1v1h1v1h-1v1h1v1h-1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h1M15,0h5v1h-1v1h1v-1h1v1h-1v1h-1v-1h-1v-1h-2M22,0h7v7h-7M1,1h5v5h-5M23,1h5v5h-5M2,2h3v3h-3M24,2h3v3h-3M0,8h1v1h-1M8,8h1v1h2v1h-1v1h-1v-1h-1M14,8h1v2h-1M22,8h1v1h-1M0,9h1v-1h-1v2M1,9h1v1h-1M2,9h2v1h1v1h-1v-1h-1v1h-1M6,9h1v1h-1M10,9h2v1h-1v1h-2v-1h1M13,9h1v1h-1M23,9h2v1h-1v1h-1v1h2v-1h1v-1h1v2h-1v1h-2v-1h-1v-1h-1v1h1v1h-2v1h1v1h-1v2h-1v-1h-1v-1h1v-1h-1v-1h-2v-1h1v-1h1v-1h1v-1h1M1,10h1v1h-1M15,10h3v1h-1v2h-1v-2h-1M4,11h1v1h-1M6,11h2v1h1v1h-1v1h-1v-2h-1M11,11h1v1h1v1h-1v-1h-1M13,11h1v2h-1M3,12h1v2h-1M9,12h1v1h-1M20,12h1v1h-1M0,13h1v1h-1M4,13h1v1h1v1h-2M10,13h2v1h-2M15,13h1v1h-1M17,13h1v1h-1M27,13h1v1h-1M0,14h1v1h1v1h-1v-1h-1M6,14h2v1h-2M10,14h1v1h-1M12,14h1v2h-1v1h-1v-1h1v-1h-1M16,14h3v1h1v1h-1v-1h-1v1h1v1h-1v-1h-2M22,14h1v1h-1M26,14h1v1h-1M9,15h1v1h-1M20,15h1v2h-2v-1h1M23,15h1v1h-1M28,15h1v2h-1M1,16h1v1h-1M3,16h1v1h-1M5,16h3v1h-3M13,16h1v1h-1M22,16h1v2h-1M24,16h1v1h1v1h-2M0,17h1v1h-1M9,17h2v1h-1v1h-1M14,17h2v1h1v1h-2v1h-1v-2h-1v1h-1v-1h1M25,17h1v1h-1M3,18h2v1h-1v1h-1M8,18h1v1h-1M18,18h1v1h-1M26,18h1v2h-1M0,19h1v1h-1M6,19h1v1h-1M10,19h2v1h-1v1h-2v-1h1M19,19h2v1h-2M24,19h1v1h-1M2,20h2v1h-2M5,20h1v1h1v1h-1v-1h-1M12,20h1v1h-1M17,20h1v1h2v1h-2v1h-1v-2h-1v1h-1v-1h1M21,20h1v1h-1M23,20h1v1h1v1h-1v-1h-1M28,20h1v1h-1M0,21h1v1h-1M7,21h1v1h1v1h-1v-1h-1M13,21h2v1h-2M22,21h1v1h-1M0,22h7v1h-1v1h-1v1h-1v1h-1v1h-1v1h-1v1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h1v-1h-7M8,22h1v7h-1M9,22h4v1h-4M14,22h1v1h1v-1h6v1h1v-1h1v1h-1v1h1v1h-1v1h1v1h-1v1h1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h-1v-1h1M15,22h5v1h-1v1h1v-1h1v1h-1v1h-1v-1h-1v-1h-2M1,23h5v5h-5M23,23h5v5h-5M2,24h3v3h-3M24,24h3v3h-3"/>
+                                </svg>
                                 <p style="color: #666; margin: 1.5rem 0 0 0; font-size: 0.95rem; font-weight: 600;">
                                     Escanea para probar StickyWork
                                 </p>
