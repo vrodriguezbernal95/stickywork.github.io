@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu opinión nos importa</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f3f4f6;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0;
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        .message {
+            font-size: 16px;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .booking-info {
+            background-color: #f9fafb;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        .booking-info p {
+            margin: 5px 0;
+            font-size: 15px;
+            color: #374151;
+        }
+        .booking-info strong {
+            color: #1f2937;
+        }
+        .cta-button {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .cta-button a {
+            display: inline-block;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        .stars {
+            text-align: center;
+            font-size: 40px;
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #f9fafb;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 20px;
+                border-radius: 8px;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+            .cta-button a {
+                padding: 14px 30px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>{{businessName}}</h1>
+            <p>Tu opinión nos importa</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Hola {{customerName}},
+            </div>
+
+            <div class="message">
+                Esperamos que hayas disfrutado de tu visita. Nos encantaría conocer tu opinión para seguir mejorando nuestro servicio.
+            </div>
+
+            <div class="booking-info">
+                <p><strong>Servicio:</strong> {{serviceName}}</p>
+                <p><strong>Fecha:</strong> {{bookingDate}}</p>
+            </div>
+
+            <div class="stars">⭐⭐⭐⭐⭐</div>
+
+            <div class="cta-button">
+                <a href="{{feedbackUrl}}" target="_blank">
+                    💬 Dejar mi opinión
+                </a>
+            </div>
+
+            <div class="message" style="font-size: 14px; color: #6b7280; text-align: center;">
+                Solo te tomará un minuto. Tu feedback nos ayuda a mejorar cada día.
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Gracias por tu confianza</strong></p>
+            <p>Equipo de {{businessName}}</p>
+            <p style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
+                Reservas realizadas con <a href="https://stickywork.com" target="_blank">StickyWork</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

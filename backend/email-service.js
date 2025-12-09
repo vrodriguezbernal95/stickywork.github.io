@@ -451,6 +451,11 @@ async function sendPasswordResetEmail(user, resetToken, resetUrl) {
     return await sendEmail(user.email, template);
 }
 
+// Get transporter (for jobs that need direct access)
+function getTransporter() {
+    return transporter;
+}
+
 module.exports = {
     verifyEmailService,
     sendBookingConfirmation,
@@ -458,5 +463,6 @@ module.exports = {
     sendAdminNotification,
     sendPasswordResetEmail,
     sendEmail,
-    emailTemplates
+    emailTemplates,
+    getTransporter
 };

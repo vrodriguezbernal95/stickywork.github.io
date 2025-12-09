@@ -4,6 +4,7 @@ const authRoutes = require('./routes/auth');
 const setupDemosRoutes = require('./routes/setup-demos');
 const superAdminRoutes = require('./routes/super-admin');
 const supportRoutes = require('./routes/support');
+const feedbackRoutes = require('./routes/feedback');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
@@ -15,6 +16,7 @@ let db = require('../config/database');
 function setDatabase(database) {
     db = database;
     authRoutes.setDatabase(database);
+    feedbackRoutes.setDatabase(database);
 }
 
 router.setDatabase = setDatabase;
@@ -27,6 +29,9 @@ router.use('/api/super-admin', superAdminRoutes);
 
 // ==================== SUPPORT MESSAGES ====================
 router.use('/api/support', supportRoutes);
+
+// ==================== FEEDBACK ====================
+router.use(feedbackRoutes);
 
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);

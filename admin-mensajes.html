@@ -3,80 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Mensajes de Contacto - StickyWork</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Mensajes de Contacto - StickyWork Admin</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="admin/css/admin.css">
     <style>
-        body {
-            background: #f3f4f6;
-        }
-
-        .admin-container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        .admin-header {
-            background: white;
+        .page-header {
             padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 2rem;
         }
 
-        .admin-header h1 {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
+        .page-header h1 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary);
         }
 
-        .admin-stats {
+        .page-header p {
+            margin: 0;
+            color: var(--text-secondary);
+        }
+
+        .main-content > *:not(.page-header) {
+            padding: 0 2rem 2rem 2rem;
+        }
+
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: white;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             text-align: center;
+            transition: transform 0.2s ease;
         }
 
-        .stat-number {
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
             font-size: 2.5rem;
-            font-weight: bold;
+            font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 0.5rem;
+            margin: 0.5rem 0;
         }
 
         .stat-label {
+            font-size: 0.95rem;
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-weight: 500;
         }
 
-        .messages-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .filters-section {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .filters {
+        .filters-grid {
             display: flex;
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-top: 1rem;
             flex-wrap: wrap;
         }
 
         .filter-btn {
             padding: 0.75rem 1.5rem;
-            border: 2px solid #e5e7eb;
-            background: white;
+            border: 2px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
+            font-weight: 500;
         }
 
         .filter-btn:hover {
@@ -89,27 +97,26 @@
             border-color: var(--primary-color);
         }
 
+        .messages-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
         .message-card {
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 1.5rem;
-            margin-bottom: 1rem;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
             position: relative;
         }
 
         .message-card:hover {
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .message-card.unread {
             border-left: 4px solid var(--primary-color);
-            background: rgba(59, 130, 246, 0.02);
-        }
-
-        .message-card.read {
-            opacity: 0.7;
         }
 
         .message-header {
@@ -117,130 +124,115 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        .message-info {
+        .message-sender {
             flex: 1;
         }
 
-        .message-name {
-            font-size: 1.2rem;
-            font-weight: bold;
+        .message-sender h3 {
+            font-size: 1.1rem;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .message-email {
-            color: var(--primary-color);
-            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
         }
 
         .message-meta {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
             font-size: 0.85rem;
             color: var(--text-secondary);
         }
 
-        .message-meta span {
-            background: #f3f4f6;
-            padding: 0.25rem 0.75rem;
-            border-radius: 5px;
+        .message-status {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-unread {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-read {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-replied {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .message-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .message-info-item {
+            font-size: 0.9rem;
+        }
+
+        .message-info-label {
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .message-info-value {
+            color: var(--text-primary);
+            font-weight: 500;
         }
 
         .message-content {
-            background: #f9fafb;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            color: var(--text-primary);
             line-height: 1.6;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
         }
 
         .message-actions {
             display: flex;
             gap: 0.5rem;
+            margin-top: 1rem;
         }
 
-        .action-btn {
+        .message-btn {
             padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 6px;
             cursor: pointer;
             font-size: 0.85rem;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
-        .action-btn.mark-read {
-            background: var(--secondary-color);
-            color: white;
+        .message-btn:hover {
+            background: var(--bg-secondary);
         }
 
-        .action-btn.mark-replied {
+        .message-btn.primary {
             background: var(--primary-color);
             color: white;
+            border-color: var(--primary-color);
         }
 
-        .action-btn.delete {
-            background: #ef4444;
-            color: white;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        .status-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .status-badge.unread {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-badge.read {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-badge.replied {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-        }
-
-        .spinner {
-            border: 3px solid #f3f4f6;
-            border-top: 3px solid var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .message-btn.primary:hover {
+            opacity: 0.9;
         }
 
         .empty-state {
             text-align: center;
-            padding: 3rem;
+            padding: 4rem 2rem;
             color: var(--text-secondary);
         }
 
@@ -249,61 +241,100 @@
             margin-bottom: 1rem;
         }
 
-        .refresh-btn {
-            background: var(--primary-color);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
         }
 
-        .refresh-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
+        .spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .message-header {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="admin-container">
-        <div class="admin-header">
-            <h1>📧 Mensajes de Contacto</h1>
-            <p style="color: var(--text-secondary);">Gestiona los mensajes recibidos desde el formulario de contacto</p>
+    <!-- Navegación lateral -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">StickyWork</div>
         </div>
+        <nav class="sidebar-nav">
+            <a href="../admin-dashboard.html" class="sidebar-link">
+                📊 Dashboard
+            </a>
+            <a href="admin/opiniones.html" class="sidebar-link">
+                ⭐ Opiniones
+            </a>
+            <a href="../admin-mensajes.html" class="sidebar-link active">
+                💬 Mensajes
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div>
+                    <div class="user-name" id="userName">Cargando...</div>
+                    <div class="user-email" id="userEmail"></div>
+                </div>
+            </div>
+            <button onclick="auth.logout()" class="btn-logout">🚪 Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <header class="page-header">
+            <div>
+                <h1>💬 Mensajes de Contacto</h1>
+                <p>Gestiona los mensajes recibidos desde el formulario de contacto</p>
+            </div>
+        </header>
 
         <!-- Estadísticas -->
-        <div class="admin-stats">
+        <div class="stats-grid" id="statsGrid">
             <div class="stat-card">
-                <div class="stat-number" id="stat-total">-</div>
                 <div class="stat-label">Total Mensajes</div>
+                <div class="stat-value" id="totalMessages">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="stat-unread">-</div>
                 <div class="stat-label">Sin Leer</div>
+                <div class="stat-value" id="unreadMessages">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="stat-read">-</div>
                 <div class="stat-label">Leídos</div>
+                <div class="stat-value" id="readMessages">-</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="stat-replied">-</div>
                 <div class="stat-label">Respondidos</div>
+                <div class="stat-value" id="repliedMessages">-</div>
             </div>
         </div>
 
-        <!-- Contenedor de mensajes -->
-        <div class="messages-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h2 style="margin: 0;">Mensajes Recibidos</h2>
-                <button class="refresh-btn" onclick="loadMessages()">
-                    🔄 Actualizar
-                </button>
-            </div>
-
-            <!-- Filtros -->
-            <div class="filters">
+        <!-- Filtros -->
+        <div class="filters-section">
+            <h3>Filtros</h3>
+            <div class="filters-grid">
                 <button class="filter-btn active" data-filter="all" onclick="filterMessages('all')">
                     Todos
                 </button>
@@ -317,43 +348,54 @@
                     Respondidos
                 </button>
             </div>
+        </div>
 
-            <!-- Lista de mensajes -->
-            <div id="messages-list">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    Cargando mensajes...
-                </div>
+        <!-- Lista de mensajes -->
+        <div id="messagesContainer">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
             </div>
         </div>
-    </div>
+    </main>
 
+    <script src="admin/js/api.js"></script>
+    <script src="admin/js/auth.js"></script>
     <script>
-        const API_URL = 'http://localhost:3000';
         let allMessages = [];
         let currentFilter = 'all';
 
-        // Cargar mensajes al iniciar
-        document.addEventListener('DOMContentLoaded', function() {
-            loadMessages();
-        });
+        // Inicializar
+        async function init() {
+            // Verificar autenticación
+            const isAuth = await auth.checkAuth();
+            if (!isAuth) return;
 
-        // Cargar mensajes desde la API
+            // Cargar datos
+            await loadMessages();
+        }
+
+        // Cargar mensajes
         async function loadMessages() {
-            try {
-                const response = await fetch(`${API_URL}/api/contact`);
-                const data = await response.json();
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
 
-                if (data.success) {
-                    allMessages = data.data;
+            try {
+                const response = await api.get('/api/contact');
+
+                if (response.success) {
+                    allMessages = response.data;
                     updateStats();
-                    filterMessages(currentFilter);
-                } else {
-                    showError('Error al cargar mensajes');
+                    displayMessages();
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showError('Error de conexión');
+                console.error('Error al cargar mensajes:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error al cargar mensajes</h3>
+                        <p>Por favor, intenta recargar la página.</p>
+                    </div>
+                `;
             }
         }
 
@@ -364,10 +406,151 @@
             const read = allMessages.filter(m => m.status === 'read').length;
             const replied = allMessages.filter(m => m.status === 'replied').length;
 
-            document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-unread').textContent = unread;
-            document.getElementById('stat-read').textContent = read;
-            document.getElementById('stat-replied').textContent = replied;
+            document.getElementById('totalMessages').textContent = total;
+            document.getElementById('unreadMessages').textContent = unread;
+            document.getElementById('readMessages').textContent = read;
+            document.getElementById('repliedMessages').textContent = replied;
+        }
+
+        // Mostrar mensajes
+        function displayMessages() {
+            const container = document.getElementById('messagesContainer');
+
+            // Filtrar mensajes
+            let messages = allMessages;
+            if (currentFilter !== 'all') {
+                messages = allMessages.filter(m => m.status === currentFilter);
+            }
+
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>No hay mensajes</h3>
+                        <p>No se encontraron mensajes con el filtro seleccionado.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `<div class="messages-list"></div>`;
+            const listContainer = container.querySelector('.messages-list');
+
+            messages.forEach(message => {
+                const messageCard = createMessageCard(message);
+                listContainer.appendChild(messageCard);
+            });
+        }
+
+        // Crear tarjeta de mensaje
+        function createMessageCard(message) {
+            const card = document.createElement('div');
+            card.className = `message-card ${message.status === 'unread' ? 'unread' : ''}`;
+
+            const date = new Date(message.created_at);
+            const dateStr = date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const timeStr = date.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            let statusClass = 'status-' + message.status;
+            let statusText = {
+                'unread': 'Sin leer',
+                'read': 'Leído',
+                'replied': 'Respondido'
+            }[message.status] || message.status;
+
+            card.innerHTML = `
+                <div class="message-header">
+                    <div class="message-sender">
+                        <h3>${message.name}</h3>
+                        <div class="message-meta">
+                            ${dateStr} • ${timeStr}
+                        </div>
+                    </div>
+                    <div class="message-status ${statusClass}">
+                        ${statusText}
+                    </div>
+                </div>
+
+                <div class="message-info">
+                    <div class="message-info-item">
+                        <span class="message-info-label">Email:</span>
+                        <span class="message-info-value">${message.email}</span>
+                    </div>
+                    ${message.phone ? `
+                        <div class="message-info-item">
+                            <span class="message-info-label">Teléfono:</span>
+                            <span class="message-info-value">${message.phone}</span>
+                        </div>
+                    ` : ''}
+                    ${message.business_name ? `
+                        <div class="message-info-item">
+                            <span class="message-info-label">Negocio:</span>
+                            <span class="message-info-value">${message.business_name}</span>
+                        </div>
+                    ` : ''}
+                    ${message.business_type ? `
+                        <div class="message-info-item">
+                            <span class="message-info-label">Tipo:</span>
+                            <span class="message-info-value">${message.business_type}</span>
+                        </div>
+                    ` : ''}
+                    ${message.interest ? `
+                        <div class="message-info-item">
+                            <span class="message-info-label">Interés:</span>
+                            <span class="message-info-value">${message.interest}</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="message-content">
+                    ${message.message}
+                </div>
+
+                <div class="message-actions">
+                    ${message.status === 'unread' ? `
+                        <button class="message-btn primary" onclick="updateMessageStatus(${message.id}, 'read')">
+                            ✓ Marcar como leído
+                        </button>
+                    ` : ''}
+                    ${message.status === 'read' ? `
+                        <button class="message-btn primary" onclick="updateMessageStatus(${message.id}, 'replied')">
+                            ✓ Marcar como respondido
+                        </button>
+                    ` : ''}
+                    <button class="message-btn" onclick="window.location.href='mailto:${message.email}'">
+                        📧 Responder por email
+                    </button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Actualizar estado del mensaje
+        async function updateMessageStatus(messageId, newStatus) {
+            try {
+                const response = await api.patch(`/api/contact/${messageId}`, { status: newStatus });
+
+                if (response.success) {
+                    // Actualizar mensaje local
+                    const message = allMessages.find(m => m.id === messageId);
+                    if (message) {
+                        message.status = newStatus;
+                        updateStats();
+                        displayMessages();
+                    }
+                }
+            } catch (error) {
+                console.error('Error al actualizar estado:', error);
+                alert('Error al actualizar el estado del mensaje');
+            }
         }
 
         // Filtrar mensajes
@@ -377,144 +560,16 @@
             // Actualizar botones activos
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                }
             });
-            document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
 
-            // Filtrar mensajes
-            let filtered = allMessages;
-            if (filter !== 'all') {
-                filtered = allMessages.filter(m => m.status === filter);
-            }
-
-            renderMessages(filtered);
+            displayMessages();
         }
 
-        // Renderizar mensajes
-        function renderMessages(messages) {
-            const container = document.getElementById('messages-list');
-
-            if (messages.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <h3>No hay mensajes</h3>
-                        <p>No se encontraron mensajes con este filtro</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const html = messages.map(message => {
-                const date = new Date(message.created_at).toLocaleString('es-ES');
-                return `
-                    <div class="message-card ${message.status}" data-id="${message.id}">
-                        <span class="status-badge ${message.status}">
-                            ${message.status === 'unread' ? 'Sin Leer' : message.status === 'read' ? 'Leído' : 'Respondido'}
-                        </span>
-
-                        <div class="message-header">
-                            <div class="message-info">
-                                <div class="message-name">${message.name}</div>
-                                <div class="message-email">✉️ ${message.email}</div>
-                            </div>
-                        </div>
-
-                        <div class="message-meta">
-                            ${message.phone ? `<span>📞 ${message.phone}</span>` : ''}
-                            ${message.business_name ? `<span>🏢 ${message.business_name}</span>` : ''}
-                            ${message.business_type ? `<span>📋 ${message.business_type}</span>` : ''}
-                            ${message.interest ? `<span>🎯 ${message.interest}</span>` : ''}
-                            <span>📅 ${date}</span>
-                        </div>
-
-                        <div class="message-content">
-                            ${message.message}
-                        </div>
-
-                        <div class="message-actions">
-                            ${message.status === 'unread' ? `
-                                <button class="action-btn mark-read" onclick="updateStatus(${message.id}, 'read')">
-                                    ✓ Marcar como Leído
-                                </button>
-                            ` : ''}
-                            ${message.status !== 'replied' ? `
-                                <button class="action-btn mark-replied" onclick="updateStatus(${message.id}, 'replied')">
-                                    💬 Marcar como Respondido
-                                </button>
-                            ` : ''}
-                            <button class="action-btn delete" onclick="deleteMessage(${message.id})">
-                                🗑️ Eliminar
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = html;
-        }
-
-        // Actualizar estado de mensaje
-        async function updateStatus(id, status) {
-            if (!confirm(`¿Marcar este mensaje como "${status}"?`)) return;
-
-            try {
-                const response = await fetch(`${API_URL}/api/contact/${id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    await loadMessages();
-                } else {
-                    alert('Error al actualizar estado');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error de conexión');
-            }
-        }
-
-        // Eliminar mensaje
-        async function deleteMessage(id) {
-            if (!confirm('¿Estás seguro de eliminar este mensaje? Esta acción no se puede deshacer.')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/api/contact/${id}`, {
-                    method: 'DELETE'
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    await loadMessages();
-                } else {
-                    alert('Error al eliminar mensaje');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error de conexión');
-            }
-        }
-
-        // Mostrar error
-        function showError(message) {
-            const container = document.getElementById('messages-list');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">⚠️</div>
-                    <h3>Error</h3>
-                    <p>${message}</p>
-                    <button class="refresh-btn" onclick="loadMessages()" style="margin-top: 1rem;">
-                        Reintentar
-                    </button>
-                </div>
-            `;
-        }
+        // Inicializar cuando cargue la página
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>

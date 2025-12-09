@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Opinión nos Importa - StickyWork</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .booking-info {
+            background: #f9fafb;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .booking-info p {
+            margin: 8px 0;
+            font-size: 15px;
+            color: #374151;
+        }
+
+        .booking-info strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .stars-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .star {
+            font-size: 48px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #d1d5db;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+            transform: scale(1.1);
+        }
+
+        .rating-text {
+            text-align: center;
+            font-size: 18px;
+            color: #667eea;
+            font-weight: 600;
+            min-height: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .questions {
+            display: grid;
+            gap: 20px;
+        }
+
+        .question-group {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .question-group label {
+            font-size: 15px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .question-stars {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .question-star {
+            font-size: 32px;
+            cursor: pointer;
+            color: #d1d5db;
+            transition: all 0.3s ease;
+            user-select: none;
+            pointer-events: auto;
+            position: relative;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        .question-star:hover {
+            color: #667eea;
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        .question-star.active {
+            color: #667eea !important;
+            transform: scale(1.1);
+            opacity: 1;
+            filter: drop-shadow(0 2px 8px rgba(102, 126, 234, 0.6));
+        }
+
+        .recommend-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .recommend-btn {
+            flex: 1;
+            max-width: 150px;
+            padding: 12px 24px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .recommend-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .recommend-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .success-message h2 {
+            font-size: 28px;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            font-size: 16px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            color: #991b1b;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .star {
+                font-size: 36px;
+            }
+
+            .question-star {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p style="color: #6b7280;">Cargando...</p>
+        </div>
+
+        <!-- Form State -->
+        <div id="formState" style="display: none;">
+            <div class="header">
+                <h1 id="businessName">Tu opinión nos importa</h1>
+                <p>Ayúdanos a mejorar compartiendo tu experiencia</p>
+            </div>
+
+            <div class="content">
+                <div class="error-message" id="errorMessage"></div>
+
+                <div class="booking-info" id="bookingInfo">
+                    <p><strong>Servicio:</strong> <span id="serviceName">-</span></p>
+                    <p><strong>Fecha:</strong> <span id="bookingDate">-</span></p>
+                </div>
+
+                <form id="feedbackForm">
+                    <!-- Rating Principal -->
+                    <div class="form-group">
+                        <label>¿Cómo calificarías tu experiencia?</label>
+                        <div class="stars-container">
+                            <span class="star" data-rating="1">⭐</span>
+                            <span class="star" data-rating="2">⭐</span>
+                            <span class="star" data-rating="3">⭐</span>
+                            <span class="star" data-rating="4">⭐</span>
+                            <span class="star" data-rating="5">⭐</span>
+                        </div>
+                        <div class="rating-text" id="ratingText"></div>
+                        <input type="hidden" id="rating" name="rating" required>
+                    </div>
+
+                    <!-- Comentario -->
+                    <div class="form-group">
+                        <label for="comment">Cuéntanos más (opcional)</label>
+                        <textarea id="comment" name="comment" placeholder="¿Qué te gustó? ¿Algo que podríamos mejorar?"></textarea>
+                    </div>
+
+                    <!-- Preguntas Adicionales -->
+                    <div class="form-group">
+                        <label>Preguntas adicionales</label>
+                        <div class="questions">
+                            <div class="question-group">
+                                <label>¿Cómo calificarías la limpieza?</label>
+                                <div class="question-stars" data-question="cleanliness">
+                                    <span class="question-star" data-value="1">⭐</span>
+                                    <span class="question-star" data-value="2">⭐</span>
+                                    <span class="question-star" data-value="3">⭐</span>
+                                    <span class="question-star" data-value="4">⭐</span>
+                                    <span class="question-star" data-value="5">⭐</span>
+                                </div>
+                            </div>
+
+                            <div class="question-group">
+                                <label>¿El servicio fue puntual?</label>
+                                <div class="question-stars" data-question="punctuality">
+                                    <span class="question-star" data-value="1">⭐</span>
+                                    <span class="question-star" data-value="2">⭐</span>
+                                    <span class="question-star" data-value="3">⭐</span>
+                                    <span class="question-star" data-value="4">⭐</span>
+                                    <span class="question-star" data-value="5">⭐</span>
+                                </div>
+                            </div>
+
+                            <div class="question-group">
+                                <label>¿Recomendarías este negocio?</label>
+                                <div class="recommend-group">
+                                    <button type="button" class="recommend-btn" data-recommend="yes">Sí</button>
+                                    <button type="button" class="recommend-btn" data-recommend="no">No</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        💬 Enviar mi opinión
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Success State -->
+        <div id="successState" style="display: none;">
+            <div class="success-message">
+                <div class="success-icon">✅</div>
+                <h2>¡Gracias por tu opinión!</h2>
+                <p>Tu feedback ha sido registrado exitosamente. Nos ayuda mucho a seguir mejorando nuestro servicio.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Detectar automáticamente si estamos en local o producción
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000'
+            : 'https://stickywork.com';
+        let feedbackToken = null;
+        let selectedRating = 0;
+        let questions = {
+            cleanliness: 0,
+            punctuality: 0,
+            wouldRecommend: null
+        };
+
+        // Obtener token de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        feedbackToken = urlParams.get('token');
+
+        // Verificar token al cargar
+        async function verifyToken() {
+            if (!feedbackToken) {
+                showError('Token inválido o no proporcionado');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/feedback/verify/${feedbackToken}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    if (data.alreadySubmitted) {
+                        document.getElementById('loadingState').style.display = 'none';
+                        document.getElementById('successState').style.display = 'block';
+                        document.querySelector('.success-message h2').textContent = 'Ya enviaste tu opinión';
+                        document.querySelector('.success-message p').textContent = 'Gracias por tu feedback anterior. Ya registramos tu opinión.';
+                    } else {
+                        showError(data.error || 'Error al verificar token');
+                    }
+                    return;
+                }
+
+                // Mostrar información de la reserva
+                const booking = data.data.booking;
+                document.getElementById('businessName').textContent = booking.business_name;
+                document.getElementById('serviceName').textContent = booking.service_name;
+                document.getElementById('bookingDate').textContent = new Date(booking.booking_date).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Mostrar formulario
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('formState').style.display = 'block';
+
+                // Inicializar event listeners ahora que el formulario es visible
+                initFormListeners();
+                initFormSubmit();
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error al verificar el enlace. Por favor, inténtalo de nuevo.');
+            }
+        }
+
+        // Función para inicializar event listeners del formulario
+        function initFormListeners() {
+            // Rating principal
+            document.querySelectorAll('.star').forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.rating);
+                    document.getElementById('rating').value = selectedRating;
+
+                    // Actualizar estrellas
+                    document.querySelectorAll('.star').forEach((s, index) => {
+                        if (index < selectedRating) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+
+                    // Actualizar texto
+                    const ratingTexts = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
+                    document.getElementById('ratingText').textContent = ratingTexts[selectedRating];
+                });
+            });
+
+            // Preguntas adicionales - MISMO PATRÓN que las estrellas principales
+            const questionStars = document.querySelectorAll('.question-star');
+            console.log('🔧 NUEVO CÓDIGO - Total estrellas:', questionStars.length);
+
+            questionStars.forEach(star => {
+                star.addEventListener('click', function() {
+                    console.log('🟢 CLICK REGISTRADO EN ESTRELLA');
+                    const value = parseInt(this.dataset.value);
+                    const container = this.closest('.question-stars');
+                    const questionName = container.dataset.question;
+
+                    questions[questionName] = value;
+                    console.log('🟢 Valor guardado:', questionName, '=', value);
+
+                    // Actualizar estrellas (IGUAL que arriba)
+                    const starsInContainer = container.querySelectorAll('.question-star');
+                    starsInContainer.forEach((s, index) => {
+                        if (index < value) {
+                            s.classList.add('active');
+                            console.log('🟢 Agregando clase active a estrella', index);
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            // Botones de recomendación
+            document.querySelectorAll('.recommend-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    questions.wouldRecommend = this.dataset.recommend === 'yes';
+
+                    document.querySelectorAll('.recommend-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // Función para manejar el envío del formulario
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            if (selectedRating === 0) {
+                showError('Por favor, selecciona una calificación');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Enviando...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: feedbackToken,
+                        rating: selectedRating,
+                        comment: document.getElementById('comment').value,
+                        questions: questions
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('formState').style.display = 'none';
+                    document.getElementById('successState').style.display = 'block';
+                } else {
+                    showError(data.error || 'Error al enviar tu opinión');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '💬 Enviar mi opinión';
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error al enviar tu opinión. Por favor, inténtalo de nuevo.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '💬 Enviar mi opinión';
+            }
+        }
+
+        // Agregar listener del formulario (se llamará en initFormListeners)
+        function initFormSubmit() {
+            const form = document.getElementById('feedbackForm');
+            if (form) {
+                form.addEventListener('submit', handleFormSubmit);
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('formState').style.display = 'block';
+        }
+
+        // Inicializar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', verifyToken);
+        } else {
+            // DOM ya está listo
+            verifyToken();
+        }
+    </script>
+</body>
+</html>

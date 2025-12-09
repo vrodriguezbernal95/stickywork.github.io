@@ -3,11 +3,13 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const path = require('path');
+const cron = require('node-cron');
 require('dotenv').config();
 
 const db = require('./config/database');
 const routes = require('./backend/routes');
 const emailService = require('./backend/email-service');
+const { enviarEmailsFeedback } = require('./backend/jobs/enviar-feedback');
 
 // Función para ejecutar migraciones MySQL
 async function runMigrations() {
@@ -58,6 +60,7 @@ app.use(express.static(path.join(__dirname)));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
 // Logger simple
 app.use((req, res, next) => {
@@ -192,6 +195,20 @@ async function startServer() {
             await emailService.verifyEmailService();
 
             console.log('✅ Base de datos configurada correctamente\n');
+
+            // Configurar cron job para envío de emails de feedback
+            // Ejecutar cada hora
+            cron.schedule('0 * * * *', async () => {
+                console.log('⏰ [Cron] Ejecutando job de envío de feedback...');
+                try {
+                    const transporter = emailService.getTransporter();
+                    await enviarEmailsFeedback(db, transporter);
+                } catch (error) {
+                    console.error('❌ [Cron] Error en job de feedback:', error.message);
+                }
+            });
+
+            console.log('⏰ Cron job de feedback configurado (cada hora)\n');
 
         } catch (error) {
             console.error('⚠️  Error configurando base de datos:', error.message);
