@@ -171,6 +171,7 @@ async function startServer() {
     });
 
     // Configurar DB en segundo plano (sin bloquear el inicio)
+    // Force redeploy: 2025-12-10T09:30:00Z
     setTimeout(async () => {
         try {
             console.log('🔄 Configurando base de datos en segundo plano...');
