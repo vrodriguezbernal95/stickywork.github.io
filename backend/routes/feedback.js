@@ -300,10 +300,14 @@ router.get('/api/feedback/test-db', async (req, res) => {
         // Test 3: Intentar una query simple
         const result = await db.query('SELECT 1 as test');
 
+        // Test 4: Ver columnas de bookings
+        const columns = await db.query('DESCRIBE bookings');
+
         res.json({
             success: true,
             message: 'DB connection working',
-            testResult: result
+            testResult: result,
+            bookingsColumns: columns.map(c => c.Field)
         });
 
     } catch (error) {
