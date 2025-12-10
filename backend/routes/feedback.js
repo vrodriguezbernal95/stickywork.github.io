@@ -342,7 +342,9 @@ router.get('/api/feedback/verify/:token', async (req, res) => {
         console.error('Error al verificar token:', error);
         res.status(500).json({
             success: false,
-            error: 'Error al verificar token'
+            error: 'Error al verificar token',
+            details: error.message,
+            stack: process.env.NODE_ENV === 'production' ? undefined : error.stack
         });
     }
 });
