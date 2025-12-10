@@ -284,6 +284,37 @@ router.get('/api/admin/feedback/stats/:businessId', requireAuth, async (req, res
     }
 });
 
+// ==================== TEST DB CONNECTION (DEBUG) ====================
+router.get('/api/feedback/test-db', async (req, res) => {
+    try {
+        // Test 1: Verificar que db existe
+        if (!db) {
+            return res.json({ success: false, error: 'db module is null' });
+        }
+
+        // Test 2: Verificar que db.query existe
+        if (!db.query) {
+            return res.json({ success: false, error: 'db.query is not a function', dbKeys: Object.keys(db) });
+        }
+
+        // Test 3: Intentar una query simple
+        const result = await db.query('SELECT 1 as test');
+
+        res.json({
+            success: true,
+            message: 'DB connection working',
+            testResult: result
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 // ==================== VERIFICAR TOKEN (PÚBLICO) ====================
 
 /**
