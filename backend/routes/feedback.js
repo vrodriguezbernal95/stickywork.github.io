@@ -373,6 +373,34 @@ router.get('/api/feedback/run-migrations', async (req, res) => {
     }
 });
 
+// ==================== DEBUG: LISTAR RESERVAS CON TOKEN (TEMPORAL) ====================
+router.get('/api/feedback/debug-bookings', async (req, res) => {
+    try {
+        const bookings = await db.query(`
+            SELECT id, business_id, customer_name, status,
+                   feedback_sent, feedback_token,
+                   SUBSTRING(feedback_token, 1, 20) as token_preview,
+                   booking_date, created_at
+            FROM bookings
+            WHERE feedback_token IS NOT NULL
+            ORDER BY id DESC
+            LIMIT 10
+        `);
+
+        res.json({
+            success: true,
+            count: bookings.length,
+            bookings: bookings
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
 // ==================== VERIFICAR TOKEN (PÚBLICO) ====================
 
 /**
