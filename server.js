@@ -178,6 +178,9 @@ async function startServer() {
             // Crear pool de conexiones a la base de datos
             await db.createPool();
 
+            // Configurar base de datos en las rutas
+            routes.setDatabase(db);
+
             // Verificar conexión a la base de datos
             const isConnected = await db.testConnection();
 
