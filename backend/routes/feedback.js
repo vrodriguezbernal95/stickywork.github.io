@@ -383,6 +383,10 @@ router.get('/api/feedback/verify/:token', async (req, res) => {
     try {
         const { token } = req.params;
 
+        console.log('🔍 [verify] Token recibido:', token);
+        console.log('🔍 [verify] db module existe:', !!db);
+        console.log('🔍 [verify] db.query existe:', !!db.query);
+
         const bookings = await db.query(
             `SELECT
                 b.id,
@@ -397,6 +401,18 @@ router.get('/api/feedback/verify/:token', async (req, res) => {
              WHERE b.feedback_token = ? AND b.status = 'completed'`,
             [token]
         );
+
+        console.log('🔍 [verify] Bookings encontrados:', bookings.length);
+        if (bookings.length > 0) {
+            console.log('🔍 [verify] Primera reserva:', bookings[0]);
+        } else {
+            console.log('🔍 [verify] NO se encontraron bookings. Verificando sin filtro de status...');
+            const debugBookings = await db.query(
+                'SELECT id, status, feedback_token FROM bookings WHERE feedback_token = ?',
+                [token]
+            );
+            console.log('🔍 [verify] Debug bookings (sin filtro):', debugBookings);
+        }
 
         if (bookings.length === 0) {
             return res.status(404).json({
