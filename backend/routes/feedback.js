@@ -373,6 +373,53 @@ router.get('/api/feedback/run-migrations', async (req, res) => {
     }
 });
 
+// ==================== DEBUG: CREAR TABLA SERVICE_FEEDBACK (TEMPORAL) ====================
+router.get('/api/feedback/create-table', async (req, res) => {
+    try {
+        const sql = `
+            CREATE TABLE IF NOT EXISTS service_feedback (
+              id INT PRIMARY KEY AUTO_INCREMENT,
+              booking_id INT NOT NULL,
+              business_id INT NOT NULL,
+              customer_name VARCHAR(255),
+              customer_email VARCHAR(255),
+              rating INT NOT NULL COMMENT 'Calificación de 1-5 estrellas',
+              comment TEXT,
+              questions JSON COMMENT 'Respuestas a preguntas específicas',
+              feedback_token VARCHAR(255) UNIQUE COMMENT 'Token único para validar acceso',
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+              FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+              FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+
+              INDEX idx_business_rating (business_id, rating),
+              INDEX idx_booking (booking_id),
+              INDEX idx_created_at (created_at),
+              INDEX idx_token (feedback_token)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `;
+
+        await db.query(sql);
+
+        // Verificar que se creó
+        const tables = await db.query("SHOW TABLES LIKE 'service_feedback'");
+        const columns = await db.query("DESCRIBE service_feedback");
+
+        res.json({
+            success: true,
+            message: 'Tabla service_feedback creada exitosamente',
+            tableExists: tables.length > 0,
+            columns: columns.map(c => c.Field)
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            sqlMessage: error.sqlMessage
+        });
+    }
+});
+
 // ==================== DEBUG: AGREGAR TOKEN A RESERVA (TEMPORAL) ====================
 router.post('/api/feedback/debug-add-token/:bookingId', async (req, res) => {
     try {
