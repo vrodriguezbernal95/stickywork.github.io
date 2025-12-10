@@ -319,6 +319,46 @@ router.get('/api/feedback/test-db', async (req, res) => {
     }
 });
 
+// ==================== EJECUTAR MIGRACIONES (DEBUG - TEMPORAL) ====================
+router.get('/api/feedback/run-migrations', async (req, res) => {
+    try {
+        console.log('🔧 Ejecutando migraciones de feedback...');
+
+        // Migración 012: Agregar columnas de feedback a bookings
+        const migration012 = `
+            ALTER TABLE bookings
+            ADD COLUMN IF NOT EXISTS feedback_sent BOOLEAN DEFAULT FALSE,
+            ADD COLUMN IF NOT EXISTS feedback_sent_at TIMESTAMP NULL,
+            ADD COLUMN IF NOT EXISTS feedback_token VARCHAR(255);
+        `;
+
+        await db.query(migration012);
+        console.log('✅ Migración 012 ejecutada');
+
+        // Verificar columnas después de la migración
+        const columns = await db.query('DESCRIBE bookings');
+        const columnNames = columns.map(c => c.Field);
+
+        res.json({
+            success: true,
+            message: 'Migraciones ejecutadas correctamente',
+            bookingsColumns: columnNames,
+            hasFeedbackToken: columnNames.includes('feedback_token'),
+            hasFeedbackSent: columnNames.includes('feedback_sent'),
+            hasFeedbackSentAt: columnNames.includes('feedback_sent_at')
+        });
+
+    } catch (error) {
+        console.error('❌ Error ejecutando migraciones:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            sqlMessage: error.sqlMessage,
+            stack: error.stack
+        });
+    }
+});
+
 // ==================== VERIFICAR TOKEN (PÚBLICO) ====================
 
 /**
