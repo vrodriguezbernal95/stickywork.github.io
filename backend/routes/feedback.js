@@ -373,6 +373,41 @@ router.get('/api/feedback/run-migrations', async (req, res) => {
     }
 });
 
+// ==================== DEBUG: AGREGAR TOKEN A RESERVA (TEMPORAL) ====================
+router.post('/api/feedback/debug-add-token/:bookingId', async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+        const crypto = require('crypto');
+
+        // Generar token único
+        const feedbackToken = crypto.randomBytes(32).toString('hex');
+
+        // Actualizar la reserva
+        await db.query(
+            'UPDATE bookings SET feedback_token = ?, status = ? WHERE id = ?',
+            [feedbackToken, 'completed', bookingId]
+        );
+
+        // Verificar que se actualizó
+        const [updated] = await db.query(
+            'SELECT id, customer_name, status, feedback_token FROM bookings WHERE id = ?',
+            [bookingId]
+        );
+
+        res.json({
+            success: true,
+            message: `Token agregado a booking #${bookingId}`,
+            booking: updated,
+            feedbackUrl: `https://stickywork.com/feedback.html?token=${feedbackToken}`
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // ==================== DEBUG: LISTAR RESERVAS CON TOKEN (TEMPORAL) ====================
 router.get('/api/feedback/debug-bookings', async (req, res) => {
     try {
