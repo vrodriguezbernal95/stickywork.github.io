@@ -324,24 +324,38 @@ router.get('/api/feedback/run-migrations', async (req, res) => {
     try {
         console.log('🔧 Ejecutando migraciones de feedback...');
 
-        // Migración 012: Agregar columnas de feedback a bookings
-        const migration012 = `
-            ALTER TABLE bookings
-            ADD COLUMN IF NOT EXISTS feedback_sent BOOLEAN DEFAULT FALSE,
-            ADD COLUMN IF NOT EXISTS feedback_sent_at TIMESTAMP NULL,
-            ADD COLUMN IF NOT EXISTS feedback_token VARCHAR(255);
-        `;
+        const results = [];
 
-        await db.query(migration012);
-        console.log('✅ Migración 012 ejecutada');
+        // Agregar columnas una por una (MySQL no soporta IF NOT EXISTS en ALTER)
+        const columns = [
+            { name: 'feedback_sent', sql: 'ALTER TABLE bookings ADD COLUMN feedback_sent BOOLEAN DEFAULT FALSE' },
+            { name: 'feedback_sent_at', sql: 'ALTER TABLE bookings ADD COLUMN feedback_sent_at TIMESTAMP NULL' },
+            { name: 'feedback_token', sql: 'ALTER TABLE bookings ADD COLUMN feedback_token VARCHAR(255)' }
+        ];
+
+        for (const col of columns) {
+            try {
+                await db.query(col.sql);
+                results.push({ column: col.name, status: 'added' });
+                console.log(`✅ Columna ${col.name} agregada`);
+            } catch (error) {
+                if (error.message.includes('Duplicate column')) {
+                    results.push({ column: col.name, status: 'already exists' });
+                    console.log(`⚠️ Columna ${col.name} ya existe`);
+                } else {
+                    throw error;
+                }
+            }
+        }
 
         // Verificar columnas después de la migración
-        const columns = await db.query('DESCRIBE bookings');
-        const columnNames = columns.map(c => c.Field);
+        const columnsAfter = await db.query('DESCRIBE bookings');
+        const columnNames = columnsAfter.map(c => c.Field);
 
         res.json({
             success: true,
             message: 'Migraciones ejecutadas correctamente',
+            results,
             bookingsColumns: columnNames,
             hasFeedbackToken: columnNames.includes('feedback_token'),
             hasFeedbackSent: columnNames.includes('feedback_sent'),
