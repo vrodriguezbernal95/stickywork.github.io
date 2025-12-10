@@ -376,21 +376,34 @@ router.get('/api/feedback/run-migrations', async (req, res) => {
 // ==================== DEBUG: LISTAR RESERVAS CON TOKEN (TEMPORAL) ====================
 router.get('/api/feedback/debug-bookings', async (req, res) => {
     try {
-        const bookings = await db.query(`
+        // Verificar a qué BD estamos conectados
+        const [dbInfo] = await db.query('SELECT DATABASE() as current_db');
+
+        // Listar TODAS las reservas (sin filtro de token)
+        const allBookings = await db.query(`
             SELECT id, business_id, customer_name, status,
                    feedback_sent, feedback_token,
-                   SUBSTRING(feedback_token, 1, 20) as token_preview,
                    booking_date, created_at
             FROM bookings
-            WHERE feedback_token IS NOT NULL
             ORDER BY id DESC
+            LIMIT 10
+        `);
+
+        // Listar solo con token
+        const withToken = await db.query(`
+            SELECT id, customer_name, feedback_token
+            FROM bookings
+            WHERE feedback_token IS NOT NULL
             LIMIT 10
         `);
 
         res.json({
             success: true,
-            count: bookings.length,
-            bookings: bookings
+            database: dbInfo.current_db,
+            totalBookings: allBookings.length,
+            bookingsWithToken: withToken.length,
+            allBookings: allBookings,
+            withToken: withToken
         });
     } catch (error) {
         res.status(500).json({
