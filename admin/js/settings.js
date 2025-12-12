@@ -833,6 +833,11 @@ const settings = {
             content.classList.remove('active');
         });
         document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        // Load schedule settings when opening schedule tab
+        if (tabName === 'schedule') {
+            setTimeout(() => this.loadScheduleSettings(), 100);
+        }
     },
 
     // Get role name in Spanish
@@ -1280,13 +1285,13 @@ const settings = {
     // Render Schedule Tab
     renderScheduleTab() {
         const weekDays = [
-            { key: 'monday', name: 'Lunes' },
-            { key: 'tuesday', name: 'Martes' },
-            { key: 'wednesday', name: 'Miércoles' },
-            { key: 'thursday', name: 'Jueves' },
-            { key: 'friday', name: 'Viernes' },
-            { key: 'saturday', name: 'Sábado' },
-            { key: 'sunday', name: 'Domingo' }
+            { num: 1, key: 'monday', name: 'Lunes' },
+            { num: 2, key: 'tuesday', name: 'Martes' },
+            { num: 3, key: 'wednesday', name: 'Miércoles' },
+            { num: 4, key: 'thursday', name: 'Jueves' },
+            { num: 5, key: 'friday', name: 'Viernes' },
+            { num: 6, key: 'saturday', name: 'Sábado' },
+            { num: 7, key: 'sunday', name: 'Domingo' }
         ];
 
         return `
@@ -1297,22 +1302,96 @@ const settings = {
                     <p>Define los días y horas en que tu negocio acepta reservas</p>
                 </div>
 
-                ${weekDays.map(day => `
-                    <div class="schedule-day">
-                        <div class="day-name">${day.name}</div>
-                        <div class="time-inputs">
-                            <input type="time" id="schedule-${day.key}-start" value="09:00">
-                            <span style="color: var(--text-secondary);">a</span>
-                            <input type="time" id="schedule-${day.key}-end" value="20:00">
-                        </div>
-                        <div class="toggle-switch" style="margin: 0;">
-                            <input type="checkbox" id="schedule-${day.key}-enabled" checked
-                                   onchange="settings.toggleDaySchedule('${day.key}')">
-                        </div>
-                    </div>
-                `).join('')}
+                <!-- Tipo de Horario -->
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label>Tipo de horario</label>
+                    <select id="schedule-type" onchange="settings.toggleScheduleType()">
+                        <option value="continuous">Horario Continuo (un solo bloque)</option>
+                        <option value="multiple">Horarios Partidos (turnos)</option>
+                    </select>
+                    <p class="hint">
+                        <strong>Continuo:</strong> Tu negocio abre y cierra a la misma hora (ej: 09:00-20:00)<br>
+                        <strong>Partidos:</strong> Tu negocio tiene varios turnos (ej: 12:00-16:00 y 20:00-23:00)
+                    </p>
+                </div>
 
-                <div class="form-group" style="margin-top: 1.5rem;">
+                <!-- Horario Continuo -->
+                <div id="continuous-schedule" style="display: block;">
+                    <div class="form-group">
+                        <label>Horario de apertura</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="time" id="work-hours-start" value="09:00" style="flex: 1;">
+                            <span style="color: var(--text-secondary);">a</span>
+                            <input type="time" id="work-hours-end" value="20:00" style="flex: 1;">
+                        </div>
+                        <p class="hint">Hora de inicio y fin del horario laboral</p>
+                    </div>
+                </div>
+
+                <!-- Horarios Partidos (Turnos) -->
+                <div id="shifts-schedule" style="display: none;">
+                    <div class="form-group">
+                        <label>¿Cuántos turnos tiene tu negocio?</label>
+                        <select id="num-shifts" onchange="settings.updateShiftsCount()">
+                            <option value="1">1 turno (horario continuo)</option>
+                            <option value="2" selected>2 turnos (horario partido)</option>
+                            <option value="3">3 turnos</option>
+                        </select>
+                        <p class="hint">
+                            🍽️ <strong>Ejemplo restaurante:</strong> Desayunos (08:00-11:00), Comidas (12:30-16:00), Cenas (20:00-23:00)
+                        </p>
+                    </div>
+
+                    <div id="shifts-container">
+                        ${[1, 2, 3].map(i => `
+                            <div id="shift-${i}" class="shift-config" style="display: ${i <= 2 ? 'block' : 'none'};">
+                                <h4 style="margin: 1.5rem 0 1rem; color: var(--primary-color);">
+                                    Turno ${i}
+                                </h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Nombre del turno</label>
+                                        <input type="text" id="shift${i}-name" placeholder="Ej: ${i === 1 ? 'Mañana' : i === 2 ? 'Tarde' : 'Noche'}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="shift${i}-enabled" checked
+                                                   style="width: auto; margin-right: 0.5rem;">
+                                            Turno activo
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Hora inicio</label>
+                                        <input type="time" id="shift${i}-start" value="${i === 1 ? '09:00' : i === 2 ? '16:00' : '20:00'}">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Hora fin</label>
+                                        <input type="time" id="shift${i}-end" value="${i === 1 ? '13:00' : i === 2 ? '20:00' : '23:00'}">
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- Días laborales -->
+                <div class="form-group" style="margin-top: 2rem;">
+                    <label>Días laborales</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                        ${weekDays.map(day => `
+                            <label style="display: flex; align-items: center; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" id="workday-${day.num}" value="${day.num}" ${day.num <= 6 ? 'checked' : ''}
+                                       style="width: auto; margin-right: 0.5rem;">
+                                <span>${day.name}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <p class="hint">Selecciona los días en que tu negocio acepta reservas</p>
+                </div>
+
+                <div class="form-group">
                     <label>Duración de cada slot de reserva</label>
                     <select id="booking-slot-duration">
                         <option value="15">15 minutos</option>
@@ -1323,56 +1402,8 @@ const settings = {
                     <p class="hint">Los clientes podrán reservar en intervalos de este tiempo</p>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Anticipación mínima</label>
-                        <select id="booking-min-advance">
-                            <option value="0">Sin anticipación</option>
-                            <option value="1" selected>1 hora</option>
-                            <option value="2">2 horas</option>
-                            <option value="4">4 horas</option>
-                            <option value="24">1 día</option>
-                            <option value="48">2 días</option>
-                        </select>
-                        <p class="hint">Tiempo mínimo antes de poder reservar</p>
-                    </div>
-                    <div class="form-group">
-                        <label>Anticipación máxima</label>
-                        <select id="booking-max-advance">
-                            <option value="7">1 semana</option>
-                            <option value="14">2 semanas</option>
-                            <option value="30" selected>1 mes</option>
-                            <option value="60">2 meses</option>
-                            <option value="90">3 meses</option>
-                        </select>
-                        <p class="hint">Hasta cuánto tiempo adelantado pueden reservar</p>
-                    </div>
-                </div>
-
                 <button class="btn-save" onclick="settings.saveSchedule()">
                     💾 Guardar Horarios
-                </button>
-            </div>
-
-            <!-- Exceptions Section -->
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Excepciones y Festivos</h3>
-                    <p>Días en los que tu negocio no acepta reservas</p>
-                </div>
-
-                <div id="exceptions-list">
-                    <!-- Dynamic list -->
-                    <div class="info-box">
-                        <p>
-                            📅 No hay excepciones configuradas. Añade días festivos o vacaciones
-                            para bloquear reservas en fechas específicas.
-                        </p>
-                    </div>
-                </div>
-
-                <button class="btn-secondary" onclick="settings.addException()">
-                    ➕ Añadir Excepción
                 </button>
             </div>
         `;
@@ -1596,20 +1627,157 @@ const settings = {
         `;
     },
 
-    // Toggle day schedule
-    toggleDaySchedule(day) {
-        const checkbox = document.getElementById(`schedule-${day}-enabled`);
-        const startInput = document.getElementById(`schedule-${day}-start`);
-        const endInput = document.getElementById(`schedule-${day}-end`);
+    // Toggle schedule type (continuous vs multiple)
+    toggleScheduleType() {
+        const scheduleType = document.getElementById('schedule-type').value;
+        const continuousDiv = document.getElementById('continuous-schedule');
+        const shiftsDiv = document.getElementById('shifts-schedule');
 
-        startInput.disabled = !checkbox.checked;
-        endInput.disabled = !checkbox.checked;
+        if (scheduleType === 'multiple') {
+            continuousDiv.style.display = 'none';
+            shiftsDiv.style.display = 'block';
+        } else {
+            continuousDiv.style.display = 'block';
+            shiftsDiv.style.display = 'none';
+        }
+    },
+
+    // Update shifts count visibility
+    updateShiftsCount() {
+        const numShifts = parseInt(document.getElementById('num-shifts').value);
+
+        for (let i = 1; i <= 3; i++) {
+            const shiftDiv = document.getElementById(`shift-${i}`);
+            if (shiftDiv) {
+                shiftDiv.style.display = i <= numShifts ? 'block' : 'none';
+            }
+        }
+    },
+
+    // Load schedule settings
+    async loadScheduleSettings() {
+        try {
+            const businessId = auth.getBusinessId();
+            const response = await api.fetch(`/api/widget/${businessId}`);
+
+            if (!response.success) return;
+
+            const scheduleType = response.scheduleType || 'continuous';
+            const workDays = response.workDays || [1, 2, 3, 4, 5, 6];
+            const slotDuration = response.slotDuration || 30;
+
+            // Set schedule type
+            document.getElementById('schedule-type').value = scheduleType;
+            this.toggleScheduleType();
+
+            // Set work days
+            workDays.forEach(day => {
+                const checkbox = document.getElementById(`workday-${day}`);
+                if (checkbox) checkbox.checked = true;
+            });
+
+            // Set slot duration
+            document.getElementById('booking-slot-duration').value = slotDuration;
+
+            if (scheduleType === 'multiple' && response.shifts) {
+                // Load shifts
+                document.getElementById('num-shifts').value = response.shifts.length;
+                this.updateShiftsCount();
+
+                response.shifts.forEach((shift, index) => {
+                    const i = index + 1;
+                    if (i <= 3) {
+                        document.getElementById(`shift${i}-name`).value = shift.name || '';
+                        document.getElementById(`shift${i}-start`).value = shift.startTime;
+                        document.getElementById(`shift${i}-end`).value = shift.endTime;
+                        document.getElementById(`shift${i}-enabled`).checked = shift.enabled;
+                    }
+                });
+            } else {
+                // Load continuous schedule
+                document.getElementById('work-hours-start').value = response.workHoursStart || '09:00';
+                document.getElementById('work-hours-end').value = response.workHoursEnd || '20:00';
+            }
+        } catch (error) {
+            console.error('Error loading schedule settings:', error);
+        }
     },
 
     // Save schedule
     async saveSchedule() {
-        // TODO: Implement save schedule logic
-        alert('✅ Horarios guardados correctamente');
+        try {
+            const businessId = auth.getBusinessId();
+            const scheduleType = document.getElementById('schedule-type').value;
+
+            // Get work days
+            const workDays = [];
+            for (let i = 1; i <= 7; i++) {
+                const checkbox = document.getElementById(`workday-${i}`);
+                if (checkbox && checkbox.checked) {
+                    workDays.push(i);
+                }
+            }
+
+            const slotDuration = parseInt(document.getElementById('booking-slot-duration').value);
+
+            let bookingSettings = {
+                scheduleType,
+                workDays,
+                slotDuration
+            };
+
+            if (scheduleType === 'multiple') {
+                // Get shifts
+                const numShifts = parseInt(document.getElementById('num-shifts').value);
+                bookingSettings.shifts = [];
+
+                for (let i = 1; i <= numShifts; i++) {
+                    const name = document.getElementById(`shift${i}-name`).value;
+                    const startTime = document.getElementById(`shift${i}-start`).value;
+                    const endTime = document.getElementById(`shift${i}-end`).value;
+                    const enabled = document.getElementById(`shift${i}-enabled`).checked;
+
+                    if (!startTime || !endTime) {
+                        alert(`Por favor completa todos los horarios del turno ${i}`);
+                        return;
+                    }
+
+                    bookingSettings.shifts.push({
+                        id: i,
+                        name: name || `Turno ${i}`,
+                        startTime,
+                        endTime,
+                        enabled
+                    });
+                }
+            } else {
+                // Continuous schedule
+                const workHoursStart = document.getElementById('work-hours-start').value;
+                const workHoursEnd = document.getElementById('work-hours-end').value;
+
+                if (!workHoursStart || !workHoursEnd) {
+                    alert('Por favor completa el horario de apertura');
+                    return;
+                }
+
+                bookingSettings.workHoursStart = workHoursStart;
+                bookingSettings.workHoursEnd = workHoursEnd;
+            }
+
+            const response = await api.fetch(`/api/business/${businessId}/settings`, {
+                method: 'PUT',
+                body: JSON.stringify({ bookingSettings })
+            });
+
+            if (response.success) {
+                alert('✅ Horarios guardados correctamente');
+            } else {
+                alert(`❌ Error: ${response.error || 'No se pudieron guardar los horarios'}`);
+            }
+        } catch (error) {
+            console.error('Error saving schedule:', error);
+            alert('❌ Error al guardar los horarios');
+        }
     },
 
     // Add exception
