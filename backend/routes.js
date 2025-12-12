@@ -21,6 +21,124 @@ function setDatabase(database) {
 
 router.setDatabase = setDatabase;
 
+// ==================== FUNCIONES AUXILIARES DE HORARIOS ====================
+
+/**
+ * Convierte una hora en formato HH:MM a minutos desde medianoche
+ * @param {string} time - Hora en formato HH:MM
+ * @returns {number} - Minutos desde medianoche
+ */
+function timeToMinutes(time) {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+/**
+ * Verifica si una hora está dentro de un rango
+ * @param {string} time - Hora a validar (HH:MM)
+ * @param {string} startTime - Hora inicio del rango (HH:MM)
+ * @param {string} endTime - Hora fin del rango (HH:MM)
+ * @returns {boolean}
+ */
+function isTimeInRange(time, startTime, endTime) {
+    const timeMin = timeToMinutes(time);
+    const startMin = timeToMinutes(startTime);
+    const endMin = timeToMinutes(endTime);
+    return timeMin >= startMin && timeMin < endMin;
+}
+
+/**
+ * Valida que dos rangos de tiempo no se solapen
+ * @param {Object} shift1 - Primer turno {startTime, endTime}
+ * @param {Object} shift2 - Segundo turno {startTime, endTime}
+ * @returns {boolean} - true si hay solapamiento
+ */
+function shiftsOverlap(shift1, shift2) {
+    const start1 = timeToMinutes(shift1.startTime);
+    const end1 = timeToMinutes(shift1.endTime);
+    const start2 = timeToMinutes(shift2.startTime);
+    const end2 = timeToMinutes(shift2.endTime);
+
+    return (start1 < end2 && end1 > start2);
+}
+
+/**
+ * Verifica solapamientos en un array de turnos
+ * @param {Array} shifts - Array de turnos [{id, startTime, endTime, enabled}]
+ * @throws {Error} Si hay solapamientos
+ */
+function checkOverlaps(shifts) {
+    const activeShifts = shifts.filter(s => s.enabled);
+
+    for (let i = 0; i < activeShifts.length; i++) {
+        for (let j = i + 1; j < activeShifts.length; j++) {
+            if (shiftsOverlap(activeShifts[i], activeShifts[j])) {
+                throw new Error(`Los turnos "${activeShifts[i].name || i+1}" y "${activeShifts[j].name || j+1}" se solapan`);
+            }
+        }
+    }
+}
+
+/**
+ * Valida formato HH:MM
+ * @param {string} time - Hora a validar
+ * @returns {boolean}
+ */
+function isValidTimeFormat(time) {
+    const regex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    return regex.test(time);
+}
+
+/**
+ * Valida un array de turnos
+ * @param {Array} shifts - Array de turnos a validar
+ * @throws {Error} Si la validación falla
+ */
+function validateShifts(shifts) {
+    if (!Array.isArray(shifts)) {
+        throw new Error('Los turnos deben ser un array');
+    }
+
+    if (shifts.length === 0) {
+        throw new Error('Debe haber al menos un turno');
+    }
+
+    if (shifts.length > 3) {
+        throw new Error('Máximo 3 turnos permitidos');
+    }
+
+    // Verificar que haya al menos un turno activo
+    const activeShifts = shifts.filter(s => s.enabled);
+    if (activeShifts.length === 0) {
+        throw new Error('Debe haber al menos un turno activo');
+    }
+
+    // Validar cada turno
+    for (const shift of shifts) {
+        if (!shift.startTime || !shift.endTime) {
+            throw new Error('Cada turno debe tener hora de inicio y fin');
+        }
+
+        if (!isValidTimeFormat(shift.startTime)) {
+            throw new Error(`Formato de hora inicio inválido: ${shift.startTime}`);
+        }
+
+        if (!isValidTimeFormat(shift.endTime)) {
+            throw new Error(`Formato de hora fin inválido: ${shift.endTime}`);
+        }
+
+        const start = timeToMinutes(shift.startTime);
+        const end = timeToMinutes(shift.endTime);
+
+        if (start >= end) {
+            throw new Error(`La hora fin debe ser mayor que la hora inicio en el turno "${shift.name || ''}"`);
+        }
+    }
+
+    // Validar solapamientos
+    checkOverlaps(shifts);
+}
+
 // ==================== AUTENTICACIÓN ====================
 router.use(authRoutes);
 
@@ -230,6 +348,63 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 success: false,
                 message: 'Email inválido'
             });
+        }
+
+        // Obtener configuración del negocio para validar horarios
+        const businessQuery = await db.query(
+            'SELECT booking_settings FROM businesses WHERE id = ?',
+            [businessId]
+        );
+
+        if (businessQuery.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Negocio no encontrado'
+            });
+        }
+
+        const bookingSettings = businessQuery[0].booking_settings
+            ? JSON.parse(businessQuery[0].booking_settings)
+            : {};
+
+        // Validar día laboral
+        const bookingDay = new Date(bookingDate + 'T00:00:00').getDay() || 7; // 0=Domingo -> 7
+        const workDays = bookingSettings.workDays || [1, 2, 3, 4, 5, 6];
+
+        if (!workDays.includes(bookingDay)) {
+            return res.status(400).json({
+                success: false,
+                message: 'El negocio no abre este día de la semana'
+            });
+        }
+
+        // Validar horario según tipo de configuración
+        const scheduleType = bookingSettings.scheduleType || 'continuous';
+
+        if (scheduleType === 'multiple' && bookingSettings.shifts) {
+            // Validar que la hora esté dentro de algún turno activo
+            const isWithinShift = bookingSettings.shifts.some(shift => {
+                if (!shift.enabled) return false;
+                return isTimeInRange(bookingTime, shift.startTime, shift.endTime);
+            });
+
+            if (!isWithinShift) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La hora seleccionada está fuera del horario de atención'
+                });
+            }
+        } else {
+            // Modo continuo - validar rango único
+            const workStart = bookingSettings.workHoursStart || '09:00';
+            const workEnd = bookingSettings.workHoursEnd || '20:00';
+
+            if (!isTimeInRange(bookingTime, workStart, workEnd)) {
+                return res.status(400).json({
+                    success: false,
+                    message: `El horario de atención es de ${workStart} a ${workEnd}`
+                });
+            }
         }
 
         // Verificar si ya existe una reserva para esa fecha/hora
@@ -816,10 +991,17 @@ router.get('/api/widget/:businessId', async (req, res) => {
             showPrices: widgetSettings.showPrices !== false,
             showDuration: widgetSettings.showDuration !== false,
             // Configuración de horarios
-            workHoursStart: bookingSettings.workHoursStart || '09:00',
-            workHoursEnd: bookingSettings.workHoursEnd || '20:00',
+            scheduleType: bookingSettings.scheduleType || 'continuous',
             workDays: bookingSettings.workDays || [1, 2, 3, 4, 5, 6],
             slotDuration: bookingSettings.slotDuration || 30,
+            // Si es horario partido (múltiple), retornar turnos
+            ...(bookingSettings.scheduleType === 'multiple' && bookingSettings.shifts
+                ? { shifts: bookingSettings.shifts.filter(s => s.enabled) }
+                : {
+                    // Modo continuo (legacy)
+                    workHoursStart: bookingSettings.workHoursStart || '09:00',
+                    workHoursEnd: bookingSettings.workHoursEnd || '20:00'
+                }),
             // Datos
             services: bookingMode === 'services' ? services : [],
             professionals,
@@ -1082,6 +1264,42 @@ router.put('/api/business/:businessId/settings', requireAuth, async (req, res) =
         }
 
         if (bookingSettings) {
+            // Validar turnos si el tipo de horario es múltiple
+            if (bookingSettings.scheduleType === 'multiple' && bookingSettings.shifts) {
+                try {
+                    validateShifts(bookingSettings.shifts);
+                } catch (error) {
+                    return res.status(400).json({
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+
+            // Validar horario continuo
+            if (bookingSettings.scheduleType === 'continuous') {
+                if (bookingSettings.workHoursStart && bookingSettings.workHoursEnd) {
+                    if (!isValidTimeFormat(bookingSettings.workHoursStart)) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Formato de hora inicio inválido'
+                        });
+                    }
+                    if (!isValidTimeFormat(bookingSettings.workHoursEnd)) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Formato de hora fin inválido'
+                        });
+                    }
+                    if (timeToMinutes(bookingSettings.workHoursStart) >= timeToMinutes(bookingSettings.workHoursEnd)) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'La hora fin debe ser mayor que la hora inicio'
+                        });
+                    }
+                }
+            }
+
             updates.push('booking_settings = ?');
             params.push(JSON.stringify(bookingSettings));
         }

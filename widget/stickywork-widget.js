@@ -407,20 +407,52 @@
         return null;
     }
 
-    // Generar horarios
+    // Función auxiliar: Generar slots para un rango de tiempo específico
+    function generateSlotsForRange(startTime, endTime, duration) {
+        const slots = [];
+        const [startHour, startMin] = startTime.split(':').map(Number);
+        const [endHour, endMin] = endTime.split(':').map(Number);
+
+        let currentMin = startHour * 60 + startMin;
+        const endMinutes = endHour * 60 + endMin;
+
+        while (currentMin < endMinutes) {
+            const hour = Math.floor(currentMin / 60);
+            const min = currentMin % 60;
+            slots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`);
+            currentMin += duration;
+        }
+
+        return slots;
+    }
+
+    // Generar horarios (soporta horarios continuos y partidos)
     function generateTimeSlots() {
         const slots = [];
-        const start = businessConfig?.workHoursStart || '09:00';
-        const end = businessConfig?.workHoursEnd || '20:00';
-        const startHour = parseInt(start.split(':')[0]);
-        const endHour = parseInt(end.split(':')[0]);
+        const scheduleType = businessConfig?.scheduleType || 'continuous';
+        const slotDuration = businessConfig?.slotDuration || 30;
 
-        for (let hour = startHour; hour <= endHour; hour++) {
-            slots.push(`${hour.toString().padStart(2, '0')}:00`);
-            if (hour < endHour) {
-                slots.push(`${hour.toString().padStart(2, '0')}:30`);
-            }
+        if (scheduleType === 'multiple' && businessConfig?.shifts) {
+            // Generar slots para cada turno activo
+            businessConfig.shifts.forEach(shift => {
+                if (!shift.enabled) return;
+
+                const shiftSlots = generateSlotsForRange(
+                    shift.startTime,
+                    shift.endTime,
+                    slotDuration
+                );
+
+                slots.push(...shiftSlots);
+            });
+        } else {
+            // Modo continuo (legacy)
+            const start = businessConfig?.workHoursStart || '09:00';
+            const end = businessConfig?.workHoursEnd || '20:00';
+
+            slots.push(...generateSlotsForRange(start, end, slotDuration));
         }
+
         return slots;
     }
 

@@ -267,6 +267,7 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
                     showDuration: true
                 }),
                 JSON.stringify({
+                    scheduleType: 'continuous',  // Por defecto horario continuo
                     workDays: [1, 2, 3, 4, 5, 6],
                     workHoursStart: '09:00',
                     workHoursEnd: '20:00',
