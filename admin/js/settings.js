@@ -1670,7 +1670,13 @@ const settings = {
             document.getElementById('schedule-type').value = scheduleType;
             this.toggleScheduleType();
 
-            // Set work days
+            // PRIMERO desmarcar TODOS los días
+            for (let i = 1; i <= 7; i++) {
+                const checkbox = document.getElementById(`workday-${i}`);
+                if (checkbox) checkbox.checked = false;
+            }
+
+            // LUEGO marcar solo los días laborales configurados
             workDays.forEach(day => {
                 const checkbox = document.getElementById(`workday-${day}`);
                 if (checkbox) checkbox.checked = true;
@@ -1684,6 +1690,15 @@ const settings = {
                 document.getElementById('num-shifts').value = response.shifts.length;
                 this.updateShiftsCount();
 
+                // PRIMERO limpiar TODOS los turnos
+                for (let i = 1; i <= 3; i++) {
+                    document.getElementById(`shift${i}-name`).value = '';
+                    document.getElementById(`shift${i}-start`).value = '09:00';
+                    document.getElementById(`shift${i}-end`).value = '20:00';
+                    document.getElementById(`shift${i}-enabled`).checked = true;
+                }
+
+                // LUEGO cargar los turnos configurados
                 response.shifts.forEach((shift, index) => {
                     const i = index + 1;
                     if (i <= 3) {
