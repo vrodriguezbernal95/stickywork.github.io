@@ -1787,11 +1787,18 @@ const settings = {
             if (response.success) {
                 alert('✅ Horarios guardados correctamente');
             } else {
-                alert(`❌ Error: ${response.error || 'No se pudieron guardar los horarios'}`);
+                const errorMsg = response.error || response.message || 'No se pudieron guardar los horarios';
+                console.error('Error del servidor:', errorMsg);
+                alert(`❌ Error: ${errorMsg}`);
             }
         } catch (error) {
             console.error('Error saving schedule:', error);
-            alert('❌ Error al guardar los horarios');
+            // Intentar obtener el mensaje de error del servidor
+            if (error.message) {
+                alert(`❌ Error: ${error.message}`);
+            } else {
+                alert('❌ Error al guardar los horarios. Revisa la consola para más detalles.');
+            }
         }
     },
 
