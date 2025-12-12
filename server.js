@@ -45,7 +45,8 @@ app.use(helmet({
       connectSrc: ["'self'"]
     }
   },
-  crossOriginEmbedderPolicy: false // Permite embedding del widget
+  crossOriginEmbedderPolicy: false, // Permite embedding del widget
+  crossOriginResourcePolicy: false  // Permite que el widget se cargue desde otros dominios
 }));
 
 // CORS - permitir peticiones desde cualquier origen
