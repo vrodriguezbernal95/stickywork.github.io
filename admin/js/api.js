@@ -110,7 +110,7 @@ const api = {
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
-            throw new Error(error.message || `HTTP error ${response.status}`);
+            throw new Error(error.error || error.message || `HTTP error ${response.status}`);
         }
 
         return response.json();
