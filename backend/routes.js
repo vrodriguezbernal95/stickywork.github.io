@@ -351,20 +351,20 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         }
 
         // Obtener configuración del negocio para validar horarios
-        const businessQuery = await db.query(
+        const businessSettingsQuery = await db.query(
             'SELECT booking_settings FROM businesses WHERE id = ?',
             [businessId]
         );
 
-        if (businessQuery.length === 0) {
+        if (businessSettingsQuery.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Negocio no encontrado'
             });
         }
 
-        const bookingSettings = businessQuery[0].booking_settings
-            ? JSON.parse(businessQuery[0].booking_settings)
+        const bookingSettings = businessSettingsQuery[0].booking_settings
+            ? JSON.parse(businessSettingsQuery[0].booking_settings)
             : {};
 
         // Validar día laboral
