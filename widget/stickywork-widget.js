@@ -21,6 +21,8 @@
         buttonText: 'Reserva tu Cita',
         showPrices: true,
         showDuration: true,
+        position: 'bottom-right', // Para modo floating
+        buttonColor: '#3b82f6', // Para modo floating
         // Datos que se cargan del backend
         services: [],
         professionals: [],
@@ -332,6 +334,59 @@
                 .stickywork-row { grid-template-columns: 1fr; }
                 .stickywork-widget { padding: 1.5rem; }
                 .stickywork-modal { width: 95%; padding: 1.5rem; }
+            }
+            .stickywork-floating-btn {
+                position: fixed;
+                z-index: 9997;
+                padding: 1rem 1.5rem;
+                background: ${config.buttonColor || config.primaryColor};
+                color: white;
+                border: none;
+                border-radius: 50px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .stickywork-floating-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            }
+            .stickywork-floating-btn.bottom-right {
+                bottom: 2rem;
+                right: 2rem;
+            }
+            .stickywork-floating-btn.bottom-left {
+                bottom: 2rem;
+                left: 2rem;
+            }
+            .stickywork-floating-btn.top-right {
+                top: 2rem;
+                right: 2rem;
+            }
+            .stickywork-floating-btn.top-left {
+                top: 2rem;
+                left: 2rem;
+            }
+            @media (max-width: 600px) {
+                .stickywork-floating-btn {
+                    padding: 0.8rem 1.2rem;
+                    font-size: 0.9rem;
+                }
+                .stickywork-floating-btn.bottom-right,
+                .stickywork-floating-btn.bottom-left {
+                    bottom: 1rem;
+                }
+                .stickywork-floating-btn.bottom-right {
+                    right: 1rem;
+                }
+                .stickywork-floating-btn.bottom-left {
+                    left: 1rem;
+                }
             }
         `;
         document.head.appendChild(style);
@@ -733,6 +788,20 @@
         if (modal) modal.remove();
     }
 
+    // Renderizar botón flotante
+    function renderFloating() {
+        const position = config.position || 'bottom-right';
+        const buttonText = config.buttonText || 'Reservar';
+
+        const floatingBtn = document.createElement('button');
+        floatingBtn.className = `stickywork-floating-btn ${position}`;
+        floatingBtn.id = 'stickywork-floating-btn';
+        floatingBtn.innerHTML = `📅 ${buttonText}`;
+        floatingBtn.onclick = openModal;
+
+        document.body.appendChild(floatingBtn);
+    }
+
     function reset() {
         peopleCount = 2;
         if (config.mode === 'embedded') {
@@ -763,6 +832,8 @@
             renderEmbedded();
         } else if (config.mode === 'modal') {
             renderModal();
+        } else if (config.mode === 'floating') {
+            renderFloating();
         }
     };
 
