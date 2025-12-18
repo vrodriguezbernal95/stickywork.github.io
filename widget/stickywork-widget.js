@@ -906,23 +906,43 @@
     // Funcionalidad del custom select
     function initCustomSelect() {
         const customSelect = document.querySelector('.stickywork-custom-select');
-        if (!customSelect) return;
+        console.log('🔍 [Custom Select] Buscando custom select:', customSelect);
+
+        if (!customSelect) {
+            console.log('⚠️ [Custom Select] No se encontró el custom select');
+            return;
+        }
 
         const trigger = customSelect.querySelector('.stickywork-custom-select-trigger');
         const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
         const hiddenInput = customSelect.querySelector('input[type="hidden"]');
         const options = customSelect.querySelectorAll('.stickywork-custom-select-option');
 
+        console.log('✅ [Custom Select] Elementos encontrados:', {
+            trigger,
+            valueDisplay,
+            hiddenInput,
+            optionsCount: options.length
+        });
+
+        if (!trigger) {
+            console.error('❌ [Custom Select] No se encontró el trigger');
+            return;
+        }
+
         // Toggle dropdown
         trigger.addEventListener('click', (e) => {
+            console.log('🖱️ [Custom Select] Click en trigger');
             e.stopPropagation();
             customSelect.classList.toggle('active');
+            console.log('📋 [Custom Select] Active:', customSelect.classList.contains('active'));
         });
 
         // Select option
         options.forEach(option => {
             option.addEventListener('click', () => {
                 const value = option.getAttribute('data-value');
+                console.log('⏰ [Custom Select] Opción seleccionada:', value);
                 hiddenInput.value = value;
                 valueDisplay.textContent = value;
 
@@ -942,6 +962,8 @@
                 customSelect.classList.remove('active');
             }
         });
+
+        console.log('✅ [Custom Select] Inicializado correctamente');
     }
 
     // Renderizar modal
