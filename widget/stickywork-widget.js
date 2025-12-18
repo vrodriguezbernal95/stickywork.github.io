@@ -912,24 +912,28 @@
             // Click en trigger
             if (e.target.closest('.stickywork-custom-select-trigger')) {
                 console.log('🖱️ [Custom Select] Click en trigger detectado');
-                console.log('   Target:', e.target);
                 e.stopPropagation();
                 const customSelect = e.target.closest('.stickywork-custom-select');
-                console.log('   Custom Select encontrado:', customSelect);
-                console.log('   Classes antes:', customSelect ? customSelect.className : 'N/A');
+                const dropdown = customSelect.querySelector('.stickywork-custom-select-dropdown');
 
-                if (customSelect) {
+                if (customSelect && dropdown) {
                     const wasActive = customSelect.classList.contains('active');
-                    console.log('   Was active:', wasActive);
 
+                    // Toggle clase
                     customSelect.classList.toggle('active');
 
-                    const isActive = customSelect.classList.contains('active');
-                    console.log('   Is active después del toggle:', isActive);
-                    console.log('   Classes después:', customSelect.className);
-                    console.log('📋 [Custom Select] Toggle:', wasActive, '→', isActive);
+                    // Forzar display con JavaScript
+                    if (customSelect.classList.contains('active')) {
+                        dropdown.style.display = 'block';
+                        console.log('✅ [Custom Select] Dropdown ABIERTO (display: block)');
+                    } else {
+                        dropdown.style.display = 'none';
+                        console.log('❌ [Custom Select] Dropdown CERRADO (display: none)');
+                    }
+
+                    console.log('📋 [Custom Select] Toggle:', wasActive, '→', customSelect.classList.contains('active'));
                 } else {
-                    console.error('❌ [Custom Select] No se encontró el contenedor');
+                    console.error('❌ [Custom Select] No se encontró el contenedor o dropdown');
                 }
                 return;
             }
