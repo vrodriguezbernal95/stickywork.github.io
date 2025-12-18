@@ -432,8 +432,8 @@
     }
 
     // Generar horarios (soporta horarios continuos y partidos)
+    // Devuelve: { grouped: boolean, shifts: [{name, slots}] } o array plano de slots (legacy)
     function generateTimeSlots() {
-        const slots = [];
         const scheduleType = businessConfig?.scheduleType || 'continuous';
         const slotDuration = businessConfig?.slotDuration || 30;
 
@@ -442,7 +442,13 @@
 
         if (scheduleType === 'multiple' && businessConfig?.shifts) {
             console.log('✅ [Widget] Usando horarios partidos con', businessConfig.shifts.length, 'turnos');
-            // Generar slots para cada turno activo
+
+            // Generar slots agrupados por turno
+            const groupedSlots = {
+                grouped: true,
+                shifts: []
+            };
+
             businessConfig.shifts.forEach(shift => {
                 if (!shift.enabled) {
                     console.log('⏭️ [Widget] Turno deshabilitado:', shift.name);
@@ -457,20 +463,27 @@
                 );
 
                 console.log(`   ✓ Slots generados: ${shiftSlots.length}`);
-                slots.push(...shiftSlots);
+
+                groupedSlots.shifts.push({
+                    name: shift.name,
+                    slots: shiftSlots
+                });
             });
+
+            console.log(`🎯 [Widget] Total de turnos: ${groupedSlots.shifts.length}`);
+            return groupedSlots;
         } else {
             console.log('📋 [Widget] Usando horario continuo');
-            // Modo continuo (legacy)
+            // Modo continuo (legacy) - devolver array plano
             const start = businessConfig?.workHoursStart || '09:00';
             const end = businessConfig?.workHoursEnd || '20:00';
 
             console.log(`   Rango: ${start}-${end}`);
-            slots.push(...generateSlotsForRange(start, end, slotDuration));
-        }
+            const slots = generateSlotsForRange(start, end, slotDuration);
+            console.log(`🎯 [Widget] Total de slots generados: ${slots.length}`);
 
-        console.log(`🎯 [Widget] Total de slots generados: ${slots.length}`);
-        return slots;
+            return { grouped: false, slots };
+        }
     }
 
     // Obtener titulo segun modo
@@ -623,7 +636,14 @@
                             <label class="stickywork-label">${t.time}</label>
                             <select class="stickywork-select" name="time" required>
                                 <option value="">${t.selectTime}</option>
-                                ${timeSlots.map(time => `<option value="${time}">${time}</option>`).join('')}
+                                ${timeSlots.grouped
+                                    ? timeSlots.shifts.map(shift => `
+                                        <optgroup label="📅 ${shift.name.toUpperCase()}">
+                                            ${shift.slots.map(time => `<option value="${time}">${time}</option>`).join('')}
+                                        </optgroup>
+                                    `).join('')
+                                    : timeSlots.slots.map(time => `<option value="${time}">${time}</option>`).join('')
+                                }
                             </select>
                         </div>
                     </div>
