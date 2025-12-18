@@ -912,12 +912,24 @@
             // Click en trigger
             if (e.target.closest('.stickywork-custom-select-trigger')) {
                 console.log('🖱️ [Custom Select] Click en trigger detectado');
+                console.log('   Target:', e.target);
                 e.stopPropagation();
                 const customSelect = e.target.closest('.stickywork-custom-select');
+                console.log('   Custom Select encontrado:', customSelect);
+                console.log('   Classes antes:', customSelect ? customSelect.className : 'N/A');
+
                 if (customSelect) {
                     const wasActive = customSelect.classList.contains('active');
+                    console.log('   Was active:', wasActive);
+
                     customSelect.classList.toggle('active');
-                    console.log('📋 [Custom Select] Toggle active:', !wasActive, '→', customSelect.classList.contains('active'));
+
+                    const isActive = customSelect.classList.contains('active');
+                    console.log('   Is active después del toggle:', isActive);
+                    console.log('   Classes después:', customSelect.className);
+                    console.log('📋 [Custom Select] Toggle:', wasActive, '→', isActive);
+                } else {
+                    console.error('❌ [Custom Select] No se encontró el contenedor');
                 }
                 return;
             }
