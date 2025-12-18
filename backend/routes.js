@@ -364,7 +364,9 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         }
 
         const bookingSettings = businessSettingsQuery[0].booking_settings
-            ? JSON.parse(businessSettingsQuery[0].booking_settings)
+            ? (typeof businessSettingsQuery[0].booking_settings === 'string'
+                ? JSON.parse(businessSettingsQuery[0].booking_settings)
+                : businessSettingsQuery[0].booking_settings)
             : {};
 
         // Validar día laboral
@@ -935,8 +937,18 @@ router.get('/api/widget/:businessId', async (req, res) => {
         let widgetSettings = {};
         let bookingSettings = {};
         try {
-            widgetSettings = business.widget_settings ? JSON.parse(business.widget_settings) : {};
-            bookingSettings = business.booking_settings ? JSON.parse(business.booking_settings) : {};
+            // MySQL puede devolver JSON ya parseado o como string, verificar tipo
+            widgetSettings = business.widget_settings
+                ? (typeof business.widget_settings === 'string'
+                    ? JSON.parse(business.widget_settings)
+                    : business.widget_settings)
+                : {};
+
+            bookingSettings = business.booking_settings
+                ? (typeof business.booking_settings === 'string'
+                    ? JSON.parse(business.booking_settings)
+                    : business.booking_settings)
+                : {};
         } catch (e) {
             console.log('Error parseando settings:', e);
         }
