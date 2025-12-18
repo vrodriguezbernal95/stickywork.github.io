@@ -167,6 +167,22 @@
                 color: ${colors.textPrimary};
                 transition: all 0.3s ease;
             }
+            .stickywork-select-scrollable {
+                max-height: 300px;
+                overflow-y: auto;
+                padding: 0.5rem;
+            }
+            .stickywork-select-scrollable option {
+                padding: 0.5rem;
+                margin: 0.2rem 0;
+            }
+            .stickywork-select-scrollable optgroup {
+                font-weight: bold;
+                font-size: 0.9rem;
+                color: ${config.primaryColor};
+                margin-top: 0.5rem;
+                padding: 0.3rem 0;
+            }
             .stickywork-textarea {
                 resize: vertical;
                 min-height: 80px;
@@ -634,7 +650,7 @@
                         </div>
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.time}</label>
-                            <select class="stickywork-select" name="time" required>
+                            <select class="stickywork-select ${timeSlots.grouped ? 'stickywork-select-scrollable' : ''}" name="time" required ${timeSlots.grouped ? 'size="10"' : ''}>
                                 <option value="">${t.selectTime}</option>
                                 ${timeSlots.grouped
                                     ? timeSlots.shifts.map(shift => `
