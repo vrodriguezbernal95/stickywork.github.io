@@ -903,67 +903,60 @@
         initCustomSelect();
     }
 
-    // Funcionalidad del custom select
+    // Funcionalidad del custom select usando event delegation
     function initCustomSelect() {
-        const customSelect = document.querySelector('.stickywork-custom-select');
-        console.log('🔍 [Custom Select] Buscando custom select:', customSelect);
+        console.log('🔍 [Custom Select] Inicializando con event delegation');
 
-        if (!customSelect) {
-            console.log('⚠️ [Custom Select] No se encontró el custom select');
-            return;
-        }
+        // Usar event delegation desde el document
+        document.addEventListener('click', (e) => {
+            // Click en trigger
+            if (e.target.closest('.stickywork-custom-select-trigger')) {
+                console.log('🖱️ [Custom Select] Click en trigger detectado');
+                e.stopPropagation();
+                const customSelect = e.target.closest('.stickywork-custom-select');
+                if (customSelect) {
+                    const wasActive = customSelect.classList.contains('active');
+                    customSelect.classList.toggle('active');
+                    console.log('📋 [Custom Select] Toggle active:', !wasActive, '→', customSelect.classList.contains('active'));
+                }
+                return;
+            }
 
-        const trigger = customSelect.querySelector('.stickywork-custom-select-trigger');
-        const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
-        const hiddenInput = customSelect.querySelector('input[type="hidden"]');
-        const options = customSelect.querySelectorAll('.stickywork-custom-select-option');
-
-        console.log('✅ [Custom Select] Elementos encontrados:', {
-            trigger,
-            valueDisplay,
-            hiddenInput,
-            optionsCount: options.length
-        });
-
-        if (!trigger) {
-            console.error('❌ [Custom Select] No se encontró el trigger');
-            return;
-        }
-
-        // Toggle dropdown
-        trigger.addEventListener('click', (e) => {
-            console.log('🖱️ [Custom Select] Click en trigger');
-            e.stopPropagation();
-            customSelect.classList.toggle('active');
-            console.log('📋 [Custom Select] Active:', customSelect.classList.contains('active'));
-        });
-
-        // Select option
-        options.forEach(option => {
-            option.addEventListener('click', () => {
+            // Click en opción
+            if (e.target.closest('.stickywork-custom-select-option')) {
+                console.log('⏰ [Custom Select] Click en opción detectado');
+                const option = e.target.closest('.stickywork-custom-select-option');
+                const customSelect = option.closest('.stickywork-custom-select');
+                const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
+                const hiddenInput = customSelect.querySelector('input[type="hidden"]');
                 const value = option.getAttribute('data-value');
+
                 console.log('⏰ [Custom Select] Opción seleccionada:', value);
+
+                // Update value
                 hiddenInput.value = value;
                 valueDisplay.textContent = value;
 
-                // Remove previous selection
-                options.forEach(opt => opt.classList.remove('selected'));
-                // Add selection to current option
+                // Update selected class
+                customSelect.querySelectorAll('.stickywork-custom-select-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
                 option.classList.add('selected');
 
                 // Close dropdown
                 customSelect.classList.remove('active');
+                return;
+            }
+
+            // Click fuera - cerrar todos los dropdowns
+            document.querySelectorAll('.stickywork-custom-select.active').forEach(select => {
+                if (!select.contains(e.target)) {
+                    select.classList.remove('active');
+                }
             });
         });
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!customSelect.contains(e.target)) {
-                customSelect.classList.remove('active');
-            }
-        });
-
-        console.log('✅ [Custom Select] Inicializado correctamente');
+        console.log('✅ [Custom Select] Event delegation configurado');
     }
 
     // Renderizar modal
