@@ -397,9 +397,14 @@
         if (!config.apiUrl || !config.businessId) return null;
 
         try {
+            console.log('📡 [Widget] Cargando config desde:', `${config.apiUrl}/api/widget/${config.businessId}`);
             const response = await fetch(`${config.apiUrl}/api/widget/${config.businessId}`);
             if (response.ok) {
-                return await response.json();
+                const data = await response.json();
+                console.log('✅ [Widget] Config recibida:', data);
+                console.log('   - scheduleType:', data.scheduleType);
+                console.log('   - shifts:', data.shifts);
+                return data;
             }
         } catch (error) {
             console.log('StickyWork: Usando configuracion local');
@@ -432,27 +437,39 @@
         const scheduleType = businessConfig?.scheduleType || 'continuous';
         const slotDuration = businessConfig?.slotDuration || 30;
 
+        console.log('🕐 [Widget] Generando slots - scheduleType:', scheduleType);
+        console.log('🕐 [Widget] businessConfig.shifts:', businessConfig?.shifts);
+
         if (scheduleType === 'multiple' && businessConfig?.shifts) {
+            console.log('✅ [Widget] Usando horarios partidos con', businessConfig.shifts.length, 'turnos');
             // Generar slots para cada turno activo
             businessConfig.shifts.forEach(shift => {
-                if (!shift.enabled) return;
+                if (!shift.enabled) {
+                    console.log('⏭️ [Widget] Turno deshabilitado:', shift.name);
+                    return;
+                }
 
+                console.log(`📋 [Widget] Generando slots para turno "${shift.name}": ${shift.startTime}-${shift.endTime}`);
                 const shiftSlots = generateSlotsForRange(
                     shift.startTime,
                     shift.endTime,
                     slotDuration
                 );
 
+                console.log(`   ✓ Slots generados: ${shiftSlots.length}`);
                 slots.push(...shiftSlots);
             });
         } else {
+            console.log('📋 [Widget] Usando horario continuo');
             // Modo continuo (legacy)
             const start = businessConfig?.workHoursStart || '09:00';
             const end = businessConfig?.workHoursEnd || '20:00';
 
+            console.log(`   Rango: ${start}-${end}`);
             slots.push(...generateSlotsForRange(start, end, slotDuration));
         }
 
+        console.log(`🎯 [Widget] Total de slots generados: ${slots.length}`);
         return slots;
     }
 
