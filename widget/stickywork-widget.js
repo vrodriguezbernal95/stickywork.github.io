@@ -167,21 +167,74 @@
                 color: ${colors.textPrimary};
                 transition: all 0.3s ease;
             }
-            .stickywork-select-scrollable {
+            /* Custom Select Styles */
+            .stickywork-custom-select {
+                position: relative;
+                width: 100%;
+            }
+            .stickywork-custom-select-trigger {
+                width: 100%;
+                padding: 0.75rem;
+                border: 2px solid ${colors.borderColor};
+                border-radius: 8px;
+                background: ${colors.bgPrimary};
+                color: ${colors.textPrimary};
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.3s ease;
+            }
+            .stickywork-custom-select-trigger:hover {
+                border-color: ${config.primaryColor};
+            }
+            .stickywork-custom-select.active .stickywork-custom-select-trigger {
+                border-color: ${config.primaryColor};
+                box-shadow: 0 0 0 3px ${config.primaryColor}20;
+            }
+            .stickywork-custom-select-arrow {
+                transition: transform 0.3s ease;
+                font-size: 0.8rem;
+            }
+            .stickywork-custom-select.active .stickywork-custom-select-arrow {
+                transform: rotate(180deg);
+            }
+            .stickywork-custom-select-dropdown {
+                position: absolute;
+                top: calc(100% + 4px);
+                left: 0;
+                right: 0;
                 max-height: 300px;
                 overflow-y: auto;
-                padding: 0.5rem;
+                background: ${colors.bgPrimary};
+                border: 2px solid ${config.primaryColor};
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: none;
+                z-index: 1000;
             }
-            .stickywork-select-scrollable option {
-                padding: 0.5rem;
-                margin: 0.2rem 0;
+            .stickywork-custom-select.active .stickywork-custom-select-dropdown {
+                display: block;
             }
-            .stickywork-select-scrollable optgroup {
+            .stickywork-custom-select-group-label {
+                padding: 0.6rem 0.75rem;
                 font-weight: bold;
-                font-size: 0.9rem;
+                font-size: 0.85rem;
                 color: ${config.primaryColor};
-                margin-top: 0.5rem;
-                padding: 0.3rem 0;
+                background: ${config.primaryColor}10;
+                border-bottom: 1px solid ${config.primaryColor}30;
+            }
+            .stickywork-custom-select-option {
+                padding: 0.6rem 0.75rem;
+                cursor: pointer;
+                transition: background 0.2s ease;
+            }
+            .stickywork-custom-select-option:hover {
+                background: ${config.primaryColor}20;
+            }
+            .stickywork-custom-select-option.selected {
+                background: ${config.primaryColor};
+                color: white;
             }
             .stickywork-textarea {
                 resize: vertical;
@@ -650,17 +703,30 @@
                         </div>
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.time}</label>
-                            <select class="stickywork-select" name="time" required>
-                                <option value="">${t.selectTime}</option>
-                                ${timeSlots.grouped
-                                    ? timeSlots.shifts.map(shift => `
-                                        <optgroup label="📅 ${shift.name.toUpperCase()}">
-                                            ${shift.slots.map(time => `<option value="${time}">${time}</option>`).join('')}
-                                        </optgroup>
-                                    `).join('')
-                                    : timeSlots.slots.map(time => `<option value="${time}">${time}</option>`).join('')
-                                }
-                            </select>
+                            ${timeSlots.grouped ? `
+                                <div class="stickywork-custom-select" data-required="true">
+                                    <div class="stickywork-custom-select-trigger">
+                                        <span class="stickywork-custom-select-value">${t.selectTime}</span>
+                                        <span class="stickywork-custom-select-arrow">▼</span>
+                                    </div>
+                                    <div class="stickywork-custom-select-dropdown">
+                                        ${timeSlots.shifts.map(shift => `
+                                            <div class="stickywork-custom-select-group">
+                                                <div class="stickywork-custom-select-group-label">📅 ${shift.name.toUpperCase()}</div>
+                                                ${shift.slots.map(time => `
+                                                    <div class="stickywork-custom-select-option" data-value="${time}">${time}</div>
+                                                `).join('')}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <input type="hidden" name="time" required>
+                                </div>
+                            ` : `
+                                <select class="stickywork-select" name="time" required>
+                                    <option value="">${t.selectTime}</option>
+                                    ${timeSlots.slots.map(time => `<option value="${time}">${time}</option>`).join('')}
+                                </select>
+                            `}
                         </div>
                     </div>
                     ${showNotes ? `
@@ -832,6 +898,50 @@
         widgetContainer.innerHTML = createFormHTML();
         const form = document.getElementById('stickywork-form');
         if (form) form.addEventListener('submit', handleSubmit);
+
+        // Inicializar custom select
+        initCustomSelect();
+    }
+
+    // Funcionalidad del custom select
+    function initCustomSelect() {
+        const customSelect = document.querySelector('.stickywork-custom-select');
+        if (!customSelect) return;
+
+        const trigger = customSelect.querySelector('.stickywork-custom-select-trigger');
+        const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
+        const hiddenInput = customSelect.querySelector('input[type="hidden"]');
+        const options = customSelect.querySelectorAll('.stickywork-custom-select-option');
+
+        // Toggle dropdown
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            customSelect.classList.toggle('active');
+        });
+
+        // Select option
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                const value = option.getAttribute('data-value');
+                hiddenInput.value = value;
+                valueDisplay.textContent = value;
+
+                // Remove previous selection
+                options.forEach(opt => opt.classList.remove('selected'));
+                // Add selection to current option
+                option.classList.add('selected');
+
+                // Close dropdown
+                customSelect.classList.remove('active');
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!customSelect.contains(e.target)) {
+                customSelect.classList.remove('active');
+            }
+        });
     }
 
     // Renderizar modal
@@ -864,6 +974,9 @@
         const form = modal.querySelector('#stickywork-form');
         if (form) form.addEventListener('submit', handleSubmit);
         widgetContainer = modal.querySelector('.stickywork-widget');
+
+        // Inicializar custom select en modal
+        initCustomSelect();
     }
 
     function closeModal() {
