@@ -214,7 +214,7 @@
                 z-index: 1000;
             }
             .stickywork-custom-select.active .stickywork-custom-select-dropdown {
-                display: block;
+                display: block !important;
             }
             .stickywork-custom-select-group-label {
                 padding: 0.6rem 0.75rem;
