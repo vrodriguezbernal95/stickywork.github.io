@@ -650,7 +650,7 @@
                         </div>
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.time}</label>
-                            <select class="stickywork-select ${timeSlots.grouped ? 'stickywork-select-scrollable' : ''}" name="time" required ${timeSlots.grouped ? 'size="10"' : ''}>
+                            <select class="stickywork-select" name="time" required>
                                 <option value="">${t.selectTime}</option>
                                 ${timeSlots.grouped
                                     ? timeSlots.shifts.map(shift => `
