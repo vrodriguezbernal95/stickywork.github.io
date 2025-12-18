@@ -1247,6 +1247,9 @@ router.put('/api/business/:businessId/settings', requireAuth, async (req, res) =
         const { businessId } = req.params;
         const { widgetSettings, bookingSettings } = req.body;
 
+        console.log('🔧 PUT /api/business/settings - businessId:', businessId);
+        console.log('📦 Body recibido:', JSON.stringify(req.body, null, 2));
+
         // Verificar acceso
         if (req.user.businessId != businessId) {
             return res.status(403).json({
@@ -1264,6 +1267,7 @@ router.put('/api/business/:businessId/settings', requireAuth, async (req, res) =
         }
 
         if (bookingSettings) {
+            console.log('✅ bookingSettings existe:', JSON.stringify(bookingSettings, null, 2));
             // Validar turnos si el tipo de horario es múltiple
             if (bookingSettings.scheduleType === 'multiple' && bookingSettings.shifts) {
                 try {
@@ -1302,14 +1306,19 @@ router.put('/api/business/:businessId/settings', requireAuth, async (req, res) =
 
             updates.push('booking_settings = ?');
             params.push(JSON.stringify(bookingSettings));
+            console.log('📝 JSON a guardar:', JSON.stringify(bookingSettings));
         }
 
         if (updates.length > 0) {
             params.push(businessId);
-            await db.query(
-                `UPDATE businesses SET ${updates.join(', ')} WHERE id = ?`,
-                params
-            );
+            const query = `UPDATE businesses SET ${updates.join(', ')} WHERE id = ?`;
+            console.log('🗄️ Ejecutando UPDATE:', query);
+            console.log('📊 Params:', params.map((p, i) => i === params.length - 1 ? p : `[${p.substring(0, 100)}...]`));
+
+            const result = await db.query(query, params);
+            console.log('✅ UPDATE ejecutado. Filas afectadas:', result.affectedRows);
+        } else {
+            console.log('⚠️ No hay updates para ejecutar');
         }
 
         res.json({
