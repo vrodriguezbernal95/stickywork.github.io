@@ -918,11 +918,50 @@
 
         // Usar event delegation desde el document
         document.addEventListener('click', (e) => {
-            // Click en trigger
-            if (e.target.closest('.stickywork-custom-select-trigger')) {
-                console.log('🖱️ [Custom Select] Click en trigger detectado');
+            // Click en opción - DEBE IR PRIMERO
+            const clickedOption = e.target.closest('.stickywork-custom-select-option');
+            if (clickedOption) {
+                e.preventDefault();
                 e.stopPropagation();
-                const customSelect = e.target.closest('.stickywork-custom-select');
+
+                console.log('⏰ [Custom Select] Click en opción detectado');
+
+                const customSelect = clickedOption.closest('.stickywork-custom-select');
+                const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
+                const hiddenInput = customSelect.querySelector('input[type="hidden"]');
+                const dropdown = customSelect.querySelector('.stickywork-custom-select-dropdown');
+                const value = clickedOption.getAttribute('data-value');
+
+                console.log('⏰ [Custom Select] Opción seleccionada:', value);
+
+                // Update value
+                if (hiddenInput) hiddenInput.value = value;
+                if (valueDisplay) valueDisplay.textContent = value;
+
+                // Update selected class
+                customSelect.querySelectorAll('.stickywork-custom-select-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                clickedOption.classList.add('selected');
+
+                // Close dropdown
+                customSelect.classList.remove('active');
+                if (dropdown) {
+                    dropdown.style.display = 'none';
+                    console.log('✅ [Custom Select] Dropdown CERRADO después de selección');
+                }
+                return;
+            }
+
+            // Click en trigger
+            const clickedTrigger = e.target.closest('.stickywork-custom-select-trigger');
+            if (clickedTrigger) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                console.log('🖱️ [Custom Select] Click en trigger detectado');
+
+                const customSelect = clickedTrigger.closest('.stickywork-custom-select');
                 const dropdown = customSelect.querySelector('.stickywork-custom-select-dropdown');
 
                 if (customSelect && dropdown) {
@@ -956,42 +995,18 @@
                 return;
             }
 
-            // Click en opción
-            if (e.target.closest('.stickywork-custom-select-option')) {
-                console.log('⏰ [Custom Select] Click en opción detectado');
-                const option = e.target.closest('.stickywork-custom-select-option');
-                const customSelect = option.closest('.stickywork-custom-select');
-                const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
-                const hiddenInput = customSelect.querySelector('input[type="hidden"]');
-                const dropdown = customSelect.querySelector('.stickywork-custom-select-dropdown');
-                const value = option.getAttribute('data-value');
-
-                console.log('⏰ [Custom Select] Opción seleccionada:', value);
-
-                // Update value
-                hiddenInput.value = value;
-                valueDisplay.textContent = value;
-
-                // Update selected class
-                customSelect.querySelectorAll('.stickywork-custom-select-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                option.classList.add('selected');
-
-                // Close dropdown
-                customSelect.classList.remove('active');
-                if (dropdown) dropdown.style.display = 'none';
-                return;
-            }
-
-            // Click fuera - cerrar todos los dropdowns
-            document.querySelectorAll('.stickywork-custom-select.active').forEach(select => {
-                if (!select.contains(e.target)) {
+            // Click fuera de cualquier custom select - cerrar todos los dropdowns
+            const clickedInsideCustomSelect = e.target.closest('.stickywork-custom-select');
+            if (!clickedInsideCustomSelect) {
+                document.querySelectorAll('.stickywork-custom-select.active').forEach(select => {
                     select.classList.remove('active');
                     const dropdown = select.querySelector('.stickywork-custom-select-dropdown');
-                    if (dropdown) dropdown.style.display = 'none';
-                }
-            });
+                    if (dropdown) {
+                        dropdown.style.display = 'none';
+                        console.log('❌ [Custom Select] Dropdown CERRADO por click fuera');
+                    }
+                });
+            }
         });
 
         customSelectInitialized = true;
