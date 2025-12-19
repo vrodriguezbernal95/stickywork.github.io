@@ -1040,6 +1040,11 @@
         document.body.appendChild(overlay);
         document.body.appendChild(modal);
 
+        // Prevenir que clicks dentro del modal cierren el overlay
+        modal.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
         const form = modal.querySelector('#stickywork-form');
         if (form) form.addEventListener('submit', handleSubmit);
         widgetContainer = modal.querySelector('.stickywork-widget');
