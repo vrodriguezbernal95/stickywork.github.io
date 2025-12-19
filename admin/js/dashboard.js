@@ -594,7 +594,7 @@ const dashboard = {
                 throw new Error(response.message || 'Error al cargar reservas canceladas');
             }
 
-            const cancelledBookings = response.bookings || [];
+            const cancelledBookings = response.data || [];
 
             // Create modal overlay
             const overlay = document.createElement('div');
