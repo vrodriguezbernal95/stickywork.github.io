@@ -778,7 +778,7 @@ const dashboard = {
                 overlay.style.animation = 'fadeOut 0.2s ease';
                 setTimeout(() => {
                     document.body.removeChild(overlay);
-                    this.loadStats(); // Refresh stats
+                    this.load(); // Refresh stats
                 }, 200);
             };
 
