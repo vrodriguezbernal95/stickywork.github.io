@@ -211,7 +211,7 @@
                 border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                 display: none;
-                z-index: 10000;
+                z-index: 1000;
             }
             .stickywork-custom-select.active .stickywork-custom-select-dropdown {
                 display: block !important;
@@ -1027,13 +1027,7 @@
         const overlay = document.createElement('div');
         overlay.className = 'stickywork-modal-overlay';
         overlay.id = 'stickywork-overlay';
-
-        // Cerrar solo si el click fue en el overlay, no en el modal
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                closeModal();
-            }
-        });
+        overlay.onclick = closeModal;
 
         const modal = document.createElement('div');
         modal.className = 'stickywork-modal';
