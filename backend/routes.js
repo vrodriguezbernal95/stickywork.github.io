@@ -611,7 +611,7 @@ router.get('/api/booking/:id', async (req, res) => {
 router.patch('/api/booking/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
+        const { status, cancellation_reason } = req.body;
 
         const validStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
         if (!validStatuses.includes(status)) {
@@ -621,10 +621,24 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
             });
         }
 
-        await db.query(
-            'UPDATE bookings SET status = ? WHERE id = ?',
-            [status, id]
-        );
+        // Si se está cancelando, guardar información de cancelación
+        if (status === 'cancelled') {
+            await db.query(
+                `UPDATE bookings
+                 SET status = ?,
+                     cancellation_date = NOW(),
+                     cancellation_reason = ?,
+                     viewed_by_admin = FALSE
+                 WHERE id = ?`,
+                [status, cancellation_reason || null, id]
+            );
+        } else {
+            // Para otros estados, solo actualizar el status
+            await db.query(
+                'UPDATE bookings SET status = ? WHERE id = ?',
+                [status, id]
+            );
+        }
 
         const booking = await db.query('SELECT * FROM bookings WHERE id = ?', [id]);
 
@@ -638,6 +652,70 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al actualizar reserva',
+            error: error.message
+        });
+    }
+});
+
+// Obtener reservas canceladas futuras (requiere autenticación)
+router.get('/api/bookings/:businessId/cancelled-future', requireAuth, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        const cancelledBookings = await db.query(
+            `SELECT b.*, s.name as service_name
+             FROM bookings b
+             LEFT JOIN services s ON b.service_id = s.id
+             WHERE b.business_id = ?
+             AND b.status = 'cancelled'
+             AND b.booking_date >= CURDATE()
+             ORDER BY b.viewed_by_admin ASC, b.cancellation_date DESC`,
+            [businessId]
+        );
+
+        res.json({
+            success: true,
+            data: cancelledBookings
+        });
+    } catch (error) {
+        console.error('Error al obtener canceladas futuras:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener canceladas futuras',
+            error: error.message
+        });
+    }
+});
+
+// Marcar reservas canceladas como vistas (requiere autenticación)
+router.patch('/api/bookings/mark-viewed', requireAuth, async (req, res) => {
+    try {
+        const { bookingIds } = req.body;
+
+        if (!Array.isArray(bookingIds) || bookingIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Debe proporcionar un array de IDs de reservas'
+            });
+        }
+
+        const placeholders = bookingIds.map(() => '?').join(',');
+        await db.query(
+            `UPDATE bookings
+             SET viewed_by_admin = TRUE
+             WHERE id IN (${placeholders})`,
+            bookingIds
+        );
+
+        res.json({
+            success: true,
+            message: 'Reservas marcadas como vistas'
+        });
+    } catch (error) {
+        console.error('Error al marcar como vistas:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al marcar como vistas',
             error: error.message
         });
     }
@@ -706,12 +784,23 @@ router.get('/api/stats/:businessId', requireAuth, requireBusinessAccess, async (
         );
         const thisMonth = thisMonthResult?.[0]?.total || 0;
 
+        // Canceladas futuras (reservas canceladas que eran para hoy en adelante)
+        const cancelledFutureResult = await db.query(
+            `SELECT COUNT(*) as total FROM bookings
+             WHERE business_id = ?
+             AND status = 'cancelled'
+             AND booking_date >= CURDATE()`,
+            [businessId]
+        );
+        const cancelledFuture = cancelledFutureResult?.[0]?.total || 0;
+
         res.json({
             success: true,
             data: {
                 totalBookings,
                 bookingsByStatus,
-                thisMonth
+                thisMonth,
+                cancelledFuture
             }
         });
     } catch (error) {
