@@ -70,6 +70,7 @@ const bookings = {
                                 <th>Email</th>
                                 <th>Teléfono</th>
                                 <th>Servicio</th>
+                                <th>Personas</th>
                                 <th>Fecha</th>
                                 <th>Hora</th>
                                 <th>Estado</th>
@@ -172,6 +173,11 @@ const bookings = {
                 <td style="font-size: 0.9rem;">${booking.customer_email}</td>
                 <td style="font-size: 0.9rem;">${booking.customer_phone}</td>
                 <td>${booking.service_name || 'Sin servicio'}</td>
+                <td style="text-align: center; font-weight: 600;">
+                    <span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #3b82f6;">
+                        👥 ${booking.num_people || 2}
+                    </span>
+                </td>
                 <td>${utils.formatDateShort(booking.booking_date)}</td>
                 <td style="font-weight: 600;">${utils.formatTime(booking.booking_time)}</td>
                 <td>
