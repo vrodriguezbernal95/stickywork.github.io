@@ -1104,7 +1104,8 @@ router.get('/api/widget/:businessId', async (req, res) => {
                     workHoursEnd: bookingSettings.workHoursEnd || '20:00'
                 }),
             // Datos
-            services: bookingMode === 'services' ? services : [],
+            // Para restaurantes, retornar servicios (Comida, Cena) Y zones (áreas de mesas)
+            services: (bookingMode === 'services' || bookingMode === 'tables') ? services : [],
             professionals,
             zones,
             classes
