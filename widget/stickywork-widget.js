@@ -1027,7 +1027,13 @@
         const overlay = document.createElement('div');
         overlay.className = 'stickywork-modal-overlay';
         overlay.id = 'stickywork-overlay';
-        overlay.onclick = closeModal;
+
+        // Solo cerrar si el click es en el overlay mismo, no en el modal
+        overlay.onclick = (e) => {
+            if (e.target === overlay) {
+                closeModal();
+            }
+        };
 
         const modal = document.createElement('div');
         modal.className = 'stickywork-modal';
@@ -1039,11 +1045,6 @@
 
         document.body.appendChild(overlay);
         document.body.appendChild(modal);
-
-        // Prevenir que clicks dentro del modal cierren el overlay
-        modal.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
 
         const form = modal.querySelector('#stickywork-form');
         if (form) form.addEventListener('submit', handleSubmit);
