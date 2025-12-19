@@ -254,13 +254,100 @@ Ctrl + C
 - Ejemplo de integración: `ejemplo-integracion.html`
 - Demo en vivo: http://localhost:3000/demo
 
+## Configurar Horarios Partidos (Múltiples Turnos)
+
+### ¿Qué son los horarios partidos?
+
+Permite configurar 1, 2 o 3 turnos independientes para tu negocio.
+
+**Ejemplos de uso:**
+- **Restaurante**: 3 turnos (Desayunos 08:00-11:00, Comidas 12:30-16:00, Cenas 20:00-23:00)
+- **Taller**: 1 turno continuo (08:00-18:00)
+- **Peluquería**: 2 turnos (Mañana 09:00-13:30, Tarde 16:00-20:00)
+
+### Cómo configurarlo
+
+1. Ve al panel de administración de tu negocio
+2. Pestaña **"Horarios"**
+3. Selecciona **"Horarios Partidos (Turnos)"**
+4. Elige cuántos turnos necesitas (1, 2 o 3)
+5. Configura cada turno:
+   - Nombre del turno (ej: "Comidas", "Cenas")
+   - Hora de inicio (ej: 12:30)
+   - Hora de fin (ej: 16:00)
+   - Activar/desactivar turno
+6. Click **"Guardar Horarios"**
+
+### Estructura en Base de Datos
+
+Los horarios se guardan en formato JSON en el campo `booking_settings`:
+
+```json
+{
+  "scheduleType": "multiple",
+  "workDays": [1, 2, 3, 4, 5, 6],
+  "shifts": [
+    {
+      "id": 1,
+      "name": "Comidas",
+      "startTime": "12:30",
+      "endTime": "16:00",
+      "enabled": true
+    },
+    {
+      "id": 2,
+      "name": "Cenas",
+      "startTime": "20:00",
+      "endTime": "23:00",
+      "enabled": true
+    }
+  ],
+  "slotDuration": 30
+}
+```
+
+### Widget - Visualización
+
+El widget mostrará las horas agrupadas por turno:
+
+```
+┌─────────────────────┐
+│ Seleccione hora  ▼ │
+├─────────────────────┤
+│ 📅 COMIDAS         │
+│   12:30            │
+│   13:00            │
+│   13:30            │
+│   ...              │
+│ 📅 CENAS           │
+│   20:00            │
+│   20:30            │
+│   21:00            │
+│   ...              │
+└─────────────────────┘
+```
+
+### Migrar de Horario Continuo a Partidos
+
+Si tienes un negocio con horario continuo y quieres cambiarlo a partidos:
+
+1. Ve al dashboard de tu negocio
+2. Cambia el tipo a "Horarios Partidos"
+3. Configura tus turnos
+4. Los clientes verán automáticamente la nueva configuración
+
+El sistema mantiene compatibilidad con ambos modos.
+
+---
+
 ## Soporte
 
 Si tienes problemas:
 1. Lee el README.md completo
-2. Revisa la sección de Troubleshooting
-3. Verifica los logs del servidor
-4. Abre un issue en GitHub
+2. Revisa las notas de sesión (NOTAS_SESION_*.md)
+3. Revisa la sección de Troubleshooting
+4. Verifica los logs del servidor
+5. Abre un issue en GitHub
 
 ---
 
