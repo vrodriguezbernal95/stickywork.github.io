@@ -903,8 +903,17 @@
         initCustomSelect();
     }
 
+    // Variable para evitar agregar el listener múltiples veces
+    let customSelectInitialized = false;
+
     // Funcionalidad del custom select usando event delegation
     function initCustomSelect() {
+        // Solo inicializar una vez
+        if (customSelectInitialized) {
+            console.log('⚠️ [Custom Select] Ya inicializado, saltando...');
+            return;
+        }
+
         console.log('🔍 [Custom Select] Inicializando con event delegation');
 
         // Usar event delegation desde el document
@@ -917,6 +926,15 @@
                 const dropdown = customSelect.querySelector('.stickywork-custom-select-dropdown');
 
                 if (customSelect && dropdown) {
+                    // Cerrar otros dropdowns abiertos
+                    document.querySelectorAll('.stickywork-custom-select.active').forEach(select => {
+                        if (select !== customSelect) {
+                            select.classList.remove('active');
+                            const otherDropdown = select.querySelector('.stickywork-custom-select-dropdown');
+                            if (otherDropdown) otherDropdown.style.display = 'none';
+                        }
+                    });
+
                     const wasActive = customSelect.classList.contains('active');
 
                     // Toggle clase
@@ -945,6 +963,7 @@
                 const customSelect = option.closest('.stickywork-custom-select');
                 const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
                 const hiddenInput = customSelect.querySelector('input[type="hidden"]');
+                const dropdown = customSelect.querySelector('.stickywork-custom-select-dropdown');
                 const value = option.getAttribute('data-value');
 
                 console.log('⏰ [Custom Select] Opción seleccionada:', value);
@@ -961,6 +980,7 @@
 
                 // Close dropdown
                 customSelect.classList.remove('active');
+                if (dropdown) dropdown.style.display = 'none';
                 return;
             }
 
@@ -968,10 +988,13 @@
             document.querySelectorAll('.stickywork-custom-select.active').forEach(select => {
                 if (!select.contains(e.target)) {
                     select.classList.remove('active');
+                    const dropdown = select.querySelector('.stickywork-custom-select-dropdown');
+                    if (dropdown) dropdown.style.display = 'none';
                 }
             });
         });
 
+        customSelectInitialized = true;
         console.log('✅ [Custom Select] Event delegation configurado');
     }
 
