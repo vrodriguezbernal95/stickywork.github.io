@@ -211,7 +211,7 @@
                 border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                 display: none;
-                z-index: 1000;
+                z-index: 99999;
             }
             .stickywork-custom-select.active .stickywork-custom-select-dropdown {
                 display: block !important;
