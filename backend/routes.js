@@ -331,6 +331,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const customerPhone = req.body.customerPhone || req.body.customer_phone;
         const bookingDate = req.body.bookingDate || req.body.booking_date;
         const bookingTime = req.body.bookingTime || req.body.booking_time;
+        const numPeople = req.body.numPeople || req.body.num_people || 2; // Default 2 personas
         const notes = req.body.notes;
 
         // Validaciones básicas
@@ -430,10 +431,10 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const result = await db.query(
             `INSERT INTO bookings
             (business_id, service_id, customer_name, customer_email, customer_phone,
-             booking_date, booking_time, notes, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+             booking_date, booking_time, num_people, notes, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
             [businessId, serviceId || null, customerName, customerEmail, customerPhone,
-             bookingDate, bookingTime, notes || null]
+             bookingDate, bookingTime, numPeople, notes || null]
         );
 
         // Obtener la reserva creada con información del servicio
