@@ -87,6 +87,20 @@ const dashboard = {
                         label: 'Confirmadas',
                         iconBg: 'rgba(239, 68, 68, 0.1)'
                     })}
+
+                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                         onclick="dashboard.openCancelledModal()"
+                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1);">❌</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${stats.cancelledFuture || 0}</div>
+                            <div class="stat-label">Canceladas</div>
+                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
+                                (futuras)
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Today's Agenda Widget -->
@@ -568,6 +582,236 @@ const dashboard = {
             'completed': 'Completada'
         };
         return labels[status] || status;
+    },
+
+    // Open modal to show cancelled future bookings
+    async openCancelledModal() {
+        try {
+            const businessId = auth.getBusinessId();
+            const response = await api.fetch(`/api/bookings/${businessId}/cancelled-future`);
+
+            if (!response.success) {
+                throw new Error(response.message || 'Error al cargar reservas canceladas');
+            }
+
+            const cancelledBookings = response.bookings || [];
+
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.2s ease;
+            `;
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: var(--bg-secondary);
+                border-radius: 16px;
+                max-width: 800px;
+                width: 90%;
+                max-height: 80vh;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                animation: slideUp 0.3s ease;
+            `;
+
+            const header = document.createElement('div');
+            header.style.cssText = `
+                padding: 1.5rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            `;
+
+            const newCount = cancelledBookings.filter(b => !b.viewed_by_admin).length;
+
+            header.innerHTML = `
+                <div>
+                    <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-primary);">
+                        ❌ Reservas Canceladas (Futuras)
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        ${cancelledBookings.length} canceladas
+                        ${newCount > 0 ? `· <span style="color: #ef4444; font-weight: 600;">${newCount} nuevas</span>` : ''}
+                    </p>
+                </div>
+                <button id="close-cancelled-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); padding: 0.5rem;">
+                    ✕
+                </button>
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                padding: 1.5rem;
+                overflow-y: auto;
+                max-height: calc(80vh - 180px);
+            `;
+
+            if (cancelledBookings.length === 0) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                        <p style="font-size: 1.1rem; margin: 0;">No hay reservas canceladas futuras</p>
+                    </div>
+                `;
+            } else {
+                const bookingsList = cancelledBookings.map(booking => {
+                    const isNew = !booking.viewed_by_admin;
+                    const cancelDate = new Date(booking.cancellation_date);
+                    const bookingDate = new Date(booking.booking_date);
+
+                    return `
+                        <div style="
+                            background: ${isNew ? 'rgba(239, 68, 68, 0.1)' : 'rgba(255, 255, 255, 0.05)'};
+                            border-left: 4px solid ${isNew ? '#ef4444' : 'rgba(255, 255, 255, 0.2)'};
+                            padding: 1rem;
+                            border-radius: 8px;
+                            margin-bottom: 1rem;
+                        ">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <span style="font-size: 1.2rem;">${isNew ? '🔴' : '⚪'}</span>
+                                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">
+                                            ${booking.customer_name}
+                                        </h3>
+                                    </div>
+                                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                                        📧 ${booking.customer_email}
+                                        ${booking.customer_phone ? ` · 📱 ${booking.customer_phone}` : ''}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                <div>
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Servicio</div>
+                                    <div style="color: var(--text-primary); font-weight: 500;">${booking.service_name || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Reserva era para</div>
+                                    <div style="color: var(--text-primary); font-weight: 500;">
+                                        📅 ${bookingDate.toLocaleDateString('es-ES')} · 🕐 ${booking.booking_time}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(0, 0, 0, 0.2); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                                <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Cancelada el</div>
+                                <div style="color: #ef4444; font-weight: 600;">
+                                    ${cancelDate.toLocaleDateString('es-ES')} a las ${cancelDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                            </div>
+
+                            ${booking.cancellation_reason ? `
+                                <div style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; padding: 0.75rem; border-radius: 6px;">
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">💬 Motivo de cancelación</div>
+                                    <div style="color: var(--text-primary); font-style: italic;">
+                                        "${booking.cancellation_reason}"
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                content.innerHTML = bookingsList;
+            }
+
+            const footer = document.createElement('div');
+            footer.style.cssText = `
+                padding: 1rem 1.5rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            `;
+
+            const unviewedIds = cancelledBookings.filter(b => !b.viewed_by_admin).map(b => b.id);
+
+            footer.innerHTML = `
+                <button id="mark-all-viewed" ${unviewedIds.length === 0 ? 'disabled' : ''} style="
+                    padding: 0.75rem 1.5rem;
+                    background: ${unviewedIds.length > 0 ? '#3b82f6' : 'rgba(255, 255, 255, 0.1)'};
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: ${unviewedIds.length > 0 ? 'pointer' : 'not-allowed'};
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                ">
+                    ✓ Marcar todas como vistas
+                </button>
+                <button id="close-modal-btn" style="
+                    padding: 0.75rem 1.5rem;
+                    background: rgba(255, 255, 255, 0.1);
+                    color: var(--text-primary);
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                ">
+                    Cerrar
+                </button>
+            `;
+
+            modal.appendChild(header);
+            modal.appendChild(content);
+            modal.appendChild(footer);
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Event listeners
+            const closeModal = () => {
+                overlay.style.animation = 'fadeOut 0.2s ease';
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                    this.loadStats(); // Refresh stats
+                }, 200);
+            };
+
+            document.getElementById('close-cancelled-modal').addEventListener('click', closeModal);
+            document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeModal();
+            });
+
+            // Mark all as viewed
+            if (unviewedIds.length > 0) {
+                document.getElementById('mark-all-viewed').addEventListener('click', async () => {
+                    try {
+                        const response = await api.fetch('/api/bookings/mark-viewed', {
+                            method: 'PATCH',
+                            body: JSON.stringify({ bookingIds: unviewedIds })
+                        });
+
+                        if (response.success) {
+                            closeModal();
+                            this.showNotification('Reservas marcadas como vistas', 'success');
+                        }
+                    } catch (error) {
+                        console.error('Error marking as viewed:', error);
+                        this.showNotification('Error al marcar como vistas', 'error');
+                    }
+                });
+            }
+
+        } catch (error) {
+            console.error('Error loading cancelled bookings:', error);
+            this.showNotification('Error al cargar reservas canceladas', 'error');
+        }
     }
 };
 

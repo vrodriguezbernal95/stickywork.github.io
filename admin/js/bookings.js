@@ -291,40 +291,210 @@ const bookings = {
 
         const actionLabel = statusLabels[newStatus];
 
-        // Confirm action
-        const confirmed = await modal.confirm({
-            title: `¿${utils.capitalize(actionLabel)} reserva?`,
-            message: `¿Estás seguro de que quieres ${actionLabel} la reserva #${bookingId}?`,
-            confirmText: `Sí, ${actionLabel}`,
-            cancelText: 'Cancelar',
-            type: newStatus === 'cancelled' ? 'danger' : newStatus === 'completed' ? 'success' : 'primary'
+        // If cancelling, show custom modal with reason field
+        if (newStatus === 'cancelled') {
+            const result = await this.showCancelModal(bookingId);
+            if (!result) {
+                console.log('User cancelled cancellation dialog');
+                return;
+            }
+
+            try {
+                console.log('Sending PATCH request to /api/booking/' + bookingId);
+                const response = await api.patch(`/api/booking/${bookingId}`, {
+                    status: newStatus,
+                    cancellation_reason: result.reason
+                });
+                console.log('PATCH response:', response);
+
+                modal.toast({
+                    message: `Reserva cancelada exitosamente`,
+                    type: 'success'
+                });
+
+                this.load();
+            } catch (error) {
+                console.error('Error updating booking status:', error);
+                modal.toast({
+                    message: `Error al cancelar la reserva`,
+                    type: 'error'
+                });
+            }
+        } else {
+            // For other status changes, use standard confirmation
+            const confirmed = await modal.confirm({
+                title: `¿${utils.capitalize(actionLabel)} reserva?`,
+                message: `¿Estás seguro de que quieres ${actionLabel} la reserva #${bookingId}?`,
+                confirmText: `Sí, ${actionLabel}`,
+                cancelText: 'Cancelar',
+                type: newStatus === 'completed' ? 'success' : 'primary'
+            });
+
+            if (!confirmed) {
+                console.log('User cancelled confirmation dialog');
+                return;
+            }
+
+            try {
+                console.log('Sending PATCH request to /api/booking/' + bookingId);
+                const response = await api.patch(`/api/booking/${bookingId}`, { status: newStatus });
+                console.log('PATCH response:', response);
+
+                modal.toast({
+                    message: `Reserva ${actionLabel}da exitosamente`,
+                    type: 'success'
+                });
+
+                this.load();
+            } catch (error) {
+                console.error('Error updating booking status:', error);
+                modal.toast({
+                    message: `Error al ${actionLabel} la reserva`,
+                    type: 'error'
+                });
+            }
+        }
+    },
+
+    // Show cancel modal with reason field
+    showCancelModal(bookingId) {
+        return new Promise((resolve) => {
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.2s ease;
+            `;
+
+            // Create modal
+            const modalEl = document.createElement('div');
+            modalEl.style.cssText = `
+                background: var(--bg-secondary);
+                border-radius: 16px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                animation: slideUp 0.3s ease;
+            `;
+
+            modalEl.innerHTML = `
+                <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h2 style="margin: 0; font-size: 1.3rem; color: var(--text-primary);">
+                        ⚠️ Cancelar Reserva #${bookingId}
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        ¿Estás seguro de que quieres cancelar esta reserva?
+                    </p>
+                </div>
+
+                <div style="padding: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">
+                        Motivo de cancelación (opcional)
+                    </label>
+                    <textarea
+                        id="cancellation-reason"
+                        placeholder="Ej: Cliente llamó, pasa la reserva a la semana que viene"
+                        style="
+                            width: 100%;
+                            min-height: 100px;
+                            padding: 0.75rem;
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            border-radius: 8px;
+                            background: rgba(0, 0, 0, 0.2);
+                            color: var(--text-primary);
+                            font-family: inherit;
+                            font-size: 0.95rem;
+                            resize: vertical;
+                            box-sizing: border-box;
+                        "
+                    ></textarea>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-tertiary); font-size: 0.85rem;">
+                        Esta nota ayudará a otros empleados a entender por qué se canceló.
+                    </p>
+                </div>
+
+                <div style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button id="cancel-btn" style="
+                        padding: 0.75rem 1.5rem;
+                        background: rgba(255, 255, 255, 0.1);
+                        color: var(--text-primary);
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.2s ease;
+                    ">
+                        No, mantener
+                    </button>
+                    <button id="confirm-btn" style="
+                        padding: 0.75rem 1.5rem;
+                        background: #ef4444;
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        transition: all 0.2s ease;
+                    ">
+                        Sí, cancelar reserva
+                    </button>
+                </div>
+            `;
+
+            overlay.appendChild(modalEl);
+            document.body.appendChild(overlay);
+
+            const textarea = modalEl.querySelector('#cancellation-reason');
+            const cancelBtn = modalEl.querySelector('#cancel-btn');
+            const confirmBtn = modalEl.querySelector('#confirm-btn');
+
+            // Focus textarea
+            setTimeout(() => textarea.focus(), 100);
+
+            const cleanup = () => {
+                overlay.style.animation = 'fadeOut 0.2s ease';
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                }, 200);
+            };
+
+            cancelBtn.addEventListener('click', () => {
+                cleanup();
+                resolve(null);
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                const reason = textarea.value.trim();
+                cleanup();
+                resolve({ reason: reason || null });
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    cleanup();
+                    resolve(null);
+                }
+            });
+
+            // ESC key to close
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    cleanup();
+                    resolve(null);
+                    document.removeEventListener('keydown', escHandler);
+                }
+            };
+            document.addEventListener('keydown', escHandler);
         });
-
-        if (!confirmed) {
-            console.log('User cancelled confirmation dialog');
-            return;
-        }
-
-        try {
-            console.log('Sending PATCH request to /api/booking/' + bookingId);
-            const response = await api.patch(`/api/booking/${bookingId}`, { status: newStatus });
-            console.log('PATCH response:', response);
-
-            // Show success message
-            modal.toast({
-                message: `Reserva ${actionLabel}da exitosamente`,
-                type: 'success'
-            });
-
-            // Reload bookings
-            this.load();
-        } catch (error) {
-            console.error('Error updating booking status:', error);
-            modal.toast({
-                message: `Error al ${actionLabel} la reserva`,
-                type: 'error'
-            });
-        }
     },
 
     // Show notification
