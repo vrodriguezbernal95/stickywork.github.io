@@ -922,7 +922,7 @@
             const clickedOption = e.target.closest('.stickywork-custom-select-option');
             if (clickedOption) {
                 e.preventDefault();
-                e.stopPropagation();
+                e.stopImmediatePropagation();
 
                 console.log('⏰ [Custom Select] Click en opción detectado');
 
@@ -957,7 +957,7 @@
             const clickedTrigger = e.target.closest('.stickywork-custom-select-trigger');
             if (clickedTrigger) {
                 e.preventDefault();
-                e.stopPropagation();
+                e.stopImmediatePropagation();
 
                 console.log('🖱️ [Custom Select] Click en trigger detectado');
 
