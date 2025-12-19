@@ -629,9 +629,9 @@
             <div class="stickywork-field">
                 <label class="stickywork-label">${t.numPeople}</label>
                 <div class="stickywork-people-selector">
-                    <button type="button" class="stickywork-people-btn" onclick="StickyWork.decrementPeople()">-</button>
+                    <button type="button" class="stickywork-people-btn" id="stickywork-people-decrement">-</button>
                     <span class="stickywork-people-count" id="stickywork-people-count">2</span>
-                    <button type="button" class="stickywork-people-btn" onclick="StickyWork.incrementPeople()">+</button>
+                    <button type="button" class="stickywork-people-btn" id="stickywork-people-increment">+</button>
                     <span style="color: var(--text-secondary);">${t.people}</span>
                 </div>
                 <input type="hidden" name="numPeople" id="stickywork-num-people" value="2">
@@ -887,6 +887,32 @@
         if (inputEl) inputEl.value = peopleCount;
     }
 
+    // Inicializar botones de personas
+    function initPeopleButtons() {
+        const decrementBtn = document.getElementById('stickywork-people-decrement');
+        const incrementBtn = document.getElementById('stickywork-people-increment');
+
+        if (decrementBtn) {
+            decrementBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (peopleCount > 1) {
+                    peopleCount--;
+                    updatePeopleCount();
+                }
+            });
+        }
+
+        if (incrementBtn) {
+            incrementBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (peopleCount < 20) {
+                    peopleCount++;
+                    updatePeopleCount();
+                }
+            });
+        }
+    }
+
     // Renderizar embedded
     function renderEmbedded() {
         widgetContainer = document.getElementById('stickywork-widget');
@@ -901,6 +927,9 @@
 
         // Inicializar custom select
         initCustomSelect();
+
+        // Inicializar botones de personas
+        initPeopleButtons();
     }
 
     // Variable para evitar agregar el listener múltiples veces
@@ -1052,6 +1081,9 @@
 
         // Inicializar custom select en modal
         initCustomSelect();
+
+        // Inicializar botones de personas en modal
+        initPeopleButtons();
     }
 
     function closeModal() {
@@ -1083,6 +1115,7 @@
             widgetContainer.innerHTML = createFormHTML();
             const form = widgetContainer.querySelector('#stickywork-form');
             if (form) form.addEventListener('submit', handleSubmit);
+            initPeopleButtons();
         }
     }
 
