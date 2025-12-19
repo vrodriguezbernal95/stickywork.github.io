@@ -880,24 +880,28 @@
         }
     };
 
-    function updatePeopleCount() {
-        const countEl = document.getElementById('stickywork-people-count');
-        const inputEl = document.getElementById('stickywork-num-people');
+    function updatePeopleCount(container) {
+        // Si no se pasa contenedor, buscar en todo el documento
+        const context = container || document;
+        const countEl = context.querySelector('#stickywork-people-count');
+        const inputEl = context.querySelector('#stickywork-num-people');
         if (countEl) countEl.textContent = peopleCount;
         if (inputEl) inputEl.value = peopleCount;
     }
 
     // Inicializar botones de personas
-    function initPeopleButtons() {
-        const decrementBtn = document.getElementById('stickywork-people-decrement');
-        const incrementBtn = document.getElementById('stickywork-people-increment');
+    function initPeopleButtons(container) {
+        // Si no se pasa contenedor, buscar en todo el documento
+        const context = container || document;
+        const decrementBtn = context.querySelector('#stickywork-people-decrement');
+        const incrementBtn = context.querySelector('#stickywork-people-increment');
 
         if (decrementBtn) {
             decrementBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (peopleCount > 1) {
                     peopleCount--;
-                    updatePeopleCount();
+                    updatePeopleCount(container);
                 }
             });
         }
@@ -907,7 +911,7 @@
                 e.preventDefault();
                 if (peopleCount < 20) {
                     peopleCount++;
-                    updatePeopleCount();
+                    updatePeopleCount(container);
                 }
             });
         }
@@ -1082,8 +1086,8 @@
         // Inicializar custom select en modal
         initCustomSelect();
 
-        // Inicializar botones de personas en modal
-        initPeopleButtons();
+        // Inicializar botones de personas en modal (pasar modal como contexto)
+        initPeopleButtons(modal);
     }
 
     function closeModal() {
