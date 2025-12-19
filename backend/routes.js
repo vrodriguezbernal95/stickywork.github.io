@@ -332,6 +332,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const bookingDate = req.body.bookingDate || req.body.booking_date;
         const bookingTime = req.body.bookingTime || req.body.booking_time;
         const numPeople = req.body.numPeople || req.body.num_people || 2; // Default 2 personas
+        const zone = req.body.zone || null; // Zona (Terraza, Interior, etc.)
         const notes = req.body.notes;
 
         // Validaciones básicas
@@ -431,10 +432,10 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const result = await db.query(
             `INSERT INTO bookings
             (business_id, service_id, customer_name, customer_email, customer_phone,
-             booking_date, booking_time, num_people, notes, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+             booking_date, booking_time, num_people, zone, notes, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
             [businessId, serviceId || null, customerName, customerEmail, customerPhone,
-             bookingDate, bookingTime, numPeople, notes || null]
+             bookingDate, bookingTime, numPeople, zone, notes || null]
         );
 
         // Obtener la reserva creada con información del servicio
@@ -1066,12 +1067,10 @@ router.get('/api/widget/:businessId', async (req, res) => {
             [businessId]
         );
 
-        // Para restaurantes, los servicios actúan como zonas/mesas
-        const zones = bookingMode === 'tables' ? services.map(s => ({
-            id: s.id,
-            name: s.name,
-            capacity: s.capacity
-        })) : [];
+        // Zonas para restaurantes (Terraza, Interior, etc.) - desde booking_settings
+        const restaurantZones = bookingMode === 'tables' && bookingSettings.restaurantZones
+            ? bookingSettings.restaurantZones
+            : [];
 
         // Para gimnasios, los servicios actúan como clases
         const classes = bookingMode === 'classes' ? services.map(s => ({
@@ -1108,7 +1107,7 @@ router.get('/api/widget/:businessId', async (req, res) => {
             // Para restaurantes, retornar servicios (Comida, Cena) Y zones (áreas de mesas)
             services: (bookingMode === 'services' || bookingMode === 'tables') ? services : [],
             professionals,
-            zones,
+            restaurantZones, // Zonas configurables desde dashboard (Terraza, Interior, etc.)
             classes
         });
     } catch (error) {

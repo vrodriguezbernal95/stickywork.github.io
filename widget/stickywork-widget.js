@@ -618,14 +618,27 @@
 
     // Campos para restaurantes
     function createRestaurantFields(t) {
-        const zoneOptions = config.zones && config.zones.length > 0
-            ? config.zones.map(z => `<option value="${z.id || z.name}">${z.name}</option>`).join('')
+        // Selector de servicio (Comida, Cena, etc.)
+        const serviceOptions = config.services && config.services.length > 0
+            ? config.services.map(s => `<option value="${s.id}">${s.name}</option>`).join('')
+            : '';
+
+        // Selector de zona (Terraza, Interior, etc.) - desde booking_settings.zones
+        const zoneOptions = config.restaurantZones && config.restaurantZones.length > 0
+            ? config.restaurantZones.map(z => `<option value="${z.name}">${z.name}</option>`).join('')
             : `
-                <option value="interior">Interior</option>
-                <option value="terraza">Terraza</option>
+                <option value="Interior">Interior</option>
+                <option value="Terraza">Terraza</option>
             `;
 
         return `
+            <div class="stickywork-field">
+                <label class="stickywork-label">${t.service}</label>
+                <select class="stickywork-select" name="service" required>
+                    <option value="">${t.selectService}</option>
+                    ${serviceOptions}
+                </select>
+            </div>
             <div class="stickywork-field">
                 <label class="stickywork-label">${t.numPeople}</label>
                 <div class="stickywork-people-selector">
@@ -831,8 +844,9 @@
 
         // Campos segun modo
         if (config.bookingMode === 'tables') {
+            formData.service = form.service?.value || ''; // Servicio (Comida/Cena)
             formData.numPeople = parseInt(form.numPeople.value) || 2;
-            formData.zone = form.zone?.value || '';
+            formData.zone = form.zone?.value || ''; // Zona (Terraza/Interior)
         } else if (config.bookingMode === 'classes') {
             formData.class = form.class?.value || '';
         } else {
