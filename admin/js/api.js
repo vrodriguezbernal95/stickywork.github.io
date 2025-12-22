@@ -1,7 +1,7 @@
 // API Configuration and Utilities
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
-    : 'https://stickywork.com';  // URL del backend en Railway
+    : 'https://api.stickywork.com';  // Backend API en Railway
 
 // API Helper Functions
 const api = {
