@@ -71,6 +71,7 @@ const bookings = {
                                 <th>Teléfono</th>
                                 <th>Servicio</th>
                                 <th>Personas</th>
+                                <th>Zona</th>
                                 <th>Fecha</th>
                                 <th>Hora</th>
                                 <th>Estado</th>
@@ -177,6 +178,12 @@ const bookings = {
                     <span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #3b82f6;">
                         👥 ${booking.num_people || 2}
                     </span>
+                </td>
+                <td style="text-align: center;">
+                    ${booking.zone
+                        ? `<span style="background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #10b981; font-weight: 500;">${booking.zone}</span>`
+                        : '<span style="color: var(--text-secondary); font-size: 0.9rem;">-</span>'
+                    }
                 </td>
                 <td>${utils.formatDateShort(booking.booking_date)}</td>
                 <td style="font-weight: 600;">${utils.formatTime(booking.booking_time)}</td>

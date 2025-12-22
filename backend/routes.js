@@ -384,19 +384,42 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
 
         // Validar horario según tipo de configuración
         const scheduleType = bookingSettings.scheduleType || 'continuous';
+        let autoAssignedServiceId = serviceId; // Mantener el serviceId si viene del widget
 
         if (scheduleType === 'multiple' && bookingSettings.shifts) {
             // Validar que la hora esté dentro de algún turno activo
-            const isWithinShift = bookingSettings.shifts.some(shift => {
-                if (!shift.enabled) return false;
-                return isTimeInRange(bookingTime, shift.startTime, shift.endTime);
-            });
+            let matchedShift = null;
+            for (const shift of bookingSettings.shifts) {
+                if (shift.enabled && isTimeInRange(bookingTime, shift.startTime, shift.endTime)) {
+                    matchedShift = shift;
+                    break;
+                }
+            }
 
-            if (!isWithinShift) {
+            if (!matchedShift) {
                 return res.status(400).json({
                     success: false,
                     message: 'La hora seleccionada está fuera del horario de atención'
                 });
+            }
+
+            // Para restaurantes, auto-asignar servicio basado en el turno
+            if (bookingSettings.bookingMode === 'tables' && !autoAssignedServiceId) {
+                // Buscar servicio que coincida con el nombre del turno
+                const services = await db.query(
+                    'SELECT id, name FROM services WHERE business_id = ? AND is_active = TRUE',
+                    [businessId]
+                );
+
+                // Buscar servicio cuyo nombre coincida parcialmente con el turno (ej: "Comidas" → "Comida")
+                const matchingService = services.find(s =>
+                    s.name.toLowerCase().includes(matchedShift.name.toLowerCase().replace(/s$/, '')) ||
+                    matchedShift.name.toLowerCase().includes(s.name.toLowerCase())
+                );
+
+                if (matchingService) {
+                    autoAssignedServiceId = matchingService.id;
+                }
             }
         } else {
             // Modo continuo - validar rango único
@@ -434,7 +457,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             (business_id, service_id, customer_name, customer_email, customer_phone,
              booking_date, booking_time, num_people, zone, notes, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-            [businessId, serviceId || null, customerName, customerEmail, customerPhone,
+            [businessId, autoAssignedServiceId || null, customerName, customerEmail, customerPhone,
              bookingDate, bookingTime, numPeople, zone, notes || null]
         );
 

@@ -618,11 +618,6 @@
 
     // Campos para restaurantes
     function createRestaurantFields(t) {
-        // Selector de servicio (Comida, Cena, etc.)
-        const serviceOptions = config.services && config.services.length > 0
-            ? config.services.map(s => `<option value="${s.id}">${s.name}</option>`).join('')
-            : '';
-
         // Selector de zona (Terraza, Interior, etc.) - desde booking_settings.zones
         const zoneOptions = config.restaurantZones && config.restaurantZones.length > 0
             ? config.restaurantZones.map(z => `<option value="${z.name}">${z.name}</option>`).join('')
@@ -633,13 +628,6 @@
 
         return `
             <div class="stickywork-field">
-                <label class="stickywork-label">${t.service}</label>
-                <select class="stickywork-select" name="service" required>
-                    <option value="">${t.selectService}</option>
-                    ${serviceOptions}
-                </select>
-            </div>
-            <div class="stickywork-field">
                 <label class="stickywork-label">${t.numPeople}</label>
                 <div class="stickywork-people-selector">
                     <button type="button" class="stickywork-people-btn" id="stickywork-people-decrement">-</button>
@@ -647,7 +635,6 @@
                     <button type="button" class="stickywork-people-btn" id="stickywork-people-increment">+</button>
                     <span style="color: var(--text-secondary);">${t.people}</span>
                 </div>
-                <input type="hidden" name="numPeople" id="stickywork-num-people" value="2">
             </div>
             <div class="stickywork-field">
                 <label class="stickywork-label">${t.zone}</label>
@@ -844,9 +831,10 @@
 
         // Campos segun modo
         if (config.bookingMode === 'tables') {
-            formData.service = form.service?.value || ''; // Servicio (Comida/Cena)
-            formData.numPeople = parseInt(form.numPeople.value) || 2;
+            // Para restaurantes: usar peopleCount directamente (más confiable que el hidden input)
+            formData.numPeople = peopleCount;
             formData.zone = form.zone?.value || ''; // Zona (Terraza/Interior)
+            // El servicio se asignará automáticamente en el backend según la hora
         } else if (config.bookingMode === 'classes') {
             formData.class = form.class?.value || '';
         } else {
