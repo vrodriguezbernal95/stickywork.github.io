@@ -801,6 +801,8 @@
                 booking_date: formData.date,
                 booking_time: formData.time,
                 service_id: formData.service || null,
+                num_people: formData.numPeople || 2,
+                zone: formData.zone || null,
                 notes: formData.notes || ''
             };
 
