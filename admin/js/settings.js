@@ -91,6 +91,13 @@ const settings = {
                     <button class="settings-tab" data-tab="schedule" onclick="settings.switchTab('schedule')">
                         ⏰ Horarios
                     </button>
+                    <button class="settings-tab" data-tab="zones" onclick="settings.switchTab('zones')"
+                            style="display: ${this.businessData?.booking_mode === 'tables' ? 'block' : 'none'};">
+                        🏢 Zonas
+                    </button>
+                    <button class="settings-tab" data-tab="feedback" onclick="settings.switchTab('feedback')">
+                        ⭐ Feedback
+                    </button>
                     <button class="settings-tab" data-tab="billing" onclick="settings.switchTab('billing')">
                         💳 Plan
                     </button>
@@ -118,6 +125,12 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-schedule">
                         ${this.renderScheduleTab()}
+                    </div>
+                    <div class="settings-tab-content" id="tab-zones">
+                        ${this.renderZonesTab()}
+                    </div>
+                    <div class="settings-tab-content" id="tab-feedback">
+                        ${this.renderFeedbackTab()}
                     </div>
                     <div class="settings-tab-content" id="tab-billing">
                         ${this.renderBillingTab()}
@@ -1845,6 +1858,471 @@ const settings = {
         }
 
         alert('ℹ️ Función de eliminación de cuenta próximamente disponible');
+    },
+
+    // Render Zones Tab (for restaurants)
+    renderZonesTab() {
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const zones = bookingSettings.restaurantZones || ['Terraza', 'Interior'];
+
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>🏢 Gestión de Zonas</h3>
+                    <p>Configura las zonas disponibles para tu restaurante (Terraza, Interior, Sala VIP, etc.)</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Zonas disponibles</label>
+                    <p class="hint">Los clientes podrán seleccionar su zona preferida al hacer una reserva</p>
+
+                    <div id="zones-list" style="margin-top: 1rem;">
+                        ${zones.map((zone, index) => `
+                            <div class="zone-item" data-index="${index}" style="display: flex; gap: 1rem; margin-bottom: 0.75rem; align-items: center;">
+                                <input type="text"
+                                       class="zone-input"
+                                       value="${zone}"
+                                       placeholder="Nombre de la zona"
+                                       style="flex: 1;">
+                                <button onclick="settings.removeZone(${index})"
+                                        class="btn btn-secondary"
+                                        style="padding: 0.5rem 1rem; background: #ef4444; color: white;">
+                                    ✕ Eliminar
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button onclick="settings.addZone()"
+                            class="btn btn-secondary"
+                            style="margin-top: 1rem; padding: 0.75rem 1.5rem;">
+                        ➕ Agregar zona
+                    </button>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem;">
+                    <button onclick="settings.saveZones()" class="btn btn-primary">
+                        💾 Guardar zonas
+                    </button>
+                </div>
+
+                <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-top: 2rem; border-radius: 8px;">
+                    <p style="margin: 0; color: #1e40af;">
+                        <strong>💡 Tip:</strong> Las zonas permiten a tus clientes elegir dónde prefieren sentarse.
+                        Puedes tener zonas como "Terraza", "Interior", "Sala VIP", "Barra", etc.
+                    </p>
+                </div>
+            </div>
+        `;
+    },
+
+    // Add zone
+    addZone() {
+        const zonesList = document.getElementById('zones-list');
+        const newIndex = zonesList.children.length;
+
+        const zoneItem = document.createElement('div');
+        zoneItem.className = 'zone-item';
+        zoneItem.dataset.index = newIndex;
+        zoneItem.style.cssText = 'display: flex; gap: 1rem; margin-bottom: 0.75rem; align-items: center;';
+        zoneItem.innerHTML = `
+            <input type="text"
+                   class="zone-input"
+                   value=""
+                   placeholder="Nombre de la zona"
+                   style="flex: 1;">
+            <button onclick="settings.removeZone(${newIndex})"
+                    class="btn btn-secondary"
+                    style="padding: 0.5rem 1rem; background: #ef4444; color: white;">
+                ✕ Eliminar
+            </button>
+        `;
+
+        zonesList.appendChild(zoneItem);
+    },
+
+    // Remove zone
+    removeZone(index) {
+        const zonesList = document.getElementById('zones-list');
+        const zoneItems = zonesList.querySelectorAll('.zone-item');
+
+        if (zoneItems.length <= 1) {
+            alert('❌ Debe haber al menos una zona');
+            return;
+        }
+
+        zoneItems[index].remove();
+    },
+
+    // Save zones
+    async saveZones() {
+        const zoneInputs = document.querySelectorAll('.zone-input');
+        const zones = Array.from(zoneInputs)
+            .map(input => input.value.trim())
+            .filter(zone => zone !== '');
+
+        if (zones.length === 0) {
+            alert('❌ Debes tener al menos una zona');
+            return;
+        }
+
+        try {
+            const bookingSettings = this.businessData?.booking_settings
+                ? (typeof this.businessData.booking_settings === 'string'
+                    ? JSON.parse(this.businessData.booking_settings)
+                    : this.businessData.booking_settings)
+                : {};
+
+            bookingSettings.restaurantZones = zones;
+
+            const response = await api.put(`/api/business/${this.userData.business_id}/settings`, {
+                booking_settings: bookingSettings
+            });
+
+            if (response.success) {
+                alert('✅ Zonas guardadas correctamente');
+                this.businessData.booking_settings = bookingSettings;
+            } else {
+                throw new Error(response.message || 'Error al guardar');
+            }
+        } catch (error) {
+            console.error('Error saving zones:', error);
+            alert('❌ Error al guardar las zonas');
+        }
+    },
+
+    // Render Feedback Tab
+    renderFeedbackTab() {
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const feedbackSettings = bookingSettings.feedbackSettings || {
+            enabled: true,
+            questions: [
+                {
+                    id: 1,
+                    type: 'rating',
+                    question: '¿Cómo calificarías nuestro servicio?',
+                    required: true,
+                    options: null
+                },
+                {
+                    id: 2,
+                    type: 'multiple_choice',
+                    question: '¿Qué te gustó más?',
+                    required: false,
+                    options: ['La atención', 'La calidad', 'El precio', 'La rapidez']
+                },
+                {
+                    id: 3,
+                    type: 'text',
+                    question: '¿Qué podríamos mejorar?',
+                    required: false,
+                    options: null
+                }
+            ]
+        };
+
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>⭐ Configuración de Feedback</h3>
+                    <p>Personaliza las preguntas que recibirán tus clientes 24 horas después de su reserva</p>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox"
+                               id="feedback-enabled"
+                               ${feedbackSettings.enabled ? 'checked' : ''}
+                               style="width: auto; margin-right: 0.5rem;">
+                        Enviar feedback automático
+                    </label>
+                    <p class="hint">Los clientes recibirán un email 24 horas después de completar su reserva</p>
+                </div>
+
+                <div id="feedback-questions-container" style="margin-top: 2rem;">
+                    ${feedbackSettings.questions.map((q, index) => `
+                        <div class="feedback-question-card" data-index="${index}" style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 2px solid #e5e7eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h4 style="margin: 0; color: var(--primary-color);">Pregunta ${index + 1}</h4>
+                                ${index > 0 ? `
+                                    <button onclick="settings.removeFeedbackQuestion(${index})"
+                                            class="btn btn-secondary"
+                                            style="padding: 0.25rem 0.75rem; background: #ef4444; color: white; font-size: 0.9rem;">
+                                        ✕
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tipo de pregunta</label>
+                                <select class="feedback-question-type" data-index="${index}" onchange="settings.updateFeedbackQuestionType(${index})">
+                                    <option value="rating" ${q.type === 'rating' ? 'selected' : ''}>⭐ Rating (1-5 estrellas)</option>
+                                    <option value="multiple_choice" ${q.type === 'multiple_choice' ? 'selected' : ''}>✅ Opción múltiple</option>
+                                    <option value="text" ${q.type === 'text' ? 'selected' : ''}>📝 Texto corto</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Pregunta</label>
+                                <input type="text"
+                                       class="feedback-question-text"
+                                       data-index="${index}"
+                                       value="${q.question}"
+                                       placeholder="Escribe tu pregunta aquí">
+                            </div>
+
+                            ${q.type === 'multiple_choice' ? `
+                                <div class="form-group feedback-options-container" data-index="${index}">
+                                    <label>Opciones (una por línea)</label>
+                                    ${(q.options || []).map((option, optIndex) => `
+                                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                            <input type="text"
+                                                   class="feedback-option-input"
+                                                   data-question="${index}"
+                                                   data-option="${optIndex}"
+                                                   value="${option}"
+                                                   placeholder="Opción ${optIndex + 1}"
+                                                   style="flex: 1;">
+                                            <button onclick="settings.removeFeedbackOption(${index}, ${optIndex})"
+                                                    style="padding: 0.25rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                                ✕
+                                            </button>
+                                        </div>
+                                    `).join('')}
+                                    <button onclick="settings.addFeedbackOption(${index})"
+                                            class="btn btn-secondary"
+                                            style="padding: 0.5rem 1rem; margin-top: 0.5rem;">
+                                        ➕ Agregar opción
+                                    </button>
+                                </div>
+                            ` : ''}
+
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox"
+                                           class="feedback-question-required"
+                                           data-index="${index}"
+                                           ${q.required ? 'checked' : ''}
+                                           style="width: auto; margin-right: 0.5rem;">
+                                    Pregunta obligatoria
+                                </label>
+                            </div>
+                        </div>
+                    `).join('')}
+
+                    ${feedbackSettings.questions.length < 3 ? `
+                        <button onclick="settings.addFeedbackQuestion()"
+                                class="btn btn-secondary"
+                                style="width: 100%; padding: 1rem; border: 2px dashed #cbd5e1; background: white; color: var(--primary-color);">
+                            ➕ Agregar pregunta (${feedbackSettings.questions.length}/3)
+                        </button>
+                    ` : ''}
+                </div>
+
+                <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-top: 2rem; border-radius: 8px;">
+                    <p style="margin: 0 0 0.5rem 0; color: #1e40af; font-weight: 600;">
+                        📋 Pregunta genérica (siempre incluida):
+                    </p>
+                    <p style="margin: 0; color: #1e40af;">
+                        "¿Hay algo más que quieras compartir con nosotros? Valoramos tu opinión y nos ayuda a seguir mejorando."
+                    </p>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem;">
+                    <button onclick="settings.saveFeedbackSettings()" class="btn btn-primary">
+                        💾 Guardar configuración de feedback
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // Add feedback question
+    addFeedbackQuestion() {
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
+
+        if (feedbackSettings.questions.length >= 3) {
+            alert('❌ Máximo 3 preguntas personalizadas permitidas');
+            return;
+        }
+
+        feedbackSettings.questions.push({
+            id: feedbackSettings.questions.length + 1,
+            type: 'text',
+            question: '',
+            required: false,
+            options: null
+        });
+
+        bookingSettings.feedbackSettings = feedbackSettings;
+        this.businessData.booking_settings = bookingSettings;
+
+        // Re-render tab
+        document.getElementById('tab-feedback').innerHTML = this.renderFeedbackTab();
+    },
+
+    // Remove feedback question
+    removeFeedbackQuestion(index) {
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
+        feedbackSettings.questions.splice(index, 1);
+
+        bookingSettings.feedbackSettings = feedbackSettings;
+        this.businessData.booking_settings = bookingSettings;
+
+        // Re-render tab
+        document.getElementById('tab-feedback').innerHTML = this.renderFeedbackTab();
+    },
+
+    // Update feedback question type
+    updateFeedbackQuestionType(index) {
+        const type = document.querySelector(`.feedback-question-type[data-index="${index}"]`).value;
+
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
+        feedbackSettings.questions[index].type = type;
+
+        if (type === 'multiple_choice' && !feedbackSettings.questions[index].options) {
+            feedbackSettings.questions[index].options = ['Opción 1', 'Opción 2'];
+        } else if (type !== 'multiple_choice') {
+            feedbackSettings.questions[index].options = null;
+        }
+
+        bookingSettings.feedbackSettings = feedbackSettings;
+        this.businessData.booking_settings = bookingSettings;
+
+        // Re-render tab
+        document.getElementById('tab-feedback').innerHTML = this.renderFeedbackTab();
+    },
+
+    // Add feedback option
+    addFeedbackOption(questionIndex) {
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
+
+        if (!feedbackSettings.questions[questionIndex].options) {
+            feedbackSettings.questions[questionIndex].options = [];
+        }
+
+        feedbackSettings.questions[questionIndex].options.push(`Opción ${feedbackSettings.questions[questionIndex].options.length + 1}`);
+
+        bookingSettings.feedbackSettings = feedbackSettings;
+        this.businessData.booking_settings = bookingSettings;
+
+        // Re-render tab
+        document.getElementById('tab-feedback').innerHTML = this.renderFeedbackTab();
+    },
+
+    // Remove feedback option
+    removeFeedbackOption(questionIndex, optionIndex) {
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
+        feedbackSettings.questions[questionIndex].options.splice(optionIndex, 1);
+
+        bookingSettings.feedbackSettings = feedbackSettings;
+        this.businessData.booking_settings = bookingSettings;
+
+        // Re-render tab
+        document.getElementById('tab-feedback').innerHTML = this.renderFeedbackTab();
+    },
+
+    // Save feedback settings
+    async saveFeedbackSettings() {
+        try {
+            const bookingSettings = this.businessData?.booking_settings
+                ? (typeof this.businessData.booking_settings === 'string'
+                    ? JSON.parse(this.businessData.booking_settings)
+                    : this.businessData.booking_settings)
+                : {};
+
+            const feedbackSettings = {
+                enabled: document.getElementById('feedback-enabled').checked,
+                questions: []
+            };
+
+            // Collect all questions
+            const questionCards = document.querySelectorAll('.feedback-question-card');
+            questionCards.forEach((card, index) => {
+                const type = card.querySelector('.feedback-question-type').value;
+                const question = card.querySelector('.feedback-question-text').value.trim();
+                const required = card.querySelector('.feedback-question-required').checked;
+
+                let options = null;
+                if (type === 'multiple_choice') {
+                    const optionInputs = card.querySelectorAll('.feedback-option-input');
+                    options = Array.from(optionInputs)
+                        .map(input => input.value.trim())
+                        .filter(opt => opt !== '');
+                }
+
+                if (question) {
+                    feedbackSettings.questions.push({
+                        id: index + 1,
+                        type,
+                        question,
+                        required,
+                        options
+                    });
+                }
+            });
+
+            if (feedbackSettings.enabled && feedbackSettings.questions.length === 0) {
+                alert('❌ Debes tener al menos una pregunta si el feedback está activado');
+                return;
+            }
+
+            bookingSettings.feedbackSettings = feedbackSettings;
+
+            const response = await api.put(`/api/business/${this.userData.business_id}/settings`, {
+                booking_settings: bookingSettings
+            });
+
+            if (response.success) {
+                alert('✅ Configuración de feedback guardada correctamente');
+                this.businessData.booking_settings = bookingSettings;
+            } else {
+                throw new Error(response.message || 'Error al guardar');
+            }
+        } catch (error) {
+            console.error('Error saving feedback settings:', error);
+            alert('❌ Error al guardar la configuración de feedback');
+        }
     }
 };
 
