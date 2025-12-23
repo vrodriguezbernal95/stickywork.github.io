@@ -1886,11 +1886,13 @@ const settings = {
                     <p class="hint">Los clientes podrán seleccionar su zona preferida al hacer una reserva</p>
 
                     <div id="zones-list" style="margin-top: 1rem;">
-                        ${zones.map((zone, index) => `
+                        ${zones.map((zone, index) => {
+                            const zoneName = typeof zone === 'string' ? zone : zone.name || '';
+                            return `
                             <div class="zone-item" data-index="${index}" style="display: flex; gap: 1rem; margin-bottom: 0.75rem; align-items: center;">
                                 <input type="text"
                                        class="zone-input"
-                                       value="${zone}"
+                                       value="${zoneName}"
                                        placeholder="Nombre de la zona"
                                        style="flex: 1;">
                                 <button onclick="settings.removeZone(${index})"
@@ -1899,7 +1901,7 @@ const settings = {
                                     ✕ Eliminar
                                 </button>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
 
                     <button onclick="settings.addZone()"
