@@ -792,6 +792,11 @@
         }
 
         try {
+            // Determinar valor por defecto de personas según el tipo de negocio
+            // - Servicios (peluquería, etc.): 1 persona por defecto
+            // - Restaurantes/Mesas: 2 personas por defecto
+            const defaultNumPeople = config.bookingMode === 'tables' ? 2 : 1;
+
             // Mapear campos del formulario a los nombres que espera el backend
             const bookingData = {
                 business_id: config.businessId,
@@ -801,7 +806,7 @@
                 booking_date: formData.date,
                 booking_time: formData.time,
                 service_id: formData.service || null,
-                num_people: formData.numPeople || 2,
+                num_people: formData.numPeople || defaultNumPeople,
                 zone: formData.zone || null,
                 notes: formData.notes || ''
             };
