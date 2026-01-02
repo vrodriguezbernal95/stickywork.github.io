@@ -40,6 +40,9 @@ body {
     background: var(--bg-primary);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text-primary);
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Títulos globales con excelente contraste */
@@ -185,6 +188,9 @@ body::before {
     background: var(--bg-primary);
     position: relative;
     z-index: 1;
+    overflow-x: hidden;
+    width: calc(100% - 260px);
+    box-sizing: border-box;
 }
 
 .topbar {
@@ -601,6 +607,8 @@ body::before {
     .main-content {
         margin-left: 0;
         width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
     }
 
     /* Topbar más compacto */
