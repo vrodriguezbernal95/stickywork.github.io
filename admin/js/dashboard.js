@@ -37,14 +37,21 @@ const dashboard = {
             contentArea.innerHTML = `
                 <!-- Stats Grid -->
                 <div class="stats-grid">
-                    ${createStatCard({
-                        icon: '📊',
-                        value: stats.totalBookings || 0,
-                        label: 'Total Reservas',
-                        iconBg: 'rgba(59, 130, 246, 0.1)'
-                    })}
+                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                         onclick="dashboard.openBookingsModal('all')"
+                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">📊</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${stats.totalBookings || 0}</div>
+                            <div class="stat-label">Total Reservas</div>
+                        </div>
+                    </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                         onclick="dashboard.openBookingsModal('month')"
+                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
                         <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">📅</div>
                         <div class="stat-content">
                             <div class="stat-value">${stats.thisMonth || 0}</div>
@@ -74,22 +81,30 @@ const dashboard = {
                         </div>
                     </div>
 
-                    ${createStatCard({
-                        icon: '⏳',
-                        value: stats.bookingsByStatus.find(s => s.status === 'pending')?.count || 0,
-                        label: 'Pendientes',
-                        iconBg: 'rgba(234, 179, 8, 0.1)'
-                    })}
-
-                    ${createStatCard({
-                        icon: '✅',
-                        value: stats.bookingsByStatus.find(s => s.status === 'confirmed')?.count || 0,
-                        label: 'Confirmadas',
-                        iconBg: 'rgba(239, 68, 68, 0.1)'
-                    })}
+                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                         onclick="dashboard.openBookingsModal('pending')"
+                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                        <div class="stat-icon" style="background: rgba(234, 179, 8, 0.1);">⏳</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'pending')?.count || 0}</div>
+                            <div class="stat-label">Pendientes</div>
+                        </div>
+                    </div>
 
                     <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
-                         onclick="dashboard.openCancelledModal()"
+                         onclick="dashboard.openBookingsModal('confirmed')"
+                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">✅</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'confirmed')?.count || 0}</div>
+                            <div class="stat-label">Confirmadas</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                         onclick="dashboard.openBookingsModal('cancelled')"
                          onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
                          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
                         <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1);">❌</div>
@@ -97,7 +112,7 @@ const dashboard = {
                             <div class="stat-value">${stats.cancelledFuture || 0}</div>
                             <div class="stat-label">Canceladas</div>
                             <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
-                                (futuras)
+                                (próximos 7 días)
                             </div>
                         </div>
                     </div>
@@ -582,6 +597,294 @@ const dashboard = {
             'completed': 'Completada'
         };
         return labels[status] || status;
+    },
+
+    // Open modal to show bookings filtered by type
+    async openBookingsModal(type) {
+        try {
+            const businessId = auth.getBusinessId();
+
+            // Get all bookings
+            const response = await api.fetch(`/api/bookings/${businessId}`);
+
+            if (!response.success) {
+                throw new Error(response.message || 'Error al cargar reservas');
+            }
+
+            const allBookings = response.data || [];
+
+            // Calculate date range (today + 7 days)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const sevenDaysLater = new Date(today);
+            sevenDaysLater.setDate(today.getDate() + 7);
+
+            // Filter bookings based on type
+            let filteredBookings = [];
+            let title = '';
+            let icon = '';
+            let color = '';
+
+            switch(type) {
+                case 'all':
+                    filteredBookings = allBookings.filter(b => {
+                        const bookingDate = new Date(b.booking_date);
+                        return bookingDate >= today && bookingDate <= sevenDaysLater;
+                    });
+                    title = 'Todas las Reservas';
+                    icon = '📊';
+                    color = '#3b82f6';
+                    break;
+
+                case 'month':
+                    const currentMonth = today.getMonth();
+                    const currentYear = today.getFullYear();
+                    filteredBookings = allBookings.filter(b => {
+                        const bookingDate = new Date(b.booking_date);
+                        return bookingDate >= today &&
+                               bookingDate <= sevenDaysLater &&
+                               bookingDate.getMonth() === currentMonth &&
+                               bookingDate.getFullYear() === currentYear;
+                    });
+                    title = 'Reservas de Este Mes';
+                    icon = '📅';
+                    color = '#22c55e';
+                    break;
+
+                case 'pending':
+                    filteredBookings = allBookings.filter(b => {
+                        const bookingDate = new Date(b.booking_date);
+                        return b.status === 'pending' &&
+                               bookingDate >= today &&
+                               bookingDate <= sevenDaysLater;
+                    });
+                    title = 'Reservas Pendientes';
+                    icon = '⏳';
+                    color = '#eab308';
+                    break;
+
+                case 'confirmed':
+                    filteredBookings = allBookings.filter(b => {
+                        const bookingDate = new Date(b.booking_date);
+                        return b.status === 'confirmed' &&
+                               bookingDate >= today &&
+                               bookingDate <= sevenDaysLater;
+                    });
+                    title = 'Reservas Confirmadas';
+                    icon = '✅';
+                    color = '#22c55e';
+                    break;
+
+                case 'cancelled':
+                    filteredBookings = allBookings.filter(b => {
+                        const bookingDate = new Date(b.booking_date);
+                        return b.status === 'cancelled' &&
+                               bookingDate >= today &&
+                               bookingDate <= sevenDaysLater;
+                    });
+                    title = 'Reservas Canceladas';
+                    icon = '❌';
+                    color = '#ef4444';
+                    break;
+            }
+
+            // Sort by date and time
+            filteredBookings.sort((a, b) => {
+                const dateCompare = a.booking_date.localeCompare(b.booking_date);
+                if (dateCompare !== 0) return dateCompare;
+                return a.booking_time.localeCompare(b.booking_time);
+            });
+
+            // Create modal
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.2s ease;
+            `;
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: var(--bg-secondary);
+                border-radius: 16px;
+                max-width: 900px;
+                width: 90%;
+                max-height: 85vh;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                animation: slideUp 0.3s ease;
+            `;
+
+            const header = document.createElement('div');
+            header.style.cssText = `
+                padding: 1.5rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: linear-gradient(135deg, ${color}15, ${color}05);
+            `;
+
+            header.innerHTML = `
+                <div>
+                    <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        ${icon} ${title}
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        Próximos 7 días · ${filteredBookings.length} reservas
+                    </p>
+                </div>
+                <button id="close-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); padding: 0.5rem;">
+                    ✕
+                </button>
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                padding: 1.5rem;
+                overflow-y: auto;
+                max-height: calc(85vh - 140px);
+            `;
+
+            if (filteredBookings.length === 0) {
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">${icon}</div>
+                        <p style="font-size: 1.1rem; margin: 0;">No hay reservas para mostrar</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-tertiary);">
+                            (próximos 7 días)
+                        </p>
+                    </div>
+                `;
+            } else {
+                const bookingsList = filteredBookings.map(booking => {
+                    const bookingDate = new Date(booking.booking_date);
+                    const isToday = bookingDate.toDateString() === today.toDateString();
+
+                    return `
+                        <div style="
+                            background: var(--bg-tertiary);
+                            border-left: 4px solid ${color};
+                            padding: 1.25rem;
+                            border-radius: 8px;
+                            margin-bottom: 1rem;
+                            transition: all 0.2s ease;
+                        "
+                        onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+                        onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                        ${isToday ? '<span style="background: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">HOY</span>' : ''}
+                                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">
+                                            ${booking.customer_name}
+                                        </h3>
+                                    </div>
+                                    <div style="color: var(--text-secondary); font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                                        <div>📧 ${booking.customer_email}</div>
+                                        ${booking.customer_phone ? `<div>📱 ${booking.customer_phone}</div>` : ''}
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="status-badge status-${booking.status}" style="display: inline-block; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem;">
+                                        ${this.getStatusLabel(booking.status)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <div>
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Servicio</div>
+                                    <div style="color: var(--text-primary); font-weight: 500;">${booking.service_name || 'N/A'}</div>
+                                </div>
+                                <div>
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Fecha</div>
+                                    <div style="color: var(--text-primary); font-weight: 500;">
+                                        📅 ${bookingDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Hora</div>
+                                    <div style="color: var(--text-primary); font-weight: 500;">
+                                        🕐 ${booking.booking_time.substring(0, 5)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${booking.notes ? `
+                                <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">📝 Notas</div>
+                                    <div style="color: var(--text-secondary); font-style: italic; font-size: 0.9rem;">
+                                        "${booking.notes}"
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                content.innerHTML = bookingsList;
+            }
+
+            const footer = document.createElement('div');
+            footer.style.cssText = `
+                padding: 1rem 1.5rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+            `;
+
+            footer.innerHTML = `
+                <button id="close-modal-btn" style="
+                    padding: 0.75rem 1.5rem;
+                    background: rgba(255, 255, 255, 0.1);
+                    color: var(--text-primary);
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
+                "
+                onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'"
+                onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
+                    Cerrar
+                </button>
+            `;
+
+            modal.appendChild(header);
+            modal.appendChild(content);
+            modal.appendChild(footer);
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Event listeners
+            const closeModal = () => {
+                overlay.style.animation = 'fadeOut 0.2s ease';
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                }, 200);
+            };
+
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeModal();
+            });
+
+        } catch (error) {
+            console.error('Error loading bookings:', error);
+            this.showNotification('Error al cargar reservas', 'error');
+        }
     },
 
     // Open modal to show cancelled future bookings
