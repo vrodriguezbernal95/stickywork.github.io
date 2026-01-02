@@ -708,7 +708,7 @@ body::before {
     }
 
     .content-area {
-        padding: 0.5rem;
+        padding: 1rem;
     }
 
     .stats-grid {
@@ -718,7 +718,7 @@ body::before {
     }
 
     .stat-card {
-        padding: 1rem;
+        padding: 0.875rem;
         margin: 0;
         max-width: 100%;
         box-sizing: border-box;
