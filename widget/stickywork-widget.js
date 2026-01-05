@@ -893,7 +893,7 @@
             phone: form.phone?.value || '',
             date: form.date.value,
             time: form.time.value,
-            whatsappConsent: document.getElementById('stickywork-whatsapp-consent')?.checked || false
+            whatsappConsent: form.querySelector('input[name="whatsapp_consent"]')?.checked || false
         };
 
         // Campos segun modo
