@@ -39,39 +39,68 @@ const calendar = {
 
         contentArea.innerHTML = `
             <!-- Calendar Header -->
-            <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; margin-bottom: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                    <!-- Navigation -->
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                        <button class="btn-small" onclick="calendar.previousPeriod()">
-                            ◀ Anterior
-                        </button>
-                        <button class="btn-small" onclick="calendar.today()">
-                            Hoy
-                        </button>
-                        <button class="btn-small" onclick="calendar.nextPeriod()">
-                            Siguiente ▶
-                        </button>
-                    </div>
-
+            <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1rem; margin-bottom: 1.5rem;">
+                <div class="calendar-header">
                     <!-- Current Period -->
-                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
+                    <div class="calendar-period">
                         ${this.getCurrentPeriodLabel()}
                     </div>
 
+                    <!-- Navigation -->
+                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: center;">
+                        <button class="btn-small" onclick="calendar.previousPeriod()" style="padding: 0.5rem 0.75rem;">
+                            ◀
+                        </button>
+                        <button class="btn-small" onclick="calendar.today()" style="padding: 0.5rem 1rem;">
+                            Hoy
+                        </button>
+                        <button class="btn-small" onclick="calendar.nextPeriod()" style="padding: 0.5rem 0.75rem;">
+                            ▶
+                        </button>
+                    </div>
+
                     <!-- View Toggle -->
-                    <div style="display: flex; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
                         <button class="btn-small ${this.currentView === 'month' ? 'btn-primary-small' : ''}"
-                                onclick="calendar.switchView('month')">
+                                onclick="calendar.switchView('month')" style="padding: 0.5rem 0.75rem;">
                             📅 Mes
                         </button>
                         <button class="btn-small ${this.currentView === 'day' ? 'btn-primary-small' : ''}"
-                                onclick="calendar.switchView('day')">
+                                onclick="calendar.switchView('day')" style="padding: 0.5rem 0.75rem;">
                             📆 Día
                         </button>
                     </div>
                 </div>
             </div>
+
+            <style>
+                .calendar-header {
+                    display: grid;
+                    gap: 1rem;
+                    align-items: center;
+                }
+
+                .calendar-period {
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    color: var(--text-primary);
+                    text-align: center;
+                }
+
+                @media (min-width: 768px) {
+                    .calendar-header {
+                        grid-template-columns: 1fr auto 1fr;
+                    }
+
+                    .calendar-period {
+                        text-align: left;
+                    }
+
+                    .calendar-header > div:last-child {
+                        justify-content: flex-end;
+                    }
+                }
+            </style>
 
             <!-- Calendar View -->
             <div id="calendarView">
@@ -98,23 +127,157 @@ const calendar = {
 
         // Create calendar grid
         let html = `
-            <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem;">
+            <div class="calendar-month-view">
                 <!-- Days of week header -->
-                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; margin-bottom: 0.5rem;">
-                    ${['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => `
-                        <div style="text-align: center; font-weight: 600; color: var(--text-secondary); padding: 0.5rem; font-size: 0.9rem;">
-                            ${day}
+                <div class="calendar-weekdays">
+                    ${['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map((day, index) => `
+                        <div class="calendar-weekday">
+                            <span class="weekday-full">${day}</span>
+                            <span class="weekday-short">${['D', 'L', 'M', 'X', 'J', 'V', 'S'][index]}</span>
                         </div>
                     `).join('')}
                 </div>
 
                 <!-- Calendar days -->
-                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem;">
+                <div class="calendar-days-grid">
+        `;
+
+        html += `
+            <style>
+                .calendar-month-view {
+                    background: var(--bg-secondary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 15px;
+                    padding: 0.75rem;
+                }
+
+                .calendar-weekdays {
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    gap: 0.25rem;
+                    margin-bottom: 0.5rem;
+                }
+
+                .calendar-weekday {
+                    text-align: center;
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                    padding: 0.5rem 0.25rem;
+                    font-size: 0.75rem;
+                }
+
+                .weekday-full {
+                    display: none;
+                }
+
+                .weekday-short {
+                    display: inline;
+                }
+
+                .calendar-days-grid {
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    gap: 0.25rem;
+                }
+
+                .calendar-day-cell {
+                    min-height: 60px;
+                    background: var(--bg-primary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 8px;
+                    padding: 0.35rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 0.75rem;
+                }
+
+                .calendar-day-cell:hover {
+                    transform: scale(1.02);
+                }
+
+                .calendar-day-cell.today {
+                    border: 2px solid var(--primary-color);
+                }
+
+                .calendar-day-number {
+                    font-weight: 600;
+                    margin-bottom: 0.25rem;
+                    font-size: 0.85rem;
+                }
+
+                .calendar-day-number.today-number {
+                    color: var(--primary-color);
+                }
+
+                .calendar-booking-count {
+                    font-size: 0.65rem;
+                    color: var(--text-secondary);
+                }
+
+                .calendar-booking-time {
+                    font-size: 0.6rem;
+                    background: rgba(59, 130, 246, 0.1);
+                    padding: 0.15rem 0.3rem;
+                    border-radius: 4px;
+                    margin-top: 0.15rem;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                @media (min-width: 768px) {
+                    .calendar-month-view {
+                        padding: 1.5rem;
+                    }
+
+                    .calendar-weekdays {
+                        gap: 0.5rem;
+                        margin-bottom: 0.5rem;
+                    }
+
+                    .calendar-weekday {
+                        padding: 0.5rem;
+                        font-size: 0.9rem;
+                    }
+
+                    .weekday-full {
+                        display: inline;
+                    }
+
+                    .weekday-short {
+                        display: none;
+                    }
+
+                    .calendar-days-grid {
+                        gap: 0.5rem;
+                    }
+
+                    .calendar-day-cell {
+                        min-height: 80px;
+                        padding: 0.5rem;
+                        font-size: 0.85rem;
+                    }
+
+                    .calendar-day-number {
+                        font-size: 1rem;
+                    }
+
+                    .calendar-booking-count {
+                        font-size: 0.75rem;
+                    }
+
+                    .calendar-booking-time {
+                        font-size: 0.7rem;
+                        padding: 0.2rem 0.4rem;
+                        margin-top: 0.2rem;
+                    }
+                }
+            </style>
         `;
 
         // Empty cells before month starts
         for (let i = 0; i < startingDayOfWeek; i++) {
-            html += `<div style="min-height: 80px; background: var(--bg-primary); border-radius: 8px; opacity: 0.3;"></div>`;
+            html += `<div class="calendar-day-cell" style="opacity: 0.3;"></div>`;
         }
 
         // Days of month
@@ -125,24 +288,22 @@ const calendar = {
             const isToday = this.isToday(date);
 
             html += `
-                <div style="min-height: 80px; background: var(--bg-primary); border: ${isToday ? '2px solid var(--primary-color)' : '1px solid var(--border-color)'}; border-radius: 8px; padding: 0.5rem; cursor: pointer; transition: all 0.3s ease;"
-                     onclick="calendar.selectDate(new Date(${year}, ${month}, ${day}))"
-                     onmouseover="this.style.transform='scale(1.02)'"
-                     onmouseout="this.style.transform='scale(1)'">
-                    <div style="font-weight: 600; color: ${isToday ? 'var(--primary-color)' : 'var(--text-primary)'}; margin-bottom: 0.25rem;">
+                <div class="calendar-day-cell ${isToday ? 'today' : ''}"
+                     onclick="calendar.selectDate(new Date(${year}, ${month}, ${day}))">
+                    <div class="calendar-day-number ${isToday ? 'today-number' : ''}">
                         ${day}
                     </div>
                     ${dayBookings.length > 0 ? `
-                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        <div class="calendar-booking-count">
                             ${dayBookings.length} reserva${dayBookings.length > 1 ? 's' : ''}
                         </div>
                         ${dayBookings.slice(0, 2).map(booking => `
-                            <div style="font-size: 0.7rem; background: rgba(59, 130, 246, 0.1); padding: 0.2rem 0.4rem; border-radius: 4px; margin-top: 0.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${booking.customer_name} - ${booking.booking_time}">
+                            <div class="calendar-booking-time" title="${booking.customer_name} - ${booking.booking_time}">
                                 ${booking.booking_time.substring(0, 5)}
                             </div>
                         `).join('')}
                         ${dayBookings.length > 2 ? `
-                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                            <div class="calendar-booking-count" style="margin-top: 0.2rem;">
                                 +${dayBookings.length - 2} más
                             </div>
                         ` : ''}
