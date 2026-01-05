@@ -22,8 +22,37 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex">
     <title>Restaurante El Buen Sabor - Reserva tu mesa</title>
+    <meta name="description" content="Demo de sistema de reservas online para restaurantes. Ve cómo StickyWork facilita las reservas de mesas en tiempo real.">
+    <meta name="keywords" content="demo reservas restaurante, sistema reservas mesas, booking restaurante online, ejemplo StickyWork restaurantes">
+    <meta name="robots" content="noindex">
+    <meta name="googlebot" content="noindex">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stickywork.com/demos/restaurante.html">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stickywork.com/demos/restaurante.html">
+    <meta property="og:site_name" content="StickyWork">
+    <meta property="og:title" content="Demo Restaurante - StickyWork">
+    <meta property="og:description" content="Demo interactiva de sistema de reservas para restaurantes. Prueba cómo funciona en tiempo real.">
+    <meta property="og:image" content="https://stickywork.com/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="StickyWork - Sistema de Reservas Online">
+    <meta property="og:locale" content="es_ES">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://stickywork.com/demos/restaurante.html">
+    <meta name="twitter:title" content="Demo Restaurante - StickyWork">
+    <meta name="twitter:description" content="Demo interactiva de sistema de reservas para restaurantes. Prueba cómo funciona en tiempo real.">
+    <meta name="twitter:image" content="https://stickywork.com/images/twitter-card.jpg">
+    <meta name="twitter:image:alt" content="StickyWork Dashboard">
+    <meta name="twitter:creator" content="@stickywork">
+    <meta name="twitter:site" content="@stickywork">
+
     <style>
         * {
             margin: 0;
@@ -498,7 +527,7 @@
                     businessId: 2,  // ID de Restaurante El Buen Sabor en producción
                     apiUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                         ? 'http://localhost:3000'
-                        : 'https://stickywork.com',
+                        : 'https://api.stickywork.com',
                     primaryColor: '#FF5722',
                     secondaryColor: '#FFC107',
                     language: 'es',

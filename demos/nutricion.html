@@ -22,8 +22,37 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex">
     <title>NutriVida - Centro de Nutrición - Reserva tu consulta</title>
+    <meta name="description" content="Demo de sistema de reservas online para nutricionistas y centros de nutrición. Ve cómo StickyWork facilita la gestión de consultas nutricionales.">
+    <meta name="keywords" content="demo reservas nutricionista, sistema citas nutrición, booking nutriólogo online, ejemplo StickyWork dietética">
+    <meta name="robots" content="noindex">
+    <meta name="googlebot" content="noindex">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stickywork.com/demos/nutricion.html">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stickywork.com/demos/nutricion.html">
+    <meta property="og:site_name" content="StickyWork">
+    <meta property="og:title" content="Demo Nutrición - StickyWork">
+    <meta property="og:description" content="Demo interactiva de sistema de reservas para nutricionistas. Prueba cómo funciona en tiempo real.">
+    <meta property="og:image" content="https://stickywork.com/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="StickyWork - Sistema de Reservas Online">
+    <meta property="og:locale" content="es_ES">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://stickywork.com/demos/nutricion.html">
+    <meta name="twitter:title" content="Demo Nutrición - StickyWork">
+    <meta name="twitter:description" content="Demo interactiva de sistema de reservas para nutricionistas. Prueba cómo funciona en tiempo real.">
+    <meta name="twitter:image" content="https://stickywork.com/images/twitter-card.jpg">
+    <meta name="twitter:image:alt" content="StickyWork Dashboard">
+    <meta name="twitter:creator" content="@stickywork">
+    <meta name="twitter:site" content="@stickywork">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
@@ -172,7 +201,7 @@
                     businessId: 4,  // ID de NutriVida en producción
                     apiUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                         ? 'http://localhost:3000'
-                        : 'https://stickywork.com',
+                        : 'https://api.stickywork.com',
                     primaryColor: '#4CAF50',
                     secondaryColor: '#8BC34A',
                     language: 'es',
