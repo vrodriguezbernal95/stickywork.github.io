@@ -855,6 +855,19 @@ const settings = {
         if (tabName === 'schedule') {
             setTimeout(() => this.loadScheduleSettings(), 100);
         }
+
+        // Initialize WhatsApp textarea event listener when opening notifications tab
+        if (tabName === 'notifications') {
+            setTimeout(() => {
+                const textarea = document.getElementById('whatsapp-template');
+                if (textarea) {
+                    // Update count initially
+                    this.updateCharCount();
+                    // Add event listener for typing
+                    textarea.addEventListener('input', () => this.updateCharCount());
+                }
+            }, 100);
+        }
     },
 
     // Get role name in Spanish
@@ -1199,6 +1212,61 @@ const settings = {
                 </button>
             </div>
 
+            <!-- WhatsApp Settings Section -->
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>💬 Notificaciones por WhatsApp</h3>
+                    <p>Configura WhatsApp para enviar confirmaciones de reserva a tus clientes</p>
+                </div>
+
+                <div class="info-box" style="background: linear-gradient(135deg, rgba(37, 211, 102, 0.1), rgba(18, 140, 126, 0.1)); border-left-color: #25D366;">
+                    <p>
+                        <strong>✅ Ventajas de WhatsApp:</strong> 98% tasa de apertura vs 20% email, gratuito con Click-to-Chat, preferido por los clientes.
+                        <br>Sin límites compartidos: cada negocio usa su propio número de WhatsApp.
+                    </p>
+                </div>
+
+                <div class="notification-item">
+                    <div class="notification-info">
+                        <h4>Activar notificaciones por WhatsApp</h4>
+                        <p>Permite enviar confirmaciones de reserva vía WhatsApp a clientes que den su consentimiento</p>
+                    </div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="whatsapp-enabled" ${business.whatsapp_enabled ? 'checked' : ''}
+                               onchange="settings.toggleWhatsAppFields()">
+                    </div>
+                </div>
+
+                <div id="whatsapp-settings-fields" style="display: ${business.whatsapp_enabled ? 'block' : 'none'};">
+                    <div class="form-group">
+                        <label>Número de WhatsApp</label>
+                        <input type="text" id="whatsapp-number" value="${business.whatsapp_number || ''}"
+                               placeholder="34612345678">
+                        <p class="hint">Formato internacional sin el símbolo + (ejemplo: 34612345678 para España)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Plantilla de Mensaje</label>
+                        <textarea id="whatsapp-template"
+                                  class="form-textarea"
+                                  rows="10"
+                                  style="font-family: 'Courier New', monospace; font-size: 0.9rem;">${business.whatsapp_template || ''}</textarea>
+                        <p class="hint">
+                            Variables disponibles: <code>{nombre}</code>, <code>{fecha}</code>, <code>{hora}</code>,
+                            <code>{servicio}</code>, <code>{negocio}</code>, <code>{nombre_negocio}</code>
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <span id="template-char-count" style="font-size: 0.85rem; color: #666;">
+                                ${(business.whatsapp_template || '').length} / 1000 caracteres
+                            </span>
+                            <button type="button" class="btn-secondary" onclick="settings.resetWhatsAppTemplate()">
+                                🔄 Restaurar plantilla original
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <button class="btn-save" onclick="settings.saveNotificationSettings()">
                 💾 Guardar Configuración de Notificaciones
             </button>
@@ -1272,8 +1340,24 @@ const settings = {
         const notifyReminders = document.getElementById('notify-reminders').checked;
         const notifyDailySummary = document.getElementById('notify-daily-summary').checked;
 
+        // WhatsApp settings
+        const whatsappEnabled = document.getElementById('whatsapp-enabled').checked;
+        const whatsappNumber = document.getElementById('whatsapp-number').value.trim();
+        const whatsappTemplate = document.getElementById('whatsapp-template').value.trim();
+
         if (!email) {
             alert('❌ El email de notificaciones es obligatorio');
+            return;
+        }
+
+        // Validar WhatsApp si está activado
+        if (whatsappEnabled && !whatsappNumber) {
+            alert('❌ Por favor ingresa un número de WhatsApp');
+            return;
+        }
+
+        if (whatsappTemplate.length > 1000) {
+            alert('❌ La plantilla de WhatsApp no puede exceder 1000 caracteres');
             return;
         }
 
@@ -1287,10 +1371,20 @@ const settings = {
                 website: this.businessData.website
             });
 
+            // Save WhatsApp settings
+            await api.patch(`/api/businesses/${this.userData.business_id}/whatsapp-settings`, {
+                whatsapp_enabled: whatsappEnabled,
+                whatsapp_number: whatsappNumber.replace(/\s/g, ''),
+                whatsapp_template: whatsappTemplate
+            });
+
             // TODO: Save notification preferences when we have the structure
-            // For now, just update the email
+            // For now, just update the email and WhatsApp
 
             this.businessData.email = email;
+            this.businessData.whatsapp_enabled = whatsappEnabled;
+            this.businessData.whatsapp_number = whatsappNumber;
+            this.businessData.whatsapp_template = whatsappTemplate;
 
             alert('✅ Configuración de notificaciones guardada correctamente');
         } catch (error) {
@@ -2328,6 +2422,47 @@ const settings = {
         } catch (error) {
             console.error('Error saving feedback settings:', error);
             alert('❌ Error al guardar la configuración de feedback');
+        }
+    },
+
+    // Toggle WhatsApp settings fields
+    toggleWhatsAppFields() {
+        const enabled = document.getElementById('whatsapp-enabled').checked;
+        const fieldsContainer = document.getElementById('whatsapp-settings-fields');
+        if (fieldsContainer) {
+            fieldsContainer.style.display = enabled ? 'block' : 'none';
+        }
+    },
+
+    // Reset WhatsApp template to default
+    resetWhatsAppTemplate() {
+        const defaultTemplate = `Hola {nombre}!
+
+Tu reserva en {negocio} ha sido confirmada:
+
+Fecha: {fecha}
+Hora: {hora}
+Servicio: {servicio}
+
+Te esperamos!
+
+{nombre_negocio}`;
+
+        const textarea = document.getElementById('whatsapp-template');
+        if (textarea) {
+            textarea.value = defaultTemplate;
+            this.updateCharCount();
+        }
+    },
+
+    // Update character count for WhatsApp template
+    updateCharCount() {
+        const textarea = document.getElementById('whatsapp-template');
+        const countDisplay = document.getElementById('template-char-count');
+        if (textarea && countDisplay) {
+            const count = textarea.value.length;
+            countDisplay.textContent = `${count} / 1000 caracteres`;
+            countDisplay.style.color = count > 1000 ? '#ef4444' : '#666';
         }
     }
 };

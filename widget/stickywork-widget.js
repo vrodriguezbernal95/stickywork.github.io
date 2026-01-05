@@ -57,6 +57,9 @@
             selectTime: 'Selecciona una hora',
             notes: 'Notas adicionales',
             notesPlaceholder: 'Alguna peticion especial...',
+            whatsappConsent: 'Quiero recibir confirmación de mi reserva por WhatsApp (opcional)',
+            whatsappPrivacyNote: 'Al marcar esta casilla, consientes que te contactemos vía WhatsApp.',
+            privacyPolicy: 'Política de privacidad',
             submit: 'Reservar',
             success: 'Reserva Confirmada!',
             successMessage: 'Recibiras un email de confirmacion en breve',
@@ -90,6 +93,9 @@
             selectTime: 'Select a time',
             notes: 'Additional notes',
             notesPlaceholder: 'Any special requests...',
+            whatsappConsent: 'I want to receive booking confirmation via WhatsApp (optional)',
+            whatsappPrivacyNote: 'By checking this box, you consent to be contacted via WhatsApp.',
+            privacyPolicy: 'Privacy policy',
             submit: 'Book Now',
             success: 'Booking Confirmed!',
             successMessage: 'You will receive a confirmation email shortly',
@@ -272,6 +278,46 @@
                 opacity: 0.6;
                 cursor: not-allowed;
                 transform: none;
+            }
+            .stickywork-whatsapp-consent {
+                margin: 1rem 0;
+                padding: 0.75rem;
+                background: ${colors.bgSecondary};
+                border-radius: 8px;
+            }
+            .stickywork-checkbox-container {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                cursor: pointer;
+                margin-bottom: 8px;
+            }
+            .stickywork-checkbox {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+                flex-shrink: 0;
+                margin-top: 2px;
+                accent-color: ${config.primaryColor};
+            }
+            .stickywork-checkbox-label {
+                font-size: 0.95rem;
+                color: ${colors.textPrimary};
+                line-height: 1.4;
+                user-select: none;
+            }
+            .stickywork-privacy-note {
+                font-size: 0.85rem;
+                color: ${colors.textSecondary};
+                margin: 5px 0 0 28px;
+                line-height: 1.4;
+            }
+            .stickywork-privacy-link {
+                color: ${config.primaryColor};
+                text-decoration: none;
+            }
+            .stickywork-privacy-link:hover {
+                text-decoration: underline;
             }
             .stickywork-note {
                 text-align: center;
@@ -735,6 +781,18 @@
                             <textarea class="stickywork-textarea" name="notes" placeholder="${t.notesPlaceholder}"></textarea>
                         </div>
                     ` : ''}
+                    <div class="stickywork-whatsapp-consent">
+                        <label class="stickywork-checkbox-container">
+                            <input type="checkbox" id="stickywork-whatsapp-consent" class="stickywork-checkbox" name="whatsapp_consent">
+                            <span class="stickywork-checkbox-label">
+                                ${t.whatsappConsent || 'Quiero recibir confirmación de mi reserva por WhatsApp (opcional)'}
+                            </span>
+                        </label>
+                        <p class="stickywork-privacy-note">
+                            ${t.whatsappPrivacyNote || 'Al marcar esta casilla, consientes que te contactemos vía WhatsApp.'}
+                            <a href="https://stickywork.com/politica-privacidad.html" target="_blank" class="stickywork-privacy-link">${t.privacyPolicy || 'Política de privacidad'}</a>
+                        </p>
+                    </div>
                     <button type="submit" class="stickywork-button">${t.submit}</button>
                     ${isDemoMode ? `<p class="stickywork-note">${t.demoNote}</p>` : ''}
                 </form>
@@ -808,7 +866,8 @@
                 service_id: formData.service || null,
                 num_people: formData.numPeople || defaultNumPeople,
                 zone: formData.zone || null,
-                notes: formData.notes || ''
+                notes: formData.notes || '',
+                whatsapp_consent: formData.whatsappConsent || false
             };
 
             const response = await fetch(`${config.apiUrl}/api/bookings`, {
@@ -833,7 +892,8 @@
             email: form.email.value,
             phone: form.phone?.value || '',
             date: form.date.value,
-            time: form.time.value
+            time: form.time.value,
+            whatsappConsent: document.getElementById('stickywork-whatsapp-consent')?.checked || false
         };
 
         // Campos segun modo

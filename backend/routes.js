@@ -334,6 +334,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const numPeople = req.body.numPeople || req.body.num_people || 2; // Default 2 personas
         const zone = req.body.zone || null; // Zona (Terraza, Interior, etc.)
         const notes = req.body.notes;
+        const whatsappConsent = req.body.whatsappConsent || req.body.whatsapp_consent || false; // Consentimiento para WhatsApp
 
         // Validaciones básicas
         if (!businessId || !customerName || !customerEmail || !customerPhone || !bookingDate || !bookingTime) {
@@ -455,10 +456,10 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const result = await db.query(
             `INSERT INTO bookings
             (business_id, service_id, customer_name, customer_email, customer_phone,
-             booking_date, booking_time, num_people, zone, notes, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+             booking_date, booking_time, num_people, zone, notes, whatsapp_consent, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
             [businessId, autoAssignedServiceId || null, customerName, customerEmail, customerPhone,
-             bookingDate, bookingTime, numPeople, zone, notes || null]
+             bookingDate, bookingTime, numPeople, zone, notes || null, whatsappConsent]
         );
 
         // Obtener la reserva creada con información del servicio
@@ -774,6 +775,77 @@ router.get('/api/business/:businessId', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al obtener negocio',
+            error: error.message
+        });
+    }
+});
+
+// Actualizar configuración de WhatsApp de un negocio (requiere autenticación)
+router.patch('/api/businesses/:id/whatsapp-settings', requireAuth, async (req, res) => {
+    try {
+        const businessId = req.params.id;
+        const { whatsapp_number, whatsapp_enabled, whatsapp_template } = req.body;
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (parseInt(businessId) !== parseInt(req.user.businessId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes permiso para modificar este negocio'
+            });
+        }
+
+        // Validar formato de número de WhatsApp (debe ser internacional sin +)
+        if (whatsapp_number) {
+            const phoneRegex = /^[0-9]{10,15}$/;
+            const cleanNumber = whatsapp_number.replace(/\s/g, '');
+            if (!phoneRegex.test(cleanNumber)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Formato de número inválido. Usa formato internacional sin + (ej: 34612345678)'
+                });
+            }
+        }
+
+        // Validar longitud de plantilla
+        if (whatsapp_template && whatsapp_template.length > 1000) {
+            return res.status(400).json({
+                success: false,
+                message: 'La plantilla no puede exceder 1000 caracteres'
+            });
+        }
+
+        // Actualizar configuración
+        const result = await db.query(
+            `UPDATE businesses
+             SET whatsapp_number = ?,
+                 whatsapp_enabled = ?,
+                 whatsapp_template = ?
+             WHERE id = ?`,
+            [
+                whatsapp_number ? whatsapp_number.replace(/\s/g, '') : null,
+                whatsapp_enabled || false,
+                whatsapp_template || null,
+                businessId
+            ]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Negocio no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Configuración de WhatsApp actualizada exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar configuración de WhatsApp:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar configuración',
             error: error.message
         });
     }

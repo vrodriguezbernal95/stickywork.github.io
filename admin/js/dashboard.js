@@ -1,6 +1,8 @@
 // Dashboard Module
 
 const dashboard = {
+    businessSettings: {}, // Store business settings including WhatsApp config
+
     // Load dashboard with stats and recent bookings
     async load() {
         const contentArea = document.getElementById('contentArea');
@@ -32,6 +34,14 @@ const dashboard = {
             // Load business info
             const businessData = await api.get(`/api/business/${auth.getBusinessId()}`);
             document.getElementById('businessName').textContent = businessData.data.name;
+
+            // Store business settings including WhatsApp configuration
+            this.businessSettings = {
+                whatsappEnabled: businessData.data.whatsapp_enabled,
+                whatsappNumber: businessData.data.whatsapp_number,
+                whatsappTemplate: businessData.data.whatsapp_template,
+                businessName: businessData.data.name
+            };
 
             // Render dashboard
             contentArea.innerHTML = `
@@ -828,6 +838,59 @@ const dashboard = {
                                     </div>
                                 </div>
                             ` : ''}
+
+                            <!-- WhatsApp Button -->
+                            ${booking.whatsapp_consent && this.businessSettings.whatsappEnabled && this.businessSettings.whatsappNumber ? `
+                                <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                    <button
+                                        onclick="dashboard.sendWhatsApp(${booking.id})"
+                                        style="
+                                            background: linear-gradient(135deg, #25D366, #128C7E);
+                                            color: white;
+                                            border: none;
+                                            padding: 0.75rem 1.25rem;
+                                            border-radius: 8px;
+                                            font-weight: 600;
+                                            font-size: 0.9rem;
+                                            cursor: pointer;
+                                            display: inline-flex;
+                                            align-items: center;
+                                            gap: 0.5rem;
+                                            transition: all 0.2s ease;
+                                        "
+                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(37, 211, 102, 0.4)'"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                        💬 Enviar WhatsApp
+                                    </button>
+                                </div>
+                            ` : booking.whatsapp_consent && !this.businessSettings.whatsappEnabled ? `
+                                <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                    <button
+                                        disabled
+                                        title="Configura WhatsApp en Ajustes → Notificaciones"
+                                        style="
+                                            background: #6b7280;
+                                            color: #9ca3af;
+                                            border: none;
+                                            padding: 0.75rem 1.25rem;
+                                            border-radius: 8px;
+                                            font-weight: 600;
+                                            font-size: 0.9rem;
+                                            cursor: not-allowed;
+                                            display: inline-flex;
+                                            align-items: center;
+                                            gap: 0.5rem;
+                                        ">
+                                        💬 WhatsApp (no configurado)
+                                    </button>
+                                </div>
+                            ` : !booking.whatsapp_consent && booking.customer_phone ? `
+                                <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                                    <span style="font-size: 0.85rem; color: var(--text-tertiary); font-style: italic;">
+                                        Cliente no autorizó contacto por WhatsApp
+                                    </span>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
@@ -1114,6 +1177,74 @@ const dashboard = {
         } catch (error) {
             console.error('Error loading cancelled bookings:', error);
             this.showNotification('Error al cargar reservas canceladas', 'error');
+        }
+    },
+
+    // Send WhatsApp message to customer
+    async sendWhatsApp(bookingId) {
+        try {
+            // Obtener detalles de la reserva
+            const businessId = auth.getBusinessId();
+            const response = await api.fetch(`/api/bookings/${businessId}`);
+
+            if (!response.success) {
+                alert('Error al cargar los detalles de la reserva');
+                return;
+            }
+
+            const booking = response.data.find(b => b.id === bookingId);
+
+            if (!booking) {
+                alert('No se encontró la reserva');
+                return;
+            }
+
+            if (!booking.whatsapp_consent) {
+                alert('Este cliente no autorizó contacto por WhatsApp');
+                return;
+            }
+
+            if (!this.businessSettings.whatsappEnabled || !this.businessSettings.whatsappNumber) {
+                alert('WhatsApp no está configurado. Ve a Configuración → Notificaciones para activarlo.');
+                return;
+            }
+
+            if (!booking.customer_phone) {
+                alert('Este cliente no proporcionó número de teléfono');
+                return;
+            }
+
+            // Formatear fecha y hora
+            const date = new Date(booking.booking_date);
+            const formattedDate = date.toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const formattedTime = booking.booking_time.substring(0, 5);
+
+            // Reemplazar variables en la plantilla
+            let message = this.businessSettings.whatsappTemplate
+                .replace(/{nombre}/g, booking.customer_name)
+                .replace(/{fecha}/g, formattedDate)
+                .replace(/{hora}/g, formattedTime)
+                .replace(/{servicio}/g, booking.service_name || 'Reserva')
+                .replace(/{negocio}/g, this.businessSettings.businessName)
+                .replace(/{nombre_negocio}/g, this.businessSettings.businessName);
+
+            // Limpiar número de teléfono (eliminar espacios, guiones, etc.)
+            const phoneNumber = booking.customer_phone.replace(/\D/g, '');
+
+            // Construir URL de WhatsApp
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+            // Abrir WhatsApp en nueva ventana
+            window.open(whatsappUrl, '_blank');
+
+        } catch (error) {
+            console.error('Error sending WhatsApp:', error);
+            alert('Error al preparar mensaje de WhatsApp');
         }
     }
 };
