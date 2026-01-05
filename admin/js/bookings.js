@@ -65,7 +65,6 @@ const bookings = {
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Cliente</th>
                                 <th>Email</th>
                                 <th>Teléfono</th>
@@ -169,7 +168,6 @@ const bookings = {
     renderBookingRow(booking) {
         return `
             <tr>
-                <td style="font-weight: 600; color: var(--primary-color);">#${booking.id}</td>
                 <td style="font-weight: 600;">${booking.customer_name}</td>
                 <td style="font-size: 0.9rem;">${booking.customer_email}</td>
                 <td style="font-size: 0.9rem;">${booking.customer_phone}</td>
