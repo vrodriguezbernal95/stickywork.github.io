@@ -1234,7 +1234,14 @@ const dashboard = {
                 .replace(/{nombre_negocio}/g, this.businessSettings.businessName);
 
             // Limpiar número de teléfono (eliminar espacios, guiones, etc.)
-            const phoneNumber = booking.customer_phone.replace(/\D/g, '');
+            let phoneNumber = booking.customer_phone.replace(/\D/g, '');
+
+            // Si el número no tiene prefijo internacional, añadir el de España (34)
+            // Números españoles: empiezan con 6, 7, 8 o 9 y tienen 9 dígitos
+            if (phoneNumber.length === 9 && /^[6789]/.test(phoneNumber)) {
+                phoneNumber = '34' + phoneNumber;
+                console.log('📱 Número sin prefijo detectado, añadiendo +34:', phoneNumber);
+            }
 
             // Construir URL de WhatsApp
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
