@@ -1,3 +1,4 @@
+// StickyWork Backend Server - Updated 2026-01-05
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
