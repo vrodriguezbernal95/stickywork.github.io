@@ -128,16 +128,32 @@
         if (document.getElementById('stickywork-styles')) return;
 
         const colors = getThemeColors();
+
+        // Aplicar customización visual si existe
+        const customization = config.customization || {};
+        const primaryColor = customization.primaryColor || config.primaryColor || '#3b82f6';
+        const secondaryColor = customization.secondaryColor || config.secondaryColor || '#8b5cf6';
+        const fontFamily = customization.fontFamily || '-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif';
+        const borderRadius = customization.borderRadius || '12px';
+        const buttonStyle = customization.buttonStyle || 'solid';
+
+        // Actualizar config con valores de customización para usar en todo el widget
+        config.primaryColor = primaryColor;
+        config.secondaryColor = secondaryColor;
+        config.borderRadius = borderRadius;
+        config.fontFamily = fontFamily;
+        config.buttonStyle = buttonStyle;
+
         const style = document.createElement('style');
         style.id = 'stickywork-styles';
         style.textContent = `
             .stickywork-widget {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-family: ${fontFamily};
                 max-width: 600px;
                 margin: 0 auto;
                 background: ${colors.bgPrimary};
                 padding: 2rem;
-                border-radius: 15px;
+                border-radius: ${borderRadius};
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             }
             .stickywork-widget * { box-sizing: border-box; }
@@ -167,11 +183,12 @@
                 width: 100%;
                 padding: 0.75rem;
                 border: 2px solid ${colors.borderColor};
-                border-radius: 8px;
+                border-radius: ${borderRadius};
                 font-size: 1rem;
                 background: ${colors.bgPrimary};
                 color: ${colors.textPrimary};
                 transition: all 0.3s ease;
+                font-family: ${fontFamily};
             }
             /* Custom Select Styles */
             .stickywork-custom-select {
@@ -182,7 +199,7 @@
                 width: 100%;
                 padding: 0.75rem;
                 border: 2px solid ${colors.borderColor};
-                border-radius: 8px;
+                border-radius: ${borderRadius};
                 background: ${colors.bgPrimary};
                 color: ${colors.textPrimary};
                 cursor: pointer;
@@ -190,6 +207,7 @@
                 justify-content: space-between;
                 align-items: center;
                 transition: all 0.3s ease;
+                font-family: ${fontFamily};
             }
             .stickywork-custom-select-trigger:hover {
                 border-color: ${config.primaryColor};
@@ -441,11 +459,14 @@
                 gap: 1rem;
             }
             .stickywork-button {
-                background: linear-gradient(135deg, ${config.primaryColor}, ${config.secondaryColor});
-                color: white;
+                ${buttonStyle === 'solid'
+                    ? `background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor}); color: white; border: 2px solid ${primaryColor};`
+                    : buttonStyle === 'outline'
+                    ? `background: transparent; color: ${primaryColor}; border: 2px solid ${primaryColor};`
+                    : `background: ${primaryColor}15; color: ${primaryColor}; border: 2px solid transparent;`
+                }
                 padding: 1rem;
-                border: none;
-                border-radius: 8px;
+                border-radius: ${borderRadius};
                 font-size: 1.1rem;
                 font-weight: 600;
                 cursor: pointer;
@@ -454,7 +475,8 @@
             }
             .stickywork-button:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 6px 20px ${config.primaryColor}40;
+                box-shadow: 0 6px 20px ${primaryColor}40;
+                ${buttonStyle === 'outline' ? `background: ${primaryColor}10;` : ''}
             }
             .stickywork-button:disabled {
                 opacity: 0.6;
