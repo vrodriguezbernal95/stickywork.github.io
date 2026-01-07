@@ -358,4 +358,110 @@ router.get('/api/feedback/verify/:token', async (req, res) => {
     }
 });
 
+// ==================== OBTENER FEEDBACKS PENDIENTES (ADMIN) ====================
+
+/**
+ * GET /api/admin/feedback/pending/:businessId
+ * Obtener reservas que tienen feedback pendiente de enviar
+ */
+router.get('/api/admin/feedback/pending/:businessId', requireAuth, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        // Verificar acceso
+        if (req.user.businessId !== parseInt(businessId)) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        // Obtener reservas con feedback pendiente
+        const pendingFeedbacks = await db.query(`
+            SELECT
+                b.id,
+                b.customer_name,
+                b.customer_phone,
+                b.customer_email,
+                b.booking_date,
+                b.booking_time,
+                b.feedback_token,
+                s.name as service_name,
+                DATEDIFF(NOW(), b.booking_date) as days_ago
+            FROM bookings b
+            LEFT JOIN services s ON b.service_id = s.id
+            WHERE b.business_id = ?
+            AND b.status = 'completed'
+            AND b.feedback_token IS NOT NULL
+            AND b.feedback_sent = FALSE
+            ORDER BY b.booking_date DESC
+            LIMIT 100
+        `, [businessId]);
+
+        res.json({
+            success: true,
+            data: pendingFeedbacks,
+            count: pendingFeedbacks.length
+        });
+
+    } catch (error) {
+        console.error('Error al obtener feedbacks pendientes:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener feedbacks pendientes'
+        });
+    }
+});
+
+// ==================== MARCAR FEEDBACK COMO ENVIADO (ADMIN) ====================
+
+/**
+ * POST /api/admin/feedback/mark-sent/:bookingId
+ * Marcar que el feedback fue enviado manualmente por WhatsApp
+ */
+router.post('/api/admin/feedback/mark-sent/:bookingId', requireAuth, async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+
+        // Obtener la reserva para verificar acceso
+        const bookings = await db.query(
+            'SELECT business_id FROM bookings WHERE id = ?',
+            [bookingId]
+        );
+
+        if (bookings.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Reserva no encontrada'
+            });
+        }
+
+        // Verificar acceso
+        if (req.user.businessId !== bookings[0].business_id) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a esta reserva'
+            });
+        }
+
+        // Marcar como enviado
+        await db.query(
+            'UPDATE bookings SET feedback_sent = TRUE, feedback_sent_at = NOW() WHERE id = ?',
+            [bookingId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Feedback marcado como enviado'
+        });
+
+    } catch (error) {
+        console.error('Error al marcar feedback como enviado:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al marcar feedback como enviado'
+        });
+    }
+});
+
 module.exports = router;

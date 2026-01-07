@@ -10,7 +10,7 @@ require('dotenv').config();
 const db = require('./config/database');
 const routes = require('./backend/routes');
 const emailService = require('./backend/email-service');
-const { enviarEmailsFeedback } = require('./backend/jobs/enviar-feedback');
+const { marcarFeedbacksPendientes } = require('./backend/jobs/enviar-feedback');
 
 // Función para ejecutar migraciones MySQL
 async function runMigrations() {
@@ -202,19 +202,18 @@ async function startServer() {
 
             console.log('✅ Base de datos configurada correctamente\n');
 
-            // Configurar cron job para envío de emails de feedback
+            // Configurar cron job para marcar feedbacks pendientes
             // Ejecutar cada hora
             cron.schedule('0 * * * *', async () => {
-                console.log('⏰ [Cron] Ejecutando job de envío de feedback...');
+                console.log('⏰ [Cron] Ejecutando job de marcado de feedbacks pendientes...');
                 try {
-                    const transporter = emailService.getTransporter();
-                    await enviarEmailsFeedback(db, transporter);
+                    await marcarFeedbacksPendientes(db);
                 } catch (error) {
                     console.error('❌ [Cron] Error en job de feedback:', error.message);
                 }
             });
 
-            console.log('⏰ Cron job de feedback configurado (cada hora)\n');
+            console.log('⏰ Cron job de feedback configurado (cada hora - solo marca pendientes)\n');
 
         } catch (error) {
             console.error('⚠️  Error configurando base de datos:', error.message);
