@@ -268,13 +268,59 @@
                 box-shadow: 0 0 0 3px ${config.primaryColor}20;
             }
 
-            /* Calendario personalizado */
-            .stickywork-calendar {
+            /* Calendario personalizado como dropdown */
+            .stickywork-calendar-dropdown {
+                position: relative;
+                width: 100%;
+            }
+            .stickywork-calendar-trigger {
+                background: ${colors.bgPrimary};
+                border: 1px solid ${colors.border};
+                border-radius: 8px;
+                padding: 0.75rem 1rem;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.2s;
+                min-height: 48px;
+            }
+            .stickywork-calendar-trigger:hover {
+                border-color: ${config.primaryColor};
+            }
+            .stickywork-calendar-trigger.open {
+                border-color: ${config.primaryColor};
+                box-shadow: 0 0 0 3px ${config.primaryColor}20;
+            }
+            .stickywork-calendar-value {
+                color: ${colors.textPrimary};
+                font-size: 1rem;
+            }
+            .stickywork-calendar-value.placeholder {
+                color: ${colors.textSecondary};
+            }
+            .stickywork-calendar-arrow {
+                font-size: 1.2rem;
+                transition: transform 0.2s;
+            }
+            .stickywork-calendar-trigger.open .stickywork-calendar-arrow {
+                transform: rotate(180deg);
+            }
+            .stickywork-calendar-dropdown-content {
+                position: absolute;
+                top: calc(100% + 0.5rem);
+                left: 0;
+                right: 0;
                 background: ${colors.bgPrimary};
                 border: 1px solid ${colors.border};
                 border-radius: 12px;
                 padding: 1rem;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                z-index: 1000;
+                display: none;
+            }
+            .stickywork-calendar-dropdown-content.open {
+                display: block;
             }
             .stickywork-calendar-header {
                 display: flex;
@@ -878,8 +924,14 @@
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.date}</label>
                             <input type="hidden" name="date" required>
-                            <div class="stickywork-calendar" id="stickywork-calendar">
-                                <!-- Calendario se renderizará aquí -->
+                            <div class="stickywork-calendar-dropdown" id="stickywork-calendar-dropdown">
+                                <div class="stickywork-calendar-trigger">
+                                    <span class="stickywork-calendar-value placeholder">Selecciona una fecha</span>
+                                    <span class="stickywork-calendar-arrow">▼</span>
+                                </div>
+                                <div class="stickywork-calendar-dropdown-content" id="stickywork-calendar">
+                                    <!-- Calendario se renderizará aquí -->
+                                </div>
                             </div>
                         </div>
                         <div class="stickywork-field">
@@ -1259,6 +1311,22 @@
             dateInput.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
+        // Formatear fecha para mostrar (ej: "19 de Enero de 2026")
+        const date = new Date(dateStr + 'T00:00:00');
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                           'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const formattedDate = `${date.getDate()} de ${monthNames[date.getMonth()]} de ${date.getFullYear()}`;
+
+        // Actualizar texto del trigger
+        const valueEl = document.querySelector('.stickywork-calendar-value');
+        if (valueEl) {
+            valueEl.textContent = formattedDate;
+            valueEl.classList.remove('placeholder');
+        }
+
+        // Cerrar dropdown
+        toggleCalendarDropdown(false);
+
         // Re-renderizar calendario para mostrar selección
         await renderCalendar();
 
@@ -1266,6 +1334,43 @@
         await fetchAvailability(dateStr);
         updateTimeSlots();
     };
+
+    // Abrir/cerrar dropdown del calendario
+    function toggleCalendarDropdown(forceState) {
+        const trigger = document.querySelector('.stickywork-calendar-trigger');
+        const dropdown = document.querySelector('.stickywork-calendar-dropdown-content');
+
+        if (!trigger || !dropdown) return;
+
+        const isOpen = typeof forceState === 'boolean' ? forceState : !dropdown.classList.contains('open');
+
+        if (isOpen) {
+            trigger.classList.add('open');
+            dropdown.classList.add('open');
+        } else {
+            trigger.classList.remove('open');
+            dropdown.classList.remove('open');
+        }
+    }
+
+    // Inicializar dropdown del calendario
+    function initCalendarDropdown() {
+        const trigger = document.querySelector('.stickywork-calendar-trigger');
+        if (trigger) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleCalendarDropdown();
+            });
+        }
+
+        // Cerrar al hacer click fuera
+        document.addEventListener('click', (e) => {
+            const calendarDropdown = document.querySelector('.stickywork-calendar-dropdown');
+            if (calendarDropdown && !calendarDropdown.contains(e.target)) {
+                toggleCalendarDropdown(false);
+            }
+        });
+    }
 
     // Enviar reserva
     async function submitBooking(formData) {
@@ -1445,6 +1550,9 @@
 
         // Renderizar calendario personalizado
         renderCalendar();
+
+        // Inicializar dropdown del calendario
+        initCalendarDropdown();
     }
 
     // Listener para campo de fecha
@@ -1687,6 +1795,9 @@
 
         // Renderizar calendario personalizado
         renderCalendar();
+
+        // Inicializar dropdown del calendario
+        initCalendarDropdown();
     }
 
     function closeModal() {
@@ -1723,6 +1834,7 @@
             initDateListener();
             initZoneListener();
             renderCalendar();
+            initCalendarDropdown();
         }
     }
 
