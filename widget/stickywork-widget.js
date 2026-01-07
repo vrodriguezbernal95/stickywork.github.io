@@ -1165,6 +1165,9 @@
 
         // Inicializar listener de zona para actualizar badges
         initZoneListener();
+
+        // Hacer todo el campo de fecha clickeable
+        initDateFieldClickable();
     }
 
     // Listener para campo de fecha
@@ -1193,6 +1196,24 @@
                 // Actualizar badges con la nueva zona
                 updateTimeSlots();
             });
+        }
+    }
+
+    // Hacer que todo el campo de fecha sea clickeable
+    function initDateFieldClickable() {
+        const dateInput = document.querySelector('input[name="date"]');
+        if (dateInput) {
+            const dateField = dateInput.closest('.stickywork-field');
+            if (dateField) {
+                dateField.style.cursor = 'pointer';
+                dateField.addEventListener('click', (e) => {
+                    // Solo abrir el picker si no se clickeó directamente en el input
+                    // (para no duplicar el comportamiento nativo)
+                    if (e.target !== dateInput) {
+                        dateInput.showPicker?.(); // showPicker es soportado en navegadores modernos
+                    }
+                });
+            }
         }
     }
 
@@ -1404,6 +1425,7 @@
         // Inicializar listeners
         initDateListener();
         initZoneListener();
+        initDateFieldClickable();
     }
 
     function closeModal() {
@@ -1438,6 +1460,7 @@
             initPeopleButtons();
             initDateListener();
             initZoneListener();
+            initDateFieldClickable();
         }
     }
 
