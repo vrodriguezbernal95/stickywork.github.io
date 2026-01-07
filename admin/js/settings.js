@@ -1408,12 +1408,29 @@ const settings = {
             return;
         }
 
+        // Obtener maxPerBooking si existe (solo para restaurantes)
+        const maxPerBookingInput = document.getElementById('max-per-booking');
+        const maxPerBooking = maxPerBookingInput ? parseInt(maxPerBookingInput.value) : null;
+
+        if (maxPerBooking && maxPerBooking < 1) {
+            alert('El máximo por reserva debe ser al menos 1');
+            return;
+        }
+
+        if (maxPerBooking && maxPerBooking > capacity) {
+            alert('El máximo por reserva no puede ser mayor que la capacidad total');
+            return;
+        }
+
         try {
             const businessId = auth.getBusinessId();
 
             // Obtener booking_settings actual
             const currentSettings = this.businessData.booking_settings || {};
             currentSettings.businessCapacity = capacity;
+            if (maxPerBooking !== null) {
+                currentSettings.maxPerBooking = maxPerBooking;
+            }
 
             // Guardar usando endpoint existente (requiere todos los campos del negocio)
             const response = await api.put(`/api/business/${businessId}`, {
@@ -2054,6 +2071,8 @@ const settings = {
             placeholder = '3';
         }
 
+        const maxPerBooking = bookingSettings.maxPerBooking || (bookingMode === 'tables' ? 10 : 1);
+
         return `
             <div class="settings-section">
                 <div class="settings-section-header">
@@ -2069,6 +2088,17 @@ const settings = {
                            placeholder="${placeholder}">
                     <p class="hint">${hint}</p>
                 </div>
+
+                ${bookingMode === 'tables' ? `
+                    <div class="form-group">
+                        <label>Máximo de comensales por reserva</label>
+                        <input type="number" id="max-per-booking"
+                               min="1" max="50"
+                               value="${maxPerBooking}"
+                               placeholder="10">
+                        <p class="hint">Número máximo de personas que pueden reservar en una sola mesa. Ej: Capacidad total 40, máximo por reserva 10</p>
+                    </div>
+                ` : ''}
 
                 <button class="btn-save" onclick="settings.saveCapacity()">
                     💾 Guardar Capacidad

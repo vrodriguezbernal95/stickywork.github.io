@@ -489,6 +489,17 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         );
         const bookingMode = businessTypesQuery[0]?.booking_mode || 'services';
 
+        // Validar máximo de personas por reserva (solo para restaurantes)
+        if (bookingMode === 'tables' && bookingSettings.maxPerBooking) {
+            const maxPerBooking = bookingSettings.maxPerBooking;
+            if (numPeople > maxPerBooking) {
+                return res.status(400).json({
+                    success: false,
+                    message: `El máximo de comensales por reserva es ${maxPerBooking} personas`
+                });
+            }
+        }
+
         // Validar día laboral
         const bookingDay = new Date(bookingDate + 'T00:00:00').getDay() || 7; // 0=Domingo -> 7
         const workDays = bookingSettings.workDays || [1, 2, 3, 4, 5, 6];
