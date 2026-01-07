@@ -1372,7 +1372,7 @@ router.get('/api/widget/:businessId', async (req, res) => {
         // Obtener negocio
         const businesses = await db.query(
             `SELECT id, name, type_key, type, email, phone, address,
-                    widget_settings, booking_settings
+                    widget_settings, booking_settings, widget_customization
              FROM businesses WHERE id = ?`,
             [businessId]
         );
@@ -1389,6 +1389,7 @@ router.get('/api/widget/:businessId', async (req, res) => {
         // Parsear configuraciones JSON
         let widgetSettings = {};
         let bookingSettings = {};
+        let widgetCustomization = {};
         try {
             // MySQL puede devolver JSON ya parseado o como string, verificar tipo
             widgetSettings = business.widget_settings
@@ -1401,6 +1402,12 @@ router.get('/api/widget/:businessId', async (req, res) => {
                 ? (typeof business.booking_settings === 'string'
                     ? JSON.parse(business.booking_settings)
                     : business.booking_settings)
+                : {};
+
+            widgetCustomization = business.widget_customization
+                ? (typeof business.widget_customization === 'string'
+                    ? JSON.parse(business.widget_customization)
+                    : business.widget_customization)
                 : {};
         } catch (e) {
             console.log('Error parseando settings:', e);
@@ -1453,6 +1460,15 @@ router.get('/api/widget/:businessId', async (req, res) => {
             language: widgetSettings.language || 'es',
             showPrices: widgetSettings.showPrices !== false,
             showDuration: widgetSettings.showDuration !== false,
+            // Personalización visual del widget
+            customization: {
+                primaryColor: widgetCustomization.primaryColor || widgetSettings.primaryColor || '#3b82f6',
+                secondaryColor: widgetCustomization.secondaryColor || widgetSettings.secondaryColor || '#8b5cf6',
+                fontFamily: widgetCustomization.fontFamily || 'system-ui',
+                borderRadius: widgetCustomization.borderRadius || '12px',
+                buttonStyle: widgetCustomization.buttonStyle || 'solid',
+                darkMode: widgetCustomization.darkMode || false
+            },
             // Configuración de horarios
             scheduleType: bookingSettings.scheduleType || 'continuous',
             workDays: bookingSettings.workDays || [1, 2, 3, 4, 5, 6],
@@ -1804,6 +1820,82 @@ router.put('/api/business/:businessId/settings', requireAuth, async (req, res) =
         res.status(500).json({
             success: false,
             error: 'Error al actualizar configuración'
+        });
+    }
+});
+
+/**
+ * PUT /api/business/:businessId/widget-customization
+ * Actualizar personalización visual del widget
+ */
+router.put('/api/business/:businessId/widget-customization', requireAuth, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { customization } = req.body;
+
+        console.log('🎨 PUT /api/business/widget-customization - businessId:', businessId);
+        console.log('📦 Customization recibida:', JSON.stringify(customization, null, 2));
+
+        // Verificar acceso
+        if (req.user.businessId != businessId) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        // Validar estructura de customization
+        const allowedFields = ['primaryColor', 'secondaryColor', 'fontFamily', 'borderRadius', 'buttonStyle', 'darkMode'];
+        const validCustomization = {};
+
+        for (const field of allowedFields) {
+            if (customization[field] !== undefined) {
+                validCustomization[field] = customization[field];
+            }
+        }
+
+        // Validar colores (formato hex)
+        const colorRegex = /^#[0-9A-F]{6}$/i;
+        if (validCustomization.primaryColor && !colorRegex.test(validCustomization.primaryColor)) {
+            return res.status(400).json({
+                success: false,
+                error: 'primaryColor debe ser un color hex válido (ej: #3b82f6)'
+            });
+        }
+        if (validCustomization.secondaryColor && !colorRegex.test(validCustomization.secondaryColor)) {
+            return res.status(400).json({
+                success: false,
+                error: 'secondaryColor debe ser un color hex válido (ej: #8b5cf6)'
+            });
+        }
+
+        // Validar buttonStyle
+        const validButtonStyles = ['solid', 'outline', 'ghost'];
+        if (validCustomization.buttonStyle && !validButtonStyles.includes(validCustomization.buttonStyle)) {
+            return res.status(400).json({
+                success: false,
+                error: `buttonStyle debe ser uno de: ${validButtonStyles.join(', ')}`
+            });
+        }
+
+        // Actualizar en la base de datos
+        await db.query(
+            'UPDATE businesses SET widget_customization = ? WHERE id = ?',
+            [JSON.stringify(validCustomization), businessId]
+        );
+
+        console.log('✅ Customization guardada:', validCustomization);
+
+        res.json({
+            success: true,
+            message: 'Personalización del widget actualizada',
+            customization: validCustomization
+        });
+    } catch (error) {
+        console.error('Error actualizando widget customization:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar personalización del widget'
         });
     }
 });
