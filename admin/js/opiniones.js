@@ -154,8 +154,20 @@ ${feedbackUrl}
 ¡Gracias!
 ${business.name}`;
 
-        // Limpiar número de teléfono
-        const cleanPhone = customerPhone.replace(/\D/g, '');
+        // Limpiar número de teléfono (solo dígitos)
+        let cleanPhone = customerPhone.replace(/\D/g, '');
+
+        // Si el número tiene 9 dígitos y no empieza con código de país, añadir +34 (España)
+        if (cleanPhone.length === 9) {
+            cleanPhone = '34' + cleanPhone;
+        }
+        // Si empieza con 6, 7, 8 o 9 (números españoles sin código), añadir 34
+        else if (cleanPhone.length === 9 && /^[6-9]/.test(cleanPhone)) {
+            cleanPhone = '34' + cleanPhone;
+        }
+
+        console.log('📱 Número original:', customerPhone);
+        console.log('📱 Número limpio:', cleanPhone);
 
         // Abrir WhatsApp Web
         const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
