@@ -996,8 +996,9 @@
 
         // Campos segun modo
         if (config.bookingMode === 'tables') {
-            // Para restaurantes: usar peopleCount directamente (más confiable que el hidden input)
-            formData.numPeople = peopleCount;
+            // Para restaurantes: leer el valor actual del input (por si lo escribió directamente)
+            const peopleInput = form.querySelector('#stickywork-people-count');
+            formData.numPeople = peopleInput ? parseInt(peopleInput.value) : peopleCount;
             formData.zone = form.zone?.value || ''; // Zona (Terraza/Interior)
             // El servicio se asignará automáticamente en el backend según la hora
         } else if (config.bookingMode === 'classes') {
