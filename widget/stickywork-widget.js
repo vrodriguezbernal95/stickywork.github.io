@@ -359,7 +359,11 @@
                 font-size: 0.85rem;
                 font-weight: 600;
                 color: ${colors.textSecondary};
-                padding: 0.5rem 0;
+                padding: 0.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
             }
             .stickywork-calendar-days {
                 display: grid;
@@ -378,6 +382,7 @@
                 border: 2px solid transparent;
                 background: ${colors.bgSecondary};
                 color: ${colors.textPrimary};
+                box-sizing: border-box;
             }
             .stickywork-calendar-day:hover:not(.disabled):not(.blocked):not(.no-availability) {
                 background: ${config.primaryColor}10;
