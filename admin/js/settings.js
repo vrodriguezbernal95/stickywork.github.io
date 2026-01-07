@@ -1415,8 +1415,13 @@ const settings = {
             const currentSettings = this.businessData.booking_settings || {};
             currentSettings.businessCapacity = capacity;
 
-            // Guardar usando endpoint existente
+            // Guardar usando endpoint existente (requiere todos los campos del negocio)
             const response = await api.put(`/api/business/${businessId}`, {
+                name: this.businessData.name,
+                email: this.businessData.email,
+                phone: this.businessData.phone,
+                address: this.businessData.address,
+                website: this.businessData.website,
                 booking_settings: currentSettings
             });
 
