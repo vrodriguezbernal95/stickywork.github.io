@@ -444,7 +444,9 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         }
 
         // Validar capacidad según el modo de reserva
-        const businessCapacity = bookingSettings.businessCapacity || 1;
+        // Default: 40 para restaurantes (tables), 1 para otros
+        const defaultCapacity = bookingMode === 'tables' ? 40 : 1;
+        const businessCapacity = bookingSettings.businessCapacity || defaultCapacity;
 
         if (bookingMode === 'classes') {
             // MODO CLASSES: Verificar capacidad del servicio específico

@@ -2005,7 +2005,6 @@ const settings = {
     // Render Capacity Tab
     renderCapacityTab() {
         const bookingSettings = this.businessData?.booking_settings || {};
-        const businessCapacity = bookingSettings.businessCapacity || 1;
 
         // Determinar bookingMode del negocio
         const typeKey = this.businessData?.type_key;
@@ -2019,6 +2018,10 @@ const settings = {
             'lawyer': 'services'
         };
         const bookingMode = modeMap[typeKey] || 'services';
+
+        // Default capacity según bookingMode
+        const defaultCapacity = bookingMode === 'tables' ? 40 : 1;
+        const businessCapacity = bookingSettings.businessCapacity || defaultCapacity;
 
         // Si es modo classes, mostrar mensaje informativo
         if (bookingMode === 'classes') {
@@ -2040,9 +2043,9 @@ const settings = {
         // Para services y tables
         let label, hint, placeholder;
         if (bookingMode === 'tables') {
-            label = 'Capacidad total de comensales';
-            hint = 'Número máximo de personas que pueden comer simultáneamente';
-            placeholder = '50';
+            label = 'Capacidad total de comensales por turno';
+            hint = 'Número máximo de personas que pueden comer simultáneamente en cada turno';
+            placeholder = '40';
         } else {
             label = 'Número de profesionales/estaciones';
             hint = 'Cuántas personas pueden ser atendidas al mismo tiempo';
