@@ -632,7 +632,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             if (countQuery[0].count >= serviceCapacity) {
                 return res.status(409).json({
                     success: false,
-                    message: `La clase está llena (capacidad: ${serviceCapacity} personas)`
+                    message: `😔 ¡Ups! Esta clase ya está completa. ¿Por qué no pruebas con otro horario? ¡Tenemos más opciones para ti!`
                 });
             }
 
@@ -686,9 +686,17 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             if (currentPeople + requestedPeople > capacityToCheck) {
                 const available = capacityToCheck - currentPeople;
                 const zoneText = zone ? ` en ${zone}` : '';
+
+                let friendlyMessage;
+                if (available === 0) {
+                    friendlyMessage = `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario? ¡Seguro encontramos hueco para ti!`;
+                } else {
+                    friendlyMessage = `😔 Solo quedan ${available} plazas${zoneText}, pero necesitas ${requestedPeople}. ¿Probamos con menos personas o con otro horario?`;
+                }
+
                 return res.status(409).json({
                     success: false,
-                    message: `No hay suficientes plazas${zoneText} (solicitas: ${requestedPeople}, disponibles: ${available})`
+                    message: friendlyMessage
                 });
             }
 
@@ -706,7 +714,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             if (countQuery[0].count >= businessCapacity) {
                 return res.status(409).json({
                     success: false,
-                    message: 'Ya no hay espacios disponibles para ese horario'
+                    message: '😔 ¡Vaya! Este horario ya está completo. ¿Qué tal si pruebas con otro? ¡Seguro encontramos el momento perfecto para ti!'
                 });
             }
         }
