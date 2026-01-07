@@ -283,11 +283,9 @@
 
                 bookingData = data.data.booking;
 
-                // Get business settings (feedback questions)
-                const businessResponse = await fetch(`${API_URL}/api/widget/${bookingData.business_id}`);
-                const businessData = await businessResponse.json();
-
-                feedbackSettings = businessData.data.bookingSettings?.feedbackSettings || getDefaultFeedbackSettings();
+                // Por ahora usar siempre configuración por defecto
+                // En el futuro se puede personalizar por negocio
+                feedbackSettings = getDefaultFeedbackSettings();
 
                 // Render form
                 renderFeedbackForm();
