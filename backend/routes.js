@@ -440,7 +440,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const customerPhone = req.body.customerPhone || req.body.customer_phone;
         const bookingDate = req.body.bookingDate || req.body.booking_date;
         const bookingTime = req.body.bookingTime || req.body.booking_time;
-        const numPeople = req.body.numPeople || req.body.num_people || 2; // Default 2 personas
+        const numPeople = parseInt(req.body.numPeople || req.body.num_people) || 2; // Default 2 personas, convertir a número
         const zone = req.body.zone || null; // Zona (Terraza, Interior, etc.)
         const notes = req.body.notes;
         const whatsappConsent = req.body.whatsappConsent || req.body.whatsapp_consent || false; // Consentimiento para WhatsApp
@@ -606,13 +606,14 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 [businessId, bookingDate, bookingTime]
             );
 
-            const currentPeople = sumQuery[0].total_people;
-            const requestedPeople = numPeople || 1;
+            const currentPeople = parseInt(sumQuery[0].total_people) || 0;
+            const requestedPeople = parseInt(numPeople) || 1;
 
-            console.log('🔍 [DEBUG CAPACITY] businessCapacity:', businessCapacity);
-            console.log('🔍 [DEBUG CAPACITY] currentPeople:', currentPeople);
-            console.log('🔍 [DEBUG CAPACITY] requestedPeople:', requestedPeople);
-            console.log('🔍 [DEBUG CAPACITY] Validación:', currentPeople + requestedPeople, '>', businessCapacity, '=', (currentPeople + requestedPeople > businessCapacity));
+            console.log('🔍 [DEBUG CAPACITY] businessCapacity:', businessCapacity, typeof businessCapacity);
+            console.log('🔍 [DEBUG CAPACITY] currentPeople:', currentPeople, typeof currentPeople);
+            console.log('🔍 [DEBUG CAPACITY] requestedPeople:', requestedPeople, typeof requestedPeople);
+            console.log('🔍 [DEBUG CAPACITY] Suma:', currentPeople + requestedPeople);
+            console.log('🔍 [DEBUG CAPACITY] Validación:', (currentPeople + requestedPeople), '>', businessCapacity, '=', (currentPeople + requestedPeople > businessCapacity));
 
             if (currentPeople + requestedPeople > businessCapacity) {
                 const available = businessCapacity - currentPeople;
