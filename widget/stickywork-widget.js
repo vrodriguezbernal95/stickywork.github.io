@@ -968,6 +968,8 @@
                 whatsapp_consent: formData.whatsappConsent || false
             };
 
+            console.log('📤 [Debug] Enviando al backend:', bookingData);
+
             const response = await fetch(`${config.apiUrl}/api/bookings`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -999,6 +1001,7 @@
             // Para restaurantes: leer el valor actual del input (por si lo escribió directamente)
             const peopleInput = form.querySelector('#stickywork-people-count');
             formData.numPeople = peopleInput ? parseInt(peopleInput.value) : peopleCount;
+            console.log('🔍 [Debug] peopleInput:', peopleInput, 'value:', peopleInput?.value, 'numPeople final:', formData.numPeople);
             formData.zone = form.zone?.value || ''; // Zona (Terraza/Interior)
             // El servicio se asignará automáticamente en el backend según la hora
         } else if (config.bookingMode === 'classes') {
