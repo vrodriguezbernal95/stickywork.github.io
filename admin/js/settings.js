@@ -1553,8 +1553,10 @@ const settings = {
                         <option value="30" selected>30 minutos</option>
                         <option value="45">45 minutos</option>
                         <option value="60">1 hora</option>
+                        <option value="90">1 hora 30 minutos</option>
+                        <option value="120">2 horas</option>
                     </select>
-                    <p class="hint">Los clientes podrán reservar en intervalos de este tiempo</p>
+                    <p class="hint">Los clientes podrán reservar en intervalos de este tiempo. Ideal para restaurantes: 1h 30min o 2h por servicio</p>
                 </div>
 
                 <button class="btn-save" onclick="settings.saveSchedule()">
