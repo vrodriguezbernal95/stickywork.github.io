@@ -910,7 +910,28 @@
         const availability = slotsAvailability[time];
         if (!availability) return '';
 
-        const { available, total, percentage } = availability;
+        let available, total, percentage;
+
+        // Si tiene zonas, agregar disponibilidad de todas las zonas
+        if (availability.zones) {
+            total = 0;
+            available = 0;
+            let occupied = 0;
+
+            Object.keys(availability.zones).forEach(zoneName => {
+                const zone = availability.zones[zoneName];
+                total += zone.total;
+                available += zone.available;
+                occupied += zone.occupied;
+            });
+
+            percentage = total > 0 ? Math.round((occupied / total) * 100) : 0;
+        } else {
+            // Estructura plana (sin zonas)
+            available = availability.available;
+            total = availability.total;
+            percentage = availability.percentage;
+        }
 
         // Determinar color según porcentaje de ocupación
         let badge = '';
@@ -936,7 +957,14 @@
     // Verificar si un slot está lleno
     function isSlotFull(time) {
         const availability = slotsAvailability[time];
-        return availability && availability.percentage >= 100;
+        if (!availability) return false;
+
+        // Si tiene zonas, verificar si TODAS las zonas están llenas
+        if (availability.zones) {
+            return Object.values(availability.zones).every(zone => zone.percentage >= 100);
+        }
+
+        return availability.percentage >= 100;
     }
 
     // Enviar reserva
