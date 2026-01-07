@@ -85,6 +85,9 @@ const settings = {
                     <button class="settings-tab" data-tab="widget" onclick="settings.switchTab('widget')">
                         🎨 Widget
                     </button>
+                    <button class="settings-tab" data-tab="design" onclick="settings.switchTab('design')">
+                        🖌️ Diseño
+                    </button>
                     <button class="settings-tab" data-tab="notifications" onclick="settings.switchTab('notifications')">
                         📧 Notificaciones
                     </button>
@@ -126,6 +129,9 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-widget">
                         ${this.renderWidgetTab()}
+                    </div>
+                    <div class="settings-tab-content" id="tab-design">
+                        ${this.renderDesignTab()}
                     </div>
                     <div class="settings-tab-content" id="tab-notifications">
                         ${this.renderNotificationsTab()}
@@ -862,6 +868,11 @@ const settings = {
             setTimeout(() => this.loadScheduleSettings(), 100);
         }
 
+        // Initialize preview when opening design tab
+        if (tabName === 'design') {
+            setTimeout(() => this.updatePreview(), 100);
+        }
+
         // Initialize WhatsApp textarea event listener when opening notifications tab
         if (tabName === 'notifications') {
             setTimeout(() => {
@@ -1121,6 +1132,116 @@ const settings = {
         `;
     },
 
+    // Render Design Tab
+    renderDesignTab() {
+        const business = this.businessData;
+        const customization = business.widget_customization
+            ? (typeof business.widget_customization === 'string'
+                ? JSON.parse(business.widget_customization)
+                : business.widget_customization)
+            : {};
+
+        const primaryColor = customization.primaryColor || '#3b82f6';
+        const secondaryColor = customization.secondaryColor || '#8b5cf6';
+        const fontFamily = customization.fontFamily || 'system-ui';
+        const borderRadius = customization.borderRadius || '12px';
+        const buttonStyle = customization.buttonStyle || 'solid';
+
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>🖌️ Personalización Visual del Widget</h3>
+                    <p>Personaliza el diseño del widget para que combine con tu marca</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- Panel de Controles -->
+                    <div>
+                        <div class="form-group">
+                            <label>Color Principal</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="color" id="design-primary-color" value="${primaryColor}"
+                                       onchange="settings.updatePreview()"
+                                       style="width: 60px; height: 40px; border-radius: 8px; border: 2px solid var(--border-color); cursor: pointer;">
+                                <input type="text" id="design-primary-color-text" value="${primaryColor}"
+                                       onchange="settings.syncColorInput('primary')"
+                                       style="flex: 1; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                            </div>
+                            <p class="hint">Color de botones, títulos y elementos destacados</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Color Secundario</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="color" id="design-secondary-color" value="${secondaryColor}"
+                                       onchange="settings.updatePreview()"
+                                       style="width: 60px; height: 40px; border-radius: 8px; border: 2px solid var(--border-color); cursor: pointer;">
+                                <input type="text" id="design-secondary-color-text" value="${secondaryColor}"
+                                       onchange="settings.syncColorInput('secondary')"
+                                       style="flex: 1; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                            </div>
+                            <p class="hint">Color para hover y elementos secundarios</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fuente Tipográfica</label>
+                            <select id="design-font-family" onchange="settings.updatePreview()">
+                                <option value="system-ui" ${fontFamily === 'system-ui' ? 'selected' : ''}>Sistema (Por defecto)</option>
+                                <option value="Arial, sans-serif" ${fontFamily === 'Arial, sans-serif' ? 'selected' : ''}>Arial</option>
+                                <option value="'Georgia', serif" ${fontFamily === "'Georgia', serif" ? 'selected' : ''}>Georgia</option>
+                                <option value="'Courier New', monospace" ${fontFamily === "'Courier New', monospace" ? 'selected' : ''}>Courier New</option>
+                                <option value="'Helvetica', sans-serif" ${fontFamily === "'Helvetica', sans-serif" ? 'selected' : ''}>Helvetica</option>
+                                <option value="'Times New Roman', serif" ${fontFamily === "'Times New Roman', serif" ? 'selected' : ''}>Times New Roman</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Redondez de Bordes</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="range" id="design-border-radius" min="0" max="24" value="${parseInt(borderRadius)}"
+                                       oninput="settings.updatePreview()"
+                                       style="flex: 1;">
+                                <span id="border-radius-value" style="min-width: 50px; font-weight: 600;">${borderRadius}</span>
+                            </div>
+                            <p class="hint">0px = Cuadrado, 24px = Muy redondeado</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Estilo de Botones</label>
+                            <select id="design-button-style" onchange="settings.updatePreview()">
+                                <option value="solid" ${buttonStyle === 'solid' ? 'selected' : ''}>Sólido</option>
+                                <option value="outline" ${buttonStyle === 'outline' ? 'selected' : ''}>Contorno</option>
+                                <option value="ghost" ${buttonStyle === 'ghost' ? 'selected' : ''}>Fantasma</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-save" onclick="settings.saveDesignCustomization()">
+                            💾 Guardar Personalización
+                        </button>
+
+                        <button class="btn-secondary" onclick="settings.resetDesignCustomization()"
+                                style="margin-top: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                            🔄 Restaurar Valores por Defecto
+                        </button>
+                    </div>
+
+                    <!-- Preview en Tiempo Real -->
+                    <div>
+                        <h4 style="margin-bottom: 1rem;">Vista Previa</h4>
+                        <div id="widget-preview" style="border: 2px solid var(--border-color); border-radius: 12px; padding: 1.5rem; background: var(--bg-primary);">
+                            <div id="preview-content">
+                                <!-- El preview se renderizará aquí -->
+                            </div>
+                        </div>
+                        <p class="hint" style="margin-top: 1rem;">
+                            ℹ️ Los cambios se reflejan en tiempo real. Guarda cuando estés satisfecho con el diseño.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
     // Render Notifications Tab
     renderNotificationsTab() {
         const business = this.businessData;
@@ -1335,6 +1456,141 @@ const settings = {
             console.error('Error saving widget settings:', error);
             alert('❌ Error al guardar la configuración del widget');
         }
+    },
+
+    // Update preview in real-time
+    updatePreview() {
+        const primaryColor = document.getElementById('design-primary-color').value;
+        const secondaryColor = document.getElementById('design-secondary-color').value;
+        const fontFamily = document.getElementById('design-font-family').value;
+        const borderRadius = document.getElementById('design-border-radius').value;
+        const buttonStyle = document.getElementById('design-button-style').value;
+
+        // Update border radius display
+        document.getElementById('border-radius-value').textContent = `${borderRadius}px`;
+
+        // Update text inputs if they exist
+        const primaryText = document.getElementById('design-primary-color-text');
+        const secondaryText = document.getElementById('design-secondary-color-text');
+        if (primaryText) primaryText.value = primaryColor;
+        if (secondaryText) secondaryText.value = secondaryColor;
+
+        // Render preview
+        this.renderWidgetPreview(primaryColor, secondaryColor, fontFamily, borderRadius, buttonStyle);
+    },
+
+    // Sync color picker with text input
+    syncColorInput(type) {
+        const textInput = document.getElementById(`design-${type}-color-text`);
+        const colorPicker = document.getElementById(`design-${type}-color`);
+
+        if (textInput && colorPicker) {
+            const color = textInput.value;
+            // Validate hex color
+            if (/^#[0-9A-F]{6}$/i.test(color)) {
+                colorPicker.value = color;
+                this.updatePreview();
+            }
+        }
+    },
+
+    // Render widget preview
+    renderWidgetPreview(primaryColor, secondaryColor, fontFamily, borderRadius, buttonStyle) {
+        const preview = document.getElementById('preview-content');
+        if (!preview) return;
+
+        // Determine button styles based on buttonStyle
+        let buttonStyles = '';
+        switch(buttonStyle) {
+            case 'solid':
+                buttonStyles = `background: ${primaryColor}; color: white; border: 2px solid ${primaryColor};`;
+                break;
+            case 'outline':
+                buttonStyles = `background: transparent; color: ${primaryColor}; border: 2px solid ${primaryColor};`;
+                break;
+            case 'ghost':
+                buttonStyles = `background: ${primaryColor}15; color: ${primaryColor}; border: 2px solid transparent;`;
+                break;
+        }
+
+        preview.innerHTML = `
+            <div style="font-family: ${fontFamily};">
+                <h3 style="color: ${primaryColor}; margin-bottom: 1rem; border-radius: ${borderRadius}px;">
+                    Reserva tu Cita
+                </h3>
+                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: ${borderRadius}px; margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        Nombre
+                    </label>
+                    <input type="text" placeholder="Tu nombre"
+                           style="width: 100%; padding: 0.75rem; border-radius: ${borderRadius}px; border: 2px solid var(--border-color);">
+                </div>
+                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: ${borderRadius}px; margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        Fecha
+                    </label>
+                    <input type="date"
+                           style="width: 100%; padding: 0.75rem; border-radius: ${borderRadius}px; border: 2px solid var(--border-color);">
+                </div>
+                <button style="${buttonStyles} padding: 0.75rem 1.5rem; border-radius: ${borderRadius}px; font-weight: 600; cursor: pointer; width: 100%; transition: all 0.2s;"
+                        onmouseover="this.style.opacity='0.9'"
+                        onmouseout="this.style.opacity='1'">
+                    Confirmar Reserva
+                </button>
+                <p style="margin-top: 1rem; font-size: 0.85rem; color: ${secondaryColor};">
+                    ℹ️ Recibirás un email de confirmación
+                </p>
+            </div>
+        `;
+    },
+
+    // Save design customization
+    async saveDesignCustomization() {
+        try {
+            const businessId = auth.getBusinessId();
+
+            const customization = {
+                primaryColor: document.getElementById('design-primary-color').value,
+                secondaryColor: document.getElementById('design-secondary-color').value,
+                fontFamily: document.getElementById('design-font-family').value,
+                borderRadius: `${document.getElementById('design-border-radius').value}px`,
+                buttonStyle: document.getElementById('design-button-style').value
+            };
+
+            console.log('Guardando customización:', customization);
+
+            const response = await api.put(`/api/business/${businessId}/widget-customization`, {
+                customization
+            });
+
+            if (response.success) {
+                // Update local data
+                this.businessData.widget_customization = JSON.stringify(customization);
+                alert('✅ Personalización guardada correctamente');
+            } else {
+                throw new Error(response.error || 'Error al guardar');
+            }
+        } catch (error) {
+            console.error('Error saving design customization:', error);
+            alert('❌ Error al guardar la personalización: ' + error.message);
+        }
+    },
+
+    // Reset design customization to defaults
+    resetDesignCustomization() {
+        if (!confirm('¿Seguro que quieres restaurar los valores por defecto?')) {
+            return;
+        }
+
+        document.getElementById('design-primary-color').value = '#3b82f6';
+        document.getElementById('design-primary-color-text').value = '#3b82f6';
+        document.getElementById('design-secondary-color').value = '#8b5cf6';
+        document.getElementById('design-secondary-color-text').value = '#8b5cf6';
+        document.getElementById('design-font-family').value = 'system-ui';
+        document.getElementById('design-border-radius').value = '12';
+        document.getElementById('design-button-style').value = 'solid';
+
+        this.updatePreview();
     },
 
     // Save notification settings
