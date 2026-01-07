@@ -1401,11 +1401,54 @@ const settings = {
 
     // Save capacity settings
     async saveCapacity() {
-        const capacity = parseInt(document.getElementById('business-capacity').value);
+        const typeKey = this.businessData?.type_key;
+        const modeMap = {
+            'salon': 'services',
+            'clinic': 'services',
+            'restaurant': 'tables',
+            'gym': 'classes',
+            'nutrition': 'services',
+            'spa': 'services',
+            'lawyer': 'services'
+        };
+        const bookingMode = modeMap[typeKey] || 'services';
 
-        if (!capacity || capacity < 1) {
-            alert('Por favor ingresa una capacidad válida (mínimo 1)');
-            return;
+        let capacity, zoneCapacities;
+
+        // Para restaurantes (tables), leer capacidades por zona
+        if (bookingMode === 'tables') {
+            const zoneInputs = document.querySelectorAll('.zone-capacity-input');
+            zoneCapacities = {};
+            let totalCapacity = 0;
+
+            zoneInputs.forEach(input => {
+                const zone = input.dataset.zone;
+                const zoneCapacity = parseInt(input.value);
+
+                if (!zoneCapacity || zoneCapacity < 1) {
+                    alert(`Por favor ingresa una capacidad válida para ${zone} (mínimo 1)`);
+                    return;
+                }
+
+                zoneCapacities[zone] = zoneCapacity;
+                totalCapacity += zoneCapacity;
+            });
+
+            if (Object.keys(zoneCapacities).length === 0) {
+                alert('Por favor configura al menos una zona');
+                return;
+            }
+
+            capacity = totalCapacity; // businessCapacity será la suma total
+        } else {
+            // Para services, leer capacidad única
+            const capacityInput = document.getElementById('business-capacity');
+            capacity = capacityInput ? parseInt(capacityInput.value) : null;
+
+            if (!capacity || capacity < 1) {
+                alert('Por favor ingresa una capacidad válida (mínimo 1)');
+                return;
+            }
         }
 
         // Obtener maxPerBooking si existe (solo para restaurantes)
@@ -1428,6 +1471,11 @@ const settings = {
             // Obtener booking_settings actual
             const currentSettings = this.businessData.booking_settings || {};
             currentSettings.businessCapacity = capacity;
+
+            if (bookingMode === 'tables') {
+                currentSettings.zoneCapacities = zoneCapacities;
+            }
+
             if (maxPerBooking !== null) {
                 currentSettings.maxPerBooking = maxPerBooking;
             }
@@ -2059,19 +2107,56 @@ const settings = {
             `;
         }
 
-        // Para services y tables
-        let label, hint, placeholder;
+        // Para restaurantes (tables), mostrar capacidad por zona
         if (bookingMode === 'tables') {
-            label = 'Capacidad total de comensales por turno';
-            hint = 'Número máximo de personas que pueden comer simultáneamente en cada turno';
-            placeholder = '40';
-        } else {
-            label = 'Número de profesionales/estaciones';
-            hint = 'Cuántas personas pueden ser atendidas al mismo tiempo';
-            placeholder = '3';
+            const zones = bookingSettings.restaurantZones || ['Terraza', 'Interior'];
+            const zoneCapacities = bookingSettings.zoneCapacities || {};
+            const maxPerBooking = bookingSettings.maxPerBooking || 10;
+
+            const zoneFields = zones.map(zone => {
+                const capacity = zoneCapacities[zone] || 20;
+                return `
+                    <div class="form-group">
+                        <label>Capacidad ${zone}</label>
+                        <input type="number" class="zone-capacity-input"
+                               data-zone="${zone}"
+                               min="1" max="1000"
+                               value="${capacity}"
+                               placeholder="20">
+                        <p class="hint">Número máximo de comensales en ${zone} por turno</p>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <h3>👥 Gestión de Capacidad por Zona</h3>
+                        <p>Configura la capacidad de cada zona de tu restaurante</p>
+                    </div>
+
+                    ${zoneFields}
+
+                    <div class="form-group">
+                        <label>Máximo de comensales por reserva</label>
+                        <input type="number" id="max-per-booking"
+                               min="1" max="50"
+                               value="${maxPerBooking}"
+                               placeholder="10">
+                        <p class="hint">Número máximo de personas que pueden reservar en una sola mesa</p>
+                    </div>
+
+                    <button class="btn-save" onclick="settings.saveCapacity()">
+                        💾 Guardar Capacidad
+                    </button>
+                </div>
+            `;
         }
 
-        const maxPerBooking = bookingSettings.maxPerBooking || (bookingMode === 'tables' ? 10 : 1);
+        // Para services
+        const label = 'Número de profesionales/estaciones';
+        const hint = 'Cuántas personas pueden ser atendidas al mismo tiempo';
+        const placeholder = '3';
 
         return `
             <div class="settings-section">
@@ -2088,17 +2173,6 @@ const settings = {
                            placeholder="${placeholder}">
                     <p class="hint">${hint}</p>
                 </div>
-
-                ${bookingMode === 'tables' ? `
-                    <div class="form-group">
-                        <label>Máximo de comensales por reserva</label>
-                        <input type="number" id="max-per-booking"
-                               min="1" max="50"
-                               value="${maxPerBooking}"
-                               placeholder="10">
-                        <p class="hint">Número máximo de personas que pueden reservar en una sola mesa. Ej: Capacidad total 40, máximo por reserva 10</p>
-                    </div>
-                ` : ''}
 
                 <button class="btn-save" onclick="settings.saveCapacity()">
                     💾 Guardar Capacidad

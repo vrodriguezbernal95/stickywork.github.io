@@ -354,29 +354,46 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
         const defaultCapacity = bookingMode === 'tables' ? 40 : 1;
         const businessCapacity = bookingSettings.businessCapacity || defaultCapacity;
 
-        // Obtener todas las reservas para esa fecha
+        // Obtener todas las reservas para esa fecha (incluir zone para restaurantes)
         const bookings = await db.query(
-            `SELECT booking_time, num_people, service_id, status
+            `SELECT booking_time, num_people, service_id, zone, status
              FROM bookings
              WHERE business_id = ? AND booking_date = ? AND status != 'cancelled'`,
             [businessId, date]
         );
 
+        // Verificar si hay capacidad por zonas configurada
+        const zoneCapacities = bookingSettings.zoneCapacities;
+        const hasZoneCapacities = zoneCapacities && Object.keys(zoneCapacities).length > 0;
+
         // Calcular disponibilidad por slot
         const availability = {};
 
-        if (bookingMode === 'tables') {
-            // MODO TABLES: Sumar num_people por slot
+        if (bookingMode === 'tables' && hasZoneCapacities) {
+            // MODO TABLES CON ZONAS: Sumar num_people por slot y zona
             bookings.forEach(booking => {
                 const time = booking.booking_time.substring(0, 5); // "HH:MM"
+                const zone = booking.zone || 'Sin zona';
+
+                if (!availability[time]) {
+                    availability[time] = {};
+                }
+                if (!availability[time][zone]) {
+                    availability[time][zone] = { occupied: 0 };
+                }
+                availability[time][zone].occupied += booking.num_people || 1;
+            });
+        } else if (bookingMode === 'tables') {
+            // MODO TABLES SIN ZONAS: Sumar num_people por slot
+            bookings.forEach(booking => {
+                const time = booking.booking_time.substring(0, 5);
                 if (!availability[time]) {
                     availability[time] = { occupied: 0 };
                 }
                 availability[time].occupied += booking.num_people || 1;
             });
         } else if (bookingMode === 'classes') {
-            // MODO CLASSES: Contar reservas por servicio y slot
-            // Para simplificar, devolvemos disponibilidad general
+            // MODO CLASSES: Contar reservas por slot
             bookings.forEach(booking => {
                 const time = booking.booking_time.substring(0, 5);
                 if (!availability[time]) {
@@ -397,18 +414,42 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
 
         // Calcular disponibilidad final
         const slots = {};
-        Object.keys(availability).forEach(time => {
-            const occupied = availability[time].occupied;
-            const available = Math.max(0, businessCapacity - occupied);
-            const percentage = Math.round((occupied / businessCapacity) * 100);
 
-            slots[time] = {
-                total: businessCapacity,
-                occupied,
-                available,
-                percentage
-            };
-        });
+        if (bookingMode === 'tables' && hasZoneCapacities) {
+            // Calcular disponibilidad por zona
+            Object.keys(availability).forEach(time => {
+                slots[time] = { zones: {} };
+
+                // Calcular disponibilidad de cada zona
+                Object.keys(zoneCapacities).forEach(zoneName => {
+                    const capacity = zoneCapacities[zoneName];
+                    const occupied = availability[time][zoneName]?.occupied || 0;
+                    const available = Math.max(0, capacity - occupied);
+                    const percentage = Math.round((occupied / capacity) * 100);
+
+                    slots[time].zones[zoneName] = {
+                        total: capacity,
+                        occupied,
+                        available,
+                        percentage
+                    };
+                });
+            });
+        } else {
+            // Calcular disponibilidad general
+            Object.keys(availability).forEach(time => {
+                const occupied = availability[time].occupied;
+                const available = Math.max(0, businessCapacity - occupied);
+                const percentage = Math.round((occupied / businessCapacity) * 100);
+
+                slots[time] = {
+                    total: businessCapacity,
+                    occupied,
+                    available,
+                    percentage
+                };
+            });
+        }
 
         res.json({
             success: true,
@@ -597,29 +638,57 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
 
         } else if (bookingMode === 'tables') {
             // MODO TABLES: Sumar num_people de reservas existentes
+            // Si hay zoneCapacities configuradas y viene una zona, validar por zona
+            const zoneCapacities = bookingSettings.zoneCapacities;
+            const hasZoneCapacities = zoneCapacities && Object.keys(zoneCapacities).length > 0;
+
+            let capacityToCheck, queryParams, queryWhere;
+
+            if (hasZoneCapacities && zone) {
+                // Validar capacidad de zona específica
+                capacityToCheck = zoneCapacities[zone];
+
+                if (!capacityToCheck) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `La zona "${zone}" no está configurada`
+                    });
+                }
+
+                // Contar solo reservas de esa zona
+                queryWhere = `WHERE business_id = ? AND booking_date = ? AND booking_time = ?
+                             AND zone = ? AND status != 'cancelled'`;
+                queryParams = [businessId, bookingDate, bookingTime, zone];
+            } else {
+                // Sin zonas configuradas o sin zona seleccionada, usar capacidad general
+                capacityToCheck = businessCapacity;
+                queryWhere = `WHERE business_id = ? AND booking_date = ? AND booking_time = ?
+                             AND status != 'cancelled'`;
+                queryParams = [businessId, bookingDate, bookingTime];
+            }
+
             const sumQuery = await db.query(
-                `SELECT COALESCE(SUM(num_people), 0) as total_people FROM bookings
-                 WHERE business_id = ?
-                 AND booking_date = ?
-                 AND booking_time = ?
-                 AND status != 'cancelled'`,
-                [businessId, bookingDate, bookingTime]
+                `SELECT COALESCE(SUM(num_people), 0) as total_people FROM bookings ${queryWhere}`,
+                queryParams
             );
 
             const currentPeople = parseInt(sumQuery[0].total_people) || 0;
             const requestedPeople = parseInt(numPeople) || 1;
 
-            console.log('🔍 [DEBUG CAPACITY] businessCapacity:', businessCapacity, typeof businessCapacity);
+            console.log('🔍 [DEBUG CAPACITY] zone:', zone || 'sin zona');
+            console.log('🔍 [DEBUG CAPACITY] hasZoneCapacities:', hasZoneCapacities);
+            console.log('🔍 [DEBUG CAPACITY] capacityToCheck:', capacityToCheck, typeof capacityToCheck);
             console.log('🔍 [DEBUG CAPACITY] currentPeople:', currentPeople, typeof currentPeople);
             console.log('🔍 [DEBUG CAPACITY] requestedPeople:', requestedPeople, typeof requestedPeople);
             console.log('🔍 [DEBUG CAPACITY] Suma:', currentPeople + requestedPeople);
-            console.log('🔍 [DEBUG CAPACITY] Validación:', (currentPeople + requestedPeople), '>', businessCapacity, '=', (currentPeople + requestedPeople > businessCapacity));
+            console.log('🔍 [DEBUG CAPACITY] Validación:', (currentPeople + requestedPeople), '>', capacityToCheck, '=', (currentPeople + requestedPeople > capacityToCheck));
 
-            if (currentPeople + requestedPeople > businessCapacity) {
-                const available = businessCapacity - currentPeople;
+            if (currentPeople + requestedPeople > capacityToCheck) {
+                const available = capacityToCheck - currentPeople;
+                const zoneText = zone ? ` en ${zone}` : '';
                 return res.status(409).json({
                     success: false,
-                    message: `No hay suficientes plazas (solicitas: ${requestedPeople}, disponibles: ${available})`
+                    message: `No hay suficientes plazas${zoneText} (solicitas: ${requestedPeople}, disponibles: ${available})`
                 });
             }
 
