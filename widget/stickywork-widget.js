@@ -636,8 +636,68 @@
             }
             @media (max-width: 600px) {
                 .stickywork-row { grid-template-columns: 1fr; }
-                .stickywork-widget { padding: 1.5rem; }
+                .stickywork-widget {
+                    padding: 1rem;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
                 .stickywork-modal { width: 95%; padding: 1.5rem; }
+                .stickywork-title {
+                    font-size: 1.4rem;
+                    margin-bottom: 1rem;
+                }
+                .stickywork-form {
+                    gap: 0.75rem;
+                }
+                .stickywork-label {
+                    font-size: 0.9rem;
+                    margin-bottom: 0.4rem;
+                }
+                .stickywork-input,
+                .stickywork-select,
+                .stickywork-textarea,
+                .stickywork-custom-select-trigger,
+                .stickywork-calendar-trigger {
+                    padding: 0.65rem;
+                    font-size: 0.95rem;
+                }
+                .stickywork-button {
+                    padding: 0.85rem;
+                    font-size: 1rem;
+                }
+                .stickywork-calendar-header {
+                    padding: 0.75rem 0.5rem;
+                }
+                .stickywork-calendar-month {
+                    font-size: 1rem;
+                }
+                .stickywork-calendar-nav {
+                    padding: 0.4rem 0.7rem;
+                    font-size: 1rem;
+                }
+                .stickywork-calendar-day {
+                    font-size: 0.85rem;
+                    border-radius: 6px;
+                }
+                .stickywork-calendar-weekday {
+                    font-size: 0.8rem;
+                }
+                .stickywork-time-slots {
+                    gap: 0.5rem;
+                }
+                .stickywork-time-slot {
+                    padding: 0.6rem;
+                    font-size: 0.9rem;
+                    border-radius: 6px;
+                }
+                .stickywork-custom-select-dropdown,
+                .stickywork-calendar-dropdown-content {
+                    max-height: 60vh;
+                    overflow-y: auto;
+                }
+                .stickywork-availability-badge {
+                    font-size: 0.8rem;
+                }
             }
             .stickywork-floating-btn {
                 position: fixed;
