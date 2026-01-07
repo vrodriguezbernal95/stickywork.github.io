@@ -11,6 +11,7 @@ async function init() {
     if (!isAuth) return;
 
     // Cargar datos
+    await loadPendingFeedbacks();
     await loadStats();
     await loadFeedbacks();
 
@@ -24,6 +25,155 @@ async function init() {
         currentFilters.period = e.target.value;
         loadFeedbacks();
     });
+}
+
+// Cargar feedbacks pendientes de enviar
+async function loadPendingFeedbacks() {
+    const container = document.getElementById('pendingFeedbackContainer');
+    if (!container) return;
+
+    try {
+        const businessId = auth.getBusinessId();
+        const response = await api.get(`/api/admin/feedback/pending/${businessId}`);
+
+        if (response.success) {
+            const pendingList = response.data;
+
+            if (pendingList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state-small">
+                        <span style="font-size: 24px">✅</span>
+                        <p style="margin: 0.5rem 0 0 0; color: #10b981; font-weight: 500;">
+                            ¡Todo al día! No hay solicitudes de feedback pendientes.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Mostrar badge con número de pendientes
+            const badge = document.getElementById('pendingCount');
+            if (badge) {
+                badge.textContent = pendingList.length;
+                badge.style.display = 'inline-block';
+            }
+
+            container.innerHTML = `
+                <div class="pending-feedback-header">
+                    <h3>📝 Solicitudes Pendientes (${pendingList.length})</h3>
+                    <p style="margin: 0.5rem 0; color: #666;">Clientes que completaron su servicio hace 24h y están esperando tu solicitud de opinión</p>
+                </div>
+                <div class="pending-feedback-list"></div>
+            `;
+
+            const listContainer = container.querySelector('.pending-feedback-list');
+
+            pendingList.forEach(pending => {
+                const card = createPendingCard(pending);
+                listContainer.appendChild(card);
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar feedbacks pendientes:', error);
+        container.innerHTML = `
+            <div class="empty-state-small">
+                <span style="font-size: 24px">⚠️</span>
+                <p style="margin: 0.5rem 0 0 0; color: #ef4444;">Error al cargar solicitudes pendientes</p>
+            </div>
+        `;
+    }
+}
+
+// Crear tarjeta de feedback pendiente
+function createPendingCard(pending) {
+    const card = document.createElement('div');
+    card.className = 'pending-feedback-card';
+
+    const bookingDate = new Date(pending.booking_date);
+    const dateStr = bookingDate.toLocaleDateString('es-ES', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+    });
+
+    const daysAgo = pending.days_ago;
+    const daysText = daysAgo === 1 ? 'ayer' : `hace ${daysAgo} días`;
+
+    card.innerHTML = `
+        <div class="pending-info">
+            <h4>${pending.customer_name}</h4>
+            <p class="pending-meta">
+                ${pending.service_name || 'Servicio'} • ${dateStr} (${daysText})
+            </p>
+            ${pending.customer_phone ? `<p class="pending-phone">📱 ${pending.customer_phone}</p>` : ''}
+        </div>
+        <button class="btn-send-feedback" onclick="opiniones.sendFeedbackWhatsApp(${pending.id}, '${pending.customer_name}', '${pending.customer_phone}', '${pending.service_name || ''}', '${pending.feedback_token}')">
+            💬 Solicitar Opinión
+        </button>
+    `;
+
+    return card;
+}
+
+// Enviar solicitud de feedback por WhatsApp
+async function sendFeedbackWhatsApp(bookingId, customerName, customerPhone, serviceName, feedbackToken) {
+    try {
+        const businessId = auth.getBusinessId();
+
+        // Obtener configuración de WhatsApp del negocio
+        const businessResponse = await api.get(`/api/business/${businessId}`);
+        if (!businessResponse.success) {
+            alert('Error al obtener datos del negocio');
+            return;
+        }
+
+        const business = businessResponse.data;
+
+        // Verificar que WhatsApp esté configurado
+        if (!business.whatsapp_enabled || !business.whatsapp_number) {
+            alert('⚠️ Debes configurar WhatsApp primero en Configuración → Notificaciones');
+            return;
+        }
+
+        if (!customerPhone) {
+            alert('⚠️ Este cliente no tiene número de teléfono registrado');
+            return;
+        }
+
+        // Generar URL de feedback
+        const feedbackUrl = `https://stickywork.com/feedback.html?token=${feedbackToken}`;
+
+        // Crear mensaje personalizado
+        const message = `Hola ${customerName}! 👋
+
+¿Qué tal tu ${serviceName} en ${business.name}?
+
+Tu opinión nos ayuda a mejorar. Solo te tomará 1 minuto:
+${feedbackUrl}
+
+¡Gracias!
+${business.name}`;
+
+        // Limpiar número de teléfono
+        const cleanPhone = customerPhone.replace(/\D/g, '');
+
+        // Abrir WhatsApp Web
+        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+
+        // Marcar como enviado
+        const markResponse = await api.post(`/api/admin/feedback/mark-sent/${bookingId}`);
+
+        if (markResponse.success) {
+            alert('✅ Solicitud marcada como enviada');
+            // Recargar lista
+            await loadPendingFeedbacks();
+        }
+
+    } catch (error) {
+        console.error('Error al enviar feedback por WhatsApp:', error);
+        alert('❌ Error al enviar solicitud. Inténtalo de nuevo.');
+    }
 }
 
 // Cargar estadísticas
@@ -183,6 +333,19 @@ function createFeedbackCard(feedback) {
 // Formatear rating para mostrar
 function formatRating(rating) {
     return '⭐'.repeat(rating);
+}
+
+// Exponer funciones públicas
+const opiniones = {
+    sendFeedbackWhatsApp,
+    loadPendingFeedbacks,
+    loadStats,
+    loadFeedbacks
+};
+
+// Hacer disponible globalmente
+if (typeof window !== 'undefined') {
+    window.opiniones = opiniones;
 }
 
 // Inicializar cuando cargue la página
