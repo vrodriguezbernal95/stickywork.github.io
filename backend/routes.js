@@ -318,6 +318,115 @@ router.get('/api/services/:businessId', async (req, res) => {
     }
 });
 
+// Obtener disponibilidad de slots para una fecha
+router.get('/api/availability/:businessId/:date', async (req, res) => {
+    try {
+        const { businessId, date } = req.params;
+
+        // Obtener configuración del negocio
+        const [business] = await db.query(
+            'SELECT type_key, booking_settings FROM businesses WHERE id = ?',
+            [businessId]
+        );
+
+        if (!business) {
+            return res.status(404).json({
+                success: false,
+                message: 'Negocio no encontrado'
+            });
+        }
+
+        // Obtener booking_mode
+        const typeKey = business.type_key;
+        const [businessType] = await db.query(
+            'SELECT booking_mode FROM business_types WHERE type_key = ?',
+            [typeKey]
+        );
+        const bookingMode = businessType?.booking_mode || 'services';
+
+        const bookingSettings = business.booking_settings
+            ? (typeof business.booking_settings === 'string'
+                ? JSON.parse(business.booking_settings)
+                : business.booking_settings)
+            : {};
+
+        // Capacidad del negocio
+        const defaultCapacity = bookingMode === 'tables' ? 40 : 1;
+        const businessCapacity = bookingSettings.businessCapacity || defaultCapacity;
+
+        // Obtener todas las reservas para esa fecha
+        const bookings = await db.query(
+            `SELECT booking_time, num_people, service_id, status
+             FROM bookings
+             WHERE business_id = ? AND booking_date = ? AND status != 'cancelled'`,
+            [businessId, date]
+        );
+
+        // Calcular disponibilidad por slot
+        const availability = {};
+
+        if (bookingMode === 'tables') {
+            // MODO TABLES: Sumar num_people por slot
+            bookings.forEach(booking => {
+                const time = booking.booking_time.substring(0, 5); // "HH:MM"
+                if (!availability[time]) {
+                    availability[time] = { occupied: 0 };
+                }
+                availability[time].occupied += booking.num_people || 1;
+            });
+        } else if (bookingMode === 'classes') {
+            // MODO CLASSES: Contar reservas por servicio y slot
+            // Para simplificar, devolvemos disponibilidad general
+            bookings.forEach(booking => {
+                const time = booking.booking_time.substring(0, 5);
+                if (!availability[time]) {
+                    availability[time] = { occupied: 0 };
+                }
+                availability[time].occupied += 1;
+            });
+        } else {
+            // MODO SERVICES: Contar número de reservas por slot
+            bookings.forEach(booking => {
+                const time = booking.booking_time.substring(0, 5);
+                if (!availability[time]) {
+                    availability[time] = { occupied: 0 };
+                }
+                availability[time].occupied += 1;
+            });
+        }
+
+        // Calcular disponibilidad final
+        const slots = {};
+        Object.keys(availability).forEach(time => {
+            const occupied = availability[time].occupied;
+            const available = Math.max(0, businessCapacity - occupied);
+            const percentage = Math.round((occupied / businessCapacity) * 100);
+
+            slots[time] = {
+                total: businessCapacity,
+                occupied,
+                available,
+                percentage
+            };
+        });
+
+        res.json({
+            success: true,
+            date,
+            businessCapacity,
+            bookingMode,
+            slots
+        });
+    } catch (error) {
+        console.error('Error al obtener disponibilidad:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener disponibilidad',
+            error: error.message
+        });
+    }
+});
+
 // ==================== RESERVAS ====================
 
 // Crear una nueva reserva

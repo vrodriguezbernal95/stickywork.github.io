@@ -242,6 +242,20 @@
                 background: ${config.primaryColor};
                 color: white;
             }
+            .stickywork-custom-select-option.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background: #f5f5f5;
+                color: #999;
+            }
+            .stickywork-custom-select-option.disabled:hover {
+                background: #f5f5f5;
+            }
+            .stickywork-availability-badge {
+                font-size: 0.85em;
+                margin-left: 0.5rem;
+                font-weight: 500;
+            }
             .stickywork-textarea {
                 resize: vertical;
                 min-height: 80px;
@@ -759,9 +773,17 @@
                                         ${timeSlots.shifts.map(shift => `
                                             <div class="stickywork-custom-select-group">
                                                 <div class="stickywork-custom-select-group-label">📅 ${shift.name.toUpperCase()}</div>
-                                                ${shift.slots.map(time => `
-                                                    <div class="stickywork-custom-select-option" data-value="${time}">${time}</div>
-                                                `).join('')}
+                                                ${shift.slots.map(time => {
+                                                    const isFull = isSlotFull(time);
+                                                    const badge = getAvailabilityBadge(time);
+                                                    return `
+                                                        <div class="stickywork-custom-select-option ${isFull ? 'disabled' : ''}"
+                                                             data-value="${time}"
+                                                             ${isFull ? 'data-disabled="true"' : ''}>
+                                                            ${time} ${badge}
+                                                        </div>
+                                                    `;
+                                                }).join('')}
                                             </div>
                                         `).join('')}
                                     </div>
@@ -770,7 +792,11 @@
                             ` : `
                                 <select class="stickywork-select" name="time" required>
                                     <option value="">${t.selectTime}</option>
-                                    ${timeSlots.slots.map(time => `<option value="${time}">${time}</option>`).join('')}
+                                    ${timeSlots.slots.map(time => {
+                                        const isFull = isSlotFull(time);
+                                        const badge = getAvailabilityBadge(time);
+                                        return `<option value="${time}" ${isFull ? 'disabled' : ''}>${time} ${badge ? badge.replace(/<[^>]*>/g, '') : ''}</option>`;
+                                    }).join('')}
                                 </select>
                             `}
                         </div>
@@ -839,6 +865,64 @@
                 </div>
             </div>
         `;
+    }
+
+    // Variable para almacenar disponibilidad
+    let slotsAvailability = {};
+
+    // Consultar disponibilidad de slots para una fecha
+    async function fetchAvailability(date) {
+        if (!config.apiUrl || !date) {
+            slotsAvailability = {};
+            return;
+        }
+
+        try {
+            const response = await fetch(`${config.apiUrl}/api/availability/${config.businessId}/${date}`);
+            const data = await response.json();
+
+            if (data.success) {
+                slotsAvailability = data.slots || {};
+                console.log('📊 [Widget] Disponibilidad cargada:', slotsAvailability);
+            }
+        } catch (error) {
+            console.error('❌ Error al cargar disponibilidad:', error);
+            slotsAvailability = {};
+        }
+    }
+
+    // Obtener badge de disponibilidad para un slot
+    function getAvailabilityBadge(time) {
+        const availability = slotsAvailability[time];
+        if (!availability) return '';
+
+        const { available, total, percentage } = availability;
+
+        // Determinar color según porcentaje de ocupación
+        let badge = '';
+        let text = '';
+
+        if (percentage >= 100) {
+            badge = '🔴';
+            text = 'Completo';
+        } else if (percentage >= 75) {
+            badge = '🟡';
+            text = `Quedan ${available} de ${total}`;
+        } else if (percentage > 0) {
+            badge = '🟢';
+            text = `Quedan ${available} de ${total}`;
+        } else {
+            badge = '🟢';
+            text = `${total} plazas disponibles`;
+        }
+
+        return `<span class="stickywork-availability-badge" title="${text}">${badge} ${text}</span>`;
+    }
+
+    // Verificar si un slot está lleno
+    function isSlotFull(time) {
+        const availability = slotsAvailability[time];
+        return availability && availability.percentage >= 100;
     }
 
     // Enviar reserva
@@ -1003,6 +1087,37 @@
 
         // Inicializar botones de personas
         initPeopleButtons();
+
+        // Inicializar listener de fecha para cargar disponibilidad
+        initDateListener();
+    }
+
+    // Listener para campo de fecha
+    function initDateListener() {
+        const dateInput = document.querySelector('input[name="date"]');
+        if (dateInput) {
+            dateInput.addEventListener('change', async (e) => {
+                const selectedDate = e.target.value;
+                console.log('📅 [Widget] Fecha seleccionada:', selectedDate);
+
+                // Consultar disponibilidad
+                await fetchAvailability(selectedDate);
+
+                // Regenerar formulario con nueva disponibilidad
+                widgetContainer.innerHTML = createFormHTML();
+
+                // Re-inicializar event listeners
+                const form = document.getElementById('stickywork-form');
+                if (form) form.addEventListener('submit', handleSubmit);
+                initCustomSelect();
+                initPeopleButtons();
+                initDateListener();
+
+                // Restaurar la fecha seleccionada
+                const newDateInput = document.querySelector('input[name="date"]');
+                if (newDateInput) newDateInput.value = selectedDate;
+            });
+        }
     }
 
     // Variable para evitar agregar el listener múltiples veces
@@ -1027,6 +1142,12 @@
                 e.stopImmediatePropagation();
 
                 console.log('⏰ [Custom Select] Click en opción detectado');
+
+                // No permitir seleccionar opciones deshabilitadas
+                if (clickedOption.hasAttribute('data-disabled') || clickedOption.classList.contains('disabled')) {
+                    console.log('⚠️ [Custom Select] Opción deshabilitada, ignorando click');
+                    return;
+                }
 
                 const customSelect = clickedOption.closest('.stickywork-custom-select');
                 const valueDisplay = customSelect.querySelector('.stickywork-custom-select-value');
