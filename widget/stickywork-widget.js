@@ -910,22 +910,36 @@
         const availability = slotsAvailability[time];
         if (!availability) return '';
 
-        let available, total, percentage;
+        let available, total, percentage, zoneName = '';
 
-        // Si tiene zonas, agregar disponibilidad de todas las zonas
+        // Si tiene zonas, usar la zona seleccionada por el usuario
         if (availability.zones) {
-            total = 0;
-            available = 0;
-            let occupied = 0;
+            // Obtener zona seleccionada en el dropdown
+            const zoneSelect = document.querySelector('select[name="zone"]');
+            const selectedZone = zoneSelect ? zoneSelect.value : '';
 
-            Object.keys(availability.zones).forEach(zoneName => {
-                const zone = availability.zones[zoneName];
-                total += zone.total;
-                available += zone.available;
-                occupied += zone.occupied;
-            });
+            if (selectedZone && availability.zones[selectedZone]) {
+                // Mostrar disponibilidad de la zona seleccionada
+                const zone = availability.zones[selectedZone];
+                available = zone.available;
+                total = zone.total;
+                percentage = zone.percentage;
+                zoneName = ` en ${selectedZone}`;
+            } else {
+                // Si no hay zona seleccionada, mostrar suma de todas
+                total = 0;
+                available = 0;
+                let occupied = 0;
 
-            percentage = total > 0 ? Math.round((occupied / total) * 100) : 0;
+                Object.keys(availability.zones).forEach(name => {
+                    const zone = availability.zones[name];
+                    total += zone.total;
+                    available += zone.available;
+                    occupied += zone.occupied;
+                });
+
+                percentage = total > 0 ? Math.round((occupied / total) * 100) : 0;
+            }
         } else {
             // Estructura plana (sin zonas)
             available = availability.available;
@@ -939,16 +953,16 @@
 
         if (percentage >= 100) {
             badge = '🔴';
-            text = 'Completo';
+            text = `Completo${zoneName}`;
         } else if (percentage >= 75) {
             badge = '🟡';
-            text = `Quedan ${available} de ${total}`;
+            text = `Quedan ${available} de ${total}${zoneName}`;
         } else if (percentage > 0) {
             badge = '🟢';
-            text = `Quedan ${available} de ${total}`;
+            text = `Quedan ${available} de ${total}${zoneName}`;
         } else {
             badge = '🟢';
-            text = `${total} plazas disponibles`;
+            text = `${total} plazas disponibles${zoneName}`;
         }
 
         return `<span class="stickywork-availability-badge" title="${text}">${badge} ${text}</span>`;
@@ -959,9 +973,18 @@
         const availability = slotsAvailability[time];
         if (!availability) return false;
 
-        // Si tiene zonas, verificar si TODAS las zonas están llenas
+        // Si tiene zonas, verificar la zona seleccionada
         if (availability.zones) {
-            return Object.values(availability.zones).every(zone => zone.percentage >= 100);
+            const zoneSelect = document.querySelector('select[name="zone"]');
+            const selectedZone = zoneSelect ? zoneSelect.value : '';
+
+            if (selectedZone && availability.zones[selectedZone]) {
+                // Verificar solo la zona seleccionada
+                return availability.zones[selectedZone].percentage >= 100;
+            } else {
+                // Sin zona seleccionada, verificar si TODAS están llenas
+                return Object.values(availability.zones).every(zone => zone.percentage >= 100);
+            }
         }
 
         return availability.percentage >= 100;
@@ -1139,6 +1162,9 @@
 
         // Inicializar listener de fecha para cargar disponibilidad
         initDateListener();
+
+        // Inicializar listener de zona para actualizar badges
+        initZoneListener();
     }
 
     // Listener para campo de fecha
@@ -1153,6 +1179,18 @@
                 await fetchAvailability(selectedDate);
 
                 // Actualizar solo el selector de tiempo (sin resetear el formulario)
+                updateTimeSlots();
+            });
+        }
+    }
+
+    // Listener para campo de zona
+    function initZoneListener() {
+        const zoneSelect = document.querySelector('select[name="zone"]');
+        if (zoneSelect) {
+            zoneSelect.addEventListener('change', (e) => {
+                console.log('🏷️ [Widget] Zona seleccionada:', e.target.value);
+                // Actualizar badges con la nueva zona
                 updateTimeSlots();
             });
         }
@@ -1362,6 +1400,10 @@
 
         // Inicializar botones de personas en modal (pasar modal como contexto)
         initPeopleButtons(modal);
+
+        // Inicializar listeners
+        initDateListener();
+        initZoneListener();
     }
 
     function closeModal() {
@@ -1394,6 +1436,8 @@
             const form = widgetContainer.querySelector('#stickywork-form');
             if (form) form.addEventListener('submit', handleSubmit);
             initPeopleButtons();
+            initDateListener();
+            initZoneListener();
         }
     }
 
