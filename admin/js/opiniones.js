@@ -289,30 +289,68 @@ function createFeedbackCard(feedback) {
     let questionsHTML = '';
     if (feedback.questions) {
         const questions = feedback.questions;
-        questionsHTML = `
-            <div class="feedback-questions">
-                ${questions.cleanliness ? `
+        const questionItems = [];
+
+        // Mapeo de IDs a etiquetas legibles
+        const questionLabels = {
+            'q1': '¿Cómo calificarías nuestro servicio?',
+            'q2': '¿Qué podríamos mejorar?',
+            'q3': 'Pregunta 3',
+            'q4': 'Pregunta 4',
+            'q5': 'Pregunta 5',
+            'cleanliness': 'Limpieza',
+            'punctuality': 'Puntualidad',
+            'wouldRecommend': 'Recomendaría'
+        };
+
+        // Recorrer todas las respuestas del objeto questions
+        Object.keys(questions).forEach(key => {
+            const value = questions[key];
+
+            // Saltar valores nulos o vacíos
+            if (value === null || value === undefined || value === '') {
+                return;
+            }
+
+            const label = questionLabels[key] || key;
+
+            // Determinar tipo de respuesta
+            if (typeof value === 'number' && value >= 1 && value <= 5) {
+                // Rating (estrellas)
+                questionItems.push(`
                     <div class="question-item">
-                        <span class="question-label">Limpieza:</span>
-                        <span class="question-value">${'⭐'.repeat(questions.cleanliness)}</span>
+                        <span class="question-label">${label}:</span>
+                        <span class="question-value">${'⭐'.repeat(value)}</span>
                     </div>
-                ` : ''}
-                ${questions.punctuality ? `
+                `);
+            } else if (typeof value === 'boolean') {
+                // Sí/No
+                questionItems.push(`
                     <div class="question-item">
-                        <span class="question-label">Puntualidad:</span>
-                        <span class="question-value">${'⭐'.repeat(questions.punctuality)}</span>
-                    </div>
-                ` : ''}
-                ${questions.wouldRecommend !== null && questions.wouldRecommend !== undefined ? `
-                    <div class="question-item">
-                        <span class="question-label">Recomendaría:</span>
-                        <span style="color: ${questions.wouldRecommend ? '#10b981' : '#ef4444'}; font-weight: 600;">
-                            ${questions.wouldRecommend ? '✓ Sí' : '✗ No'}
+                        <span class="question-label">${label}:</span>
+                        <span style="color: ${value ? '#10b981' : '#ef4444'}; font-weight: 600;">
+                            ${value ? '✓ Sí' : '✗ No'}
                         </span>
                     </div>
-                ` : ''}
-            </div>
-        `;
+                `);
+            } else if (typeof value === 'string' && value.trim() !== '') {
+                // Texto libre
+                questionItems.push(`
+                    <div class="question-item">
+                        <span class="question-label">${label}:</span>
+                        <div class="question-text-response">"${value}"</div>
+                    </div>
+                `);
+            }
+        });
+
+        if (questionItems.length > 0) {
+            questionsHTML = `
+                <div class="feedback-questions">
+                    ${questionItems.join('')}
+                </div>
+            `;
+        }
     }
 
     card.innerHTML = `

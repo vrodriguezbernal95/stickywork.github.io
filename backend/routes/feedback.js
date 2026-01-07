@@ -305,7 +305,8 @@ router.get('/api/feedback/verify/:token', async (req, res) => {
                 b.customer_name,
                 b.booking_date,
                 s.name as service_name,
-                bus.name as business_name
+                bus.name as business_name,
+                bus.booking_settings
              FROM bookings b
              LEFT JOIN services s ON b.service_id = s.id
              LEFT JOIN businesses bus ON b.business_id = bus.id
@@ -339,10 +340,25 @@ router.get('/api/feedback/verify/:token', async (req, res) => {
             });
         }
 
+        // Extraer feedbackSettings del booking_settings
+        let feedbackSettings = null;
+        if (bookings[0].booking_settings) {
+            try {
+                const bookingSettings = typeof bookings[0].booking_settings === 'string'
+                    ? JSON.parse(bookings[0].booking_settings)
+                    : bookings[0].booking_settings;
+
+                feedbackSettings = bookingSettings.feedbackSettings || null;
+            } catch (e) {
+                console.error('Error parsing booking_settings:', e);
+            }
+        }
+
         res.json({
             success: true,
             data: {
                 booking: bookings[0],
+                feedbackSettings: feedbackSettings,
                 alreadySubmitted: false
             }
         });

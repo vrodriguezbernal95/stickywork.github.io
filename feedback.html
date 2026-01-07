@@ -283,9 +283,8 @@
 
                 bookingData = data.data.booking;
 
-                // Por ahora usar siempre configuración por defecto
-                // En el futuro se puede personalizar por negocio
-                feedbackSettings = getDefaultFeedbackSettings();
+                // Usar configuración personalizada del negocio si existe
+                feedbackSettings = data.data.feedbackSettings || getDefaultFeedbackSettings();
 
                 // Render form
                 renderFeedbackForm();
