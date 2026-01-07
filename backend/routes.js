@@ -609,6 +609,11 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             const currentPeople = sumQuery[0].total_people;
             const requestedPeople = numPeople || 1;
 
+            console.log('🔍 [DEBUG CAPACITY] businessCapacity:', businessCapacity);
+            console.log('🔍 [DEBUG CAPACITY] currentPeople:', currentPeople);
+            console.log('🔍 [DEBUG CAPACITY] requestedPeople:', requestedPeople);
+            console.log('🔍 [DEBUG CAPACITY] Validación:', currentPeople + requestedPeople, '>', businessCapacity, '=', (currentPeople + requestedPeople > businessCapacity));
+
             if (currentPeople + requestedPeople > businessCapacity) {
                 const available = businessCapacity - currentPeople;
                 return res.status(409).json({
