@@ -267,6 +267,110 @@
                 border-color: ${config.primaryColor};
                 box-shadow: 0 0 0 3px ${config.primaryColor}20;
             }
+
+            /* Calendario personalizado */
+            .stickywork-calendar {
+                background: ${colors.bgPrimary};
+                border: 1px solid ${colors.border};
+                border-radius: 12px;
+                padding: 1rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            }
+            .stickywork-calendar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid ${colors.border};
+            }
+            .stickywork-calendar-nav {
+                background: ${colors.bgSecondary};
+                border: 1px solid ${colors.border};
+                border-radius: 6px;
+                padding: 0.5rem 0.75rem;
+                cursor: pointer;
+                font-size: 1.2rem;
+                transition: all 0.2s;
+            }
+            .stickywork-calendar-nav:hover {
+                background: ${config.primaryColor}10;
+                border-color: ${config.primaryColor};
+            }
+            .stickywork-calendar-month {
+                font-weight: 600;
+                font-size: 1.1rem;
+                color: ${colors.textPrimary};
+            }
+            .stickywork-calendar-weekdays {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 0.25rem;
+                margin-bottom: 0.5rem;
+            }
+            .stickywork-calendar-weekday {
+                text-align: center;
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: ${colors.textSecondary};
+                padding: 0.5rem 0;
+            }
+            .stickywork-calendar-days {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 0.25rem;
+            }
+            .stickywork-calendar-day {
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+                font-size: 0.95rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 2px solid transparent;
+                background: ${colors.bgSecondary};
+                color: ${colors.textPrimary};
+            }
+            .stickywork-calendar-day:hover:not(.disabled):not(.blocked) {
+                background: ${config.primaryColor}10;
+                border-color: ${config.primaryColor};
+                transform: scale(1.05);
+            }
+            .stickywork-calendar-day.selected {
+                background: ${config.primaryColor};
+                color: white;
+                font-weight: 600;
+            }
+            .stickywork-calendar-day.today {
+                border-color: ${config.primaryColor};
+            }
+            .stickywork-calendar-day.blocked {
+                background: #fee;
+                color: #c33;
+                cursor: not-allowed;
+                position: relative;
+            }
+            .stickywork-calendar-day.blocked::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 10%;
+                right: 10%;
+                height: 2px;
+                background: #c33;
+                transform: translateY(-50%) rotate(-45deg);
+            }
+            .stickywork-calendar-day.disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+            }
+            .stickywork-calendar-day.other-month {
+                opacity: 0.4;
+                color: ${colors.textSecondary};
+            }
+
             .stickywork-row {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -773,7 +877,10 @@
                     <div class="stickywork-row">
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.date}</label>
-                            <input type="date" class="stickywork-input" name="date" required min="${new Date().toISOString().split('T')[0]}">
+                            <input type="hidden" name="date" required>
+                            <div class="stickywork-calendar" id="stickywork-calendar">
+                                <!-- Calendario se renderizará aquí -->
+                            </div>
                         </div>
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.time}</label>
@@ -990,6 +1097,176 @@
         return availability.percentage >= 100;
     }
 
+    // ======= CALENDARIO PERSONALIZADO =======
+    let currentCalendarYear = new Date().getFullYear();
+    let currentCalendarMonth = new Date().getMonth();
+    let selectedDate = null;
+    let calendarBlockedDays = new Set(); // Días bloqueados (cerrado o sin disponibilidad)
+
+    // Renderizar calendario
+    async function renderCalendar() {
+        const calendarEl = document.getElementById('stickywork-calendar');
+        if (!calendarEl) return;
+
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                           'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const weekDays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+        // Obtener días bloqueados del mes actual
+        await updateBlockedDays(currentCalendarYear, currentCalendarMonth);
+
+        // Primera fecha del mes
+        const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+        const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+
+        // Día de la semana del primer día (0=Dom, 1=Lun, ...)
+        let startDayOfWeek = firstDay.getDay();
+        // Convertir a formato Lunes=0
+        startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // Generar HTML
+        let html = `
+            <div class="stickywork-calendar-header">
+                <button type="button" class="stickywork-calendar-nav" id="prev-month">◀</button>
+                <div class="stickywork-calendar-month">
+                    ${monthNames[currentCalendarMonth]} ${currentCalendarYear}
+                </div>
+                <button type="button" class="stickywork-calendar-nav" id="next-month">▶</button>
+            </div>
+            <div class="stickywork-calendar-weekdays">
+                ${weekDays.map(day => `<div class="stickywork-calendar-weekday">${day}</div>`).join('')}
+            </div>
+            <div class="stickywork-calendar-days">
+        `;
+
+        // Días del mes anterior para completar la primera semana
+        const prevMonthLastDay = new Date(currentCalendarYear, currentCalendarMonth, 0).getDate();
+        for (let i = startDayOfWeek - 1; i >= 0; i--) {
+            const day = prevMonthLastDay - i;
+            html += `<div class="stickywork-calendar-day other-month disabled">${day}</div>`;
+        }
+
+        // Días del mes actual
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const date = new Date(currentCalendarYear, currentCalendarMonth, day);
+            date.setHours(0, 0, 0, 0);
+            const dateStr = date.toISOString().split('T')[0];
+
+            let classes = ['stickywork-calendar-day'];
+
+            // Marcar día actual
+            if (date.getTime() === today.getTime()) {
+                classes.push('today');
+            }
+
+            // Marcar día seleccionado
+            if (selectedDate && selectedDate === dateStr) {
+                classes.push('selected');
+            }
+
+            // Días pasados deshabilitados
+            if (date < today) {
+                classes.push('disabled');
+            }
+            // Días bloqueados (cerrado o sin disponibilidad)
+            else if (calendarBlockedDays.has(dateStr)) {
+                classes.push('blocked');
+            }
+
+            const disabled = date < today || calendarBlockedDays.has(dateStr);
+            html += `<div class="${classes.join(' ')}"
+                          data-date="${dateStr}"
+                          ${disabled ? '' : `onclick="window.StickyWork.selectCalendarDate('${dateStr}')"`}>
+                        ${day}
+                     </div>`;
+        }
+
+        // Días del próximo mes para completar la última semana
+        const remainingDays = 7 - ((startDayOfWeek + lastDay.getDate()) % 7);
+        if (remainingDays < 7) {
+            for (let day = 1; day <= remainingDays; day++) {
+                html += `<div class="stickywork-calendar-day other-month disabled">${day}</div>`;
+            }
+        }
+
+        html += `</div>`;
+        calendarEl.innerHTML = html;
+
+        // Event listeners para navegación
+        document.getElementById('prev-month')?.addEventListener('click', () => {
+            currentCalendarMonth--;
+            if (currentCalendarMonth < 0) {
+                currentCalendarMonth = 11;
+                currentCalendarYear--;
+            }
+            renderCalendar();
+        });
+
+        document.getElementById('next-month')?.addEventListener('click', () => {
+            currentCalendarMonth++;
+            if (currentCalendarMonth > 11) {
+                currentCalendarMonth = 0;
+                currentCalendarYear++;
+            }
+            renderCalendar();
+        });
+    }
+
+    // Actualizar días bloqueados (cerrado + sin disponibilidad)
+    async function updateBlockedDays(year, month) {
+        calendarBlockedDays.clear();
+
+        // Obtener workDays del negocio
+        const workDays = config.businessConfig?.workDays || [1, 2, 3, 4, 5, 6]; // Por defecto L-S
+
+        // Recorrer todos los días del mes
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (let day = 1; day <= lastDay; day++) {
+            const date = new Date(year, month, day);
+            date.setHours(0, 0, 0, 0);
+
+            // Saltar días pasados
+            if (date < today) continue;
+
+            const dateStr = date.toISOString().split('T')[0];
+            const dayOfWeek = date.getDay() || 7; // Convertir Dom=0 a Dom=7
+
+            // Verificar si el negocio abre ese día
+            if (!workDays.includes(dayOfWeek)) {
+                calendarBlockedDays.add(dateStr);
+            }
+        }
+
+        // TODO: Consultar disponibilidad del mes para marcar días sin plazas
+        // Por ahora solo marcamos días cerrados
+    }
+
+    // Seleccionar fecha del calendario
+    window.StickyWork.selectCalendarDate = async function(dateStr) {
+        selectedDate = dateStr;
+
+        // Actualizar input hidden
+        const dateInput = document.querySelector('input[name="date"]');
+        if (dateInput) {
+            dateInput.value = dateStr;
+            // Disparar evento change
+            dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        // Re-renderizar calendario para mostrar selección
+        await renderCalendar();
+
+        // Cargar disponibilidad para esa fecha
+        await fetchAvailability(dateStr);
+        updateTimeSlots();
+    };
+
     // Enviar reserva
     async function submitBooking(formData) {
         if (!config.apiUrl) {
@@ -1166,8 +1443,8 @@
         // Inicializar listener de zona para actualizar badges
         initZoneListener();
 
-        // Hacer todo el campo de fecha clickeable
-        initDateFieldClickable();
+        // Renderizar calendario personalizado
+        renderCalendar();
     }
 
     // Listener para campo de fecha
@@ -1196,24 +1473,6 @@
                 // Actualizar badges con la nueva zona
                 updateTimeSlots();
             });
-        }
-    }
-
-    // Hacer que todo el campo de fecha sea clickeable
-    function initDateFieldClickable() {
-        const dateInput = document.querySelector('input[name="date"]');
-        if (dateInput) {
-            const dateField = dateInput.closest('.stickywork-field');
-            if (dateField) {
-                dateField.style.cursor = 'pointer';
-                dateField.addEventListener('click', (e) => {
-                    // Solo abrir el picker si no se clickeó directamente en el input
-                    // (para no duplicar el comportamiento nativo)
-                    if (e.target !== dateInput) {
-                        dateInput.showPicker?.(); // showPicker es soportado en navegadores modernos
-                    }
-                });
-            }
         }
     }
 
@@ -1425,7 +1684,9 @@
         // Inicializar listeners
         initDateListener();
         initZoneListener();
-        initDateFieldClickable();
+
+        // Renderizar calendario personalizado
+        renderCalendar();
     }
 
     function closeModal() {
@@ -1451,6 +1712,7 @@
 
     function reset() {
         peopleCount = 2;
+        selectedDate = null;
         if (config.mode === 'embedded') {
             renderEmbedded();
         } else {
@@ -1460,7 +1722,7 @@
             initPeopleButtons();
             initDateListener();
             initZoneListener();
-            initDateFieldClickable();
+            renderCalendar();
         }
     }
 
