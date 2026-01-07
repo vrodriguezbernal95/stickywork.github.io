@@ -1362,7 +1362,7 @@ router.get('/api/business/:id', requireAuth, async (req, res) => {
 router.put('/api/business/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email, phone, address, website } = req.body;
+        const { name, email, phone, address, website, booking_settings } = req.body;
 
         // Verificar que el usuario tiene acceso a este negocio
         if (req.user.businessId != id) {
@@ -1380,13 +1380,23 @@ router.put('/api/business/:id', requireAuth, async (req, res) => {
             });
         }
 
-        // Actualizar negocio
-        await db.query(
-            `UPDATE businesses
-             SET name = ?, email = ?, phone = ?, address = ?, website = ?
-             WHERE id = ?`,
-            [name, email, phone || null, address || null, website || null, id]
-        );
+        // Actualizar negocio (con booking_settings opcional)
+        if (booking_settings !== undefined) {
+            await db.query(
+                `UPDATE businesses
+                 SET name = ?, email = ?, phone = ?, address = ?, website = ?, booking_settings = ?
+                 WHERE id = ?`,
+                [name, email, phone || null, address || null, website || null,
+                 JSON.stringify(booking_settings), id]
+            );
+        } else {
+            await db.query(
+                `UPDATE businesses
+                 SET name = ?, email = ?, phone = ?, address = ?, website = ?
+                 WHERE id = ?`,
+                [name, email, phone || null, address || null, website || null, id]
+            );
+        }
 
         // Obtener datos actualizados
         const business = await db.query(
