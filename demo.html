@@ -125,7 +125,7 @@
                     </p>
 
                     <!-- Widget Demo Real -->
-                    <div id="stickywork-widget" style="max-width: 600px; margin: 0 auto;">
+                    <div id="stickywork-widget">
                         <!-- El widget se renderizará aquí -->
                     </div>
 
@@ -558,11 +558,19 @@
             transform: translateY(0);
         }
 
+        /* Contenedor del widget */
+        #stickywork-widget {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
         /* Mejoras responsive para la página demo */
         @media (max-width: 768px) {
-            /* Widget en móvil */
+            /* Widget en móvil - sin restricciones de ancho */
             #stickywork-widget {
-                padding: 0 0.5rem;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
             }
 
             /* Código de integración más compacto */
@@ -618,11 +626,6 @@
         }
 
         @media (max-width: 480px) {
-            /* Widget en móviles pequeños */
-            #stickywork-widget {
-                padding: 0 0.25rem;
-            }
-
             /* Código aún más pequeño en móviles pequeños */
             .demo-container > div:last-child > div > div {
                 padding: 1rem !important;

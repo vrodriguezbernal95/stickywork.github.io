@@ -637,9 +637,11 @@
             @media (max-width: 600px) {
                 .stickywork-row { grid-template-columns: 1fr; }
                 .stickywork-widget {
-                    padding: 1rem;
+                    padding: 0.75rem;
                     border-radius: 12px;
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    max-width: 100%;
+                    margin: 0;
                 }
                 .stickywork-modal { width: 95%; padding: 1.5rem; }
                 .stickywork-title {
@@ -658,12 +660,14 @@
                 .stickywork-textarea,
                 .stickywork-custom-select-trigger,
                 .stickywork-calendar-trigger {
-                    padding: 0.65rem;
-                    font-size: 0.95rem;
+                    padding: 0.75rem;
+                    font-size: 1rem;
+                    min-height: 48px;
                 }
                 .stickywork-button {
-                    padding: 0.85rem;
-                    font-size: 1rem;
+                    padding: 1rem;
+                    font-size: 1.05rem;
+                    min-height: 48px;
                 }
                 .stickywork-calendar-header {
                     padding: 0.75rem 0.5rem;
