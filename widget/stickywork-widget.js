@@ -379,7 +379,7 @@
                 background: ${colors.bgSecondary};
                 color: ${colors.textPrimary};
             }
-            .stickywork-calendar-day:hover:not(.disabled):not(.blocked) {
+            .stickywork-calendar-day:hover:not(.disabled):not(.blocked):not(.no-availability) {
                 background: ${config.primaryColor}10;
                 border-color: ${config.primaryColor};
                 transform: scale(1.05);
@@ -393,8 +393,8 @@
                 border-color: ${config.primaryColor};
             }
             .stickywork-calendar-day.blocked {
-                background: #fee;
-                color: #c33;
+                background: #f5f5f5;
+                color: #999;
                 cursor: not-allowed;
                 position: relative;
             }
@@ -405,8 +405,21 @@
                 left: 10%;
                 right: 10%;
                 height: 2px;
-                background: #c33;
+                background: #999;
                 transform: translateY(-50%) rotate(-45deg);
+            }
+            .stickywork-calendar-day.no-availability {
+                background: #fee;
+                color: #c33;
+                cursor: not-allowed;
+                font-weight: 600;
+            }
+            .stickywork-calendar-day.no-availability::before {
+                content: '🔴';
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                font-size: 8px;
             }
             .stickywork-calendar-day.disabled {
                 opacity: 0.3;
@@ -1153,7 +1166,8 @@
     let currentCalendarYear = new Date().getFullYear();
     let currentCalendarMonth = new Date().getMonth();
     let selectedDate = null;
-    let calendarBlockedDays = new Set(); // Días bloqueados (cerrado o sin disponibilidad)
+    let calendarBlockedDays = new Set(); // Días cerrados (negocio no abre)
+    let calendarNoAvailabilityDays = new Set(); // Días sin disponibilidad (todos los slots ocupados)
 
     // Renderizar calendario
     async function renderCalendar() {
@@ -1223,12 +1237,16 @@
             if (date < today) {
                 classes.push('disabled');
             }
-            // Días bloqueados (cerrado o sin disponibilidad)
+            // Días sin disponibilidad (todos los slots ocupados)
+            else if (calendarNoAvailabilityDays.has(dateStr)) {
+                classes.push('no-availability');
+            }
+            // Días cerrados (negocio no abre)
             else if (calendarBlockedDays.has(dateStr)) {
                 classes.push('blocked');
             }
 
-            const disabled = date < today || calendarBlockedDays.has(dateStr);
+            const disabled = date < today || calendarBlockedDays.has(dateStr) || calendarNoAvailabilityDays.has(dateStr);
             html += `<div class="${classes.join(' ')}"
                           data-date="${dateStr}"
                           ${disabled ? '' : `onclick="window.StickyWork.selectCalendarDate('${dateStr}')"`}>
@@ -1270,6 +1288,7 @@
     // Actualizar días bloqueados (cerrado + sin disponibilidad)
     async function updateBlockedDays(year, month) {
         calendarBlockedDays.clear();
+        calendarNoAvailabilityDays.clear();
 
         // Obtener workDays del negocio
         const workDays = config.businessConfig?.workDays || [1, 2, 3, 4, 5, 6]; // Por defecto L-S
@@ -1278,6 +1297,9 @@
         const lastDay = new Date(year, month + 1, 0).getDate();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+
+        // Array de promesas para consultar disponibilidad en paralelo
+        const availabilityPromises = [];
 
         for (let day = 1; day <= lastDay; day++) {
             const date = new Date(year, month, day);
@@ -1292,11 +1314,43 @@
             // Verificar si el negocio abre ese día
             if (!workDays.includes(dayOfWeek)) {
                 calendarBlockedDays.add(dateStr);
+            } else if (config.apiUrl) {
+                // Consultar disponibilidad del día
+                availabilityPromises.push(
+                    checkDayAvailability(dateStr)
+                );
             }
         }
 
-        // TODO: Consultar disponibilidad del mes para marcar días sin plazas
-        // Por ahora solo marcamos días cerrados
+        // Esperar a que todas las consultas de disponibilidad terminen
+        await Promise.all(availabilityPromises);
+    }
+
+    // Verificar si un día tiene disponibilidad
+    async function checkDayAvailability(dateStr) {
+        try {
+            const response = await fetch(`${config.apiUrl}/api/availability/${config.businessId}/${dateStr}`);
+            const data = await response.json();
+
+            if (data.success && data.slots) {
+                // Verificar si TODOS los slots están llenos
+                const allSlotsFull = Object.keys(data.slots).length > 0 &&
+                    Object.values(data.slots).every(slot => {
+                        // Si tiene zonas, verificar que TODAS estén llenas
+                        if (slot.zones) {
+                            return Object.values(slot.zones).every(zone => zone.percentage >= 100);
+                        }
+                        // Si no tiene zonas, verificar el porcentaje general
+                        return slot.percentage >= 100;
+                    });
+
+                if (allSlotsFull) {
+                    calendarNoAvailabilityDays.add(dateStr);
+                }
+            }
+        } catch (error) {
+            console.error(`Error al verificar disponibilidad de ${dateStr}:`, error);
+        }
     }
 
     // Seleccionar fecha del calendario
