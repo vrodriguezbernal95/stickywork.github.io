@@ -272,7 +272,6 @@
             .stickywork-calendar-dropdown {
                 position: relative;
                 width: 100%;
-                z-index: 1001;
             }
             .stickywork-calendar-trigger {
                 background: ${colors.bgPrimary};
@@ -313,27 +312,14 @@
                 left: 0;
                 right: 0;
                 background: ${colors.bgPrimary};
-                border: 1px solid ${colors.border};
+                border: 2px solid ${colors.border};
                 border-radius: 12px;
                 padding: 1rem;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.1);
                 z-index: 1000;
                 display: none;
             }
             .stickywork-calendar-dropdown-content.open {
-                display: block;
-            }
-            .stickywork-calendar-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 999;
-                display: none;
-            }
-            .stickywork-calendar-overlay.open {
                 display: block;
             }
             .stickywork-calendar-header {
@@ -1024,7 +1010,6 @@
                                     <!-- Calendario se renderizará aquí -->
                                 </div>
                             </div>
-                            <div class="stickywork-calendar-overlay" id="stickywork-calendar-overlay"></div>
                         </div>
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.time}</label>
@@ -1472,9 +1457,8 @@
     function toggleCalendarDropdown(forceState) {
         const trigger = document.querySelector('.stickywork-calendar-trigger');
         const dropdown = document.querySelector('.stickywork-calendar-dropdown-content');
-        const overlay = document.querySelector('.stickywork-calendar-overlay');
 
-        if (!trigger || !dropdown || !overlay) {
+        if (!trigger || !dropdown) {
             console.warn('⚠️ [Widget] Calendario dropdown no encontrado');
             return;
         }
@@ -1484,11 +1468,9 @@
         if (isOpen) {
             trigger.classList.add('open');
             dropdown.classList.add('open');
-            overlay.classList.add('open');
         } else {
             trigger.classList.remove('open');
             dropdown.classList.remove('open');
-            overlay.classList.remove('open');
         }
     }
 
@@ -1498,7 +1480,6 @@
     // Inicializar dropdown del calendario
     function initCalendarDropdown() {
         const trigger = document.querySelector('.stickywork-calendar-trigger');
-        const overlay = document.querySelector('.stickywork-calendar-overlay');
 
         if (!trigger) {
             console.warn('⚠️ [Widget] Trigger del calendario no encontrado');
@@ -1518,20 +1499,10 @@
             toggleCalendarDropdown();
         });
 
-        // Cerrar al hacer click en el overlay
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                console.log('🖱️ [Widget] Click en overlay del calendario');
-                toggleCalendarDropdown(false);
-            });
-        }
-
         // Cerrar al hacer click fuera (solo una vez)
         document.addEventListener('click', (e) => {
             const calendarDropdown = document.querySelector('.stickywork-calendar-dropdown');
-            const dropdown = document.querySelector('.stickywork-calendar-dropdown-content');
-            if (calendarDropdown && !calendarDropdown.contains(e.target) &&
-                dropdown && !dropdown.contains(e.target)) {
+            if (calendarDropdown && !calendarDropdown.contains(e.target)) {
                 toggleCalendarDropdown(false);
             }
         });
@@ -1967,14 +1938,11 @@
         // Resetear bandera antes de inicializar
         calendarDropdownInitialized = false;
 
-        // Esperar a que el DOM esté completamente renderizado antes de inicializar calendario
-        setTimeout(() => {
-            // Renderizar calendario personalizado
-            renderCalendar();
+        // Renderizar calendario personalizado
+        renderCalendar();
 
-            // Inicializar dropdown del calendario
-            initCalendarDropdown();
-        }, 100);
+        // Inicializar dropdown del calendario
+        initCalendarDropdown();
     }
 
     function closeModal() {
