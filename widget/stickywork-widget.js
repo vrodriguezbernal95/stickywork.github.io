@@ -272,6 +272,7 @@
             .stickywork-calendar-dropdown {
                 position: relative;
                 width: 100%;
+                z-index: 1001;
             }
             .stickywork-calendar-trigger {
                 background: ${colors.bgPrimary};
@@ -307,20 +308,17 @@
                 transform: rotate(180deg);
             }
             .stickywork-calendar-dropdown-content {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
+                position: absolute;
+                top: calc(100% + 0.5rem);
+                left: 0;
+                right: 0;
                 background: ${colors.bgPrimary};
                 border: 1px solid ${colors.border};
                 border-radius: 12px;
-                padding: 1.5rem;
-                box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-                z-index: 10001;
+                padding: 1rem;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                z-index: 1000;
                 display: none;
-                max-width: 90vw;
-                max-height: 80vh;
-                overflow-y: auto;
             }
             .stickywork-calendar-dropdown-content.open {
                 display: block;
@@ -332,7 +330,7 @@
                 right: 0;
                 bottom: 0;
                 background: rgba(0, 0, 0, 0.5);
-                z-index: 10000;
+                z-index: 999;
                 display: none;
             }
             .stickywork-calendar-overlay.open {
@@ -1022,11 +1020,11 @@
                                     <span class="stickywork-calendar-value placeholder">Selecciona una fecha</span>
                                     <span class="stickywork-calendar-arrow">▼</span>
                                 </div>
+                                <div class="stickywork-calendar-dropdown-content" id="stickywork-calendar">
+                                    <!-- Calendario se renderizará aquí -->
+                                </div>
                             </div>
                             <div class="stickywork-calendar-overlay" id="stickywork-calendar-overlay"></div>
-                            <div class="stickywork-calendar-dropdown-content" id="stickywork-calendar">
-                                <!-- Calendario se renderizará aquí -->
-                            </div>
                         </div>
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.time}</label>
