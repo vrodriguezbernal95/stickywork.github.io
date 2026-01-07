@@ -1458,7 +1458,10 @@
         const trigger = document.querySelector('.stickywork-calendar-trigger');
         const dropdown = document.querySelector('.stickywork-calendar-dropdown-content');
 
-        if (!trigger || !dropdown) return;
+        if (!trigger || !dropdown) {
+            console.warn('⚠️ [Widget] Calendario dropdown no encontrado');
+            return;
+        }
 
         const isOpen = typeof forceState === 'boolean' ? forceState : !dropdown.classList.contains('open');
 
@@ -1471,23 +1474,41 @@
         }
     }
 
+    // Variable para evitar múltiples inicializaciones
+    let calendarDropdownInitialized = false;
+
     // Inicializar dropdown del calendario
     function initCalendarDropdown() {
         const trigger = document.querySelector('.stickywork-calendar-trigger');
-        if (trigger) {
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleCalendarDropdown();
-            });
+
+        if (!trigger) {
+            console.warn('⚠️ [Widget] Trigger del calendario no encontrado');
+            return;
         }
 
-        // Cerrar al hacer click fuera
+        // Evitar múltiples inicializaciones
+        if (calendarDropdownInitialized) {
+            console.log('📅 [Widget] Calendario dropdown ya inicializado');
+            return;
+        }
+
+        // Agregar event listener al trigger
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            console.log('🖱️ [Widget] Click en calendario trigger');
+            toggleCalendarDropdown();
+        });
+
+        // Cerrar al hacer click fuera (solo una vez)
         document.addEventListener('click', (e) => {
             const calendarDropdown = document.querySelector('.stickywork-calendar-dropdown');
             if (calendarDropdown && !calendarDropdown.contains(e.target)) {
                 toggleCalendarDropdown(false);
             }
         });
+
+        calendarDropdownInitialized = true;
+        console.log('✅ [Widget] Calendario dropdown inicializado');
     }
 
     // Enviar reserva
@@ -1665,6 +1686,9 @@
 
         // Inicializar listener de zona para actualizar badges
         initZoneListener();
+
+        // Resetear bandera antes de inicializar
+        calendarDropdownInitialized = false;
 
         // Renderizar calendario personalizado
         renderCalendar();
@@ -1911,6 +1935,9 @@
         initDateListener();
         initZoneListener();
 
+        // Resetear bandera antes de inicializar
+        calendarDropdownInitialized = false;
+
         // Renderizar calendario personalizado
         renderCalendar();
 
@@ -1942,6 +1969,7 @@
     function reset() {
         peopleCount = 2;
         selectedDate = null;
+        calendarDropdownInitialized = false; // Resetear bandera
         if (config.mode === 'embedded') {
             renderEmbedded();
         } else {
