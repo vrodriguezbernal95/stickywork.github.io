@@ -1075,7 +1075,7 @@
                 e.preventDefault();
                 if (peopleCount > 1) {
                     peopleCount--;
-                    updatePeopleCount(container);
+                    updatePeopleCountDisplay();
                 }
             });
         }
@@ -1083,9 +1083,9 @@
         if (incrementBtn) {
             incrementBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (peopleCount < 20) {
+                if (peopleCount < 50) {
                     peopleCount++;
-                    updatePeopleCount(container);
+                    updatePeopleCountDisplay();
                 }
             });
         }
