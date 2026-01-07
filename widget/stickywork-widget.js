@@ -373,9 +373,21 @@
             .stickywork-people-count {
                 font-size: 1.5rem;
                 font-weight: 600;
-                min-width: 60px;
+                width: 70px;
                 text-align: center;
                 color: ${colors.textPrimary};
+                border: 1px solid ${colors.border};
+                border-radius: 8px;
+                background: ${colors.bgPrimary};
+                padding: 0.25rem;
+            }
+            .stickywork-people-count::-webkit-inner-spin-button,
+            .stickywork-people-count::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            .stickywork-people-count[type=number] {
+                -moz-appearance: textfield;
             }
             .stickywork-success {
                 text-align: center;
@@ -691,7 +703,9 @@
                 <label class="stickywork-label">${t.numPeople}</label>
                 <div class="stickywork-people-selector">
                     <button type="button" class="stickywork-people-btn" id="stickywork-people-decrement">-</button>
-                    <span class="stickywork-people-count" id="stickywork-people-count">2</span>
+                    <input type="number" class="stickywork-people-count" id="stickywork-people-count"
+                           value="2" min="1" max="50"
+                           oninput="StickyWork.updatePeopleCount(this.value)">
                     <button type="button" class="stickywork-people-btn" id="stickywork-people-increment">+</button>
                     <span style="color: var(--text-secondary);">${t.people}</span>
                 </div>
@@ -1020,26 +1034,29 @@
     let peopleCount = 2;
 
     window.StickyWork.incrementPeople = function() {
-        if (peopleCount < 20) {
+        if (peopleCount < 50) {
             peopleCount++;
-            updatePeopleCount();
+            updatePeopleCountDisplay();
         }
     };
 
     window.StickyWork.decrementPeople = function() {
         if (peopleCount > 1) {
             peopleCount--;
-            updatePeopleCount();
+            updatePeopleCountDisplay();
         }
     };
 
-    function updatePeopleCount(container) {
-        // Si no se pasa contenedor, buscar en todo el documento
-        const context = container || document;
-        const countEl = context.querySelector('#stickywork-people-count');
-        const inputEl = context.querySelector('#stickywork-num-people');
-        if (countEl) countEl.textContent = peopleCount;
-        if (inputEl) inputEl.value = peopleCount;
+    window.StickyWork.updatePeopleCount = function(value) {
+        const numValue = parseInt(value);
+        if (!isNaN(numValue) && numValue >= 1 && numValue <= 50) {
+            peopleCount = numValue;
+        }
+    };
+
+    function updatePeopleCountDisplay() {
+        const countEl = document.querySelector('#stickywork-people-count');
+        if (countEl) countEl.value = peopleCount;
     }
 
     // Inicializar botones de personas
@@ -1103,20 +1120,55 @@
                 // Consultar disponibilidad
                 await fetchAvailability(selectedDate);
 
-                // Regenerar formulario con nueva disponibilidad
-                widgetContainer.innerHTML = createFormHTML();
-
-                // Re-inicializar event listeners
-                const form = document.getElementById('stickywork-form');
-                if (form) form.addEventListener('submit', handleSubmit);
-                initCustomSelect();
-                initPeopleButtons();
-                initDateListener();
-
-                // Restaurar la fecha seleccionada
-                const newDateInput = document.querySelector('input[name="date"]');
-                if (newDateInput) newDateInput.value = selectedDate;
+                // Actualizar solo el selector de tiempo (sin resetear el formulario)
+                updateTimeSlots();
             });
+        }
+    }
+
+    // Actualizar slots de tiempo sin resetear el formulario
+    function updateTimeSlots() {
+        const timeSlots = generateTimeSlots();
+        const customSelect = document.querySelector('.stickywork-custom-select');
+        const normalSelect = document.querySelector('.stickywork-select[name="time"]');
+
+        if (customSelect) {
+            // Actualizar dropdown de custom select
+            const dropdown = customSelect.querySelector('.stickywork-custom-select-dropdown');
+            if (dropdown && timeSlots.grouped) {
+                dropdown.innerHTML = timeSlots.shifts.map(shift => `
+                    <div class="stickywork-custom-select-group">
+                        <div class="stickywork-custom-select-group-label">📅 ${shift.name.toUpperCase()}</div>
+                        ${shift.slots.map(time => {
+                            const isFull = isSlotFull(time);
+                            const badge = getAvailabilityBadge(time);
+                            return `
+                                <div class="stickywork-custom-select-option ${isFull ? 'disabled' : ''}"
+                                     data-value="${time}"
+                                     ${isFull ? 'data-disabled="true"' : ''}>
+                                    ${time} ${badge}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `).join('');
+            }
+        } else if (normalSelect) {
+            // Actualizar select normal
+            const selectedValue = normalSelect.value;
+            const t = translations[config.language];
+            normalSelect.innerHTML = `
+                <option value="">${t.selectTime}</option>
+                ${timeSlots.slots.map(time => {
+                    const isFull = isSlotFull(time);
+                    const badge = getAvailabilityBadge(time);
+                    return `<option value="${time}" ${isFull ? 'disabled' : ''}>${time} ${badge ? badge.replace(/<[^>]*>/g, '') : ''}</option>`;
+                }).join('')}
+            `;
+            // Restaurar valor seleccionado si aún es válido
+            if (selectedValue && !isSlotFull(selectedValue)) {
+                normalSelect.value = selectedValue;
+            }
         }
     }
 
