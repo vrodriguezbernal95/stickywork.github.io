@@ -91,6 +91,9 @@ const settings = {
                     <button class="settings-tab" data-tab="schedule" onclick="settings.switchTab('schedule')">
                         ⏰ Horarios
                     </button>
+                    <button class="settings-tab" data-tab="capacity" onclick="settings.switchTab('capacity')">
+                        👥 Capacidad
+                    </button>
                     <button class="settings-tab" data-tab="zones" onclick="settings.switchTab('zones')"
                             style="display: ${(() => {
                                 const bookingSettings = this.businessData?.booking_settings;
@@ -129,6 +132,9 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-schedule">
                         ${this.renderScheduleTab()}
+                    </div>
+                    <div class="settings-tab-content" id="tab-capacity">
+                        ${this.renderCapacityTab()}
                     </div>
                     <div class="settings-tab-content" id="tab-zones">
                         ${this.renderZonesTab()}
@@ -1393,6 +1399,39 @@ const settings = {
         }
     },
 
+    // Save capacity settings
+    async saveCapacity() {
+        const capacity = parseInt(document.getElementById('business-capacity').value);
+
+        if (!capacity || capacity < 1) {
+            alert('Por favor ingresa una capacidad válida (mínimo 1)');
+            return;
+        }
+
+        try {
+            const businessId = auth.getBusinessId();
+
+            // Obtener booking_settings actual
+            const currentSettings = this.businessData.booking_settings || {};
+            currentSettings.businessCapacity = capacity;
+
+            // Guardar usando endpoint existente
+            const response = await api.put(`/api/business/${businessId}`, {
+                booking_settings: currentSettings
+            });
+
+            if (response.success) {
+                alert('✅ Capacidad guardada exitosamente');
+                this.businessData.booking_settings = currentSettings;
+            } else {
+                throw new Error(response.message || 'Error al guardar');
+            }
+        } catch (error) {
+            console.error('Error saving capacity:', error);
+            alert('❌ Error al guardar: ' + error.message);
+        }
+    },
+
     // Render Schedule Tab
     renderScheduleTab() {
         const weekDays = [
@@ -1956,6 +1995,76 @@ const settings = {
         }
 
         alert('ℹ️ Función de eliminación de cuenta próximamente disponible');
+    },
+
+    // Render Capacity Tab
+    renderCapacityTab() {
+        const bookingSettings = this.businessData?.booking_settings || {};
+        const businessCapacity = bookingSettings.businessCapacity || 1;
+
+        // Determinar bookingMode del negocio
+        const typeKey = this.businessData?.type_key;
+        const modeMap = {
+            'salon': 'services',
+            'clinic': 'services',
+            'restaurant': 'tables',
+            'gym': 'classes',
+            'nutrition': 'services',
+            'spa': 'services',
+            'lawyer': 'services'
+        };
+        const bookingMode = modeMap[typeKey] || 'services';
+
+        // Si es modo classes, mostrar mensaje informativo
+        if (bookingMode === 'classes') {
+            return `
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <h3>👥 Gestión de Capacidad</h3>
+                    </div>
+                    <div style="background: #f0f9ff; border-left: 4px solid #3b82f6;
+                                padding: 1.5rem; border-radius: 8px;">
+                        <p><strong>💡 Info:</strong> Para negocios tipo "Clases",
+                        la capacidad se configura en cada servicio/clase.</p>
+                        <p>Ve a <strong>Servicios → Editar → Capacidad máxima</strong></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Para services y tables
+        let label, hint, placeholder;
+        if (bookingMode === 'tables') {
+            label = 'Capacidad total de comensales';
+            hint = 'Número máximo de personas que pueden comer simultáneamente';
+            placeholder = '50';
+        } else {
+            label = 'Número de profesionales/estaciones';
+            hint = 'Cuántas personas pueden ser atendidas al mismo tiempo';
+            placeholder = '3';
+        }
+
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>👥 Gestión de Capacidad</h3>
+                    <p>Configura cuántas reservas simultáneas puede manejar tu negocio</p>
+                </div>
+
+                <div class="form-group">
+                    <label>${label}</label>
+                    <input type="number" id="business-capacity"
+                           min="1" max="1000"
+                           value="${businessCapacity}"
+                           placeholder="${placeholder}">
+                    <p class="hint">${hint}</p>
+                </div>
+
+                <button class="btn-save" onclick="settings.saveCapacity()">
+                    💾 Guardar Capacidad
+                </button>
+            </div>
+        `;
     },
 
     // Render Zones Tab (for restaurants)

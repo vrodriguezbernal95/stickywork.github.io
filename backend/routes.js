@@ -353,9 +353,9 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             });
         }
 
-        // Obtener configuración del negocio para validar horarios
+        // Obtener configuración del negocio para validar horarios y capacidad
         const businessSettingsQuery = await db.query(
-            'SELECT booking_settings FROM businesses WHERE id = ?',
+            'SELECT type_key, booking_settings FROM businesses WHERE id = ?',
             [businessId]
         );
 
@@ -371,6 +371,14 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 ? JSON.parse(businessSettingsQuery[0].booking_settings)
                 : businessSettingsQuery[0].booking_settings)
             : {};
+
+        // Obtener booking_mode del negocio
+        const typeKey = businessSettingsQuery[0].type_key;
+        const businessTypesQuery = await db.query(
+            'SELECT booking_mode FROM business_types WHERE type_key = ?',
+            [typeKey]
+        );
+        const bookingMode = businessTypesQuery[0]?.booking_mode || 'services';
 
         // Validar día laboral
         const bookingDay = new Date(bookingDate + 'T00:00:00').getDay() || 7; // 0=Domingo -> 7
@@ -435,21 +443,75 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             }
         }
 
-        // Verificar si ya existe una reserva para esa fecha/hora
-        const existingBooking = await db.query(
-            `SELECT id FROM bookings
-             WHERE business_id = ?
-             AND booking_date = ?
-             AND booking_time = ?
-             AND status != 'cancelled'`,
-            [businessId, bookingDate, bookingTime]
-        );
+        // Validar capacidad según el modo de reserva
+        const businessCapacity = bookingSettings.businessCapacity || 1;
 
-        if (existingBooking.length > 0) {
-            return res.status(409).json({
-                success: false,
-                message: 'Ya existe una reserva para ese horario'
-            });
+        if (bookingMode === 'classes') {
+            // MODO CLASSES: Verificar capacidad del servicio específico
+            const serviceQuery = await db.query(
+                'SELECT capacity FROM services WHERE id = ?',
+                [autoAssignedServiceId]
+            );
+
+            const serviceCapacity = serviceQuery[0]?.capacity || 15;
+
+            // Contar reservas existentes para ese servicio en ese horario
+            const countQuery = await db.query(
+                `SELECT COUNT(*) as count FROM bookings
+                 WHERE business_id = ?
+                 AND booking_date = ?
+                 AND booking_time = ?
+                 AND service_id = ?
+                 AND status != 'cancelled'`,
+                [businessId, bookingDate, bookingTime, autoAssignedServiceId]
+            );
+
+            if (countQuery[0].count >= serviceCapacity) {
+                return res.status(409).json({
+                    success: false,
+                    message: `La clase está llena (capacidad: ${serviceCapacity} personas)`
+                });
+            }
+
+        } else if (bookingMode === 'tables') {
+            // MODO TABLES: Sumar num_people de reservas existentes
+            const sumQuery = await db.query(
+                `SELECT COALESCE(SUM(num_people), 0) as total_people FROM bookings
+                 WHERE business_id = ?
+                 AND booking_date = ?
+                 AND booking_time = ?
+                 AND status != 'cancelled'`,
+                [businessId, bookingDate, bookingTime]
+            );
+
+            const currentPeople = sumQuery[0].total_people;
+            const requestedPeople = numPeople || 1;
+
+            if (currentPeople + requestedPeople > businessCapacity) {
+                const available = businessCapacity - currentPeople;
+                return res.status(409).json({
+                    success: false,
+                    message: `No hay suficientes plazas (solicitas: ${requestedPeople}, disponibles: ${available})`
+                });
+            }
+
+        } else {
+            // MODO SERVICES: Contar número de reservas simultáneas
+            const countQuery = await db.query(
+                `SELECT COUNT(*) as count FROM bookings
+                 WHERE business_id = ?
+                 AND booking_date = ?
+                 AND booking_time = ?
+                 AND status != 'cancelled'`,
+                [businessId, bookingDate, bookingTime]
+            );
+
+            if (countQuery[0].count >= businessCapacity) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Ya no hay espacios disponibles para ese horario'
+                });
+            }
         }
 
         // Crear la reserva

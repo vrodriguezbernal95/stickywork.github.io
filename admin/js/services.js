@@ -139,6 +139,15 @@ const services = {
                             </div>
                         </div>
 
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Capacidad máxima</label>
+                            <input type="number" name="capacity" min="1" max="500" value="15"
+                                   style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                Número máximo de personas para este servicio/clase
+                            </p>
+                        </div>
+
                         <div style="margin-bottom: 1.5rem;">
                             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                                 <input type="checkbox" name="is_active" checked style="width: 18px; height: 18px;">
@@ -199,6 +208,15 @@ const services = {
                             </div>
                         </div>
 
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Capacidad máxima</label>
+                            <input type="number" name="capacity" min="1" max="500" value="${service.capacity || 15}"
+                                   style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                Número máximo de personas para este servicio/clase
+                            </p>
+                        </div>
+
                         <div style="margin-bottom: 1.5rem;">
                             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                                 <input type="checkbox" name="is_active" ${service.is_active ? 'checked' : ''} style="width: 18px; height: 18px;">
@@ -241,6 +259,7 @@ const services = {
             description: formData.get('description') || null,
             duration: parseInt(formData.get('duration')),
             price: formData.get('price') ? parseFloat(formData.get('price')) : null,
+            capacity: formData.get('capacity') ? parseInt(formData.get('capacity')) : 15,
             is_active: formData.get('is_active') === 'on'
         };
 
@@ -267,6 +286,7 @@ const services = {
             description: formData.get('description') || null,
             duration: parseInt(formData.get('duration')),
             price: formData.get('price') ? parseFloat(formData.get('price')) : null,
+            capacity: formData.get('capacity') ? parseInt(formData.get('capacity')) : 15,
             is_active: formData.get('is_active') === 'on'
         };
 
