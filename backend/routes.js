@@ -1757,7 +1757,12 @@ router.put('/api/business/:businessId/settings', requireAuth, async (req, res) =
         }
 
         if (bookingSettings) {
-            console.log('✅ bookingSettings existe:', JSON.stringify(bookingSettings, null, 2));
+            console.log('✅ bookingSettings existe');
+            console.log('   - scheduleType:', bookingSettings.scheduleType);
+            console.log('   - feedbackSettings:', bookingSettings.feedbackSettings ? 'SÍ existe' : 'NO existe');
+            if (bookingSettings.feedbackSettings) {
+                console.log('   - Preguntas:', bookingSettings.feedbackSettings.questions?.length || 0);
+            }
             // Validar turnos si el tipo de horario es múltiple
             if (bookingSettings.scheduleType === 'multiple' && bookingSettings.shifts) {
                 try {
