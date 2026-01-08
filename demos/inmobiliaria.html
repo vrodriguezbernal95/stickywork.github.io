@@ -446,26 +446,16 @@
 
     <!-- StickyWork Widget Script -->
     <script>
-        // Este ID se reemplazará con el ID real del negocio cuando creemos la cuenta
-        const BUSINESS_ID = 'PENDING';
+        // Business ID de Inmobiliaria Prime (demo)
+        const BUSINESS_ID = '11';
 
-        // Cargar el widget cuando se cree el negocio
-        if (BUSINESS_ID !== 'PENDING') {
-            const script = document.createElement('script');
-            script.src = 'https://stickywork.com/widget/booking-widget.js';
-            script.setAttribute('data-business-id', BUSINESS_ID);
-            script.setAttribute('data-mode', 'inline');
-            script.setAttribute('data-container', 'booking-widget-container');
-            document.head.appendChild(script);
-        } else {
-            // Placeholder mientras se crea el negocio
-            document.getElementById('booking-widget-container').innerHTML = `
-                <div style="background: white; padding: 40px; border-radius: 12px; max-width: 600px; margin: 0 auto;">
-                    <h3 style="color: #3B82F6; margin-bottom: 20px;">Widget de Reservas</h3>
-                    <p style="color: #666;">El widget se activará cuando se cree la cuenta de prueba.</p>
-                </div>
-            `;
-        }
+        // Cargar el widget
+        const script = document.createElement('script');
+        script.src = 'https://stickywork.com/widget/booking-widget.js';
+        script.setAttribute('data-business-id', BUSINESS_ID);
+        script.setAttribute('data-mode', 'inline');
+        script.setAttribute('data-container', 'booking-widget-container');
+        document.head.appendChild(script);
     </script>
 </body>
 </html>
