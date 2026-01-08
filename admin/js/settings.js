@@ -2785,6 +2785,13 @@ const settings = {
             : {};
 
         const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
+
+        // Verificar que la pregunta existe
+        if (!feedbackSettings.questions[index]) {
+            console.error('Pregunta no existe en index:', index);
+            return;
+        }
+
         feedbackSettings.questions[index].type = type;
 
         if (type === 'multiple_choice' && !feedbackSettings.questions[index].options) {
@@ -2810,6 +2817,12 @@ const settings = {
 
         const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
 
+        // Verificar que la pregunta existe
+        if (!feedbackSettings.questions[questionIndex]) {
+            console.error('Pregunta no existe en index:', questionIndex);
+            return;
+        }
+
         if (!feedbackSettings.questions[questionIndex].options) {
             feedbackSettings.questions[questionIndex].options = [];
         }
@@ -2832,6 +2845,13 @@ const settings = {
             : {};
 
         const feedbackSettings = bookingSettings.feedbackSettings || { questions: [] };
+
+        // Verificar que la pregunta y las opciones existen
+        if (!feedbackSettings.questions[questionIndex] || !feedbackSettings.questions[questionIndex].options) {
+            console.error('Pregunta u opciones no existen en index:', questionIndex);
+            return;
+        }
+
         feedbackSettings.questions[questionIndex].options.splice(optionIndex, 1);
 
         bookingSettings.feedbackSettings = feedbackSettings;
