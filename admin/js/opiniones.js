@@ -285,13 +285,13 @@ function createFeedbackCard(feedback) {
         minute: '2-digit'
     });
 
-    // Construir HTML de preguntas adicionales
+    // Construir HTML de preguntas adicionales con estructura mejorada
     let questionsHTML = '';
     if (feedback.questions) {
         const questions = feedback.questions;
         const questionItems = [];
 
-        // Mapeo de IDs a etiquetas legibles
+        // Mapeo de IDs a etiquetas legibles (fallback para datos antiguos)
         const questionLabels = {
             'q1': '¿Cómo calificarías nuestro servicio?',
             'q2': '¿Qué podríamos mejorar?',
@@ -305,48 +305,83 @@ function createFeedbackCard(feedback) {
 
         // Recorrer todas las respuestas del objeto questions
         Object.keys(questions).forEach(key => {
-            const value = questions[key];
+            const item = questions[key];
 
-            // Saltar valores nulos o vacíos
-            if (value === null || value === undefined || value === '') {
-                return;
+            // Nuevo formato estructurado: { question, type, answer }
+            if (item && typeof item === 'object' && item.question && item.answer !== null && item.answer !== undefined && item.answer !== '') {
+                const questionText = item.question;
+                const answerValue = item.answer;
+                const type = item.type;
+
+                // Renderizar según el tipo
+                if (type === 'rating' && typeof answerValue === 'number') {
+                    questionItems.push(`
+                        <div class="question-item-structured">
+                            <div class="question-text">❓ ${questionText}</div>
+                            <div class="answer-rating">${'⭐'.repeat(answerValue)} (${answerValue}/5)</div>
+                        </div>
+                    `);
+                } else if (type === 'multiple_choice') {
+                    questionItems.push(`
+                        <div class="question-item-structured">
+                            <div class="question-text">❓ ${questionText}</div>
+                            <div class="answer-choice">✓ ${answerValue}</div>
+                        </div>
+                    `);
+                } else if (type === 'text' && answerValue.trim() !== '') {
+                    questionItems.push(`
+                        <div class="question-item-structured">
+                            <div class="question-text">❓ ${questionText}</div>
+                            <div class="answer-text">"${answerValue}"</div>
+                        </div>
+                    `);
+                }
             }
+            // Formato antiguo (compatibilidad hacia atrás)
+            else {
+                const value = item;
 
-            const label = questionLabels[key] || key;
+                // Saltar valores nulos o vacíos
+                if (value === null || value === undefined || value === '') {
+                    return;
+                }
 
-            // Determinar tipo de respuesta
-            if (typeof value === 'number' && value >= 1 && value <= 5) {
-                // Rating (estrellas)
-                questionItems.push(`
-                    <div class="question-item">
-                        <span class="question-label">${label}:</span>
-                        <span class="question-value">${'⭐'.repeat(value)}</span>
-                    </div>
-                `);
-            } else if (typeof value === 'boolean') {
-                // Sí/No
-                questionItems.push(`
-                    <div class="question-item">
-                        <span class="question-label">${label}:</span>
-                        <span style="color: ${value ? '#10b981' : '#ef4444'}; font-weight: 600;">
-                            ${value ? '✓ Sí' : '✗ No'}
-                        </span>
-                    </div>
-                `);
-            } else if (typeof value === 'string' && value.trim() !== '') {
-                // Texto libre
-                questionItems.push(`
-                    <div class="question-item">
-                        <span class="question-label">${label}:</span>
-                        <div class="question-text-response">"${value}"</div>
-                    </div>
-                `);
+                const label = questionLabels[key] || key;
+
+                // Determinar tipo de respuesta
+                if (typeof value === 'number' && value >= 1 && value <= 5) {
+                    // Rating (estrellas)
+                    questionItems.push(`
+                        <div class="question-item">
+                            <span class="question-label">${label}:</span>
+                            <span class="question-value">${'⭐'.repeat(value)}</span>
+                        </div>
+                    `);
+                } else if (typeof value === 'boolean') {
+                    // Sí/No
+                    questionItems.push(`
+                        <div class="question-item">
+                            <span class="question-label">${label}:</span>
+                            <span style="color: ${value ? '#10b981' : '#ef4444'}; font-weight: 600;">
+                                ${value ? '✓ Sí' : '✗ No'}
+                            </span>
+                        </div>
+                    `);
+                } else if (typeof value === 'string' && value.trim() !== '') {
+                    // Texto libre
+                    questionItems.push(`
+                        <div class="question-item">
+                            <span class="question-label">${label}:</span>
+                            <div class="question-text-response">"${value}"</div>
+                        </div>
+                    `);
+                }
             }
         });
 
         if (questionItems.length > 0) {
             questionsHTML = `
-                <div class="feedback-questions">
+                <div class="feedback-questions-structured">
                     ${questionItems.join('')}
                 </div>
             `;

@@ -460,27 +460,36 @@
         async function handleSubmit(e) {
             e.preventDefault();
 
-            // Collect all answers
-            const answers = {};
+            // Collect all answers with metadata (question + answer structure)
+            const structuredAnswers = {};
 
             // Collect answers from rendered questions
             feedbackSettings.questions.forEach((q, index) => {
                 const questionId = q.id || index + 1;
+                let answer = null;
 
                 if (q.type === 'rating') {
-                    answers[`q${questionId}`] = selectedAnswers[`q${questionId}`] || null;
+                    answer = selectedAnswers[`q${questionId}`] || null;
                 } else if (q.type === 'multiple_choice') {
-                    answers[`q${questionId}`] = selectedAnswers[`q${questionId}`] || null;
+                    answer = selectedAnswers[`q${questionId}`] || null;
                 } else if (q.type === 'text') {
                     const textarea = document.getElementById(`q${questionId}`);
-                    answers[`q${questionId}`] = textarea ? textarea.value.trim() : '';
+                    answer = textarea ? textarea.value.trim() : '';
                 }
 
                 // Validate required questions
-                if (q.required && !answers[`q${questionId}`]) {
+                if (q.required && !answer) {
                     alert(`Por favor, responde la pregunta: "${q.question}"`);
                     throw new Error('Required question not answered');
                 }
+
+                // Store with metadata for better structure
+                structuredAnswers[`q${questionId}`] = {
+                    question: q.question,
+                    type: q.type,
+                    answer: answer,
+                    required: q.required || false
+                };
             });
 
             // Generic comment
@@ -495,12 +504,12 @@
                 return;
             }
 
-            // Prepare payload
+            // Prepare payload with structured data
             const payload = {
                 token,
                 rating: mainRating,
                 comment: genericComment || null,
-                questions: answers
+                questions: structuredAnswers
             };
 
             // Disable submit button
