@@ -434,7 +434,23 @@
             <p>Agenda una visita, tasación o asesoría en pocos clics</p>
 
             <!-- StickyWork Booking Widget -->
-            <div id="booking-widget-container"></div>
+            <div id="stickywork-widget"></div>
+
+            <!-- Load Widget Script -->
+            <script src="../widget/stickywork-widget.js"></script>
+            <script>
+                // Initialize StickyWork Widget for Inmobiliaria Prime
+                StickyWork.init({
+                    businessId: 11,  // ID de Inmobiliaria Prime en producción
+                    apiUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                        ? 'http://localhost:3000'
+                        : 'https://api.stickywork.com',
+                    primaryColor: '#3B82F6',
+                    secondaryColor: '#06B6D4',
+                    language: 'es',
+                    containerId: 'stickywork-widget'
+                });
+            </script>
         </div>
     </section>
 
@@ -445,19 +461,5 @@
             <a href="https://stickywork.com" style="color: #3B82F6; text-decoration: none;">Crea tu propia web con sistema de reservas →</a>
         </p>
     </footer>
-
-    <!-- StickyWork Widget Script -->
-    <script>
-        // Business ID de Inmobiliaria Prime (demo)
-        const BUSINESS_ID = '11';
-
-        // Cargar el widget
-        const script = document.createElement('script');
-        script.src = 'https://stickywork.com/widget/booking-widget.js';
-        script.setAttribute('data-business-id', BUSINESS_ID);
-        script.setAttribute('data-mode', 'inline');
-        script.setAttribute('data-container', 'booking-widget-container');
-        document.head.appendChild(script);
-    </script>
 </body>
 </html>
