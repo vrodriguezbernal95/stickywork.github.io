@@ -404,8 +404,9 @@ function createFeedbackCard(feedback) {
         </div>
 
         ${feedback.comment ? `
-            <div class="feedback-comment">
-                "${feedback.comment}"
+            <div class="question-item-structured">
+                <div class="question-text">💬 ¿Algo más que quieras comentar?</div>
+                <div class="answer-text">"${feedback.comment}"</div>
             </div>
         ` : ''}
 
