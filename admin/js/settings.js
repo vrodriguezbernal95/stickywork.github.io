@@ -2909,7 +2909,7 @@ const settings = {
             bookingSettings.feedbackSettings = feedbackSettings;
 
             const response = await api.put(`/api/business/${this.userData.business_id}/settings`, {
-                booking_settings: bookingSettings
+                bookingSettings: bookingSettings
             });
 
             if (response.success) {
