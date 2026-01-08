@@ -374,6 +374,71 @@ router.get('/api/feedback/verify/:token', async (req, res) => {
     }
 });
 
+// ==================== CREAR RESERVA DE PRUEBA (TEMPORAL - SOLO DESARROLLO) ====================
+
+router.post('/api/admin/feedback/create-test-booking/:businessId', requireAuth, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        // Verificar acceso
+        if (req.user.businessId !== parseInt(businessId)) {
+            return res.status(403).json({
+                success: false,
+                error: 'No tienes acceso a este negocio'
+            });
+        }
+
+        const crypto = require('crypto');
+
+        // Buscar un servicio
+        const [services] = await db.query(
+            'SELECT id FROM services WHERE business_id = ? LIMIT 1',
+            [businessId]
+        );
+
+        const serviceId = services.length > 0 ? services[0].id : null;
+
+        // Fecha hace 25 horas
+        const now = new Date();
+        const bookingDateTime = new Date(now.getTime() - (25 * 60 * 60 * 1000));
+        const year = bookingDateTime.getFullYear();
+        const month = String(bookingDateTime.getMonth() + 1).padStart(2, '0');
+        const day = String(bookingDateTime.getDate()).padStart(2, '0');
+        const bookingDateStr = `${year}-${month}-${day}`;
+
+        // Generar token
+        const feedbackToken = crypto.randomBytes(32).toString('hex');
+
+        // Crear reserva
+        const [result] = await db.query(
+            `INSERT INTO bookings (
+                business_id, service_id, customer_name, customer_email, customer_phone,
+                booking_date, booking_time, num_people, status, feedback_token,
+                feedback_sent, whatsapp_consent, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                businessId, serviceId, 'Víctor', 'victor@test.com', '687767133',
+                bookingDateStr, '19:30:00', 2, 'completed', feedbackToken,
+                0, 1, bookingDateTime
+            ]
+        );
+
+        res.json({
+            success: true,
+            message: 'Reserva de prueba creada',
+            bookingId: result.insertId,
+            feedbackToken
+        });
+
+    } catch (error) {
+        console.error('Error creando reserva de prueba:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // ==================== OBTENER FEEDBACKS PENDIENTES (ADMIN) ====================
 
 /**
