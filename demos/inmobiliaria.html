@@ -116,10 +116,10 @@
             opacity: 1;
         }
 
-        /* Booking Button in Header */
+        /* Booking Button in Header - Debe ir DESPUÉS de .nav a para sobrescribir */
         .btn-reserva-header {
-            background: white;
-            color: #3B82F6;
+            background: white !important;
+            color: #3B82F6 !important;
             padding: 12px 28px;
             border-radius: 30px;
             text-decoration: none;
@@ -127,10 +127,12 @@
             display: inline-block;
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+            opacity: 1 !important;
         }
 
         .btn-reserva-header:hover {
-            background: #f0f9ff;
+            background: #f0f9ff !important;
+            color: #3B82F6 !important;
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(255, 255, 255, 0.3);
         }
