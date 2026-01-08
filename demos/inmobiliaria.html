@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QNNFJWC6PV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-QNNFJWC6PV');
+    </script>
+    <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "us5furlqob");
+    </script>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inmobiliaria Prime - Reserva tu visita</title>
+    <meta name="description" content="Demo de sistema de reservas online para inmobiliarias. Ve cómo StickyWork facilita las visitas y tasaciones en tiempo real.">
+    <meta name="keywords" content="demo reservas inmobiliaria, sistema reservas visitas, booking inmobiliaria online, ejemplo StickyWork inmobiliarias">
+    <meta name="robots" content="noindex">
+    <meta name="googlebot" content="noindex">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stickywork.com/demos/inmobiliaria.html">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://stickywork.com/demos/inmobiliaria.html">
+    <meta property="og:site_name" content="StickyWork">
+    <meta property="og:title" content="Demo Inmobiliaria - StickyWork">
+    <meta property="og:description" content="Demo interactiva de sistema de reservas para inmobiliarias. Prueba cómo funciona en tiempo real.">
+    <meta property="og:image" content="https://stickywork.com/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="StickyWork - Sistema de Reservas Online">
+    <meta property="og:locale" content="es_ES">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://stickywork.com/demos/inmobiliaria.html">
+    <meta name="twitter:title" content="Demo Inmobiliaria - StickyWork">
+    <meta name="twitter:description" content="Demo interactiva de sistema de reservas para inmobiliarias. Prueba cómo funciona en tiempo real.">
+    <meta name="twitter:image" content="https://stickywork.com/images/twitter-card.jpg">
+    <meta name="twitter:image:alt" content="StickyWork Dashboard">
+    <meta name="twitter:creator" content="@stickywork">
+    <meta name="twitter:site" content="@stickywork">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Demo Badge */
+        .demo-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 500;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .nav a:hover {
+            opacity: 1;
+        }
+
+        /* Booking Button in Header */
+        .btn-reserva-header {
+            background: white;
+            color: #3B82F6;
+            padding: 12px 28px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-reserva-header:hover {
+            background: #f0f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(6, 182, 212, 0.95) 100%),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><rect fill="%23f5f5f5" width="1200" height="400"/><circle fill="%23e8e8e8" cx="300" cy="120" r="100"/><circle fill="%23d8d8d8" cx="900" cy="280" r="150"/><circle fill="%23e8e8e8" cx="600" cy="200" r="80"/></svg>');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .hero-features {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* About Section */
+        .about {
+            padding: 80px 40px;
+            background: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 50px;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .about-card {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .about-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .about-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #3B82F6;
+        }
+
+        .about-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 80px 40px;
+            background: #f8f9fa;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+
+        .service-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #3B82F6;
+        }
+
+        .service-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .service-price {
+            font-size: 1.5rem;
+            color: #3B82F6;
+            font-weight: bold;
+        }
+
+        /* Booking Section */
+        .booking-section {
+            padding: 80px 40px;
+            background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .booking-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .booking-section p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav a {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Badge -->
+    <div class="demo-badge">
+        🧪 DEMO INTERACTIVA
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🏢 Inmobiliaria Prime</div>
+            <nav class="nav">
+                <a href="#servicios">Servicios</a>
+                <a href="#sobre-nosotros">Sobre Nosotros</a>
+                <a href="#booking-widget" class="btn-reserva-header">Reserva tu visita</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Tu hogar ideal te espera</h1>
+        <p>Especialistas en compra, venta y alquiler de propiedades</p>
+        <div class="hero-features">
+            <div class="hero-feature">
+                <span>🏠</span>
+                <span>+500 Propiedades</span>
+            </div>
+            <div class="hero-feature">
+                <span>⭐</span>
+                <span>Excelente Valoración</span>
+            </div>
+            <div class="hero-feature">
+                <span>📅</span>
+                <span>Visitas Personalizadas</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="sobre-nosotros">
+        <div class="container">
+            <h2 class="section-title">¿Por qué elegirnos?</h2>
+            <p class="section-subtitle">Más de 20 años de experiencia en el sector inmobiliario</p>
+
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="about-icon">🎯</div>
+                    <h3>Asesoramiento Personalizado</h3>
+                    <p>Te ayudamos a encontrar la propiedad perfecta según tus necesidades y presupuesto.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">💼</div>
+                    <h3>Gestión Integral</h3>
+                    <p>Nos encargamos de todos los trámites legales y financieros para tu tranquilidad.</p>
+                </div>
+                <div class="about-card">
+                    <div class="about-icon">🔑</div>
+                    <h3>Visitas Flexibles</h3>
+                    <p>Agenda tus visitas cuando mejor te convenga, incluso en fines de semana.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="servicios">
+        <div class="container">
+            <h2 class="section-title">Nuestros Servicios</h2>
+            <p class="section-subtitle">Soluciones inmobiliarias completas para ti</p>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🏘️</div>
+                    <h3>Visita Personalizada</h3>
+                    <p>Recorre las propiedades que se ajustan a tu búsqueda con uno de nuestros agentes especializados.</p>
+                    <div class="service-price">Gratis</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📊</div>
+                    <h3>Tasación Profesional</h3>
+                    <p>Valora tu propiedad con nuestro equipo de expertos certificados y obtén el mejor precio de mercado.</p>
+                    <div class="service-price">199€</div>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">💰</div>
+                    <h3>Asesoría Hipotecaria</h3>
+                    <p>Te ayudamos a conseguir las mejores condiciones de financiación para tu nueva vivienda.</p>
+                    <div class="service-price">Gratis</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Widget Section -->
+    <section class="booking-section" id="booking-widget">
+        <div class="container">
+            <h2>Reserva tu cita ahora</h2>
+            <p>Agenda una visita, tasación o asesoría en pocos clics</p>
+
+            <!-- StickyWork Booking Widget -->
+            <div id="booking-widget-container"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2025 Inmobiliaria Prime - Demo creada con StickyWork</p>
+        <p style="margin-top: 10px; font-size: 0.9rem;">
+            <a href="https://stickywork.com" style="color: #3B82F6; text-decoration: none;">Crea tu propia web con sistema de reservas →</a>
+        </p>
+    </footer>
+
+    <!-- StickyWork Widget Script -->
+    <script>
+        // Este ID se reemplazará con el ID real del negocio cuando creemos la cuenta
+        const BUSINESS_ID = 'PENDING';
+
+        // Cargar el widget cuando se cree el negocio
+        if (BUSINESS_ID !== 'PENDING') {
+            const script = document.createElement('script');
+            script.src = 'https://stickywork.com/widget/booking-widget.js';
+            script.setAttribute('data-business-id', BUSINESS_ID);
+            script.setAttribute('data-mode', 'inline');
+            script.setAttribute('data-container', 'booking-widget-container');
+            document.head.appendChild(script);
+        } else {
+            // Placeholder mientras se crea el negocio
+            document.getElementById('booking-widget-container').innerHTML = `
+                <div style="background: white; padding: 40px; border-radius: 12px; max-width: 600px; margin: 0 auto;">
+                    <h3 style="color: #3B82F6; margin-bottom: 20px;">Widget de Reservas</h3>
+                    <p style="color: #666;">El widget se activará cuando se cree la cuenta de prueba.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
