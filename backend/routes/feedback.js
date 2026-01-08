@@ -384,13 +384,19 @@ router.get('/api/admin/feedback/pending/:businessId', requireAuth, async (req, r
     try {
         const { businessId } = req.params;
 
+        console.log('🔍 [pending-feedback] businessId from params:', businessId);
+        console.log('🔍 [pending-feedback] req.user.businessId:', req.user.businessId);
+
         // Verificar acceso
         if (req.user.businessId !== parseInt(businessId)) {
+            console.log('❌ [pending-feedback] Access denied');
             return res.status(403).json({
                 success: false,
                 error: 'No tienes acceso a este negocio'
             });
         }
+
+        console.log('✅ [pending-feedback] Access granted, querying...');
 
         // Obtener reservas con feedback pendiente
         const pendingFeedbacks = await db.query(`
@@ -413,6 +419,11 @@ router.get('/api/admin/feedback/pending/:businessId', requireAuth, async (req, r
             ORDER BY b.booking_date DESC
             LIMIT 100
         `, [businessId]);
+
+        console.log('📊 [pending-feedback] Results:', pendingFeedbacks.length);
+        if (pendingFeedbacks.length > 0) {
+            console.log('📋 [pending-feedback] First result:', pendingFeedbacks[0]);
+        }
 
         res.json({
             success: true,
