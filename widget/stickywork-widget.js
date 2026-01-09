@@ -1310,7 +1310,8 @@
         for (let day = 1; day <= lastDay.getDate(); day++) {
             const date = new Date(currentCalendarYear, currentCalendarMonth, day);
             date.setHours(0, 0, 0, 0);
-            const dateStr = date.toISOString().split('T')[0];
+            // Fix: Construir dateStr sin toISOString() para evitar problemas de zona horaria
+            const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
             let classes = ['stickywork-calendar-day'];
 
@@ -1399,7 +1400,8 @@
             // Saltar días pasados
             if (date < today) continue;
 
-            const dateStr = date.toISOString().split('T')[0];
+            // Fix: Construir dateStr sin toISOString() para evitar problemas de zona horaria
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dayOfWeek = date.getDay() || 7; // Convertir Dom=0 a Dom=7
 
             // Verificar si el negocio abre ese día
