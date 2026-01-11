@@ -1383,7 +1383,7 @@
         calendarNoAvailabilityDays.clear();
 
         // Obtener workDays del negocio
-        const workDays = config.businessConfig?.workDays || [1, 2, 3, 4, 5, 6]; // Por defecto L-S
+        const workDays = config.workDays || businessConfig?.workDays || [1, 2, 3, 4, 5, 6]; // Por defecto L-S
 
         // Recorrer todos los días del mes
         const lastDay = new Date(year, month + 1, 0).getDate();
