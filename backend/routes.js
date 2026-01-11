@@ -552,6 +552,17 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             });
         }
 
+        // Validar que no se puedan hacer reservas para horas pasadas del mismo día
+        const now = new Date();
+        const bookingDateTime = new Date(bookingDate + 'T' + bookingTime);
+
+        if (bookingDateTime < now) {
+            return res.status(400).json({
+                success: false,
+                message: 'No se pueden hacer reservas para horas pasadas'
+            });
+        }
+
         // Validar horario según tipo de configuración
         const scheduleType = bookingSettings.scheduleType || 'continuous';
         let autoAssignedServiceId = serviceId; // Mantener el serviceId si viene del widget

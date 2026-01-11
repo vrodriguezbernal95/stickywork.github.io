@@ -808,7 +808,7 @@
     }
 
     // Función auxiliar: Generar slots para un rango de tiempo específico
-    function generateSlotsForRange(startTime, endTime, duration) {
+    function generateSlotsForRange(startTime, endTime, duration, filterPastSlots = false) {
         const slots = [];
         const [startHour, startMin] = startTime.split(':').map(Number);
         const [endHour, endMin] = endTime.split(':').map(Number);
@@ -816,10 +816,23 @@
         let currentMin = startHour * 60 + startMin;
         const endMinutes = endHour * 60 + endMin;
 
+        // Obtener hora actual si necesitamos filtrar slots pasados
+        let currentTimeMinutes = null;
+        if (filterPastSlots) {
+            const now = new Date();
+            currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+        }
+
         while (currentMin < endMinutes) {
             const hour = Math.floor(currentMin / 60);
             const min = currentMin % 60;
-            slots.push(`${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`);
+            const timeSlot = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+
+            // Solo agregar slot si no estamos filtrando, o si el slot es en el futuro
+            if (!filterPastSlots || currentMin > currentTimeMinutes) {
+                slots.push(timeSlot);
+            }
+
             currentMin += duration;
         }
 
@@ -832,7 +845,14 @@
         const scheduleType = businessConfig?.scheduleType || 'continuous';
         const slotDuration = businessConfig?.slotDuration || 30;
 
+        // Verificar si la fecha seleccionada es hoy para filtrar horas pasadas
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const isToday = selectedDate === todayStr;
+
         console.log('🕐 [Widget] Generando slots - scheduleType:', scheduleType);
+        console.log('🕐 [Widget] Fecha seleccionada:', selectedDate, '- Es hoy:', isToday);
         console.log('🕐 [Widget] businessConfig.shifts:', businessConfig?.shifts);
 
         if (scheduleType === 'multiple' && businessConfig?.shifts) {
@@ -854,7 +874,8 @@
                 const shiftSlots = generateSlotsForRange(
                     shift.startTime,
                     shift.endTime,
-                    slotDuration
+                    slotDuration,
+                    isToday // Filtrar horas pasadas solo si es hoy
                 );
 
                 console.log(`   ✓ Slots generados: ${shiftSlots.length}`);
@@ -874,7 +895,7 @@
             const end = businessConfig?.workHoursEnd || '20:00';
 
             console.log(`   Rango: ${start}-${end}`);
-            const slots = generateSlotsForRange(start, end, slotDuration);
+            const slots = generateSlotsForRange(start, end, slotDuration, isToday); // Filtrar horas pasadas solo si es hoy
             console.log(`🎯 [Widget] Total de slots generados: ${slots.length}`);
 
             return { grouped: false, slots };
