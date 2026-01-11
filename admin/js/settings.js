@@ -114,6 +114,9 @@ const settings = {
                     <button class="settings-tab" data-tab="advanced" onclick="settings.switchTab('advanced')">
                         ⚙️ Avanzado
                     </button>
+                    <button class="settings-tab" data-tab="guide" onclick="settings.switchTab('guide')">
+                        📚 Guía
+                    </button>
                 </div>
 
                 <!-- Tab Content -->
@@ -153,6 +156,9 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-advanced">
                         ${this.renderAdvancedTab()}
+                    </div>
+                    <div class="settings-tab-content" id="tab-guide">
+                        ${this.renderGuideTab()}
                     </div>
                 </div>
             </div>
@@ -2105,6 +2111,644 @@ const settings = {
         `;
     },
 
+    // Render Guide Tab
+    renderGuideTab() {
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>📚 Guía de Uso del Dashboard</h3>
+                    <p>Todo lo que necesitas saber para sacar el máximo provecho de StickyWork</p>
+                </div>
+
+                <!-- Buscador de guías -->
+                <div class="form-group">
+                    <input type="text" id="guide-search" placeholder="🔍 Buscar en la guía..."
+                           onkeyup="settings.filterGuide(this.value)"
+                           style="margin-bottom: 1.5rem;">
+                </div>
+
+                <!-- Acordeón de secciones -->
+                <div class="guide-accordion" id="guide-content">
+
+                    <!-- 1. Gestión de Reservas -->
+                    <div class="guide-section" data-keywords="reservas aprobar rechazar confirmar cancelar filtrar buscar estado pendiente confirmada">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">📅</span>
+                            <h4>Gestión de Reservas</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Aprobar o Rechazar Reservas</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Reservas</p>
+                            <ul>
+                                <li>Las nuevas reservas aparecen con estado <span class="badge-pending">Pendiente</span></li>
+                                <li>Haz clic en la reserva para ver los detalles completos</li>
+                                <li>Usa el botón <strong>✓ Aprobar</strong> para confirmar la reserva</li>
+                                <li>Usa el botón <strong>✗ Rechazar</strong> para cancelarla</li>
+                                <li>Puedes añadir una nota interna antes de confirmar/rechazar</li>
+                            </ul>
+
+                            <h5>Filtrar y Buscar Reservas</h5>
+                            <ul>
+                                <li><strong>Por estado:</strong> Usa los filtros de la parte superior (Todas, Pendientes, Confirmadas, Completadas, Canceladas)</li>
+                                <li><strong>Por fecha:</strong> Usa el selector de fecha para ver reservas de un día específico</li>
+                                <li><strong>Por cliente:</strong> Usa la barra de búsqueda para encontrar por nombre, email o teléfono</li>
+                            </ul>
+
+                            <h5>Cambiar Estado de Reserva</h5>
+                            <ul>
+                                <li><strong>Marcar como completada:</strong> Cuando el cliente haya recibido el servicio</li>
+                                <li><strong>Cancelar:</strong> Si el cliente no acude o cancela</li>
+                                <li>💡 <em>Tip:</em> Las reservas completadas son las que envían solicitud de feedback automáticamente (24h después)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 2. Configurar Horarios y Servicios -->
+                    <div class="guide-section" data-keywords="horarios servicios turnos horario partido continuo dias laborables cerrado abierto precio duracion">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">⏰</span>
+                            <h4>Configurar Horarios y Servicios</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Configurar Horarios de Apertura</h5>
+                            <p><strong>Ruta:</strong> Configuración → Horarios</p>
+                            <ul>
+                                <li><strong>Días laborables:</strong> Marca/desmarca los días que tu negocio abre</li>
+                                <li><strong>Horario continuo:</strong> Un solo horario de apertura-cierre (Ej: 09:00 - 20:00)</li>
+                                <li><strong>Horario partido:</strong> Varios turnos en el día (Ej: Mañana 09:00-14:00, Tarde 17:00-21:00)</li>
+                                <li><strong>Duración de slots:</strong> Cada cuántos minutos aparecen horas disponibles (15, 30, 60 min)</li>
+                            </ul>
+
+                            <h5>Gestionar Servicios</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Servicios</p>
+                            <ul>
+                                <li><strong>Crear servicio:</strong> Click en "+ Nuevo Servicio"</li>
+                                <li><strong>Configurar:</strong> Nombre, descripción, precio, duración, capacidad</li>
+                                <li><strong>Activar/Desactivar:</strong> Usa el toggle para ocultar servicios temporalmente sin borrarlos</li>
+                                <li><strong>Editar:</strong> Click en el lápiz ✏️ del servicio</li>
+                                <li><strong>Eliminar:</strong> Click en la papelera 🗑️ (⚠️ acción irreversible)</li>
+                            </ul>
+
+                            <h5>Capacidad del Negocio</h5>
+                            <p><strong>Ruta:</strong> Configuración → Capacidad</p>
+                            <ul>
+                                <li>Define cuántos clientes pueden reservar a la misma hora</li>
+                                <li>Ejemplo: Si tienes 3 peluqueros, capacidad = 3</li>
+                                <li>El sistema bloquea automáticamente cuando se alcanza el límite</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 3. Personalizar Widget -->
+                    <div class="guide-section" data-keywords="widget personalizar colores diseño fuente botones estilo qr floating embebido">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">🎨</span>
+                            <h4>Personalizar el Widget de Reservas</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Diseño Visual del Widget</h5>
+                            <p><strong>Ruta:</strong> Configuración → Diseño</p>
+                            <ul>
+                                <li><strong>Color principal:</strong> Color de botones y elementos destacados</li>
+                                <li><strong>Color secundario:</strong> Color de fondos y detalles</li>
+                                <li><strong>Familia de fuente:</strong> Elige entre 6 tipografías (System UI, Inter, Roboto, Poppins, Georgia, Courier)</li>
+                                <li><strong>Radio de bordes:</strong> Ajusta qué tan redondeados son los bordes (0-30px)</li>
+                                <li><strong>Estilo de botones:</strong>
+                                    <ul>
+                                        <li><em>Solid:</em> Botón con gradiente de colores (recomendado)</li>
+                                        <li><em>Outline:</em> Botón con borde pero sin relleno</li>
+                                        <li><em>Ghost:</em> Botón semi-transparente</li>
+                                    </ul>
+                                </li>
+                                <li>💡 <em>Tip:</em> Usa el preview en tiempo real para ver cómo queda antes de guardar</li>
+                            </ul>
+
+                            <h5>Configurar Textos y Campos</h5>
+                            <p><strong>Ruta:</strong> Configuración → Widget</p>
+                            <ul>
+                                <li>Cambia el título del widget</li>
+                                <li>Personaliza el texto de los botones</li>
+                                <li>Activa/desactiva campos opcionales (notas, profesional)</li>
+                                <li>Define si mostrar precios y duración</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 4. Implementar Widget en tu Web -->
+                    <div class="guide-section" data-keywords="widget implementar web codigo html qr floating embebido integrar instalar">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">💻</span>
+                            <h4>Implementar Widget en tu Web</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Opción 1: Formulario Embebido</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Widget/QR → Formulario Embebido</p>
+                            <ul>
+                                <li>Copia el código HTML proporcionado</li>
+                                <li>Pégalo en tu página web donde quieras que aparezca el formulario</li>
+                                <li>El widget aparece como parte de tu página</li>
+                                <li>✅ <em>Mejor para:</em> Página dedicada de reservas</li>
+                            </ul>
+
+                            <h5>Opción 2: Botón Flotante</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Widget/QR → Botón Flotante</p>
+                            <ul>
+                                <li>Copia el código HTML</li>
+                                <li>Pégalo antes del cierre <code>&lt;/body&gt;</code> de tu web</li>
+                                <li>Aparece un botón flotante en todas las páginas</li>
+                                <li>Al hacer click, se abre el formulario en modal</li>
+                                <li>Puedes personalizar: posición (esquina), color, texto del botón</li>
+                                <li>✅ <em>Mejor para:</em> Tener reservas disponibles en toda tu web</li>
+                            </ul>
+
+                            <h5>Opción 3: Código QR</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Widget/QR → Código QR</p>
+                            <ul>
+                                <li>Descarga la imagen del QR haciendo click en "Descargar imagen QR"</li>
+                                <li>Imprímelo en: menús, folletos, tarjetas, carteles del local</li>
+                                <li>Compártelo en redes sociales o WhatsApp</li>
+                                <li>Los clientes escanean con su móvil y acceden directamente al formulario de reservas</li>
+                                <li>✅ <em>Mejor para:</em> Clientes que están en tu local o ven material físico</li>
+                            </ul>
+
+                            <h5>Probar el Widget</h5>
+                            <ul>
+                                <li>Después de implementar, abre tu web en modo incógnito</li>
+                                <li>Haz una reserva de prueba con datos reales</li>
+                                <li>Verifica que llega al dashboard correctamente</li>
+                                <li>Comprueba que el email de confirmación se envía (si está activado)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 5. WhatsApp -->
+                    <div class="guide-section" data-keywords="whatsapp notificaciones mensaje plantilla confirmacion feedback opiniones">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">💬</span>
+                            <h4>Usar WhatsApp para Notificaciones</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Configurar WhatsApp</h5>
+                            <p><strong>Ruta:</strong> Configuración → Notificaciones → Sección WhatsApp</p>
+                            <ul>
+                                <li><strong>Activar toggle:</strong> Habilita las notificaciones por WhatsApp</li>
+                                <li><strong>Número de WhatsApp:</strong> Introduce tu número en formato internacional sin + (Ej: 34687767133)</li>
+                                <li><strong>Plantilla de mensaje:</strong> Personaliza el mensaje que se enviará
+                                    <ul>
+                                        <li><code>{nombre}</code> - Nombre del cliente</li>
+                                        <li><code>{fecha}</code> - Fecha de la reserva</li>
+                                        <li><code>{hora}</code> - Hora de la reserva</li>
+                                        <li><code>{servicio}</code> - Servicio reservado</li>
+                                        <li><code>{negocio}</code> o <code>{nombre_negocio}</code> - Nombre de tu negocio</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Restaurar plantilla:</strong> Vuelve al mensaje por defecto</li>
+                            </ul>
+
+                            <h5>Enviar Confirmación por WhatsApp</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Reservas</p>
+                            <ul>
+                                <li>En cada reserva verás el botón <strong>💬 Enviar WhatsApp</strong></li>
+                                <li>El botón está:
+                                    <ul>
+                                        <li><span class="badge-success">Verde activo</span> - Cliente dio consentimiento Y WhatsApp configurado</li>
+                                        <li><span class="badge-secondary">Gris deshabilitado</span> - Cliente dio consentimiento PERO falta configurar WhatsApp</li>
+                                        <li><em>Texto informativo</em> - Cliente NO dio consentimiento (GDPR)</li>
+                                    </ul>
+                                </li>
+                                <li>Al hacer click:
+                                    <ol>
+                                        <li>Se abre WhatsApp Web/App con el mensaje pre-rellenado</li>
+                                        <li>El número es el del CLIENTE (no el tuyo)</li>
+                                        <li>Envías el mensaje desde tu WhatsApp personal</li>
+                                    </ol>
+                                </li>
+                                <li>💡 <em>Ventaja:</em> Sistema 100% gratuito, sin límites</li>
+                            </ul>
+
+                            <h5>Checkbox de Consentimiento (GDPR)</h5>
+                            <ul>
+                                <li>En el widget aparece: "Quiero recibir confirmación por WhatsApp (opcional)"</li>
+                                <li>El cliente debe marcarlo voluntariamente</li>
+                                <li>Cumple con normativa GDPR de protección de datos</li>
+                                <li>Link a política de privacidad incluido</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 6. Sistema de Opiniones -->
+                    <div class="guide-section" data-keywords="opiniones feedback valoraciones reseñas estrellas formulario preguntas whatsapp solicitar">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">⭐</span>
+                            <h4>Sistema de Opiniones y Feedback</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Solicitar Opinión por WhatsApp</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Opiniones</p>
+                            <ul>
+                                <li>Cuando una reserva se marca como <strong>Completada</strong>, 24 horas después aparece en "📝 Solicitudes Pendientes"</li>
+                                <li>Verás una caja amarilla con los clientes que ya pueden recibir la solicitud</li>
+                                <li>Haz click en <strong>💬 Solicitar Opinión</strong></li>
+                                <li>Se abre WhatsApp con un mensaje personalizado + link al formulario</li>
+                                <li>El cliente hace click en el link y rellena su valoración</li>
+                                <li>La opinión aparece automáticamente en "Opiniones Recibidas"</li>
+                            </ul>
+
+                            <h5>Personalizar Formulario de Feedback</h5>
+                            <p><strong>Ruta:</strong> Configuración → Feedback</p>
+                            <ul>
+                                <li>Puedes crear hasta 3 preguntas personalizadas + 1 pregunta genérica (siempre incluida)</li>
+                                <li><strong>Tipos de preguntas:</strong>
+                                    <ul>
+                                        <li><em>Rating (estrellas):</em> Valoración de 1-5 estrellas</li>
+                                        <li><em>Texto libre:</em> Comentario abierto</li>
+                                        <li><em>Opción múltiple:</em> Lista de opciones predefinidas</li>
+                                    </ul>
+                                </li>
+                                <li>Marca preguntas como <strong>obligatorias</strong> si quieres asegurar respuesta</li>
+                                <li>Ejemplo para restaurante:
+                                    <ul>
+                                        <li>Q1: ¿Cómo valoras la comida? (Rating)</li>
+                                        <li>Q2: ¿Recomendarías nuestro restaurante? (Múltiple: Sí / Probablemente / No)</li>
+                                        <li>Q3: ¿Qué podríamos mejorar? (Texto libre)</li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <h5>Ver y Analizar Opiniones</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Opiniones → Opiniones Recibidas</p>
+                            <ul>
+                                <li>Tarjetas con todas las respuestas del cliente</li>
+                                <li>Visualización clara: pregunta → respuesta</li>
+                                <li>Ratings mostrados con estrellas ⭐</li>
+                                <li>Comentarios destacados para análisis con IA (próximamente)</li>
+                                <li>Filtra por fecha o valoración</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 7. Calendario -->
+                    <div class="guide-section" data-keywords="calendario vista mes semana dia reservas bloqueados disponibilidad">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">📆</span>
+                            <h4>Usar el Calendario</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Vista de Calendario</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Calendario</p>
+                            <ul>
+                                <li>Visualiza todas las reservas del mes de un vistazo</li>
+                                <li>Cada día muestra:
+                                    <ul>
+                                        <li><strong>Número de reservas</strong> ese día</li>
+                                        <li><strong>Horarios ocupados</strong> en vista compacta</li>
+                                    </ul>
+                                </li>
+                                <li>Haz click en un día para ver las reservas completas de esa fecha</li>
+                                <li>Usa las flechas ◀ ▶ para navegar entre meses</li>
+                            </ul>
+
+                            <h5>Colores en el Calendario</h5>
+                            <ul>
+                                <li><span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px;">Azul</span> - Día con disponibilidad</li>
+                                <li><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px;">Rojo (🔴)</span> - Sin disponibilidad (todos los slots ocupados)</li>
+                                <li><span style="opacity: 0.3; padding: 2px 6px;">Gris tenue</span> - Día cerrado (no laborable)</li>
+                                <li><span style="opacity: 0.4; padding: 2px 6px;">Gris claro</span> - Días de otros meses</li>
+                            </ul>
+
+                            <h5>Responsive en Móvil</h5>
+                            <ul>
+                                <li>El calendario se adapta automáticamente a pantallas pequeñas</li>
+                                <li>Días abreviados (D, L, M, X, J, V, S)</li>
+                                <li>Tamaños optimizados para touch</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 8. Estadísticas -->
+                    <div class="guide-section" data-keywords="estadisticas metricas graficos datos ingresos clientes servicios populares">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">📊</span>
+                            <h4>Estadísticas y Reportes</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>Panel de Estadísticas</h5>
+                            <p><strong>Ruta:</strong> Dashboard → Inicio (vista principal)</p>
+                            <ul>
+                                <li><strong>Total de reservas:</strong> Contador general</li>
+                                <li><strong>Reservas pendientes:</strong> Requieren tu atención</li>
+                                <li><strong>Tasa de completadas:</strong> Porcentaje de servicios realizados</li>
+                                <li><strong>Ingresos estimados:</strong> Suma de precios de reservas completadas</li>
+                            </ul>
+
+                            <h5>Servicios Más Populares</h5>
+                            <ul>
+                                <li>Gráfico de barras o lista con servicios más reservados</li>
+                                <li>Útil para identificar qué ofrecer más o promocionar</li>
+                                <li>Datos en tiempo real</li>
+                            </ul>
+
+                            <h5>Próximas Mejoras</h5>
+                            <ul>
+                                <li>📈 Gráficos de tendencias mensuales</li>
+                                <li>📅 Comparativa mes actual vs anterior</li>
+                                <li>💰 Ingresos proyectados</li>
+                                <li>📧 Reportes automáticos por email</li>
+                                <li>📊 Exportar datos a Excel/CSV</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 9. FAQs -->
+                    <div class="guide-section" data-keywords="faq preguntas frecuentes dudas ayuda soporte problemas soluciones">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">❓</span>
+                            <h4>Preguntas Frecuentes (FAQs)</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>❓ ¿Cómo cambio mi plan de Free a Premium?</h5>
+                            <p><strong>Ruta:</strong> Configuración → Plan</p>
+                            <p>Haz click en "Actualizar a Premium" y sigue los pasos de pago. Tus datos se mantienen intactos.</p>
+
+                            <h5>❓ ¿Puedo tener varios usuarios gestionando el dashboard?</h5>
+                            <p>Actualmente cada negocio tiene un único usuario administrador. La funcionalidad de múltiples usuarios está en nuestro roadmap.</p>
+
+                            <h5>❓ No llegan emails de confirmación a los clientes</h5>
+                            <p><strong>Soluciones:</strong></p>
+                            <ul>
+                                <li>Verifica que el email esté activado en Configuración → Notificaciones</li>
+                                <li>Comprueba la carpeta de SPAM del cliente</li>
+                                <li>Asegúrate de tener un plan activo (Free tiene limitaciones de emails)</li>
+                                <li>Usa WhatsApp como alternativa (98% tasa de apertura vs 20% email)</li>
+                            </ul>
+
+                            <h5>❓ ¿Cómo bloqueo un día específico (festivo)?</h5>
+                            <p>Por ahora, desmarca ese día en Configuración → Horarios. Próximamente tendremos gestión de excepciones (festivos específicos).</p>
+
+                            <h5>❓ ¿Puedo personalizar el formulario con mi logo?</h5>
+                            <p>La personalización de logo está disponible en el plan Premium. Contacta con soporte para activarlo.</p>
+
+                            <h5>❓ El widget no se ve en mi web</h5>
+                            <p><strong>Checklist:</strong></p>
+                            <ul>
+                                <li>✓ Verifica que copiaste el código completo (incluyendo las etiquetas &lt;script&gt;)</li>
+                                <li>✓ Asegúrate de que el businessId en el código coincide con tu ID (Dashboard → Widget/QR)</li>
+                                <li>✓ Abre la consola del navegador (F12) y busca errores en rojo</li>
+                                <li>✓ Prueba en modo incógnito para descartar problemas de caché</li>
+                            </ul>
+
+                            <h5>❓ ¿Cómo exporto mis datos?</h5>
+                            <p><strong>Ruta:</strong> Configuración → Avanzado → Exportar Datos</p>
+                            <p>Descarga en formato JSON o CSV. Incluye reservas, clientes y servicios.</p>
+
+                            <h5>❓ ¿Qué pasa si un cliente no completa la reserva?</h5>
+                            <p>Las reservas incompletas (sin enviar) NO se guardan en el sistema. Solo se registran cuando el cliente hace click en "Confirmar Reserva".</p>
+
+                            <h5>❓ ¿Puedo cambiar el idioma del widget?</h5>
+                            <p>Actualmente solo español e inglés están disponibles. Configúralo en el código del widget con <code>language: 'es'</code> o <code>language: 'en'</code>.</p>
+                        </div>
+                    </div>
+
+                    <!-- 10. Soporte y Ayuda -->
+                    <div class="guide-section" data-keywords="soporte ayuda contacto email chat asistencia problemas bugs reportar">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">💬</span>
+                            <h4>Soporte y Contacto</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <h5>¿No encuentras lo que buscas?</h5>
+                            <p>Estamos aquí para ayudarte. Contáctanos por cualquiera de estos medios:</p>
+
+                            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                                <a href="mailto:soporte@stickywork.com" class="btn-secondary" style="text-decoration: none; text-align: center;">
+                                    📧 Email: soporte@stickywork.com
+                                </a>
+                                <a href="https://wa.me/34687767133?text=Hola,%20necesito%20ayuda%20con%20StickyWork"
+                                   target="_blank" class="btn-secondary" style="text-decoration: none; text-align: center;">
+                                    💬 WhatsApp: +34 687 767 133
+                                </a>
+                            </div>
+
+                            <h5>Reportar un Bug</h5>
+                            <p>Si encuentras algún error o comportamiento inesperado, ayúdanos a mejorar reportándolo:</p>
+                            <ul>
+                                <li>Envía un email a <strong>bugs@stickywork.com</strong></li>
+                                <li>Incluye:
+                                    <ul>
+                                        <li>Descripción del problema</li>
+                                        <li>Pasos para reproducirlo</li>
+                                        <li>Capturas de pantalla si es posible</li>
+                                        <li>Navegador y sistema operativo</li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <h5>Sugerir Mejoras</h5>
+                            <p>¿Tienes ideas para nuevas funcionalidades? ¡Queremos escucharte!</p>
+                            <p>Escríbenos a <strong>ideas@stickywork.com</strong> con tu sugerencia.</p>
+
+                            <h5>Horario de Atención</h5>
+                            <ul>
+                                <li>📧 Email: Respondemos en menos de 24 horas</li>
+                                <li>💬 WhatsApp: Lunes a Viernes, 9:00 - 18:00 (CET)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Nota al final -->
+                <div class="info-box" style="margin-top: 2rem;">
+                    <p>
+                        💡 <strong>Consejo:</strong> Guarda esta página en favoritos para acceder rápidamente cuando necesites ayuda.
+                        También puedes usar el buscador de arriba para encontrar respuestas específicas.
+                    </p>
+                </div>
+            </div>
+
+            <style>
+                .guide-accordion {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.75rem;
+                }
+
+                .guide-section {
+                    background: var(--bg-secondary);
+                    border-radius: 10px;
+                    overflow: hidden;
+                    border: 1px solid var(--border-color);
+                    transition: all 0.3s ease;
+                }
+
+                .guide-section.hidden {
+                    display: none;
+                }
+
+                .guide-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    padding: 1rem 1.25rem;
+                    cursor: pointer;
+                    background: var(--bg-secondary);
+                    transition: background 0.2s ease;
+                    user-select: none;
+                }
+
+                .guide-header:hover {
+                    background: var(--bg-hover, rgba(59, 130, 246, 0.05));
+                }
+
+                .guide-icon {
+                    font-size: 1.5rem;
+                    flex-shrink: 0;
+                }
+
+                .guide-header h4 {
+                    margin: 0;
+                    flex: 1;
+                    color: var(--text-primary);
+                    font-size: 1.05rem;
+                }
+
+                .guide-arrow {
+                    color: var(--text-secondary);
+                    transition: transform 0.3s ease;
+                    font-size: 0.8rem;
+                }
+
+                .guide-section.expanded .guide-arrow {
+                    transform: rotate(-180deg);
+                }
+
+                .guide-content {
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: max-height 0.3s ease;
+                    padding: 0 1.25rem;
+                }
+
+                .guide-section.expanded .guide-content {
+                    max-height: 5000px;
+                    padding: 0 1.25rem 1.25rem 1.25rem;
+                }
+
+                .guide-content h5 {
+                    color: var(--primary-color);
+                    margin: 1.25rem 0 0.75rem 0;
+                    font-size: 1rem;
+                    font-weight: 600;
+                }
+
+                .guide-content h5:first-child {
+                    margin-top: 0;
+                }
+
+                .guide-content p {
+                    color: var(--text-secondary);
+                    line-height: 1.6;
+                    margin: 0.5rem 0;
+                }
+
+                .guide-content ul {
+                    margin: 0.5rem 0 1rem 1.5rem;
+                    color: var(--text-secondary);
+                }
+
+                .guide-content li {
+                    margin: 0.4rem 0;
+                    line-height: 1.6;
+                }
+
+                .guide-content ul ul {
+                    margin-top: 0.25rem;
+                }
+
+                .guide-content code {
+                    background: var(--bg-primary);
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-family: 'Courier New', monospace;
+                    font-size: 0.9em;
+                    color: var(--primary-color);
+                }
+
+                .guide-content strong {
+                    color: var(--text-primary);
+                    font-weight: 600;
+                }
+
+                .badge-pending {
+                    background: #fbbf24;
+                    color: #78350f;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 0.85em;
+                    font-weight: 600;
+                }
+
+                .badge-success {
+                    background: #10b981;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 0.85em;
+                    font-weight: 600;
+                }
+
+                .badge-secondary {
+                    background: #6b7280;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 0.85em;
+                    font-weight: 600;
+                }
+
+                .info-box {
+                    background: rgba(59, 130, 246, 0.1);
+                    border: 1px solid rgba(59, 130, 246, 0.3);
+                    border-radius: 8px;
+                    padding: 1rem;
+                }
+
+                .info-box p {
+                    margin: 0;
+                    color: var(--text-primary);
+                }
+
+                @media (max-width: 768px) {
+                    .guide-header {
+                        padding: 0.875rem 1rem;
+                    }
+
+                    .guide-icon {
+                        font-size: 1.25rem;
+                    }
+
+                    .guide-header h4 {
+                        font-size: 0.95rem;
+                    }
+
+                    .guide-section.expanded .guide-content {
+                        padding: 0 1rem 1rem 1rem;
+                    }
+                }
+            </style>
+        `;
+    },
+
     // Toggle schedule type (continuous vs multiple)
     toggleScheduleType() {
         const scheduleType = document.getElementById('schedule-type').value;
@@ -2962,6 +3606,79 @@ Te esperamos!
             const count = textarea.value.length;
             countDisplay.textContent = `${count} / 1000 caracteres`;
             countDisplay.style.color = count > 1000 ? '#ef4444' : '#666';
+        }
+    },
+
+    // Toggle guide section (expand/collapse accordion)
+    toggleGuideSection(headerElement) {
+        const section = headerElement.parentElement;
+        const wasExpanded = section.classList.contains('expanded');
+
+        // Cerrar todas las secciones
+        document.querySelectorAll('.guide-section').forEach(s => {
+            s.classList.remove('expanded');
+        });
+
+        // Si no estaba expandida, expandirla
+        if (!wasExpanded) {
+            section.classList.add('expanded');
+        }
+    },
+
+    // Filter guide sections by search query
+    filterGuide(query) {
+        const searchTerm = query.toLowerCase().trim();
+        const sections = document.querySelectorAll('.guide-section');
+
+        if (!searchTerm) {
+            // Si no hay búsqueda, mostrar todas
+            sections.forEach(section => {
+                section.classList.remove('hidden');
+                section.classList.remove('expanded');
+            });
+            return;
+        }
+
+        let hasResults = false;
+
+        sections.forEach(section => {
+            const keywords = section.getAttribute('data-keywords') || '';
+            const title = section.querySelector('h4').textContent.toLowerCase();
+            const content = section.querySelector('.guide-content').textContent.toLowerCase();
+
+            const matches = keywords.includes(searchTerm) ||
+                          title.includes(searchTerm) ||
+                          content.includes(searchTerm);
+
+            if (matches) {
+                section.classList.remove('hidden');
+                section.classList.add('expanded'); // Expandir automáticamente resultados
+                hasResults = true;
+            } else {
+                section.classList.add('hidden');
+                section.classList.remove('expanded');
+            }
+        });
+
+        // Mostrar mensaje si no hay resultados
+        const accordion = document.getElementById('guide-content');
+        let noResultsMsg = accordion.querySelector('.no-results-message');
+
+        if (!hasResults && searchTerm) {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.className = 'no-results-message';
+                noResultsMsg.style.cssText = 'text-align: center; padding: 3rem; color: var(--text-secondary);';
+                noResultsMsg.innerHTML = `
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+                    <h4 style="color: var(--text-primary); margin: 0 0 0.5rem 0;">No encontramos resultados</h4>
+                    <p style="margin: 0;">Intenta con otros términos de búsqueda</p>
+                `;
+                accordion.appendChild(noResultsMsg);
+            }
+            noResultsMsg.style.display = 'block';
+        } else if (noResultsMsg) {
+            noResultsMsg.style.display = 'none';
         }
     }
 };
