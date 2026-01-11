@@ -2,6 +2,9 @@
 
 const bookings = {
     services: [], // Store services for the dropdown
+    allBookings: [], // Store all bookings
+    currentPage: 1, // Current page number
+    itemsPerPage: 50, // Items per page
 
     // Load all bookings
     async load() {
@@ -21,9 +24,12 @@ const bookings = {
 
             // Load bookings
             const data = await api.get(`/api/bookings/${auth.getBusinessId()}`);
-            const bookingsList = data.data;
+            this.allBookings = data.data;
 
-            this.render(bookingsList);
+            // Reset to page 1 when loading
+            this.currentPage = 1;
+
+            this.render();
         } catch (error) {
             console.error('Error loading bookings:', error);
             contentArea.innerHTML = `
@@ -35,9 +41,10 @@ const bookings = {
         }
     },
 
-    // Render bookings table
-    render(bookingsList) {
+    // Render bookings table with pagination
+    render() {
         const contentArea = document.getElementById('contentArea');
+        const bookingsList = this.allBookings;
 
         contentArea.innerHTML = `
             <!-- Nueva Reserva Button -->
@@ -61,27 +68,7 @@ const bookings = {
                             Crear primera reserva
                         </button>
                     </div>
-                ` : `
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Email</th>
-                                <th>Teléfono</th>
-                                <th>Servicio</th>
-                                <th>Personas</th>
-                                <th>Zona</th>
-                                <th>Fecha</th>
-                                <th>Hora</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${bookingsList.map(booking => this.renderBookingRow(booking)).join('')}
-                        </tbody>
-                    </table>
-                `}
+                ` : this.renderPaginatedTable(bookingsList)}
             </div>
 
             <!-- Create Booking Modal -->
@@ -162,6 +149,97 @@ const bookings = {
                 </div>
             </div>
         `;
+    },
+
+    // Render paginated table with controls
+    renderPaginatedTable(bookingsList) {
+        // Calculate pagination
+        const totalPages = Math.ceil(bookingsList.length / this.itemsPerPage);
+        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+        const endIndex = startIndex + this.itemsPerPage;
+        const currentPageBookings = bookingsList.slice(startIndex, endIndex);
+
+        // Pagination controls HTML
+        const paginationControls = `
+            <div class="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 1rem;">
+                <button class="btn-secondary"
+                        onclick="bookings.prevPage()"
+                        ${this.currentPage === 1 ? 'disabled' : ''}
+                        style="opacity: ${this.currentPage === 1 ? '0.5' : '1'}; cursor: ${this.currentPage === 1 ? 'not-allowed' : 'pointer'};">
+                    ← Anterior
+                </button>
+                <div style="color: var(--text-primary); font-weight: 500;">
+                    Página ${this.currentPage} de ${totalPages}
+                    <span style="color: var(--text-secondary); font-weight: normal; margin-left: 0.5rem;">
+                        (Mostrando ${startIndex + 1}-${Math.min(endIndex, bookingsList.length)} de ${bookingsList.length})
+                    </span>
+                </div>
+                <button class="btn-secondary"
+                        onclick="bookings.nextPage()"
+                        ${this.currentPage === totalPages ? 'disabled' : ''}
+                        style="opacity: ${this.currentPage === totalPages ? '0.5' : '1'}; cursor: ${this.currentPage === totalPages ? 'not-allowed' : 'pointer'};">
+                    Siguiente →
+                </button>
+            </div>
+        `;
+
+        return `
+            ${paginationControls}
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Email</th>
+                        <th>Teléfono</th>
+                        <th>Servicio</th>
+                        <th>Personas</th>
+                        <th>Zona</th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${currentPageBookings.map(booking => this.renderBookingRow(booking)).join('')}
+                </tbody>
+            </table>
+
+            ${paginationControls}
+        `;
+    },
+
+    // Go to next page
+    nextPage() {
+        const totalPages = Math.ceil(this.allBookings.length / this.itemsPerPage);
+        if (this.currentPage < totalPages) {
+            this.currentPage++;
+            this.render();
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    },
+
+    // Go to previous page
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.render();
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    },
+
+    // Go to specific page
+    goToPage(page) {
+        const totalPages = Math.ceil(this.allBookings.length / this.itemsPerPage);
+        if (page >= 1 && page <= totalPages) {
+            this.currentPage = page;
+            this.render();
+            // Scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     },
 
     // Render a single booking row
