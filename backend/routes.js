@@ -570,8 +570,17 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         if (scheduleType === 'multiple' && bookingSettings.shifts) {
             // Validar que la hora esté dentro de algún turno activo
             let matchedShift = null;
+            const bookingDayOfWeek = new Date(bookingDate).getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+            const bookingDay = bookingDayOfWeek === 0 ? 7 : bookingDayOfWeek; // Convertir a formato 1=Lunes, 7=Domingo
+
             for (const shift of bookingSettings.shifts) {
-                if (shift.enabled && isTimeInRange(bookingTime, shift.startTime, shift.endTime)) {
+                if (!shift.enabled) continue;
+
+                // Verificar si el turno está activo en este día de la semana
+                const activeDays = shift.activeDays || [1, 2, 3, 4, 5, 6, 7]; // Por defecto todos los días
+                const isDayActive = activeDays.includes(bookingDay);
+
+                if (isDayActive && isTimeInRange(bookingTime, shift.startTime, shift.endTime)) {
                     matchedShift = shift;
                     break;
                 }
@@ -580,7 +589,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             if (!matchedShift) {
                 return res.status(400).json({
                     success: false,
-                    message: 'La hora seleccionada está fuera del horario de atención'
+                    message: 'La hora seleccionada está fuera del horario de atención para este día'
                 });
             }
 

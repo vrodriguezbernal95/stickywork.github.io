@@ -1833,7 +1833,7 @@ const settings = {
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Nombre del turno</label>
-                                        <input type="text" id="shift${i}-name" placeholder="Ej: ${i === 1 ? 'Mañana' : i === 2 ? 'Tarde' : 'Noche'}">
+                                        <input type="text" id="shift${i}-name" placeholder="Ej: ${i === 1 ? 'Comida' : i === 2 ? 'Cena' : 'Noche'}">
                                     </div>
                                     <div class="form-group">
                                         <label>
@@ -1846,31 +1846,38 @@ const settings = {
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Hora inicio</label>
-                                        <input type="time" id="shift${i}-start" value="${i === 1 ? '09:00' : i === 2 ? '16:00' : '20:00'}">
+                                        <input type="time" id="shift${i}-start" value="${i === 1 ? '12:00' : i === 2 ? '19:00' : '20:00'}">
                                     </div>
                                     <div class="form-group">
                                         <label>Hora fin</label>
-                                        <input type="time" id="shift${i}-end" value="${i === 1 ? '13:00' : i === 2 ? '20:00' : '23:00'}">
+                                        <input type="time" id="shift${i}-end" value="${i === 1 ? '16:00' : i === 2 ? '23:00' : '23:00'}">
                                     </div>
+                                </div>
+
+                                <!-- Matriz de días activos para este turno -->
+                                <div class="form-group" style="margin-top: 1rem;">
+                                    <label style="font-weight: 600; margin-bottom: 0.75rem; display: block;">
+                                        📅 ¿Qué días está activo este turno?
+                                    </label>
+                                    <div class="shift-days-matrix" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
+                                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; text-align: center;">
+                                            ${weekDays.map(day => `
+                                                <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 0.5rem; background: var(--bg-primary); border-radius: 6px; transition: all 0.2s;">
+                                                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">${day.name}</span>
+                                                    <input type="checkbox" id="shift${i}-day-${day.num}" value="${day.num}"
+                                                           ${day.num <= 6 ? 'checked' : ''}
+                                                           style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
+                                                </label>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                    <p class="hint" style="margin-top: 0.5rem; font-size: 0.85rem;">
+                                        💡 <strong>Tip:</strong> Desmarca los días que este turno NO esté disponible. Por ejemplo, si los lunes solo haces cenas, desmarca Lunes en el turno de Comida.
+                                    </p>
                                 </div>
                             </div>
                         `).join('')}
                     </div>
-                </div>
-
-                <!-- Días laborales -->
-                <div class="form-group" style="margin-top: 2rem;">
-                    <label>Días laborales</label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
-                        ${weekDays.map(day => `
-                            <label style="display: flex; align-items: center; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
-                                <input type="checkbox" id="workday-${day.num}" value="${day.num}" ${day.num <= 6 ? 'checked' : ''}
-                                       style="width: auto; margin-right: 0.5rem;">
-                                <span>${day.name}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                    <p class="hint">Selecciona los días en que tu negocio acepta reservas</p>
                 </div>
 
                 <div class="form-group">
@@ -2828,6 +2835,21 @@ const settings = {
                         document.getElementById(`shift${i}-start`).value = shift.startTime;
                         document.getElementById(`shift${i}-end`).value = shift.endTime;
                         document.getElementById(`shift${i}-enabled`).checked = shift.enabled;
+
+                        // Cargar días activos para este turno
+                        const activeDays = shift.activeDays || [1, 2, 3, 4, 5, 6, 7]; // Por defecto todos
+
+                        // Primero desmarcar todos los días de este turno
+                        for (let day = 1; day <= 7; day++) {
+                            const dayCheckbox = document.getElementById(`shift${i}-day-${day}`);
+                            if (dayCheckbox) dayCheckbox.checked = false;
+                        }
+
+                        // Luego marcar solo los días activos
+                        activeDays.forEach(day => {
+                            const dayCheckbox = document.getElementById(`shift${i}-day-${day}`);
+                            if (dayCheckbox) dayCheckbox.checked = true;
+                        });
                     }
                 });
             } else {
@@ -2874,8 +2896,22 @@ const settings = {
                     const endTime = document.getElementById(`shift${i}-end`).value;
                     const enabled = document.getElementById(`shift${i}-enabled`).checked;
 
+                    // Recoger los días activos para este turno
+                    const activeDays = [];
+                    for (let day = 1; day <= 7; day++) {
+                        const dayCheckbox = document.getElementById(`shift${i}-day-${day}`);
+                        if (dayCheckbox && dayCheckbox.checked) {
+                            activeDays.push(day);
+                        }
+                    }
+
                     if (!startTime || !endTime) {
                         alert(`Por favor completa todos los horarios del turno ${i}`);
+                        return;
+                    }
+
+                    if (activeDays.length === 0) {
+                        alert(`Por favor selecciona al menos un día activo para el turno ${i}`);
                         return;
                     }
 
@@ -2884,7 +2920,8 @@ const settings = {
                         name: name || `Turno ${i}`,
                         startTime,
                         endTime,
-                        enabled
+                        enabled,
+                        activeDays
                     });
                 }
             } else {

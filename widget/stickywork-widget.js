@@ -858,6 +858,12 @@
         if (scheduleType === 'multiple' && businessConfig?.shifts) {
             console.log('✅ [Widget] Usando horarios partidos con', businessConfig.shifts.length, 'turnos');
 
+            // Obtener día de la semana de la fecha seleccionada (1=Lunes, 7=Domingo)
+            const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+            const dayOfWeek = selectedDateObj.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+            const selectedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // Convertir a formato 1=Lunes, 7=Domingo
+            console.log('📅 [Widget] Día de la semana seleccionado:', selectedDay);
+
             // Generar slots agrupados por turno
             const groupedSlots = {
                 grouped: true,
@@ -867,6 +873,13 @@
             businessConfig.shifts.forEach(shift => {
                 if (!shift.enabled) {
                     console.log('⏭️ [Widget] Turno deshabilitado:', shift.name);
+                    return;
+                }
+
+                // Verificar si el turno está activo en este día
+                const activeDays = shift.activeDays || [1, 2, 3, 4, 5, 6, 7]; // Por defecto todos los días
+                if (!activeDays.includes(selectedDay)) {
+                    console.log(`⏭️ [Widget] Turno "${shift.name}" no activo este día (${selectedDay}). Días activos:`, activeDays);
                     return;
                 }
 
