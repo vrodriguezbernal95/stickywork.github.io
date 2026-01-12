@@ -553,8 +553,6 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         }
 
         // Validar que no se puedan hacer reservas para horas pasadas del mismo día
-        // TEMPORALMENTE DESACTIVADO PARA CREAR DATOS DE PRUEBA
-        /*
         const now = new Date();
         const bookingDateTime = new Date(bookingDate + 'T' + bookingTime);
 
@@ -564,7 +562,6 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 message: 'No se pueden hacer reservas para horas pasadas'
             });
         }
-        */
 
         // Validar horario según tipo de configuración
         const scheduleType = bookingSettings.scheduleType || 'continuous';
