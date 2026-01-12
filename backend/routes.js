@@ -616,7 +616,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         }
 
         // Validar horario según tipo de configuración
-        const scheduleType = bookingSettings.scheduleType || 'continuous';
+        // scheduleType ya está declarado arriba en la validación de workDays (línea 581)
         let autoAssignedServiceId = serviceId; // Mantener el serviceId si viene del widget
 
         if (scheduleType === 'multiple' && bookingSettings.shifts) {
