@@ -522,6 +522,38 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 : businessSettingsQuery[0].booking_settings)
             : {};
 
+        // Validar que la zona seleccionada esté activa (solo para restaurantes)
+        if (zone && bookingSettings.restaurantZones) {
+            console.log('🔍 [ZONE VALIDATION] Validando zona:', zone);
+            console.log('🔍 [ZONE VALIDATION] restaurantZones:', JSON.stringify(bookingSettings.restaurantZones));
+
+            const selectedZone = bookingSettings.restaurantZones.find(z => {
+                const zoneName = typeof z === 'string' ? z : z.name;
+                return zoneName === zone;
+            });
+
+            console.log('🔍 [ZONE VALIDATION] selectedZone:', JSON.stringify(selectedZone));
+            console.log('🔍 [ZONE VALIDATION] typeof selectedZone:', typeof selectedZone);
+            console.log('🔍 [ZONE VALIDATION] selectedZone.enabled:', selectedZone?.enabled);
+            console.log('🔍 [ZONE VALIDATION] enabled === false:', selectedZone?.enabled === false);
+            console.log('🔍 [ZONE VALIDATION] enabled !== true:', selectedZone?.enabled !== true);
+
+            // Si la zona está en formato objeto y NO está explícitamente activa, rechazar
+            if (selectedZone && typeof selectedZone === 'object') {
+                // Si enabled está definido y es false, rechazar
+                if (selectedZone.enabled === false || selectedZone.enabled === 'false') {
+                    console.log('🔍 [ZONE VALIDATION] ❌ Zona rechazada - enabled:', selectedZone.enabled);
+                    return res.status(400).json({
+                        success: false,
+                        message: 'La zona seleccionada no está disponible actualmente'
+                    });
+                }
+            }
+            console.log('🔍 [ZONE VALIDATION] ✅ Zona aceptada');
+        } else {
+            console.log('🔍 [ZONE VALIDATION] Sin validación - zone:', zone, 'restaurantZones:', !!bookingSettings.restaurantZones);
+        }
+
         // Obtener booking_mode del negocio
         const typeKey = businessSettingsQuery[0].type_key;
         const businessTypesQuery = await db.query(

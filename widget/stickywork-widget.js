@@ -979,8 +979,20 @@
     // Campos para restaurantes
     function createRestaurantFields(t) {
         // Selector de zona (Terraza, Interior, etc.) - desde booking_settings.zones
+        // Filtrar solo zonas activas (enabled: true)
         const zoneOptions = config.restaurantZones && config.restaurantZones.length > 0
-            ? config.restaurantZones.map(z => `<option value="${z.name}">${z.name}</option>`).join('')
+            ? config.restaurantZones
+                .filter(z => {
+                    // Si es string (formato antiguo), siempre mostrar
+                    if (typeof z === 'string') return true;
+                    // Si es objeto, solo mostrar si enabled !== false
+                    return z.enabled !== false;
+                })
+                .map(z => {
+                    const zoneName = typeof z === 'string' ? z : z.name;
+                    return `<option value="${zoneName}">${zoneName}</option>`;
+                })
+                .join('')
             : `
                 <option value="Interior">Interior</option>
                 <option value="Terraza">Terraza</option>

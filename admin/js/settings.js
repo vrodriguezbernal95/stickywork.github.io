@@ -891,6 +891,11 @@ const settings = {
                 }
             }, 100);
         }
+
+        // Initialize zone toggles when opening zones tab
+        if (tabName === 'zones') {
+            setTimeout(() => this.initializeZoneToggles(), 100);
+        }
     },
 
     // Get role name in Spanish
@@ -3126,7 +3131,14 @@ const settings = {
                 : this.businessData.booking_settings)
             : {};
 
-        const zones = bookingSettings.restaurantZones || ['Terraza', 'Interior'];
+        // Convertir zonas antiguas (strings) a nuevo formato (objetos)
+        let zones = bookingSettings.restaurantZones || ['Terraza', 'Interior'];
+        zones = zones.map((zone, index) => {
+            if (typeof zone === 'string') {
+                return { id: index + 1, name: zone, enabled: true };
+            }
+            return { ...zone, enabled: zone.enabled !== false }; // Default true
+        });
 
         return `
             <div class="settings-section">
@@ -3137,25 +3149,39 @@ const settings = {
 
                 <div class="form-group">
                     <label>Zonas disponibles</label>
-                    <p class="hint">Los clientes podrán seleccionar su zona preferida al hacer una reserva</p>
+                    <p class="hint">Los clientes podrán seleccionar su zona preferida al hacer una reserva. Puedes desactivar zonas temporalmente (ej: terraza en invierno) sin perder la configuración.</p>
 
                     <div id="zones-list" style="margin-top: 1rem;">
-                        ${zones.map((zone, index) => {
-                            const zoneName = typeof zone === 'string' ? zone : zone.name || '';
-                            return `
-                            <div class="zone-item" data-index="${index}" style="display: flex; gap: 1rem; margin-bottom: 0.75rem; align-items: center;">
-                                <input type="text"
-                                       class="zone-input"
-                                       value="${zoneName}"
-                                       placeholder="Nombre de la zona"
-                                       style="flex: 1;">
+                        ${zones.map((zone, index) => `
+                            <div class="zone-item" data-index="${index}" data-zone-id="${zone.id}" style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                                <div style="flex: 1;">
+                                    <input type="text"
+                                           class="zone-input"
+                                           value="${zone.name}"
+                                           placeholder="Nombre de la zona"
+                                           style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                                </div>
+
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <label class="toggle-switch" title="${zone.enabled ? 'Zona activa' : 'Zona desactivada'}">
+                                        <input type="checkbox"
+                                               class="zone-enabled-checkbox"
+                                               data-zone-id="${zone.id}"
+                                               ${zone.enabled ? 'checked' : ''}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="zone-status-text" style="font-size: 0.85rem; min-width: 80px; color: ${zone.enabled ? '#10b981' : '#6b7280'};">
+                                        ${zone.enabled ? '✅ Activa' : '⏸️ Inactiva'}
+                                    </span>
+                                </div>
+
                                 <button onclick="settings.removeZone(${index})"
                                         class="btn btn-secondary"
-                                        style="padding: 0.5rem 1rem; background: #ef4444; color: white;">
+                                        style="padding: 0.5rem 1rem; background: #ef4444; color: white; white-space: nowrap;">
                                     ✕ Eliminar
                                 </button>
                             </div>
-                        `}).join('')}
+                        `).join('')}
                     </div>
 
                     <button onclick="settings.addZone()"
@@ -3174,9 +3200,56 @@ const settings = {
                 <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-top: 2rem; border-radius: 8px;">
                     <p style="margin: 0; color: #1e40af;">
                         <strong>💡 Tip:</strong> Las zonas permiten a tus clientes elegir dónde prefieren sentarse.
-                        Puedes tener zonas como "Terraza", "Interior", "Sala VIP", "Barra", etc.
+                        Puedes desactivar zonas temporalmente (ej: terraza en invierno) sin borrar su configuración.
                     </p>
                 </div>
+
+                <style>
+                    .toggle-switch {
+                        position: relative;
+                        display: inline-block;
+                        width: 50px;
+                        height: 24px;
+                    }
+
+                    .toggle-switch input {
+                        opacity: 0;
+                        width: 0;
+                        height: 0;
+                    }
+
+                    .toggle-slider {
+                        position: absolute;
+                        cursor: pointer;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-color: #ccc;
+                        transition: .4s;
+                        border-radius: 24px;
+                    }
+
+                    .toggle-slider:before {
+                        position: absolute;
+                        content: "";
+                        height: 18px;
+                        width: 18px;
+                        left: 3px;
+                        bottom: 3px;
+                        background-color: white;
+                        transition: .4s;
+                        border-radius: 50%;
+                    }
+
+                    input:checked + .toggle-slider {
+                        background-color: #10b981;
+                    }
+
+                    input:checked + .toggle-slider:before {
+                        transform: translateX(26px);
+                    }
+                </style>
             </div>
         `;
     },
@@ -3185,25 +3258,59 @@ const settings = {
     addZone() {
         const zonesList = document.getElementById('zones-list');
         const newIndex = zonesList.children.length;
+        const newId = Date.now(); // ID único basado en timestamp
 
         const zoneItem = document.createElement('div');
         zoneItem.className = 'zone-item';
         zoneItem.dataset.index = newIndex;
-        zoneItem.style.cssText = 'display: flex; gap: 1rem; margin-bottom: 0.75rem; align-items: center;';
+        zoneItem.dataset.zoneId = newId;
+        zoneItem.style.cssText = 'display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;';
         zoneItem.innerHTML = `
-            <input type="text"
-                   class="zone-input"
-                   value=""
-                   placeholder="Nombre de la zona"
-                   style="flex: 1;">
+            <div style="flex: 1;">
+                <input type="text"
+                       class="zone-input"
+                       value=""
+                       placeholder="Nombre de la zona"
+                       style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <label class="toggle-switch" title="Zona activa">
+                    <input type="checkbox"
+                           class="zone-enabled-checkbox"
+                           data-zone-id="${newId}"
+                           checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="zone-status-text" style="font-size: 0.85rem; min-width: 80px; color: #10b981;">
+                    ✅ Activa
+                </span>
+            </div>
+
             <button onclick="settings.removeZone(${newIndex})"
                     class="btn btn-secondary"
-                    style="padding: 0.5rem 1rem; background: #ef4444; color: white;">
+                    style="padding: 0.5rem 1rem; background: #ef4444; color: white; white-space: nowrap;">
                 ✕ Eliminar
             </button>
         `;
 
         zonesList.appendChild(zoneItem);
+
+        // Añadir event listener al toggle del nuevo elemento
+        const newToggle = zoneItem.querySelector('.zone-enabled-checkbox');
+        const newStatusText = zoneItem.querySelector('.zone-status-text');
+
+        newToggle.addEventListener('change', function() {
+            if (this.checked) {
+                newStatusText.textContent = '✅ Activa';
+                newStatusText.style.color = '#10b981';
+                this.parentElement.title = 'Zona activa';
+            } else {
+                newStatusText.textContent = '⏸️ Inactiva';
+                newStatusText.style.color = '#6b7280';
+                this.parentElement.title = 'Zona desactivada';
+            }
+        });
     },
 
     // Remove zone
@@ -3221,10 +3328,18 @@ const settings = {
 
     // Save zones
     async saveZones() {
-        const zoneInputs = document.querySelectorAll('.zone-input');
-        const zones = Array.from(zoneInputs)
-            .map(input => input.value.trim())
-            .filter(zone => zone !== '');
+        const zoneItems = document.querySelectorAll('.zone-item');
+        const zones = Array.from(zoneItems).map((item, index) => {
+            const nameInput = item.querySelector('.zone-input');
+            const enabledCheckbox = item.querySelector('.zone-enabled-checkbox');
+            const zoneId = item.dataset.zoneId || index + 1;
+
+            return {
+                id: parseInt(zoneId),
+                name: nameInput.value.trim(),
+                enabled: enabledCheckbox.checked
+            };
+        }).filter(zone => zone.name !== '');
 
         if (zones.length === 0) {
             alert('❌ Debes tener al menos una zona');
@@ -3241,7 +3356,7 @@ const settings = {
             bookingSettings.restaurantZones = zones;
 
             const response = await api.put(`/api/business/${this.userData.business_id}/settings`, {
-                booking_settings: bookingSettings
+                bookingSettings: bookingSettings
             });
 
             if (response.success) {
@@ -3254,6 +3369,35 @@ const settings = {
             console.error('Error saving zones:', error);
             alert('❌ Error al guardar las zonas');
         }
+    },
+
+    // Initialize zone toggles event listeners
+    initializeZoneToggles() {
+        const toggles = document.querySelectorAll('.zone-enabled-checkbox');
+
+        toggles.forEach(toggle => {
+            const statusText = toggle.closest('.zone-item')?.querySelector('.zone-status-text');
+            const toggleLabel = toggle.parentElement;
+
+            if (!statusText) return;
+
+            // Remove any existing listeners by cloning
+            const newToggle = toggle.cloneNode(true);
+            toggle.parentNode.replaceChild(newToggle, toggle);
+
+            // Add event listener
+            newToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    statusText.textContent = '✅ Activa';
+                    statusText.style.color = '#10b981';
+                    if (toggleLabel) toggleLabel.title = 'Zona activa';
+                } else {
+                    statusText.textContent = '⏸️ Inactiva';
+                    statusText.style.color = '#6b7280';
+                    if (toggleLabel) toggleLabel.title = 'Zona desactivada';
+                }
+            });
+        });
     },
 
     // Render Feedback Tab
