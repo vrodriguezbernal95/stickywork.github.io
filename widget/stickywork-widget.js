@@ -1416,8 +1416,26 @@
         calendarBlockedDays.clear();
         calendarNoAvailabilityDays.clear();
 
-        // Obtener workDays del negocio
-        const workDays = config.workDays || businessConfig?.workDays || [1, 2, 3, 4, 5, 6]; // Por defecto L-S
+        // Determinar qué días están disponibles según el tipo de horario
+        const scheduleType = businessConfig?.scheduleType || 'continuous';
+        let workDays;
+
+        if (scheduleType === 'multiple' && businessConfig?.shifts) {
+            // Modo horarios partidos: un día está disponible si hay al menos un turno activo ese día
+            workDays = new Set();
+            businessConfig.shifts.forEach(shift => {
+                if (shift.enabled) {
+                    const activeDays = shift.activeDays || [1, 2, 3, 4, 5, 6, 7];
+                    activeDays.forEach(day => workDays.add(day));
+                }
+            });
+            workDays = Array.from(workDays);
+            console.log('📅 [Widget] Días disponibles según turnos activos:', workDays);
+        } else {
+            // Modo continuo o legacy: usar workDays global
+            workDays = config.workDays || businessConfig?.workDays || [1, 2, 3, 4, 5, 6];
+            console.log('📅 [Widget] Días disponibles (modo continuo):', workDays);
+        }
 
         // Recorrer todos los días del mes
         const lastDay = new Date(year, month + 1, 0).getDate();
