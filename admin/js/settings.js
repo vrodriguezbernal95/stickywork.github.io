@@ -98,11 +98,7 @@ const settings = {
                         👥 Capacidad
                     </button>
                     <button class="settings-tab" data-tab="zones" onclick="settings.switchTab('zones')"
-                            style="display: ${(() => {
-                                const bookingSettings = this.businessData?.booking_settings;
-                                const settings = typeof bookingSettings === 'string' ? JSON.parse(bookingSettings) : bookingSettings;
-                                return settings?.bookingMode === 'tables' ? 'block' : 'none';
-                            })()};">
+                            style="display: ${this.businessData?.type_key === 'restaurant' ? 'block' : 'none'};">
                         🏢 Zonas
                     </button>
                     <button class="settings-tab" data-tab="feedback" onclick="settings.switchTab('feedback')">
