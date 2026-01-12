@@ -575,9 +575,29 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
 
         // Validar día laboral
         const bookingDay = new Date(bookingDate + 'T00:00:00').getDay() || 7; // 0=Domingo -> 7
-        const workDays = bookingSettings.workDays || [1, 2, 3, 4, 5, 6];
 
-        if (!workDays.includes(bookingDay)) {
+        // Determinar días laborales según el tipo de horario
+        let workDays;
+        const scheduleType = bookingSettings.scheduleType || 'continuous';
+
+        if (scheduleType === 'multiple' && bookingSettings.shifts && bookingSettings.shifts.length > 0) {
+            // Modo horarios partidos: construir workDays desde los activeDays de los turnos
+            const allActiveDays = new Set();
+            bookingSettings.shifts.forEach(shift => {
+                if (shift.enabled) {
+                    const activeDays = shift.activeDays || [1, 2, 3, 4, 5, 6, 7];
+                    activeDays.forEach(day => allActiveDays.add(day));
+                }
+            });
+            workDays = Array.from(allActiveDays);
+            console.log('📅 [Backend] workDays construidos desde turnos:', workDays);
+        } else {
+            // Modo continuo: usar workDays global
+            workDays = bookingSettings.workDays || [1, 2, 3, 4, 5, 6];
+            console.log('📅 [Backend] workDays desde configuración:', workDays);
+        }
+
+        if (!workDays.includes(bookingDay) || workDays.length === 0) {
             return res.status(400).json({
                 success: false,
                 message: 'El negocio no abre este día de la semana'
