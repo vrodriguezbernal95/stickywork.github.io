@@ -367,6 +367,41 @@ router.patch('/businesses/:id', requireSuperAdmin, async (req, res) => {
     }
 });
 
+// Toggle AI Reports para un negocio
+router.patch('/businesses/:id/toggle-ai-reports', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { enabled } = req.body;
+
+        if (enabled === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: 'El campo "enabled" es requerido'
+            });
+        }
+
+        await db.query(
+            'UPDATE businesses SET ai_reports_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [enabled ? 1 : 0, id]
+        );
+
+        const updatedBusiness = await db.query('SELECT * FROM businesses WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: enabled ? 'Reportes IA activados correctamente' : 'Reportes IA desactivados correctamente',
+            data: updatedBusiness[0]
+        });
+
+    } catch (error) {
+        console.error('Error al actualizar reportes IA:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar reportes IA'
+        });
+    }
+});
+
 // Eliminar un negocio (soft delete)
 router.delete('/businesses/:id', requireSuperAdmin, async (req, res) => {
     try {

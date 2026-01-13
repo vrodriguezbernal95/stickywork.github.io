@@ -189,6 +189,14 @@ const superClients = {
                                         >
                                             ⭐
                                         </button>
+                                        <button
+                                            onclick="superClients.toggleAiReports(${business.id}, ${business.ai_reports_enabled || 0})"
+                                            class="btn-icon"
+                                            title="${business.ai_reports_enabled === 1 || business.ai_reports_enabled === true ? 'DESACTIVAR Reportes IA' : 'ACTIVAR Reportes IA'}"
+                                            style="font-size: 1.3rem; ${business.ai_reports_enabled === 1 || business.ai_reports_enabled === true ? 'opacity: 1; filter: drop-shadow(0 0 3px #3b82f6);' : 'opacity: 0.4; filter: grayscale(1);'}"
+                                        >
+                                            🤖
+                                        </button>
                                     </td>
                                 </tr>
                             `;
@@ -488,6 +496,33 @@ const superClients = {
         } catch (error) {
             console.error('Error updating business:', error);
             this.showNotification(`Error al ${action} acceso gratuito: ${error.message}`, 'error');
+        }
+    },
+
+    async toggleAiReports(businessId, currentStatus) {
+        const isEnabled = currentStatus === 1 || currentStatus === true;
+        const action = isEnabled ? 'desactivar' : 'activar';
+        const actionPast = isEnabled ? 'desactivados' : 'activados';
+
+        const message = isEnabled
+            ? '⚠️ ¿Desactivar Reportes IA para este negocio?\n\nEl negocio NO podrá:\n- Generar reportes mensuales con IA\n- Ver análisis de rendimiento\n- Acceder a insights automáticos'
+            : '🤖 ¿Activar Reportes IA para este negocio?\n\nEl negocio podrá:\n- Generar reportes mensuales automáticos con IA\n- Ver análisis de fortalezas y debilidades\n- Obtener insights de encuestas y feedback\n- Descargar reportes en PDF\n\n💰 Costo: €0.017 por reporte generado';
+
+        if (!confirm(message)) {
+            return;
+        }
+
+        try {
+            await superApi.patch(`/api/super-admin/businesses/${businessId}/toggle-ai-reports`, {
+                enabled: !isEnabled
+            });
+
+            this.showNotification(`Reportes IA ${actionPast} correctamente ${!isEnabled ? '🤖' : ''}`, 'success');
+            this.loadBusinesses();
+
+        } catch (error) {
+            console.error('Error updating AI reports:', error);
+            this.showNotification(`Error al ${action} reportes IA: ${error.message}`, 'error');
         }
     },
 
