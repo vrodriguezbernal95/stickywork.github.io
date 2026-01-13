@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../config/database');
 const { requireAuth, requireBusinessAccess } = require('../middleware/auth');
+const claudeService = require('../services/claude-service');
 
 // ==================== OBTENER HISTÓRICO DE REPORTES ====================
 
@@ -199,14 +200,63 @@ router.post('/api/reports/generate', requireAuth, async (req, res) => {
             });
         }
 
-        // TODO: Aquí irá la integración con Claude API
-        // Por ahora, crear un reporte de ejemplo
-
         const startDate = new Date(yearNum, monthNum - 1, 1);
         const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59);
 
         // Obtener estadísticas reales del período
         const stats = await getBusinessStats(businessId, startDate, endDate);
+
+        // Obtener feedback/comentarios del período (si existen)
+        const feedback = await getBusinessFeedback(businessId, startDate, endDate);
+
+        // Generar reporte con Claude AI
+        console.log('🤖 Generando reporte con Claude API...');
+
+        let aiReport, tokensUsed, generationTime, modelUsed;
+
+        if (claudeService.isConfigured()) {
+            // Generar reporte real con Claude
+            const claudeResponse = await claudeService.generateBusinessReport({
+                businessName: business.name,
+                month: monthNum,
+                year: yearNum,
+                stats,
+                feedback
+            });
+
+            aiReport = claudeResponse.report;
+            tokensUsed = claudeResponse.metadata.tokensUsed;
+            generationTime = claudeResponse.metadata.generationTimeMs;
+            modelUsed = claudeResponse.metadata.model;
+
+            console.log(`✅ Reporte generado con ${modelUsed} (${tokensUsed} tokens, ${generationTime}ms)`);
+        } else {
+            // Fallback: generar reporte de ejemplo
+            console.warn('⚠️ ANTHROPIC_API_KEY no configurada, usando reporte de ejemplo');
+            aiReport = {
+                executiveSummary: `Reporte de ejemplo para ${business.name} - ${getMonthName(monthNum)} ${yearNum}. Configure ANTHROPIC_API_KEY para generar reportes reales con IA.`,
+                insights: [
+                    'Este es un reporte de ejemplo',
+                    'Configure su API key de Anthropic en el archivo .env',
+                    'Luego agregue la misma clave en Railway como variable de entorno'
+                ],
+                strengths: ['Fortaleza de ejemplo 1', 'Fortaleza de ejemplo 2'],
+                weaknesses: ['Área de mejora de ejemplo 1', 'Área de mejora de ejemplo 2'],
+                feedbackAnalysis: 'Análisis de feedback no disponible en modo de ejemplo',
+                recommendations: [
+                    'Configure ANTHROPIC_API_KEY para obtener recomendaciones reales',
+                    'Los reportes con IA proporcionan insights personalizados',
+                    'Costo aproximado: €0.017 por reporte'
+                ],
+                economicImpact: 'Análisis económico no disponible en modo de ejemplo',
+                actionPlan: [
+                    { priority: 'Alta', action: 'Configurar API de Claude', expectedImpact: 'Reportes inteligentes automáticos' }
+                ]
+            };
+            tokensUsed = 0;
+            generationTime = 0;
+            modelUsed = 'example-mode';
+        }
 
         // Insertar el reporte en la base de datos
         const result = await db.query(
@@ -221,17 +271,17 @@ router.post('/api/reports/generate', requireAuth, async (req, res) => {
                 monthNum,
                 yearNum,
                 JSON.stringify(stats),
-                'Resumen ejecutivo generado por IA (pendiente de implementación)',
-                JSON.stringify(['Insight 1', 'Insight 2']),
-                JSON.stringify(['Fortaleza 1', 'Fortaleza 2']),
-                JSON.stringify(['Debilidad 1', 'Debilidad 2']),
-                'Análisis de feedback (pendiente de implementación)',
-                JSON.stringify(['Recomendación 1', 'Recomendación 2']),
-                'Impacto económico (pendiente de implementación)',
-                JSON.stringify(['Acción 1', 'Acción 2']),
-                'manual', // Cambiar a 'claude-sonnet-4' cuando se integre
-                0,
-                0
+                aiReport.executiveSummary,
+                JSON.stringify(aiReport.insights),
+                JSON.stringify(aiReport.strengths),
+                JSON.stringify(aiReport.weaknesses),
+                aiReport.feedbackAnalysis,
+                JSON.stringify(aiReport.recommendations),
+                aiReport.economicImpact,
+                JSON.stringify(aiReport.actionPlan),
+                modelUsed,
+                tokensUsed,
+                generationTime
             ]
         );
 
@@ -309,6 +359,29 @@ async function getBusinessStats(businessId, startDate, endDate) {
             cancelledBookings: 0,
             topServices: []
         };
+    }
+}
+
+async function getBusinessFeedback(businessId, startDate, endDate) {
+    try {
+        // Obtener feedback de la tabla de feedback
+        const feedbackResult = await db.query(
+            `SELECT
+                rating,
+                comment,
+                created_at as date
+             FROM feedback
+             WHERE business_id = ? AND created_at BETWEEN ? AND ?
+             ORDER BY created_at DESC
+             LIMIT 20`,
+            [businessId, startDate, endDate]
+        );
+
+        return feedbackResult || [];
+
+    } catch (error) {
+        console.error('Error getting business feedback:', error);
+        return [];
     }
 }
 
