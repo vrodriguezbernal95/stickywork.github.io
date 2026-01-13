@@ -528,9 +528,23 @@ router.get('/api/auth/verify', requireAuth, async (req, res) => {
             });
         }
 
+        // Obtener datos del negocio
+        const businesses = await db.query(
+            'SELECT name, ai_reports_enabled FROM businesses WHERE id = ?',
+            [user.business_id]
+        );
+
+        const business = businesses && businesses.length > 0 ? businesses[0] : null;
+
         res.json({
             success: true,
-            data: { user }
+            data: {
+                user,
+                business: business ? {
+                    name: business.name,
+                    ai_reports_enabled: business.ai_reports_enabled === 1 || business.ai_reports_enabled === true
+                } : null
+            }
         });
 
     } catch (error) {

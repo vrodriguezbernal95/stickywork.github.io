@@ -2,6 +2,7 @@
 
 const auth = {
     userData: null,
+    businessData: null,
     businessId: null,
 
     // Check if user is authenticated
@@ -17,10 +18,14 @@ const auth = {
             const response = await api.get('/api/auth/verify');
 
             this.userData = response.data.user;
+            this.businessData = response.data.business;
             this.businessId = this.userData.business_id;
 
             // Update UI with user data
             this.updateUserInfo();
+
+            // Show/hide AI Reports menu based on business settings
+            this.updateAiReportsMenu();
 
             return true;
         } catch (error) {
@@ -71,6 +76,24 @@ const auth = {
     // Get current business ID
     getBusinessId() {
         return this.businessId;
+    },
+
+    // Show/hide AI Reports menu based on business settings
+    updateAiReportsMenu() {
+        const aiReportsLink = document.getElementById('aiReportsLink');
+
+        if (aiReportsLink) {
+            if (this.businessData && this.businessData.ai_reports_enabled) {
+                aiReportsLink.style.display = 'flex';
+            } else {
+                aiReportsLink.style.display = 'none';
+            }
+        }
+    },
+
+    // Check if AI Reports is enabled for this business
+    hasAiReportsEnabled() {
+        return this.businessData && this.businessData.ai_reports_enabled === true;
     }
 };
 

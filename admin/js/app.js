@@ -105,6 +105,14 @@ const app = {
                 }
                 break;
 
+            case 'ai-reports':
+                if (window.aiReports) {
+                    await aiReports.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             default:
                 this.showUnderConstruction();
         }
