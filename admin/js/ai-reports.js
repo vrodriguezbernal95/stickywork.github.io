@@ -281,23 +281,8 @@ const aiReports = {
             const data = await api.get(`/api/reports/${reportId}`);
             const report = data.data;
 
-            reportDisplay.innerHTML = `
-                <div class="card" style="margin-bottom: 2rem;">
-                    <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                            <span>🤖</span>
-                            <span>Reporte IA - ${this.getMonthName(report.month)} ${report.year}</span>
-                        </h2>
-                    </div>
-                    <div class="card-body">
-                        <div id="reportContent">
-                            <!-- El contenido del reporte se cargará aquí -->
-                            <p>Funcionalidad de visualización de reporte en desarrollo...</p>
-                            <p style="color: var(--text-secondary);">ID del reporte: ${reportId}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Renderizar reporte completo
+            reportDisplay.innerHTML = this.renderFullReport(report);
 
             // Scroll to report
             reportDisplay.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -310,6 +295,201 @@ const aiReports = {
                 </div>
             `;
         }
+    },
+
+    renderFullReport(report) {
+        const stats = report.stats;
+        const completionRate = stats.totalBookings > 0
+            ? Math.round((stats.completedBookings / stats.totalBookings) * 100)
+            : 0;
+        const cancellationRate = stats.totalBookings > 0
+            ? Math.round((stats.cancelledBookings / stats.totalBookings) * 100)
+            : 0;
+
+        return `
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🤖</span>
+                            <span>Reporte IA - ${this.getMonthName(report.month)} ${report.year}</span>
+                        </h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button
+                                onclick="aiReports.downloadPDF(${report.id})"
+                                class="btn-secondary"
+                                style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);"
+                            >
+                                📄 Descargar PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Estadísticas clave -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="stat-card-small">
+                            <div class="stat-value">${stats.totalBookings || 0}</div>
+                            <div class="stat-label">Total Reservas</div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-value" style="color: var(--success);">${stats.completedBookings || 0}</div>
+                            <div class="stat-label">Completadas</div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-value" style="color: var(--danger);">${stats.cancelledBookings || 0}</div>
+                            <div class="stat-label">Canceladas</div>
+                        </div>
+                        <div class="stat-card-small">
+                            <div class="stat-value">${completionRate}%</div>
+                            <div class="stat-label">Tasa de Éxito</div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen Ejecutivo -->
+                    <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #667eea;">
+                        <h3 style="margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📊</span>
+                            <span>Resumen Ejecutivo</span>
+                        </h3>
+                        <p style="line-height: 1.8; margin: 0; white-space: pre-line;">${report.ai_executive_summary || 'No disponible'}</p>
+                    </div>
+
+                    <!-- Insights Clave -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>💡</span>
+                            <span>Insights Clave</span>
+                        </h3>
+                        <div style="display: grid; gap: 1rem;">
+                            ${report.ai_insights.map((insight, i) => `
+                                <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid #3b82f6;">
+                                    <strong style="color: #3b82f6;">${i + 1}.</strong> ${insight}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Fortalezas y Debilidades -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                        <!-- Fortalezas -->
+                        <div>
+                            <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--success);">
+                                <span>✅</span>
+                                <span>Fortalezas</span>
+                            </h3>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                ${report.ai_strengths.map(strength => `
+                                    <li style="background: rgba(34, 197, 94, 0.1); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid var(--success);">
+                                        ${strength}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <!-- Debilidades -->
+                        <div>
+                            <h3 style="display: flex; align-items: center; gap: 0.5rem; color: #f59e0b;">
+                                <span>⚠️</span>
+                                <span>Áreas de Mejora</span>
+                            </h3>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                ${report.ai_weaknesses.map(weakness => `
+                                    <li style="background: rgba(245, 158, 11, 0.1); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid #f59e0b;">
+                                        ${weakness}
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Análisis de Feedback -->
+                    ${report.ai_feedback_analysis ? `
+                        <div style="background: rgba(139, 92, 246, 0.1); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #8b5cf6;">
+                            <h3 style="margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>💬</span>
+                                <span>Análisis de Feedback de Clientes</span>
+                            </h3>
+                            <p style="line-height: 1.8; margin: 0; white-space: pre-line;">${report.ai_feedback_analysis}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- Recomendaciones -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🎯</span>
+                            <span>Recomendaciones</span>
+                        </h3>
+                        <div style="display: grid; gap: 1rem;">
+                            ${report.ai_recommendations.map((rec, i) => `
+                                <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid #10b981;">
+                                    <strong style="color: #10b981;">${i + 1}.</strong> ${rec}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Impacto Económico -->
+                    ${report.ai_economic_impact ? `
+                        <div style="background: rgba(34, 197, 94, 0.1); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid var(--success);">
+                            <h3 style="margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>💰</span>
+                                <span>Impacto Económico</span>
+                            </h3>
+                            <p style="line-height: 1.8; margin: 0; white-space: pre-line;">${report.ai_economic_impact}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- Plan de Acción -->
+                    <div>
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📋</span>
+                            <span>Plan de Acción</span>
+                        </h3>
+                        <div style="display: grid; gap: 1rem;">
+                            ${report.ai_action_plan.map(action => {
+                                const priorityColors = {
+                                    'Alta': { bg: 'rgba(239, 68, 68, 0.1)', border: '#ef4444', text: '#ef4444' },
+                                    'Media': { bg: 'rgba(245, 158, 11, 0.1)', border: '#f59e0b', text: '#f59e0b' },
+                                    'Baja': { bg: 'rgba(59, 130, 246, 0.1)', border: '#3b82f6', text: '#3b82f6' }
+                                };
+                                const colors = priorityColors[action.priority] || priorityColors['Media'];
+
+                                return `
+                                    <div style="background: ${colors.bg}; padding: 1rem; border-radius: 8px; border-left: 3px solid ${colors.border};">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                            <span style="background: ${colors.border}; color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600;">
+                                                ${action.priority}
+                                            </span>
+                                            <strong>${action.action}</strong>
+                                        </div>
+                                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                                            <strong>Impacto esperado:</strong> ${action.expectedImpact}
+                                        </p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Metadatos del reporte -->
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
+                        <div>
+                            <strong>Generado:</strong> ${new Date(report.generated_at).toLocaleString('es-ES')}
+                        </div>
+                        <div>
+                            <strong>Modelo:</strong> ${report.generated_by || 'Claude Sonnet 4'}
+                        </div>
+                        ${report.tokens_used ? `
+                            <div>
+                                <strong>Tokens usados:</strong> ${report.tokens_used.toLocaleString()}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
     },
 
     async downloadPDF(reportId) {
