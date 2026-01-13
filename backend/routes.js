@@ -5,6 +5,7 @@ const setupDemosRoutes = require('./routes/setup-demos');
 const superAdminRoutes = require('./routes/super-admin');
 const supportRoutes = require('./routes/support');
 const feedbackRoutes = require('./routes/feedback');
+const aiReportsRoutes = require('./routes/ai-reports');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
@@ -150,6 +151,9 @@ router.use('/api/support', supportRoutes);
 
 // ==================== FEEDBACK ====================
 router.use(feedbackRoutes);
+
+// ==================== AI REPORTS ====================
+router.use(aiReportsRoutes);
 
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);
