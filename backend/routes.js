@@ -2176,6 +2176,108 @@ router.post('/api/setup/create-super-admin', async (req, res) => {
     }
 });
 
+// ==================== MIGRACIÓN: REPORTES IA ====================
+router.post('/api/setup/migrate-ai-reports', async (req, res) => {
+    try {
+        // Protección: requiere clave secreta
+        const { secret } = req.body;
+        if (secret !== 'migrate-ai-reports-2026') {
+            return res.status(403).json({
+                success: false,
+                message: 'Acceso denegado'
+            });
+        }
+
+        console.log('🚀 Iniciando migración: Sistema de Reportes IA');
+
+        // 1. Agregar columna ai_reports_enabled a businesses
+        console.log('📝 Agregando columna ai_reports_enabled...');
+        try {
+            await db.query(`
+                ALTER TABLE businesses
+                ADD COLUMN ai_reports_enabled BOOLEAN DEFAULT FALSE
+                COMMENT 'Habilitar reportes mensuales con IA (plan Premium)'
+            `);
+            console.log('✅ Columna ai_reports_enabled agregada');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna ai_reports_enabled ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // 2. Crear tabla ai_reports
+        console.log('📝 Creando tabla ai_reports...');
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS ai_reports (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                business_id INT NOT NULL,
+                month INT NOT NULL COMMENT 'Mes (1-12)',
+                year INT NOT NULL COMMENT 'Año (ej: 2026)',
+                stats JSON NOT NULL COMMENT 'Estadísticas calculadas del mes',
+                ai_executive_summary TEXT COMMENT 'Resumen ejecutivo generado por IA',
+                ai_insights JSON COMMENT 'Array de insights clave detectados por IA',
+                ai_strengths JSON COMMENT 'Fortalezas detectadas',
+                ai_weaknesses JSON COMMENT 'Áreas de mejora detectadas',
+                ai_feedback_analysis TEXT COMMENT 'Análisis de encuestas/feedback',
+                ai_recommendations JSON COMMENT 'Recomendaciones priorizadas',
+                ai_economic_impact TEXT COMMENT 'Estimación de impacto económico',
+                ai_action_plan JSON COMMENT 'Plan de acción con prioridades',
+                generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                generated_by VARCHAR(50) DEFAULT 'claude-sonnet-4' COMMENT 'Modelo de IA usado',
+                tokens_used INT COMMENT 'Tokens consumidos en generación',
+                generation_time_ms INT COMMENT 'Tiempo de generación en milisegundos',
+                pdf_generated BOOLEAN DEFAULT FALSE,
+                pdf_path VARCHAR(255) COMMENT 'Ruta al PDF generado',
+                FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE,
+                UNIQUE KEY unique_report (business_id, month, year),
+                INDEX idx_business_date (business_id, year, month)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            COMMENT='Reportes mensuales generados por IA'
+        `);
+        console.log('✅ Tabla ai_reports creada/verificada');
+
+        // 3. Habilitar reportes para negocios demo
+        console.log('📝 Habilitando reportes para negocios demo...');
+        await db.query(`
+            UPDATE businesses
+            SET ai_reports_enabled = TRUE
+            WHERE id IN (2, 9)
+        `);
+        console.log('✅ Reportes habilitados para La Famiglia (ID: 9) y Buen Sabor (ID: 2)');
+
+        // 4. Verificar negocios con reportes habilitados
+        const enabledBusinesses = await db.query(`
+            SELECT id, name, ai_reports_enabled
+            FROM businesses
+            WHERE ai_reports_enabled = TRUE
+        `);
+
+        console.log('\n📊 Negocios con Reportes IA habilitados:');
+        enabledBusinesses.forEach(b => {
+            console.log(`   - ${b.name} (ID: ${b.id})`);
+        });
+
+        res.json({
+            success: true,
+            message: 'Migración de Reportes IA completada exitosamente',
+            enabledBusinesses: enabledBusinesses.map(b => ({
+                id: b.id,
+                name: b.name
+            }))
+        });
+
+    } catch (error) {
+        console.error('❌ Error durante la migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al ejecutar migración',
+            error: error.message
+        });
+    }
+});
+
 // ==================== CÓDIGO QR ====================
 
 // Generar código QR para un negocio
