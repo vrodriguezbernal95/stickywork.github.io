@@ -247,59 +247,98 @@ router.post('/api/reports/generate', requireAuth, async (req, res) => {
 
                 console.log(`✅ Reporte generado con ${modelUsed} (${tokensUsed} tokens, ${generationTime}ms)`);
             } catch (claudeError) {
-                // Si Claude falla (ej: sin créditos), usar modo de ejemplo
-                console.warn('⚠️ Error con Claude API, usando reporte de ejemplo:', claudeError.message);
+                // Si Claude falla, usar reporte DEMO
+                console.warn('⚠️ Error con Claude API, usando reporte DEMO:', claudeError.message);
+
+                const completionRate = stats.totalBookings > 0
+                    ? Math.round((stats.completedBookings / stats.totalBookings) * 100)
+                    : 0;
+                const cancellationRate = stats.totalBookings > 0
+                    ? Math.round((stats.cancelledBookings / stats.totalBookings) * 100)
+                    : 0;
 
                 aiReport = {
-                    executiveSummary: `Reporte de ejemplo para ${business.name} - ${getMonthName(monthNum)} ${yearNum}.\n\n⚠️ No se pudo generar con IA: ${claudeError.message.includes('credit') ? 'Sin créditos en Anthropic. Ve a https://console.anthropic.com/settings/billing para agregar créditos.' : claudeError.message}`,
+                    executiveSummary: `🎯 REPORTE DEMO - ${business.name}\n\nEste es un reporte de demostración para ${getMonthName(monthNum)} ${yearNum}. Durante este período se registraron ${stats.totalBookings} reservas, con una tasa de finalización del ${completionRate}%. Los reportes completos con IA incluyen análisis detallado de tendencias, feedback de clientes y recomendaciones personalizadas.`,
                     insights: [
-                        'No se pudo generar con IA por falta de créditos',
-                        'Agrega créditos en https://console.anthropic.com/settings/billing',
-                        `Estadísticas del mes: ${stats.totalBookings} reservas (${stats.completedBookings} completadas, ${stats.cancelledBookings} canceladas)`
+                        `Durante ${getMonthName(monthNum)} se procesaron ${stats.totalBookings} reservas en total`,
+                        `${stats.completedBookings} reservas fueron completadas exitosamente (${completionRate}% de tasa de finalización)`,
+                        `${stats.cancelledBookings} reservas fueron canceladas (${cancellationRate}% de tasa de cancelación)`,
+                        'Los reportes con IA analizan patrones de comportamiento y tendencias estacionales'
                     ],
-                    strengths: ['Datos registrados correctamente', 'Sistema funcionando'],
-                    weaknesses: ['Necesita créditos de Anthropic para análisis con IA'],
-                    feedbackAnalysis: 'Análisis no disponible sin créditos de IA',
+                    strengths: [
+                        'Sistema de reservas funcionando correctamente',
+                        'Datos de reservas registrados y organizados',
+                        stats.topServices?.length > 0 ? `Servicio más solicitado: ${stats.topServices[0].name}` : 'Diversidad de servicios ofrecidos'
+                    ],
+                    weaknesses: [
+                        'Este es un reporte de demostración con análisis limitado',
+                        'Los reportes completos identifican oportunidades de mejora específicas',
+                        'Análisis de feedback de clientes no incluido en versión DEMO'
+                    ],
+                    feedbackAnalysis: `Los reportes con IA analizan automáticamente todos los comentarios y calificaciones de clientes del mes, identificando patrones de satisfacción, quejas recurrentes y sugerencias de mejora. La versión DEMO no incluye este análisis detallado.`,
                     recommendations: [
-                        'Agrega créditos en Anthropic Console',
-                        'Costo aproximado: €0.01-0.02 por reporte',
-                        'Anthropic suele dar $5 gratis en cuentas nuevas'
+                        'Monitorear tendencias de cancelación para identificar patrones',
+                        'Analizar los horarios de mayor demanda para optimizar disponibilidad',
+                        'Implementar seguimiento post-servicio para aumentar satisfacción',
+                        'Los reportes completos incluyen recomendaciones personalizadas basadas en datos reales'
                     ],
-                    economicImpact: 'Análisis económico no disponible',
+                    economicImpact: `Con una tasa de finalización del ${completionRate}%, el negocio demuestra capacidad operativa. Los reportes con IA calculan el impacto económico estimado de cada recomendación y proyectan mejoras potenciales en ingresos.`,
                     actionPlan: [
-                        { priority: 'Alta', action: 'Agregar créditos en Anthropic', expectedImpact: 'Habilitar reportes con IA' }
+                        { priority: 'Alta', action: 'Revisar procesos para reducir cancelaciones', expectedImpact: 'Aumento en tasa de finalización' },
+                        { priority: 'Media', action: 'Analizar horarios de mayor demanda', expectedImpact: 'Mejor distribución de recursos' },
+                        { priority: 'Media', action: 'Implementar recordatorios automáticos', expectedImpact: 'Reducción de no-shows' }
                     ]
                 };
                 tokensUsed = 0;
                 generationTime = 0;
-                modelUsed = 'example-mode-error';
+                modelUsed = 'demo-mode';
             }
         } else {
-            // Fallback: generar reporte de ejemplo
-            console.warn('⚠️ ANTHROPIC_API_KEY no configurada, usando reporte de ejemplo');
+            // Fallback: generar reporte DEMO
+            console.warn('⚠️ ANTHROPIC_API_KEY no configurada, usando reporte DEMO');
+
+            const completionRate = stats.totalBookings > 0
+                ? Math.round((stats.completedBookings / stats.totalBookings) * 100)
+                : 0;
+            const cancellationRate = stats.totalBookings > 0
+                ? Math.round((stats.cancelledBookings / stats.totalBookings) * 100)
+                : 0;
+
             aiReport = {
-                executiveSummary: `Reporte de ejemplo para ${business.name} - ${getMonthName(monthNum)} ${yearNum}. Configure ANTHROPIC_API_KEY para generar reportes reales con IA.`,
+                executiveSummary: `🎯 REPORTE DEMO - ${business.name}\n\nEste es un reporte de demostración para ${getMonthName(monthNum)} ${yearNum}. Durante este período se registraron ${stats.totalBookings} reservas, con una tasa de finalización del ${completionRate}%. Los reportes completos con IA incluyen análisis detallado de tendencias, feedback de clientes y recomendaciones personalizadas.`,
                 insights: [
-                    'Este es un reporte de ejemplo',
-                    'Configure su API key de Anthropic en el archivo .env',
-                    'Luego agregue la misma clave en Railway como variable de entorno'
+                    `Durante ${getMonthName(monthNum)} se procesaron ${stats.totalBookings} reservas en total`,
+                    `${stats.completedBookings} reservas fueron completadas exitosamente (${completionRate}% de tasa de finalización)`,
+                    `${stats.cancelledBookings} reservas fueron canceladas (${cancellationRate}% de tasa de cancelación)`,
+                    'Los reportes con IA analizan patrones de comportamiento y tendencias estacionales'
                 ],
-                strengths: ['Fortaleza de ejemplo 1', 'Fortaleza de ejemplo 2'],
-                weaknesses: ['Área de mejora de ejemplo 1', 'Área de mejora de ejemplo 2'],
-                feedbackAnalysis: 'Análisis de feedback no disponible en modo de ejemplo',
+                strengths: [
+                    'Sistema de reservas funcionando correctamente',
+                    'Datos de reservas registrados y organizados',
+                    stats.topServices?.length > 0 ? `Servicio más solicitado: ${stats.topServices[0].name}` : 'Diversidad de servicios ofrecidos'
+                ],
+                weaknesses: [
+                    'Este es un reporte de demostración con análisis limitado',
+                    'Los reportes completos identifican oportunidades de mejora específicas',
+                    'Análisis de feedback de clientes no incluido en versión DEMO'
+                ],
+                feedbackAnalysis: `Los reportes con IA analizan automáticamente todos los comentarios y calificaciones de clientes del mes, identificando patrones de satisfacción, quejas recurrentes y sugerencias de mejora. La versión DEMO no incluye este análisis detallado.`,
                 recommendations: [
-                    'Configure ANTHROPIC_API_KEY para obtener recomendaciones reales',
-                    'Los reportes con IA proporcionan insights personalizados',
-                    'Costo aproximado: €0.017 por reporte'
+                    'Monitorear tendencias de cancelación para identificar patrones',
+                    'Analizar los horarios de mayor demanda para optimizar disponibilidad',
+                    'Implementar seguimiento post-servicio para aumentar satisfacción',
+                    'Los reportes completos incluyen recomendaciones personalizadas basadas en datos reales'
                 ],
-                economicImpact: 'Análisis económico no disponible en modo de ejemplo',
+                economicImpact: `Con una tasa de finalización del ${completionRate}%, el negocio demuestra capacidad operativa. Los reportes con IA calculan el impacto económico estimado de cada recomendación y proyectan mejoras potenciales en ingresos.`,
                 actionPlan: [
-                    { priority: 'Alta', action: 'Configurar API de Claude', expectedImpact: 'Reportes inteligentes automáticos' }
+                    { priority: 'Alta', action: 'Revisar procesos para reducir cancelaciones', expectedImpact: 'Aumento en tasa de finalización' },
+                    { priority: 'Media', action: 'Analizar horarios de mayor demanda', expectedImpact: 'Mejor distribución de recursos' },
+                    { priority: 'Media', action: 'Implementar recordatorios automáticos', expectedImpact: 'Reducción de no-shows' }
                 ]
             };
             tokensUsed = 0;
             generationTime = 0;
-            modelUsed = 'example-mode';
+            modelUsed = 'demo-mode';
         }
 
         // Insertar el reporte en la base de datos
