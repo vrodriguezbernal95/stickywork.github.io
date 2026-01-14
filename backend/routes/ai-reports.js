@@ -524,13 +524,15 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
         doc.pipe(res);
 
         // === PORTADA ===
-        doc.fontSize(24).fillColor('#667eea').text('Reporte Mensual con IA', { align: 'center' });
+        doc.fontSize(24).fillColor('#667eea').text('REPORTE MENSUAL CON IA', { align: 'center' });
         doc.moveDown(0.5);
         doc.fontSize(16).fillColor('#333').text(`${getMonthName(report.month)} ${report.year}`, { align: 'center' });
+        doc.moveDown(0.3);
+        doc.fontSize(10).fillColor('#999').text('Analisis Automatizado con Inteligencia Artificial', { align: 'center' });
         doc.moveDown(2);
 
         // === ESTADÍSTICAS CLAVE ===
-        doc.fontSize(18).fillColor('#667eea').text('📊 Estadísticas del Período');
+        doc.fontSize(18).fillColor('#667eea').text('ESTADISTICAS DEL PERIODO');
         doc.moveDown(0.5);
         doc.fontSize(12).fillColor('#333');
 
@@ -544,14 +546,14 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
         doc.moveDown(1.5);
 
         // === RESUMEN EJECUTIVO ===
-        doc.fontSize(18).fillColor('#667eea').text('📝 Resumen Ejecutivo');
+        doc.fontSize(18).fillColor('#667eea').text('RESUMEN EJECUTIVO');
         doc.moveDown(0.5);
         doc.fontSize(11).fillColor('#333');
         doc.text(report.ai_executive_summary || 'No disponible', { align: 'justify', indent: 20 });
         doc.moveDown(1.5);
 
         // === INSIGHTS CLAVE ===
-        doc.fontSize(18).fillColor('#667eea').text('💡 Insights Clave');
+        doc.fontSize(18).fillColor('#667eea').text('INSIGHTS CLAVE');
         doc.moveDown(0.5);
         doc.fontSize(11).fillColor('#333');
         if (insights && insights.length > 0) {
@@ -563,7 +565,7 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
         doc.moveDown(1);
 
         // === FORTALEZAS ===
-        doc.fontSize(18).fillColor('#22c55e').text('✅ Fortalezas');
+        doc.fontSize(18).fillColor('#22c55e').text('FORTALEZAS');
         doc.moveDown(0.5);
         doc.fontSize(11).fillColor('#333');
         if (strengths && strengths.length > 0) {
@@ -575,7 +577,7 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
         doc.moveDown(1);
 
         // === ÁREAS DE MEJORA ===
-        doc.fontSize(18).fillColor('#ef4444').text('⚠️ Áreas de Mejora');
+        doc.fontSize(18).fillColor('#ef4444').text('AREAS DE MEJORA');
         doc.moveDown(0.5);
         doc.fontSize(11).fillColor('#333');
         if (weaknesses && weaknesses.length > 0) {
@@ -589,7 +591,7 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
         // === ANÁLISIS DE FEEDBACK ===
         if (report.ai_feedback_analysis) {
             doc.addPage();
-            doc.fontSize(18).fillColor('#667eea').text('💬 Análisis de Feedback de Clientes');
+            doc.fontSize(18).fillColor('#667eea').text('ANALISIS DE FEEDBACK DE CLIENTES');
             doc.moveDown(0.5);
             doc.fontSize(11).fillColor('#333');
             doc.text(report.ai_feedback_analysis, { align: 'justify', indent: 20 });
@@ -597,7 +599,7 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
         }
 
         // === RECOMENDACIONES ===
-        doc.fontSize(18).fillColor('#667eea').text('🎯 Recomendaciones');
+        doc.fontSize(18).fillColor('#667eea').text('RECOMENDACIONES');
         doc.moveDown(0.5);
         doc.fontSize(11).fillColor('#333');
         if (recommendations && recommendations.length > 0) {
@@ -610,7 +612,7 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
 
         // === IMPACTO ECONÓMICO ===
         if (report.ai_economic_impact) {
-            doc.fontSize(18).fillColor('#667eea').text('💰 Impacto Económico');
+            doc.fontSize(18).fillColor('#667eea').text('IMPACTO ECONOMICO');
             doc.moveDown(0.5);
             doc.fontSize(11).fillColor('#333');
             doc.text(report.ai_economic_impact, { align: 'justify', indent: 20 });
@@ -618,7 +620,7 @@ router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
         }
 
         // === PLAN DE ACCIÓN ===
-        doc.fontSize(18).fillColor('#667eea').text('📋 Plan de Acción');
+        doc.fontSize(18).fillColor('#667eea').text('PLAN DE ACCION');
         doc.moveDown(0.5);
         doc.fontSize(11).fillColor('#333');
         if (actionPlan && actionPlan.length > 0) {
