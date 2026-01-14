@@ -271,17 +271,17 @@ router.post('/api/reports/generate', requireAuth, async (req, res) => {
                 monthNum,
                 yearNum,
                 JSON.stringify(stats),
-                aiReport.executiveSummary,
-                JSON.stringify(aiReport.insights),
-                JSON.stringify(aiReport.strengths),
-                JSON.stringify(aiReport.weaknesses),
-                aiReport.feedbackAnalysis,
-                JSON.stringify(aiReport.recommendations),
-                aiReport.economicImpact,
-                JSON.stringify(aiReport.actionPlan),
-                modelUsed,
-                tokensUsed,
-                generationTime
+                aiReport.executiveSummary || null,
+                JSON.stringify(aiReport.insights || []),
+                JSON.stringify(aiReport.strengths || []),
+                JSON.stringify(aiReport.weaknesses || []),
+                aiReport.feedbackAnalysis || null,
+                JSON.stringify(aiReport.recommendations || []),
+                aiReport.economicImpact || null,
+                JSON.stringify(aiReport.actionPlan || []),
+                modelUsed || 'unknown',
+                tokensUsed || 0,
+                generationTime || 0
             ]
         );
 
