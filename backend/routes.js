@@ -155,6 +155,21 @@ router.use(feedbackRoutes);
 // ==================== AI REPORTS ====================
 router.use(aiReportsRoutes);
 
+// ==================== DEBUG ENDPOINT ====================
+router.get('/api/debug/version', (req, res) => {
+    res.json({
+        success: true,
+        version: 'd486ed0',
+        timestamp: '2026-01-14T08:00:00Z',
+        message: 'AI Reports fixes aplicados',
+        features: {
+            aiReportsEnabled: true,
+            nullHandling: true,
+            apiKeyConfigured: !!process.env.ANTHROPIC_API_KEY
+        }
+    });
+});
+
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);
 
