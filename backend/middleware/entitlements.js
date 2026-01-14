@@ -305,42 +305,68 @@ async function validateUsersLimit(req, res, next) {
 async function getPlanInfo(businessId) {
     const { plan, limits } = await getBusinessPlan(businessId);
 
-    // Obtener uso actual
-    const aiReports = await db.query(
-        `SELECT COUNT(*) as total FROM ai_reports
-         WHERE business_id = ?
-         AND MONTH(generated_at) = MONTH(NOW())
-         AND YEAR(generated_at) = YEAR(NOW())`,
-        [businessId]
-    );
+    // Obtener uso actual (con manejo de errores para tablas que no existan)
+    let aiReportsCount = 0;
+    let bookingsCount = 0;
+    let servicesCount = 0;
+    let usersCount = 0;
 
-    const bookings = await db.query(
-        `SELECT COUNT(*) as total FROM bookings
-         WHERE business_id = ?
-         AND MONTH(booking_date) = MONTH(NOW())
-         AND YEAR(booking_date) = YEAR(NOW())
-         AND status != 'cancelled'`,
-        [businessId]
-    );
+    try {
+        const aiReports = await db.query(
+            `SELECT COUNT(*) as total FROM ai_reports
+             WHERE business_id = ?
+             AND MONTH(generated_at) = MONTH(NOW())
+             AND YEAR(generated_at) = YEAR(NOW())`,
+            [businessId]
+        );
+        aiReportsCount = aiReports[0].total;
+    } catch (error) {
+        // Tabla ai_reports puede no existir aún
+        console.log('Warning: ai_reports table might not exist:', error.message);
+    }
 
-    const services = await db.query(
-        'SELECT COUNT(*) as total FROM services WHERE business_id = ?',
-        [businessId]
-    );
+    try {
+        const bookings = await db.query(
+            `SELECT COUNT(*) as total FROM bookings
+             WHERE business_id = ?
+             AND MONTH(booking_date) = MONTH(NOW())
+             AND YEAR(booking_date) = YEAR(NOW())
+             AND status != 'cancelled'`,
+            [businessId]
+        );
+        bookingsCount = bookings[0].total;
+    } catch (error) {
+        console.log('Warning: Error counting bookings:', error.message);
+    }
 
-    const users = await db.query(
-        'SELECT COUNT(*) as total FROM admin_users WHERE business_id = ?',
-        [businessId]
-    );
+    try {
+        const services = await db.query(
+            'SELECT COUNT(*) as total FROM services WHERE business_id = ?',
+            [businessId]
+        );
+        servicesCount = services[0].total;
+    } catch (error) {
+        console.log('Warning: Error counting services:', error.message);
+    }
+
+    try {
+        const users = await db.query(
+            'SELECT COUNT(*) as total FROM admin_users WHERE business_id = ?',
+            [businessId]
+        );
+        usersCount = users[0].total;
+    } catch (error) {
+        console.log('Warning: Error counting users:', error.message);
+    }
 
     return {
         plan: plan,
         limits: limits,
         usage: {
-            aiReportsThisMonth: aiReports[0].total,
-            bookingsThisMonth: bookings[0].total,
-            services: services[0].total,
-            users: users[0].total
+            aiReportsThisMonth: aiReportsCount,
+            bookingsThisMonth: bookingsCount,
+            services: servicesCount,
+            users: usersCount
         }
     };
 }
