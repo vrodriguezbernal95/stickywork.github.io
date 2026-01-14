@@ -1,184 +1,170 @@
-# 🚂 Configurar Staging en Railway - Guía Paso a Paso
+# 🚂 Workflow de Staging - Guía Simplificada
 
-**Tiempo estimado:** 5 minutos
-**Dificultad:** Fácil
+**Tiempo estimado:** 0 minutos (sin configuración Railway)
+**Dificultad:** Muy Fácil
 
 ---
 
-## ✅ Parte 1: YA HECHO (por Claude)
+## ✅ YA ESTÁ LISTO
 
 - ✅ Rama `staging` creada en Git
 - ✅ Push a GitHub
-- ✅ Documentación creada
+- ✅ Listo para desarrollar
 
 ---
 
-## 🎯 Parte 2: LO QUE TIENES QUE HACER (Railway)
+## 🎯 CÓMO FUNCIONA (Workflow Manual)
 
-### Paso 1: Ir a Railway Dashboard
+Railway cambió su UI y ya no tiene el toggle simple para Branch Deploys.
 
-1. Abre https://railway.app
-2. Login con tu cuenta
-3. Busca tu proyecto: **stickywork-api** (o como lo hayas llamado)
-4. Click en el proyecto
+**Usamos un workflow manual que es IGUAL de seguro y MÁS SIMPLE:**
+
+```
+┌──────────────────────────────────────────────┐
+│  1. Desarrollas en rama STAGING              │
+│     git checkout staging                     │
+│     ... haces cambios ...                    │
+│     git commit -m "feat: nueva feature"      │
+│                                              │
+│  2. Pruebas LOCALMENTE                       │
+│     npm run dev                              │
+│     ... verificas que todo funciona ...      │
+│                                              │
+│  3. Cuando TODO esté perfecto                │
+│     git checkout master                      │
+│     git merge staging                        │
+│     git push origin master                   │
+│                                              │
+│  4. Railway auto-despliega MASTER            │
+│     (como siempre ha hecho)                  │
+└──────────────────────────────────────────────┘
+```
 
 ---
 
-### Paso 2: Activar Branch Deploys
+## ✨ Ventajas de Este Workflow
 
-1. En tu proyecto, click en el servicio **backend** (Node.js)
-2. Ve a la pestaña **"Settings"** (⚙️ icono arriba a la derecha)
-3. Busca la sección **"Deploys"** o **"Source"**
-4. Encontrarás algo como:
-
-```
-┌─────────────────────────────────┐
-│ Source Repository               │
-│ ✓ github.com/vrodriguez../..    │
-│                                 │
-│ Branch: master ▼                │
-│ [ ] Watch Paths                 │
-│ [x] Automatic deploys           │
-│                                 │
-│ ▼ Advanced (click aquí)         │
-└─────────────────────────────────┘
-```
-
-5. Click en **"Advanced"** o busca **"PR Deploys"** / **"Branch Deploys"**
-
-6. Activa la opción:
-```
-[✓] Enable PR Deploys
-[✓] Deploy from branches matching pattern: staging
-```
-
-O si no hay checkbox, busca un botón "Add branch" y añade: `staging`
+- ✅ **Zero configuración** en Railway
+- ✅ **Proteges producción** igual (solo subes a master cuando funciona)
+- ✅ **Rama staging en GitHub** como backup de tu trabajo
+- ✅ **Más control** sobre qué sube a producción
+- ✅ **Más simple** que configurar múltiples entornos
 
 ---
 
-### Paso 3: Verificar Variables de Entorno (Opcional)
+## 📝 Comandos del Día a Día
 
-**IMPORTANTE:** Las variables de staging heredan de master por defecto.
-
-Si quieres variables DIFERENTES para staging:
-
-1. En Railway Settings → Variables
-2. Click en **"Add Variable"**
-3. En el selector de **Environment**, elige `staging` (debería aparecer ahora)
-4. Añade variables específicas:
-
-```
-NODE_ENV = staging
-STAGING_MODE = true
-```
-
-**Nota:** Por ahora puedes dejarlo igual que producción, ya ajustaremos después si es necesario.
-
----
-
-### Paso 4: Esperar el Deploy
-
-1. Railway detectará la rama `staging` automáticamente
-2. Hará el primer deploy (tarda ~2-3 minutos)
-3. Verás un nuevo deployment en el dashboard con etiqueta `staging`
-
----
-
-### Paso 5: Obtener URL de Staging
-
-1. En el dashboard, deberías ver algo como:
-
-```
-Deployments:
-├─ master (production) ✓
-│  └─ api.stickywork.com
-│
-└─ staging ✓
-   └─ stickywork-staging-xxx.up.railway.app  ← ESTA ES TU URL
-```
-
-2. Click en el deployment de `staging`
-3. Copia la URL generada
-4. **Guárdala** (la necesitaremos para configurar el frontend)
-
----
-
-## 🧪 Verificación Final
-
-### Test 1: Backend arranca
+### Empezar nueva feature
 
 ```bash
-# Reemplaza con tu URL de staging:
-curl https://stickywork-staging-xxx.up.railway.app/health
+git checkout staging
+git pull origin staging
 ```
 
-**Respuesta esperada:**
-```json
-{"status":"ok","environment":"staging"}
-```
-
----
-
-### Test 2: Endpoint funciona
+### Trabajar normalmente
 
 ```bash
-curl https://stickywork-staging-xxx.up.railway.app/api/widget/9
+# Haces cambios en código...
+git add .
+git commit -m "feat: descripción del cambio"
+git push origin staging  # Backup en GitHub
 ```
 
-**Respuesta esperada:** JSON con datos de La Famiglia
+### Probar localmente
+
+```bash
+npm run dev
+# Pruebas en http://localhost:3000
+```
+
+### Subir a producción (cuando esté listo)
+
+```bash
+# Solo cuando TODO funcione perfectamente
+git checkout master
+git pull origin master
+git merge staging
+git push origin master
+
+# Railway despliega automáticamente en ~2 minutos
+```
 
 ---
 
-## 🎉 ¡Listo!
+## 🧪 Ejemplo Práctico
 
-Si los tests pasan, **tienes staging funcionando**.
+**Escenario:** Implementar sistema de entitlements
+
+```bash
+# 1. Trabajas en staging
+git checkout staging
+
+# 2. Implementas la feature
+# ... editas backend/middleware/entitlements.js ...
+# ... modificas rutas ...
+# ... haces pruebas locales ...
+
+git add .
+git commit -m "feat: Add entitlements system for plan validation"
+git push origin staging
+
+# 3. Pruebas localmente varios días si quieres
+npm run dev
+# ... pruebas exhaustivas ...
+
+# 4. Cuando estés 100% seguro
+git checkout master
+git merge staging
+git push origin master
+# ¡Railway despliega a producción!
+```
 
 ---
 
-## 📋 Resumen de URLs
-
-Después de configurar, tendrás:
+## 📋 Resumen
 
 ```
+DESARROLLO:
+Rama:     staging
+Entorno:  localhost:3000
+BD:       MySQL Railway (cuidado con data de prueba)
+
 PRODUCCIÓN:
+Rama:     master
+Entorno:  Railway auto-deploy
 Backend:  https://api.stickywork.com
-Frontend: https://stickywork.com
-BD:       MySQL Railway (producción)
-
-STAGING:
-Backend:  https://stickywork-staging-xxx.up.railway.app
-Frontend: http://localhost (por ahora)
-BD:       Misma BD (compartida)
+BD:       MySQL Railway (datos reales)
 ```
 
 ---
 
-## 🚨 Si algo sale mal
+## ⚠️ IMPORTANTE
 
-### Problema 1: "No veo la rama staging en Railway"
-**Solución:**
-- Espera 1-2 minutos, Railway tarda en detectar ramas nuevas
-- Refresca el dashboard de Railway
-- Verifica que el push a GitHub se hizo correctamente
+### Al probar en localhost con BD de producción:
 
-### Problema 2: "Deploy falla en staging"
-**Solución:**
-- Ve a Railway → Deployments → staging → View logs
-- Busca el error
-- Probablemente sea variables de entorno faltantes
+- ❌ NO borres datos reales
+- ❌ NO modifiques reservas de clientes
+- ✅ SÍ puedes crear datos de prueba (márcalos claramente)
+- ✅ SÍ puedes consultar/leer todo lo que quieras
 
-### Problema 3: "No encuentro dónde activar Branch Deploys"
-**Solución:**
-- Railway cambia UI frecuentemente
-- Busca: "PR Deploys", "Branch Deploys", o "Source Settings"
-- Si no lo encuentras, avísame y te guío con capturas
+### Recomendación:
+Para pruebas destructivas, crea un business de prueba:
+- Nombre: "TEST - No usar"
+- ID: Anótalo para tus pruebas
+- Úsalo para todas las pruebas destructivas
 
 ---
 
 ## ⏭️ Próximo Paso
 
-Una vez tengas staging funcionando, **avísame** y empezamos a desarrollar el sistema de entitlements en la rama staging, sin tocar producción.
+Ya estamos listos para desarrollar el sistema de entitlements en la rama staging.
+
+**Claude está desarrollando ahora:**
+1. ✅ Rama staging lista
+2. 🔄 Implementando sistema de entitlements
+3. ⏳ Pruebas locales
+4. ⏳ Deploy a producción cuando esté perfecto
 
 ---
 
-**¿Dudas?** Pregúntame lo que necesites.
+**Workflow simple. Código seguro. Producción protegida.** ✨
