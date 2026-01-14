@@ -437,4 +437,48 @@ function getMonthName(month) {
     return monthNames[month - 1];
 }
 
+// ==================== ELIMINAR REPORTE ====================
+
+/**
+ * DELETE /api/reports/:id
+ * Eliminar un reporte específico
+ */
+router.delete('/api/reports/:id', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const businessId = req.user.businessId;
+
+        // Verificar que el reporte existe y pertenece al negocio
+        const reports = await db.query(
+            'SELECT id, month, year FROM ai_reports WHERE id = ? AND business_id = ?',
+            [id, businessId]
+        );
+
+        if (!reports || reports.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reporte no encontrado'
+            });
+        }
+
+        const report = reports[0];
+
+        // Eliminar el reporte
+        await db.query('DELETE FROM ai_reports WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: `Reporte de ${getMonthName(report.month)} ${report.year} eliminado correctamente`
+        });
+
+    } catch (error) {
+        console.error('Error al eliminar reporte:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar el reporte',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;
