@@ -13,7 +13,7 @@ const claudeService = require('../services/claude-service');
  */
 router.get('/api/reports/history', requireAuth, async (req, res) => {
     try {
-        const businessId = req.user.business_id;
+        const businessId = req.user.businessId; // Corregido: businessId en camelCase
 
         console.log('[AI Reports] Loading history for business:', businessId);
 
@@ -89,7 +89,7 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
 router.get('/api/reports/:id', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const businessId = req.user.business_id;
+        const businessId = req.user.businessId;
 
         // Obtener el reporte
         const reports = await db.query(
@@ -150,7 +150,7 @@ router.get('/api/reports/:id', requireAuth, async (req, res) => {
 router.post('/api/reports/generate', requireAuth, async (req, res) => {
     try {
         const { month, year } = req.body;
-        const businessId = req.user.business_id;
+        const businessId = req.user.businessId;
 
         // Validar parámetros
         if (!month || !year) {
