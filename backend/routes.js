@@ -7,7 +7,7 @@ const supportRoutes = require('./routes/support');
 const feedbackRoutes = require('./routes/feedback');
 const aiReportsRoutes = require('./routes/ai-reports');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
-const { validateServicesLimit, validateUsersLimit } = require('./middleware/entitlements');
+const { validateServicesLimit, validateUsersLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
 const { createBookingLimiter, contactLimiter } = require('./middleware/rate-limit');
@@ -1649,6 +1649,37 @@ router.get('/api/business/:id', requireAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Error al obtener información del negocio'
+        });
+    }
+});
+
+/**
+ * GET /api/business/:id/plan
+ * Obtener información del plan de suscripción y uso actual
+ */
+router.get('/api/business/:id/plan', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (req.user.businessId != id) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes acceso a este negocio'
+            });
+        }
+
+        const planInfo = await getPlanInfo(id);
+
+        res.json({
+            success: true,
+            data: planInfo
+        });
+    } catch (error) {
+        console.error('Error al obtener información del plan:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener información del plan'
         });
     }
 });
