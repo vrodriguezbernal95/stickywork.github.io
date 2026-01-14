@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../config/database');
 const { requireAuth, requireBusinessAccess } = require('../middleware/auth');
+const { requireFeature, validateAIReportLimit } = require('../middleware/entitlements');
 const claudeService = require('../services/claude-service');
 
 // ==================== OBTENER HISTÓRICO DE REPORTES ====================
@@ -11,7 +12,7 @@ const claudeService = require('../services/claude-service');
  * GET /api/reports/history
  * Obtener todos los reportes generados para el negocio actual
  */
-router.get('/api/reports/history', requireAuth, async (req, res) => {
+router.get('/api/reports/history', requireAuth, requireFeature('aiReports'), async (req, res) => {
     try {
         const businessId = req.user.businessId; // Corregido: businessId en camelCase
 
@@ -86,7 +87,7 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
  * GET /api/reports/:id
  * Obtener un reporte específico con todos sus detalles
  */
-router.get('/api/reports/:id', requireAuth, async (req, res) => {
+router.get('/api/reports/:id', requireAuth, requireFeature('aiReports'), async (req, res) => {
     try {
         const { id } = req.params;
         const businessId = req.user.businessId;
@@ -147,7 +148,7 @@ router.get('/api/reports/:id', requireAuth, async (req, res) => {
  * POST /api/reports/generate
  * Generar un nuevo reporte con IA para un mes/año específico
  */
-router.post('/api/reports/generate', requireAuth, async (req, res) => {
+router.post('/api/reports/generate', requireAuth, requireFeature('aiReports'), validateAIReportLimit, async (req, res) => {
     try {
         const { month, year } = req.body;
         const businessId = req.user.businessId;

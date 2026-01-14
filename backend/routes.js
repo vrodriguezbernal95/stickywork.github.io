@@ -7,6 +7,7 @@ const supportRoutes = require('./routes/support');
 const feedbackRoutes = require('./routes/feedback');
 const aiReportsRoutes = require('./routes/ai-reports');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
+const { validateServicesLimit, validateUsersLimit } = require('./middleware/entitlements');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
 const { createBookingLimiter, contactLimiter } = require('./middleware/rate-limit');
@@ -176,7 +177,7 @@ router.use(setupDemosRoutes);
 // ==================== SERVICIOS ====================
 
 // Crear un nuevo servicio (requiere autenticación)
-router.post('/api/services', requireAuth, requireBusinessAccess, async (req, res) => {
+router.post('/api/services', requireAuth, requireBusinessAccess, validateServicesLimit, async (req, res) => {
     try {
         const {
             business_id,
