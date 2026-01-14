@@ -28,7 +28,10 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
             });
         }
 
-        if (!businesses[0].ai_reports_enabled) {
+        const aiReportsEnabled = businesses[0].ai_reports_enabled;
+
+        // Verificar si está habilitado (puede ser boolean o 1/0)
+        if (aiReportsEnabled !== true && aiReportsEnabled !== 1) {
             return res.status(403).json({
                 success: false,
                 message: 'Los Reportes IA no están habilitados para este negocio'
@@ -62,7 +65,8 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
         console.error('Error al obtener histórico de reportes:', error);
         res.status(500).json({
             success: false,
-            message: 'Error al cargar el histórico de reportes'
+            message: 'Error al cargar el histórico de reportes',
+            error: error.message
         });
     }
 });
@@ -178,8 +182,10 @@ router.post('/api/reports/generate', requireAuth, async (req, res) => {
         }
 
         const business = businesses[0];
+        const aiReportsEnabled = business.ai_reports_enabled;
 
-        if (!business.ai_reports_enabled) {
+        // Verificar si está habilitado (puede ser boolean o 1/0)
+        if (aiReportsEnabled !== true && aiReportsEnabled !== 1) {
             return res.status(403).json({
                 success: false,
                 message: 'Los Reportes IA no están habilitados para este negocio'
