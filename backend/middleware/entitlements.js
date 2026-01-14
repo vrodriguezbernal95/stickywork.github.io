@@ -4,12 +4,12 @@ const db = require('../../config/database');
  * Obtiene el plan y límites del negocio desde la base de datos
  */
 async function getBusinessPlan(businessId) {
-    const [rows] = await db.query(
+    const rows = await db.query(
         'SELECT plan, plan_limits FROM businesses WHERE id = ?',
         [businessId]
     );
 
-    if (rows.length === 0) {
+    if (!rows || rows.length === 0) {
         throw new Error('Negocio no encontrado');
     }
 
@@ -86,7 +86,7 @@ async function validateAIReportLimit(req, res, next) {
         }
 
         // Contar reportes generados este mes
-        const [usage] = await db.query(
+        const usage = await db.query(
             `SELECT COUNT(*) as total FROM ai_reports
              WHERE business_id = ?
              AND MONTH(generated_at) = MONTH(NOW())
@@ -149,7 +149,7 @@ async function validateBookingLimit(req, res, next) {
         }
 
         // Contar reservas este mes
-        const [usage] = await db.query(
+        const usage = await db.query(
             `SELECT COUNT(*) as total FROM bookings
              WHERE business_id = ?
              AND MONTH(booking_date) = MONTH(NOW())
@@ -212,7 +212,7 @@ async function validateServicesLimit(req, res, next) {
         }
 
         // Contar servicios activos
-        const [services] = await db.query(
+        const services = await db.query(
             'SELECT COUNT(*) as total FROM services WHERE business_id = ?',
             [req.user.businessId]
         );
@@ -266,8 +266,8 @@ async function validateUsersLimit(req, res, next) {
         }
 
         // Contar usuarios activos
-        const [users] = await db.query(
-            'SELECT COUNT(*) as total FROM users WHERE business_id = ?',
+        const users = await db.query(
+            'SELECT COUNT(*) as total FROM admin_users WHERE business_id = ?',
             [req.user.businessId]
         );
 
@@ -306,7 +306,7 @@ async function getPlanInfo(businessId) {
     const { plan, limits } = await getBusinessPlan(businessId);
 
     // Obtener uso actual
-    const [aiReports] = await db.query(
+    const aiReports = await db.query(
         `SELECT COUNT(*) as total FROM ai_reports
          WHERE business_id = ?
          AND MONTH(generated_at) = MONTH(NOW())
@@ -314,7 +314,7 @@ async function getPlanInfo(businessId) {
         [businessId]
     );
 
-    const [bookings] = await db.query(
+    const bookings = await db.query(
         `SELECT COUNT(*) as total FROM bookings
          WHERE business_id = ?
          AND MONTH(booking_date) = MONTH(NOW())
@@ -323,13 +323,13 @@ async function getPlanInfo(businessId) {
         [businessId]
     );
 
-    const [services] = await db.query(
+    const services = await db.query(
         'SELECT COUNT(*) as total FROM services WHERE business_id = ?',
         [businessId]
     );
 
-    const [users] = await db.query(
-        'SELECT COUNT(*) as total FROM users WHERE business_id = ?',
+    const users = await db.query(
+        'SELECT COUNT(*) as total FROM admin_users WHERE business_id = ?',
         [businessId]
     );
 
