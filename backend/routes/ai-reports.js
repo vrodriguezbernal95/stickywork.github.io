@@ -15,11 +15,15 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
     try {
         const businessId = req.user.business_id;
 
+        console.log('[AI Reports] Loading history for business:', businessId);
+
         // Verificar que el negocio tenga habilitados los reportes IA
         const businesses = await db.query(
             'SELECT ai_reports_enabled FROM businesses WHERE id = ?',
             [businessId]
         );
+
+        console.log('[AI Reports] Business query result:', businesses);
 
         if (!businesses || businesses.length === 0) {
             return res.status(404).json({
@@ -29,6 +33,7 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
         }
 
         const aiReportsEnabled = businesses[0].ai_reports_enabled;
+        console.log('[AI Reports] ai_reports_enabled value:', aiReportsEnabled, 'type:', typeof aiReportsEnabled);
 
         // Verificar si está habilitado (puede ser boolean o 1/0)
         if (aiReportsEnabled !== true && aiReportsEnabled !== 1) {
@@ -39,6 +44,7 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
         }
 
         // Obtener todos los reportes del negocio
+        console.log('[AI Reports] Querying ai_reports table for business:', businessId);
         const reports = await db.query(
             `SELECT
                 id,
@@ -56,13 +62,16 @@ router.get('/api/reports/history', requireAuth, async (req, res) => {
             [businessId]
         );
 
+        console.log('[AI Reports] Found reports:', reports ? reports.length : 0);
+
         res.json({
             success: true,
             data: reports || []
         });
 
     } catch (error) {
-        console.error('Error al obtener histórico de reportes:', error);
+        console.error('[AI Reports] Error al obtener histórico de reportes:', error);
+        console.error('[AI Reports] Error stack:', error.stack);
         res.status(500).json({
             success: false,
             message: 'Error al cargar el histórico de reportes',
