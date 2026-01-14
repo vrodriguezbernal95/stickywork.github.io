@@ -230,21 +230,50 @@ router.post('/api/reports/generate', requireAuth, async (req, res) => {
         let aiReport, tokensUsed, generationTime, modelUsed;
 
         if (claudeService.isConfigured()) {
-            // Generar reporte real con Claude
-            const claudeResponse = await claudeService.generateBusinessReport({
-                businessName: business.name,
-                month: monthNum,
-                year: yearNum,
-                stats,
-                feedback
-            });
+            // Intentar generar reporte real con Claude
+            try {
+                const claudeResponse = await claudeService.generateBusinessReport({
+                    businessName: business.name,
+                    month: monthNum,
+                    year: yearNum,
+                    stats,
+                    feedback
+                });
 
-            aiReport = claudeResponse.report;
-            tokensUsed = claudeResponse.metadata.tokensUsed;
-            generationTime = claudeResponse.metadata.generationTimeMs;
-            modelUsed = claudeResponse.metadata.model;
+                aiReport = claudeResponse.report;
+                tokensUsed = claudeResponse.metadata.tokensUsed;
+                generationTime = claudeResponse.metadata.generationTimeMs;
+                modelUsed = claudeResponse.metadata.model;
 
-            console.log(`✅ Reporte generado con ${modelUsed} (${tokensUsed} tokens, ${generationTime}ms)`);
+                console.log(`✅ Reporte generado con ${modelUsed} (${tokensUsed} tokens, ${generationTime}ms)`);
+            } catch (claudeError) {
+                // Si Claude falla (ej: sin créditos), usar modo de ejemplo
+                console.warn('⚠️ Error con Claude API, usando reporte de ejemplo:', claudeError.message);
+
+                aiReport = {
+                    executiveSummary: `Reporte de ejemplo para ${business.name} - ${getMonthName(monthNum)} ${yearNum}.\n\n⚠️ No se pudo generar con IA: ${claudeError.message.includes('credit') ? 'Sin créditos en Anthropic. Ve a https://console.anthropic.com/settings/billing para agregar créditos.' : claudeError.message}`,
+                    insights: [
+                        'No se pudo generar con IA por falta de créditos',
+                        'Agrega créditos en https://console.anthropic.com/settings/billing',
+                        `Estadísticas del mes: ${stats.totalBookings} reservas (${stats.completedBookings} completadas, ${stats.cancelledBookings} canceladas)`
+                    ],
+                    strengths: ['Datos registrados correctamente', 'Sistema funcionando'],
+                    weaknesses: ['Necesita créditos de Anthropic para análisis con IA'],
+                    feedbackAnalysis: 'Análisis no disponible sin créditos de IA',
+                    recommendations: [
+                        'Agrega créditos en Anthropic Console',
+                        'Costo aproximado: €0.01-0.02 por reporte',
+                        'Anthropic suele dar $5 gratis en cuentas nuevas'
+                    ],
+                    economicImpact: 'Análisis económico no disponible',
+                    actionPlan: [
+                        { priority: 'Alta', action: 'Agregar créditos en Anthropic', expectedImpact: 'Habilitar reportes con IA' }
+                    ]
+                };
+                tokensUsed = 0;
+                generationTime = 0;
+                modelUsed = 'example-mode-error';
+            }
         } else {
             // Fallback: generar reporte de ejemplo
             console.warn('⚠️ ANTHROPIC_API_KEY no configurada, usando reporte de ejemplo');
@@ -395,7 +424,7 @@ async function getBusinessFeedback(businessId, startDate, endDate) {
         return feedbackResult || [];
 
     } catch (error) {
-        console.error('Error getting business feedback:', error);
+        console.error('Error getting business feedback:', error.message);
         return [];
     }
 }
