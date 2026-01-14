@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('../../config/database');
 
 /**
  * Obtiene el plan y límites del negocio desde la base de datos
