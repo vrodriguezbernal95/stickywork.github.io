@@ -203,7 +203,6 @@ const aiReports = {
                         class="btn-icon"
                         title="Descargar PDF"
                         style="font-size: 1.2rem;"
-                        ${!report.pdf_generated ? 'disabled' : ''}
                     >
                         📄
                     </button>
@@ -502,10 +501,47 @@ const aiReports = {
 
     async downloadPDF(reportId) {
         try {
-            // TODO: Implement PDF download
-            alert('Funcionalidad de descarga PDF en desarrollo');
+            // Obtener el token de autenticación
+            const token = api.getToken();
+
+            // Abrir el PDF en una nueva ventana
+            const pdfUrl = `${api.baseURL}/api/reports/${reportId}/pdf`;
+
+            // Crear un enlace temporal para descargar
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.target = '_blank';
+
+            // Añadir el token en el header usando fetch y blob
+            const response = await fetch(pdfUrl, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al generar PDF');
+            }
+
+            // Convertir a blob y descargar
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            link.href = blobUrl;
+            link.download = `Reporte_IA_${reportId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Liberar el objeto URL
+            window.URL.revokeObjectURL(blobUrl);
+
+            // Recargar el histórico para actualizar el estado de pdf_generated
+            await this.loadReportsHistory();
+
         } catch (error) {
             console.error('Error downloading PDF:', error);
+            this.showNotification('Error al descargar el PDF', 'error');
         }
     },
 

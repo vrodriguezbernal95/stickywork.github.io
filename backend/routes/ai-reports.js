@@ -476,6 +476,187 @@ function getMonthName(month) {
     return monthNames[month - 1];
 }
 
+// ==================== GENERAR Y DESCARGAR PDF ====================
+
+/**
+ * GET /api/reports/:id/pdf
+ * Generar y descargar reporte como PDF
+ */
+router.get('/api/reports/:id/pdf', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const businessId = req.user.businessId;
+
+        // Obtener el reporte completo
+        const reports = await db.query(
+            `SELECT * FROM ai_reports
+             WHERE id = ? AND business_id = ?`,
+            [id, businessId]
+        );
+
+        if (!reports || reports.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reporte no encontrado'
+            });
+        }
+
+        const report = reports[0];
+
+        // Parse JSON fields
+        const stats = typeof report.stats === 'string' ? JSON.parse(report.stats) : report.stats;
+        const insights = typeof report.ai_insights === 'string' ? JSON.parse(report.ai_insights) : report.ai_insights;
+        const strengths = typeof report.ai_strengths === 'string' ? JSON.parse(report.ai_strengths) : report.ai_strengths;
+        const weaknesses = typeof report.ai_weaknesses === 'string' ? JSON.parse(report.ai_weaknesses) : report.ai_weaknesses;
+        const recommendations = typeof report.ai_recommendations === 'string' ? JSON.parse(report.ai_recommendations) : report.ai_recommendations;
+        const actionPlan = typeof report.ai_action_plan === 'string' ? JSON.parse(report.ai_action_plan) : report.ai_action_plan;
+
+        // Generar PDF
+        const PDFDocument = require('pdfkit');
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+        // Configurar headers para descarga
+        const filename = `Reporte_${getMonthName(report.month)}_${report.year}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+        // Pipe PDF al response
+        doc.pipe(res);
+
+        // === PORTADA ===
+        doc.fontSize(24).fillColor('#667eea').text('Reporte Mensual con IA', { align: 'center' });
+        doc.moveDown(0.5);
+        doc.fontSize(16).fillColor('#333').text(`${getMonthName(report.month)} ${report.year}`, { align: 'center' });
+        doc.moveDown(2);
+
+        // === ESTADÍSTICAS CLAVE ===
+        doc.fontSize(18).fillColor('#667eea').text('📊 Estadísticas del Período');
+        doc.moveDown(0.5);
+        doc.fontSize(12).fillColor('#333');
+
+        const completionRate = stats.totalBookings > 0
+            ? Math.round((stats.completedBookings / stats.totalBookings) * 100)
+            : 0;
+
+        doc.text(`• Total de Reservas: ${stats.totalBookings || 0}`, { indent: 20 });
+        doc.text(`• Reservas Completadas: ${stats.completedBookings || 0} (${completionRate}%)`, { indent: 20 });
+        doc.text(`• Reservas Canceladas: ${stats.cancelledBookings || 0}`, { indent: 20 });
+        doc.moveDown(1.5);
+
+        // === RESUMEN EJECUTIVO ===
+        doc.fontSize(18).fillColor('#667eea').text('📝 Resumen Ejecutivo');
+        doc.moveDown(0.5);
+        doc.fontSize(11).fillColor('#333');
+        doc.text(report.ai_executive_summary || 'No disponible', { align: 'justify', indent: 20 });
+        doc.moveDown(1.5);
+
+        // === INSIGHTS CLAVE ===
+        doc.fontSize(18).fillColor('#667eea').text('💡 Insights Clave');
+        doc.moveDown(0.5);
+        doc.fontSize(11).fillColor('#333');
+        if (insights && insights.length > 0) {
+            insights.forEach((insight, index) => {
+                doc.text(`${index + 1}. ${insight}`, { indent: 20 });
+                doc.moveDown(0.3);
+            });
+        }
+        doc.moveDown(1);
+
+        // === FORTALEZAS ===
+        doc.fontSize(18).fillColor('#22c55e').text('✅ Fortalezas');
+        doc.moveDown(0.5);
+        doc.fontSize(11).fillColor('#333');
+        if (strengths && strengths.length > 0) {
+            strengths.forEach(strength => {
+                doc.text(`• ${strength}`, { indent: 20 });
+                doc.moveDown(0.3);
+            });
+        }
+        doc.moveDown(1);
+
+        // === ÁREAS DE MEJORA ===
+        doc.fontSize(18).fillColor('#ef4444').text('⚠️ Áreas de Mejora');
+        doc.moveDown(0.5);
+        doc.fontSize(11).fillColor('#333');
+        if (weaknesses && weaknesses.length > 0) {
+            weaknesses.forEach(weakness => {
+                doc.text(`• ${weakness}`, { indent: 20 });
+                doc.moveDown(0.3);
+            });
+        }
+        doc.moveDown(1);
+
+        // === ANÁLISIS DE FEEDBACK ===
+        if (report.ai_feedback_analysis) {
+            doc.addPage();
+            doc.fontSize(18).fillColor('#667eea').text('💬 Análisis de Feedback de Clientes');
+            doc.moveDown(0.5);
+            doc.fontSize(11).fillColor('#333');
+            doc.text(report.ai_feedback_analysis, { align: 'justify', indent: 20 });
+            doc.moveDown(1.5);
+        }
+
+        // === RECOMENDACIONES ===
+        doc.fontSize(18).fillColor('#667eea').text('🎯 Recomendaciones');
+        doc.moveDown(0.5);
+        doc.fontSize(11).fillColor('#333');
+        if (recommendations && recommendations.length > 0) {
+            recommendations.forEach((rec, index) => {
+                doc.text(`${index + 1}. ${rec}`, { indent: 20 });
+                doc.moveDown(0.3);
+            });
+        }
+        doc.moveDown(1.5);
+
+        // === IMPACTO ECONÓMICO ===
+        if (report.ai_economic_impact) {
+            doc.fontSize(18).fillColor('#667eea').text('💰 Impacto Económico');
+            doc.moveDown(0.5);
+            doc.fontSize(11).fillColor('#333');
+            doc.text(report.ai_economic_impact, { align: 'justify', indent: 20 });
+            doc.moveDown(1.5);
+        }
+
+        // === PLAN DE ACCIÓN ===
+        doc.fontSize(18).fillColor('#667eea').text('📋 Plan de Acción');
+        doc.moveDown(0.5);
+        doc.fontSize(11).fillColor('#333');
+        if (actionPlan && actionPlan.length > 0) {
+            actionPlan.forEach((item, index) => {
+                doc.fillColor('#667eea').text(`${index + 1}. ${item.action}`, { indent: 20 });
+                doc.fillColor('#666').fontSize(10);
+                doc.text(`   Prioridad: ${item.priority} | Impacto Esperado: ${item.expectedImpact}`, { indent: 20 });
+                doc.fontSize(11).fillColor('#333');
+                doc.moveDown(0.5);
+            });
+        }
+
+        // === FOOTER ===
+        doc.moveDown(2);
+        doc.fontSize(9).fillColor('#999').text(
+            `Generado el ${new Date(report.generated_at).toLocaleDateString('es-ES')} | StickyWork - Sistema de Gestión`,
+            { align: 'center' }
+        );
+
+        // Finalizar PDF
+        doc.end();
+
+        // Marcar como PDF generado en la base de datos
+        await db.query(
+            'UPDATE ai_reports SET pdf_generated = 1 WHERE id = ?',
+            [id]
+        );
+
+    } catch (error) {
+        console.error('Error generando PDF:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al generar el PDF',
+            error: error.message
+        });
+    }
+});
+
 // ==================== ELIMINAR REPORTE ====================
 
 /**
