@@ -207,6 +207,14 @@ const aiReports = {
                     >
                         📄
                     </button>
+                    <button
+                        onclick="aiReports.deleteReport(${report.id}, '${monthNames[report.month - 1]} ${report.year}')"
+                        class="btn-icon"
+                        title="Eliminar reporte"
+                        style="font-size: 1.2rem;"
+                    >
+                        🗑️
+                    </button>
                 </td>
             </tr>
         `;
@@ -499,6 +507,60 @@ const aiReports = {
         } catch (error) {
             console.error('Error downloading PDF:', error);
         }
+    },
+
+    async deleteReport(reportId, reportPeriod) {
+        if (!confirm(`¿Estás seguro de que quieres eliminar el reporte de ${reportPeriod}?\n\nEsta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        try {
+            const data = await api.delete(`/api/reports/${reportId}`);
+
+            if (data.success) {
+                // Mostrar notificación de éxito
+                this.showNotification(data.message, 'success');
+
+                // Recargar histórico
+                await this.loadReportsHistory();
+
+                // Ocultar el display del reporte si está visible
+                const reportDisplay = document.getElementById('reportDisplay');
+                if (reportDisplay) {
+                    reportDisplay.style.display = 'none';
+                }
+            }
+
+        } catch (error) {
+            console.error('Error al eliminar reporte:', error);
+            this.showNotification('Error al eliminar el reporte: ' + error.message, 'error');
+        }
+    },
+
+    showNotification(message, type = 'info') {
+        const statusDiv = document.getElementById('generationStatus');
+
+        const colors = {
+            success: { bg: 'rgba(34, 197, 94, 0.1)', border: 'var(--success)', text: 'var(--success)' },
+            error: { bg: 'rgba(239, 68, 68, 0.1)', border: 'var(--danger)', text: 'var(--danger)' },
+            info: { bg: 'rgba(59, 130, 246, 0.1)', border: 'var(--primary)', text: 'var(--primary)' }
+        };
+
+        const color = colors[type] || colors.info;
+
+        statusDiv.style.display = 'block';
+        statusDiv.innerHTML = `
+            <div style="padding: 1rem; background: ${color.bg}; border-radius: 8px; border-left: 4px solid ${color.border};">
+                <p style="margin: 0; color: ${color.text}; font-weight: 600;">
+                    ${message}
+                </p>
+            </div>
+        `;
+
+        // Auto-ocultar después de 4 segundos
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 4000);
     },
 
     getMonthName(month) {
