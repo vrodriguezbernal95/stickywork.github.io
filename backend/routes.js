@@ -2141,6 +2141,48 @@ router.get('/api/debug/table-structure', async (req, res) => {
     }
 });
 
+// ==================== DEBUG: Ver rutas registradas (TEMPORAL) ====================
+router.get('/api/debug/routes', (req, res) => {
+    const routes = [];
+
+    // Función para extraer rutas de un router
+    function extractRoutes(stack, basePath = '') {
+        stack.forEach(layer => {
+            if (layer.route) {
+                // Ruta directa
+                const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
+                routes.push({
+                    path: basePath + layer.route.path,
+                    methods: methods
+                });
+            } else if (layer.name === 'router' && layer.handle.stack) {
+                // Subrouter
+                const routePath = layer.regexp.source
+                    .replace('\\/?', '')
+                    .replace('(?=\\/|$)', '')
+                    .replace(/\\\//g, '/')
+                    .replace(/\^/g, '')
+                    .replace(/\$/g, '')
+                    .replace(/\\/g, '');
+                extractRoutes(layer.handle.stack, basePath + routePath);
+            }
+        });
+    }
+
+    // Extraer rutas del router principal
+    if (router.stack) {
+        extractRoutes(router.stack);
+    }
+
+    res.json({
+        success: true,
+        totalRoutes: routes.length,
+        routes: routes.filter(r => r.path.includes('super-admin')),
+        timestamp: new Date().toISOString(),
+        version: 'superadmin-deployment-v2'
+    });
+});
+
 // ==================== SETUP SUPER ADMIN (TEMPORAL) ====================
 router.post('/api/setup/create-super-admin', async (req, res) => {
     try {
