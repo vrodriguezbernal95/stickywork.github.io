@@ -52,6 +52,10 @@
                 <span class="nav-icon">🏢</span>
                 <span class="nav-text">Clientes</span>
             </a>
+            <a href="#" class="nav-link" data-page="plans">
+                <span class="nav-icon">💎</span>
+                <span class="nav-text">Planes</span>
+            </a>
             <a href="#" class="nav-link" data-page="messages">
                 <span class="nav-icon">📧</span>
                 <span class="nav-text">Mensajes</span>
@@ -193,6 +197,7 @@
     <script src="admin/js/utils.js"></script>
     <script src="admin/js/super-dashboard.js"></script>
     <script src="admin/js/super-clients.js"></script>
+    <script src="admin/js/super-plans.js"></script>
     <script src="admin/js/super-messages.js"></script>
     <script src="admin/js/super-stats.js"></script>
     <script>
@@ -218,6 +223,9 @@
                     break;
                 case 'clients':
                     superClients.load();
+                    break;
+                case 'plans':
+                    superPlans.load();
                     break;
                 case 'messages':
                     superMessages.load();
