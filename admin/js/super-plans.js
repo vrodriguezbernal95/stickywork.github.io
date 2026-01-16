@@ -327,9 +327,9 @@ const superPlans = {
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Nuevo Plan</label>
-                    <select id="newPlanSelect" class="form-control">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">Nuevo Plan</label>
+                    <select id="newPlanSelect" class="filter-select" style="width: 100%;">
                         ${plans.map(p => `
                             <option value="${p.value}" ${p.value === currentPlan ? 'selected' : ''}>
                                 ${p.label} - ${p.price}
@@ -338,12 +338,13 @@ const superPlans = {
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Razón del cambio (opcional)</label>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">Razón del cambio (opcional)</label>
                     <textarea
                         id="changeReason"
-                        class="form-control"
+                        class="filter-input"
                         rows="3"
+                        style="width: 100%; resize: vertical; font-family: inherit;"
                         placeholder="Ej: Upgrade solicitado por el cliente, promoción especial, etc."
                     ></textarea>
                 </div>
