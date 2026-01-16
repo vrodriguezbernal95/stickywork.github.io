@@ -1,6 +1,8 @@
 # ⚡ Quick Start - StickyWork
 
-**Referencia rápida para Claude al iniciar sesión**
+**Referencia rápida de workflow y comandos**
+
+> 📖 **Primera vez?** Lee primero `README_CLAUDE.md` para onboarding completo
 
 ---
 
