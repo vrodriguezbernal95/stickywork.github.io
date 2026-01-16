@@ -1,6 +1,6 @@
 # 🤖 Onboarding para Claude - StickyWork
 
-**Última actualización:** 2026-01-14
+**Última actualización:** 2026-01-16
 
 ---
 
@@ -26,7 +26,7 @@ Este documento es tu **punto de entrada** cada vez que inicies una nueva sesión
 
 ---
 
-### 2️⃣ **HISTORICO_SEMANA_02_2026.md** (OBLIGATORIO)
+### 2️⃣ **HISTORICO_SEMANA_03_2026.md** (OBLIGATORIO)
 **Tiempo de lectura:** 5 minutos
 
 **Contiene:**
@@ -38,7 +38,7 @@ Este documento es tu **punto de entrada** cada vez que inicies una nueva sesión
 **📍 Ubicación:** Raíz del proyecto
 
 **⚠️ IMPORTANTE:** Este archivo se actualiza cada semana. Siempre lee el histórico de la semana actual:
-- Semana 02 de 2026 (actual): `HISTORICO_SEMANA_02_2026.md`
+- Semana 03 de 2026 (actual): `HISTORICO_SEMANA_03_2026.md`
 - Pregunta al usuario si no encuentras el histórico de la semana actual
 
 ---
@@ -56,20 +56,33 @@ Este documento es tu **punto de entrada** cada vez que inicies una nueva sesión
 
 ---
 
-## 🎯 Estado Actual del Proyecto (2026-01-14)
+## 🎯 Estado Actual del Proyecto (2026-01-16)
 
 ### ✅ Últimas Features Implementadas
 
-#### **Sistema de Entitlements** (14-ene-2026)
-- **Rama:** staging
-- **Estado:** ✅ Completado y probado
+#### **Dashboard SuperAdmin de Planes** (16-ene-2026)
+- **Rama:** master (en producción)
+- **Estado:** ✅ Desplegado y funcionando
+- **Descripción:** Panel completo de gestión de planes de suscripción
+- **Funcionalidades:**
+  - Vista de estadísticas con MRR (Monthly Recurring Revenue)
+  - Listado de negocios con filtro por plan
+  - Cambio de plan con vista de uso actual
+  - Histórico de cambios de plan (audit trail)
+- **Archivos clave:**
+  - `admin/js/super-plans.js`
+  - `backend/routes/super-admin.js` (endpoints de planes)
+  - `backend/migrations/add-plan-history.sql`
+
+#### **Sistema de Entitlements** (14-16-ene-2026)
+- **Rama:** master (en producción)
+- **Estado:** ✅ Desplegado y funcionando
 - **Descripción:** Sistema de planes de suscripción con validación de límites
-- **Planes:** FREE, FOUNDERS (€25/mes)
+- **Planes:** FREE, FOUNDERS (€25/mes), PROFESSIONAL (€39/mes), PREMIUM (€79/mes)
 - **Archivos clave:**
   - `backend/middleware/entitlements.js`
   - `backend/migrations/add-entitlements.sql`
-- **Endpoints protegidos:** AI Reports, Services
-- **Pendiente:** Merge a master cuando usuario lo apruebe
+- **Endpoints protegidos:** AI Reports, Services, Users
 
 #### **Sistema AI Reports** (09-ene-2026)
 - **Rama:** master (en producción)
@@ -88,15 +101,15 @@ Este documento es tu **punto de entrada** cada vez que inicies una nueva sesión
 
 ## 🚀 Qué Estamos Trabajando AHORA
 
-### En Staging (sin desplegar):
-1. **Sistema de Entitlements** - Listo para merge a master
-2. Documentación del workflow de desarrollo
+### En Producción (master):
+1. ✅ **Sistema de Entitlements** - Desplegado y funcionando
+2. ✅ **Dashboard SuperAdmin de Planes** - Desplegado y funcionando
 
 ### Próximos Pasos:
-1. ⏳ Merge de entitlements a producción (cuando usuario apruebe)
-2. ⏳ Dashboard SuperAdmin para gestionar planes
-3. ⏳ Integración con Stripe para pagos
-4. ⏳ Página de pricing en frontend
+1. ⏳ Integración con Stripe para pagos
+2. ⏳ Página de pricing en frontend
+3. ⏳ Sistema de notificaciones para cambios de plan
+4. ⏳ Dashboard de analytics para negocios
 
 ---
 
@@ -108,7 +121,7 @@ Este documento es tu **punto de entrada** cada vez que inicies una nueva sesión
 
 ### Base de Datos:
 - **Tipo:** MySQL en Railway
-- **Tablas principales:** businesses, admin_users, services, bookings, ai_reports, usage_tracking
+- **Tablas principales:** businesses, admin_users, services, bookings, ai_reports, usage_tracking, plan_changes
 - **Conexión:** Compartida entre local y producción
 - **⚠️ Cuidado:** En desarrollo local, NO modificar datos reales
 
@@ -192,7 +205,7 @@ Cada vez que inicies sesión, verifica:
 
 ```
 ☐ Leí QUICK_START.md
-☐ Leí HISTORICO_SEMANA_XX_2026.md (semana actual)
+☐ Leí HISTORICO_SEMANA_03_2026.md (semana actual)
 ☐ Confirmé rama actual con: git branch
 ☐ Estoy en rama staging (si voy a desarrollar)
 ☐ Entiendo qué estamos trabajando ahora
