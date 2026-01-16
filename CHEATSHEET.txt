@@ -1,0 +1,74 @@
+═══════════════════════════════════════════════════════════
+  CHEATSHEET - INICIAR SESIÓN CON CLAUDE
+═══════════════════════════════════════════════════════════
+
+📋 COPIAR Y PEGAR AL INICIO DE CADA SESIÓN:
+
+    Hola Claude, lee README_CLAUDE.md y HISTORICO_SEMANA_02_2026.md
+
+───────────────────────────────────────────────────────────
+
+⚡ COMANDOS RÁPIDOS:
+
+Inicio sesión completa:
+    Hola Claude, lee README_CLAUDE.md y HISTORICO_SEMANA_02_2026.md
+
+Solo recordatorio workflow:
+    Claude, lee QUICK_START.md
+
+Ver diferencias staging vs master:
+    Claude, muéstrame git diff master..staging
+
+Ver estado actual:
+    Claude, ejecuta git status
+
+───────────────────────────────────────────────────────────
+
+🗓️ ACTUALIZAR CADA SEMANA (Lunes):
+
+    Claude, crea HISTORICO_SEMANA_03_2026.md
+    Claude, actualiza README_CLAUDE.md con la semana 03
+
+───────────────────────────────────────────────────────────
+
+📂 ARCHIVOS IMPORTANTES:
+
+✅ SIEMPRE leer al inicio:
+   - README_CLAUDE.md
+   - HISTORICO_SEMANA_02_2026.md
+
+📚 Leer cuando necesites:
+   - QUICK_START.md (referencia rápida)
+   - WORKFLOW_DESARROLLO.md (workflow detallado)
+   - INSTRUCCIONES_INICIAR_SESION.md (instrucciones completas)
+
+───────────────────────────────────────────────────────────
+
+🎯 WORKFLOW BÁSICO:
+
+1. Iniciar sesión: "Hola Claude, lee README_CLAUDE.md y HISTORICO_SEMANA_02_2026.md"
+2. Pedir feature: "Claude, implementa [X]"
+3. Claude trabaja en staging
+4. Claude te muestra resultados
+5. Aprobar producción: "Sí, sube a producción"
+6. Claude hace merge a master
+7. Railway despliega automáticamente
+
+───────────────────────────────────────────────────────────
+
+⚠️ RECORDATORIOS:
+
+✅ Claude trabaja en staging
+✅ Prueba local antes de producción
+✅ Master = producción (Railway auto-deploy)
+✅ Histórico se actualiza cada semana
+
+───────────────────────────────────────────────────────────
+
+🔗 URLS ÚTILES:
+
+Producción: https://api.stickywork.com
+Railway: https://railway.app
+GitHub: https://github.com/vrodriguezbernal95/stickywork.github.io
+
+═══════════════════════════════════════════════════════════
