@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../../config/database');
 const { requireSuperAdmin } = require('../middleware/super-admin');
 const { superAdminLoginLimiter } = require('../middleware/rate-limit');
+const { getPlanInfo } = require('../middleware/entitlements');
 
 // Login de super-admin
 router.post('/login', superAdminLoginLimiter, async (req, res) => {
@@ -167,13 +168,19 @@ router.get('/stats', requireSuperAdmin, async (req, res) => {
 // Listar todos los negocios
 router.get('/businesses', requireSuperAdmin, async (req, res) => {
     try {
-        const { status, type, search, limit = 50, offset = 0 } = req.query;
+        const { status, type, search, plan, limit = 50, offset = 0 } = req.query;
 
         let query = `
             SELECT
                 b.*,
                 (SELECT COUNT(*) FROM bookings WHERE business_id = b.id) as total_bookings,
-                (SELECT COUNT(*) FROM admin_users WHERE business_id = b.id) as admin_count
+                (SELECT COUNT(*) FROM admin_users WHERE business_id = b.id) as admin_count,
+                (SELECT COUNT(*) FROM services WHERE business_id = b.id) as services_count,
+                (SELECT COUNT(*) FROM bookings
+                 WHERE business_id = b.id
+                 AND MONTH(booking_date) = MONTH(NOW())
+                 AND YEAR(booking_date) = YEAR(NOW())
+                 AND status != 'cancelled') as bookings_this_month
             FROM businesses b
             WHERE 1=1
         `;
@@ -190,6 +197,12 @@ router.get('/businesses', requireSuperAdmin, async (req, res) => {
         if (type) {
             query += ` AND b.type = ?`;
             params.push(type);
+        }
+
+        // Filtro por plan
+        if (plan) {
+            query += ` AND b.plan = ?`;
+            params.push(plan);
         }
 
         // Búsqueda por nombre
@@ -221,6 +234,11 @@ router.get('/businesses', requireSuperAdmin, async (req, res) => {
         if (type) {
             countQuery += ` AND b.type = ?`;
             countParams.push(type);
+        }
+
+        if (plan) {
+            countQuery += ` AND b.plan = ?`;
+            countParams.push(plan);
         }
 
         if (search) {
@@ -620,6 +638,246 @@ router.delete('/messages/:id', requireSuperAdmin, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al eliminar el mensaje'
+        });
+    }
+});
+
+// ==================== PLAN MANAGEMENT ====================
+
+// Obtener información del plan y uso actual de un negocio
+router.get('/businesses/:id/plan', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const planInfo = await getPlanInfo(id);
+
+        res.json({
+            success: true,
+            data: planInfo
+        });
+
+    } catch (error) {
+        console.error('Error al obtener información del plan:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener información del plan'
+        });
+    }
+});
+
+// Cambiar plan de un negocio
+router.patch('/businesses/:id/change-plan', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { plan, reason } = req.body;
+
+        // Validar plan
+        const validPlans = ['free', 'founders', 'professional', 'premium'];
+        if (!plan || !validPlans.includes(plan)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Plan inválido. Debe ser: free, founders, professional o premium'
+            });
+        }
+
+        // Obtener plan actual
+        const businesses = await db.query(
+            'SELECT plan, plan_limits FROM businesses WHERE id = ?',
+            [id]
+        );
+
+        if (!businesses || businesses.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Negocio no encontrado'
+            });
+        }
+
+        const business = businesses[0];
+        const oldPlan = business.plan;
+        const oldLimits = business.plan_limits;
+
+        // Definir límites según el plan
+        const planLimits = {
+            free: {
+                maxBookingsPerMonth: null,
+                maxServices: null,
+                maxUsers: 1,
+                features: {
+                    aiReports: false,
+                    aiReportsPerMonth: 0,
+                    whatsapp: true,
+                    feedback: true,
+                    zones: true,
+                    api: false,
+                    whiteLabel: false,
+                    landingPage: false
+                }
+            },
+            founders: {
+                maxBookingsPerMonth: null,
+                maxServices: null,
+                maxUsers: 5,
+                features: {
+                    aiReports: true,
+                    aiReportsPerMonth: 1,
+                    whatsapp: true,
+                    feedback: true,
+                    zones: true,
+                    api: false,
+                    whiteLabel: false,
+                    landingPage: false
+                }
+            },
+            professional: {
+                maxBookingsPerMonth: null,
+                maxServices: null,
+                maxUsers: 10,
+                features: {
+                    aiReports: true,
+                    aiReportsPerMonth: 5,
+                    whatsapp: true,
+                    feedback: true,
+                    zones: true,
+                    api: true,
+                    whiteLabel: false,
+                    landingPage: false
+                }
+            },
+            premium: {
+                maxBookingsPerMonth: null,
+                maxServices: null,
+                maxUsers: null, // ilimitado
+                features: {
+                    aiReports: true,
+                    aiReportsPerMonth: null, // ilimitado
+                    whatsapp: true,
+                    feedback: true,
+                    zones: true,
+                    api: true,
+                    whiteLabel: true,
+                    landingPage: true
+                }
+            }
+        };
+
+        const newLimits = planLimits[plan];
+
+        // Actualizar plan en la base de datos
+        await db.query(
+            'UPDATE businesses SET plan = ?, plan_limits = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [plan, JSON.stringify(newLimits), id]
+        );
+
+        // Registrar cambio en histórico
+        try {
+            await db.query(
+                `INSERT INTO plan_changes (business_id, old_plan, new_plan, old_limits, new_limits, changed_by, change_reason)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    id,
+                    oldPlan,
+                    plan,
+                    oldLimits ? JSON.stringify(oldLimits) : null,
+                    JSON.stringify(newLimits),
+                    req.superAdmin?.email || 'super-admin',
+                    reason || null
+                ]
+            );
+        } catch (historyError) {
+            console.log('Warning: Could not save plan change history:', historyError.message);
+            // No fallar si no se puede guardar el histórico
+        }
+
+        // Obtener negocio actualizado
+        const updatedBusiness = await db.query('SELECT * FROM businesses WHERE id = ?', [id]);
+
+        res.json({
+            success: true,
+            message: `Plan actualizado de ${oldPlan.toUpperCase()} a ${plan.toUpperCase()}`,
+            data: updatedBusiness[0]
+        });
+
+    } catch (error) {
+        console.error('Error al cambiar plan:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al cambiar plan'
+        });
+    }
+});
+
+// Obtener histórico de cambios de plan de un negocio
+router.get('/businesses/:id/plan-history', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const history = await db.query(
+            `SELECT * FROM plan_changes
+             WHERE business_id = ?
+             ORDER BY changed_at DESC`,
+            [id]
+        );
+
+        res.json({
+            success: true,
+            data: history || []
+        });
+
+    } catch (error) {
+        console.error('Error al obtener histórico de cambios:', error);
+
+        // Si la tabla no existe, devolver array vacío
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            return res.json({
+                success: true,
+                data: [],
+                message: 'Tabla de histórico no creada aún'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener histórico de cambios'
+        });
+    }
+});
+
+// Obtener estadísticas de planes
+router.get('/plans/stats', requireSuperAdmin, async (req, res) => {
+    try {
+        const planStats = await db.query(
+            `SELECT
+                plan,
+                COUNT(*) as count,
+                SUM(CASE
+                    WHEN plan = 'free' THEN 0
+                    WHEN plan = 'founders' THEN 25
+                    WHEN plan = 'professional' THEN 39
+                    WHEN plan = 'premium' THEN 79
+                    ELSE 0
+                END) as monthly_revenue
+             FROM businesses
+             GROUP BY plan
+             ORDER BY count DESC`
+        );
+
+        // Total de ingresos mensuales estimados
+        const totalRevenue = planStats.reduce((sum, stat) => sum + (stat.monthly_revenue || 0), 0);
+
+        res.json({
+            success: true,
+            data: {
+                byPlan: planStats || [],
+                totalMonthlyRevenue: totalRevenue
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al obtener estadísticas de planes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener estadísticas de planes'
         });
     }
 });
