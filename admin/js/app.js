@@ -113,6 +113,14 @@ const app = {
                 }
                 break;
 
+            case 'team':
+                if (window.team) {
+                    await team.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             default:
                 this.showUnderConstruction();
         }

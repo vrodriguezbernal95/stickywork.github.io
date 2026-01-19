@@ -27,6 +27,9 @@ const auth = {
             // Show/hide AI Reports menu based on business settings
             this.updateAiReportsMenu();
 
+            // Show/hide Team menu based on user role
+            this.updateTeamMenu();
+
             return true;
         } catch (error) {
             console.error('Auth error:', error);
@@ -87,6 +90,20 @@ const auth = {
                 aiReportsLink.style.display = 'flex';
             } else {
                 aiReportsLink.style.display = 'none';
+            }
+        }
+    },
+
+    // Show/hide Team menu based on user role (only owners can manage team)
+    updateTeamMenu() {
+        const teamLink = document.getElementById('teamLink');
+
+        if (teamLink) {
+            const user = this.getUser();
+            if (user && (user.role === 'owner' || user.role === 'admin')) {
+                teamLink.style.display = 'flex';
+            } else {
+                teamLink.style.display = 'none';
             }
         }
     },

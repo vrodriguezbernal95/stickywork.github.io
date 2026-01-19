@@ -358,6 +358,99 @@ stickywork/
 
 ---
 
+### Sesión 3: 19-ene-2026 - Sistema Multi-Usuario Completo
+
+#### ✅ Completado (Tarea 3)
+
+**1. Backend - Sistema completo de gestión de equipos**
+- ✅ Creado `backend/routes/team.js` con 5 endpoints:
+  - GET /api/team/:businessId - Listar usuarios del equipo
+  - POST /api/team - Crear usuario (con validateUsersLimit middleware)
+  - PATCH /api/team/:userId - Actualizar usuario (rol, estado)
+  - DELETE /api/team/:userId - Eliminar usuario permanentemente
+  - POST /api/team/:userId/reset-password - Resetear contraseña
+- ✅ Todas las validaciones de seguridad implementadas:
+  - Solo owner puede gestionar equipo
+  - No se pueden crear más owners (solo 1 por negocio)
+  - No se puede eliminar/editar al owner
+  - No eliminarse a sí mismo
+  - Solo roles válidos (admin, staff)
+- ✅ Integrado en `backend/routes.js`
+
+**2. Backend - Emails de notificación**
+- ✅ 3 nuevas templates en `backend/email-service.js`:
+  - teamMemberWelcome - Email con credenciales de acceso
+  - teamMemberRoleChanged - Notificación de cambio de rol
+  - teamMemberDeactivated - Notificación de desactivación
+- ✅ Funciones de envío exportadas y funcionales
+- ✅ Integradas en endpoints de team.js
+
+**3. Frontend - Sección completa de gestión de equipo**
+- ✅ Módulo `admin/js/team.js` con todas las funciones:
+  - load() y loadTeamData() - Carga de datos
+  - render() y renderUserTable() - Renderizado UI
+  - Modales: crear, editar, confirmar eliminar
+  - Acciones: crear, actualizar, eliminar, activar/desactivar, reset password
+- ✅ Integrado en sidebar (solo visible para owner/admin)
+- ✅ Routing en `admin/js/app.js`
+- ✅ Visibilidad controlada en `admin/js/auth.js` (updateTeamMenu)
+
+**4. Frontend - Estilos CSS completos**
+- ✅ Agregados en `admin/css/admin.css`:
+  - .team-container, .team-usage-badge
+  - .role-badge (owner, admin, staff) con gradientes
+  - .status-badge (activo, inactivo)
+  - .actions-dropdown con botones de acción
+  - .warning-banner para límite alcanzado
+  - .form-group, .form-label, .form-input para modales
+  - Responsive design para móviles
+
+**5. Características implementadas**
+- ✅ Validación de límite de usuarios según plan (middleware existente aplicado)
+- ✅ Indicador visual de uso (ej: "3/5 usuarios")
+- ✅ Advertencia cuando se alcanza límite de plan
+- ✅ Roles visuales diferenciados (owner dorado, admin azul, staff morado)
+- ✅ Estados activo/inactivo con control
+- ✅ Sistema de emails automáticos para todas las acciones
+- ✅ Interfaz intuitiva con confirmaciones para acciones destructivas
+
+#### 📝 Decisiones Técnicas
+**Permisos por rol (definidos por usuario):**
+- Owner: Gestiona equipo y planes (acceso completo a Team)
+- Admin: Gestiona reservas y servicios (puede VER equipo pero no modificar)
+- Staff: Solo ve reservas, puede confirmar/cancelar (sin acceso a Team)
+
+**Flujo de creación de usuarios:**
+- Owner crea cuenta completa desde panel (sin sistema de invitaciones por token)
+- Sistema envía email automático con credenciales
+- Usuario puede cambiar contraseña después
+
+**Reglas de Owner:**
+- Solo 1 Owner por negocio (el que registró)
+- No se pueden crear más Owners
+- Owner no puede ser eliminado ni editado
+
+**Acciones del Owner:**
+- ✅ Desactivar/reactivar usuarios temporalmente
+- ✅ Eliminar usuarios permanentemente
+- ✅ Cambiar rol (solo admin ↔ staff)
+- ✅ Resetear contraseña de usuarios
+
+#### Archivos modificados/creados:
+**Backend:**
+- `backend/routes/team.js` - NUEVO (427 líneas)
+- `backend/routes.js` - Integración de teamRoutes
+- `backend/email-service.js` - 3 templates nuevas + funciones
+
+**Frontend:**
+- `admin/js/team.js` - NUEVO (460 líneas)
+- `admin/js/auth.js` - Función updateTeamMenu()
+- `admin/js/app.js` - Case 'team' en routing
+- `admin-dashboard.html` - Link sidebar + script
+- `admin/css/admin.css` - 180 líneas de estilos
+
+---
+
 ## 📚 Referencias
 
 - **Anterior:** [HISTORICO_SEMANA_03_2026.md](./HISTORICO_SEMANA_03_2026.md)

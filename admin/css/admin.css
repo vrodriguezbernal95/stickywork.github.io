@@ -2119,3 +2119,183 @@ body::before {
         font-size: 1.5rem;
     }
 }
+
+/* ===============================================
+   TEAM MANAGEMENT STYLES
+   =============================================== */
+
+.team-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Team usage badge */
+.team-usage-badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.team-usage-badge.limit-reached {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Role badges */
+.role-badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.role-owner {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.role-admin {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.role-staff {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.status-inactive {
+    background: rgba(156, 163, 175, 0.1);
+    color: #9ca3af;
+}
+
+/* Actions dropdown */
+.actions-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.btn-icon:hover {
+    background: var(--hover-primary);
+    border-color: var(--primary-color);
+    transform: translateX(3px);
+}
+
+.btn-icon.btn-danger {
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.btn-icon.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+}
+
+/* Warning banner */
+.warning-banner {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 4px solid #ef4444;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: var(--text-primary);
+}
+
+.warning-banner a {
+    color: #ef4444;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.warning-banner a:hover {
+    color: #dc2626;
+}
+
+/* Form styles for team modals */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(77, 83, 255, 0.1);
+}
+
+.form-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive for team management */
+@media (max-width: 768px) {
+    .team-container {
+        padding: 0 1rem;
+    }
+
+    .actions-dropdown {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .btn-icon {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .role-badge, .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.65rem;
+    }
+}

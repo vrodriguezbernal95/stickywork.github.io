@@ -6,6 +6,7 @@ const superAdminRoutes = require('./routes/super-admin');
 const supportRoutes = require('./routes/support');
 const feedbackRoutes = require('./routes/feedback');
 const aiReportsRoutes = require('./routes/ai-reports');
+const teamRoutes = require('./routes/team');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
 const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
@@ -155,6 +156,9 @@ router.use(feedbackRoutes);
 
 // ==================== AI REPORTS ====================
 router.use(aiReportsRoutes);
+
+// ==================== TEAM MANAGEMENT ====================
+router.use(teamRoutes);
 
 // ==================== DEBUG ENDPOINT ====================
 router.get('/api/debug/version', (req, res) => {

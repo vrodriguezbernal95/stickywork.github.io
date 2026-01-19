@@ -402,6 +402,230 @@ const emailTemplates = {
 </body>
 </html>
         `
+    }),
+
+    // Team member welcome email (with credentials)
+    teamMemberWelcome: (user, business, temporaryPassword) => ({
+        subject: `🎉 Bienvenido al equipo de ${business.name} - StickyWork`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .credentials-box { background: #f8f9fa; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .credentials-box strong { color: #10b981; }
+        .credential-item { margin: 10px 0; padding: 10px; background: white; border-radius: 6px; font-family: monospace; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #10b981, #059669); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; text-align: center; }
+        .button:hover { background: linear-gradient(135deg, #059669, #10b981); }
+        .role-badge { display: inline-block; padding: 5px 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 8px; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 ¡Bienvenido al Equipo!</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name}</strong>,</p>
+
+            <p>Has sido agregado al equipo de <strong>${business.name}</strong> en StickyWork con el rol de <span class="role-badge">${user.role === 'admin' ? 'ADMINISTRADOR' : 'PERSONAL'}</span></p>
+
+            <div class="credentials-box">
+                <p><strong>🔐 Tus credenciales de acceso:</strong></p>
+                <div class="credential-item">
+                    <strong>Email:</strong> ${user.email}
+                </div>
+                <div class="credential-item">
+                    <strong>Contraseña:</strong> ${temporaryPassword}
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Importante:</strong> Por seguridad, te recomendamos cambiar tu contraseña después de tu primer inicio de sesión.
+            </div>
+
+            <p><strong>Accede al panel de administración:</strong></p>
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin-login.html" class="button">
+                Ir al Panel Admin
+            </a>
+
+            <p><strong>¿Qué puedes hacer según tu rol?</strong></p>
+            ${user.role === 'admin' ? `
+            <ul>
+                <li>✅ Gestionar todas las reservas del negocio</li>
+                <li>✅ Crear, editar y eliminar servicios</li>
+                <li>✅ Ver estadísticas y reportes</li>
+                <li>✅ Configurar ajustes del widget</li>
+                <li>✅ Acceder a encuestas de feedback</li>
+            </ul>
+            ` : `
+            <ul>
+                <li>✅ Ver todas las reservas</li>
+                <li>✅ Confirmar y cancelar reservas</li>
+                <li>✅ Acceder al calendario</li>
+            </ul>
+            `}
+
+            <p style="margin-top: 30px;">Si tienes alguna pregunta, no dudes en contactar con el propietario del negocio.</p>
+
+            <p>¡Bienvenido al equipo! 🎉</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>${business.name}</strong></p>
+            <p style="margin-top: 10px;">
+                Este es un email automático, por favor no respondas a este mensaje.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
+    // Team member role changed notification
+    teamMemberRoleChanged: (user, business, newRole, changedBy) => ({
+        subject: `🔄 Tu rol ha sido actualizado en ${business.name}`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .change-box { background: #f8f9fa; border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .role-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .role-admin { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .role-staff { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Cambio de Rol</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name}</strong>,</p>
+
+            <p>Tu rol en <strong>${business.name}</strong> ha sido actualizado por <strong>${changedBy}</strong>.</p>
+
+            <div class="change-box">
+                <p><strong>Tu nuevo rol es:</strong></p>
+                <p style="font-size: 20px; margin: 15px 0;">
+                    <span class="role-badge ${newRole === 'admin' ? 'role-admin' : 'role-staff'}">
+                        ${newRole === 'admin' ? '👔 ADMINISTRADOR' : '👤 PERSONAL'}
+                    </span>
+                </p>
+            </div>
+
+            <p><strong>Tus nuevos permisos incluyen:</strong></p>
+            ${newRole === 'admin' ? `
+            <ul>
+                <li>✅ Gestionar todas las reservas</li>
+                <li>✅ Crear, editar y eliminar servicios</li>
+                <li>✅ Ver estadísticas y reportes</li>
+                <li>✅ Configurar ajustes del widget</li>
+                <li>✅ Acceder a encuestas de feedback</li>
+            </ul>
+            ` : `
+            <ul>
+                <li>✅ Ver todas las reservas</li>
+                <li>✅ Confirmar y cancelar reservas</li>
+                <li>✅ Acceder al calendario</li>
+            </ul>
+            `}
+
+            <p style="margin-top: 30px;">Estos cambios son efectivos inmediatamente. La próxima vez que inicies sesión, verás tus nuevos permisos.</p>
+
+            <p>Si tienes alguna pregunta sobre estos cambios, contacta con el propietario del negocio.</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>${business.name}</strong></p>
+            <p style="margin-top: 10px;">
+                Este es un email automático, por favor no respondas a este mensaje.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
+    // Team member deactivated notification
+    teamMemberDeactivated: (user, business, reason) => ({
+        subject: `⏸️ Tu cuenta en ${business.name} ha sido desactivada`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .notice-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 20px 0; border-radius: 8px; color: #92400e; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏸️ Cuenta Desactivada</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name}</strong>,</p>
+
+            <p>Te informamos que tu cuenta en <strong>${business.name}</strong> ha sido desactivada temporalmente.</p>
+
+            <div class="notice-box">
+                <p><strong>⚠️ Esto significa que:</strong></p>
+                <ul>
+                    <li>No podrás iniciar sesión en el panel de administración</li>
+                    <li>Tu acceso a las funciones del negocio está suspendido</li>
+                    <li>Esta es una medida temporal y reversible</li>
+                </ul>
+                ${reason ? `
+                <p style="margin-top: 15px;"><strong>Motivo:</strong> ${reason}</p>
+                ` : ''}
+            </div>
+
+            <p>Si crees que esto es un error o necesitas más información, por favor contacta directamente con el propietario del negocio.</p>
+
+            <p style="margin-top: 30px;">Tu cuenta puede ser reactivada en cualquier momento por el administrador.</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>${business.name}</strong></p>
+            <p style="margin-top: 10px;">
+                Este es un email automático, por favor no respondas a este mensaje.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
     })
 };
 
@@ -454,6 +678,24 @@ async function sendPasswordResetEmail(user, resetToken, resetUrl) {
     return await sendEmail(user.email, template);
 }
 
+// Send team member welcome email
+async function sendTeamMemberWelcome(user, business, temporaryPassword) {
+    const template = emailTemplates.teamMemberWelcome(user, business, temporaryPassword);
+    return await sendEmail(user.email, template);
+}
+
+// Send role changed notification email
+async function sendRoleChangedEmail(user, business, newRole, changedBy) {
+    const template = emailTemplates.teamMemberRoleChanged(user, business, newRole, changedBy);
+    return await sendEmail(user.email, template);
+}
+
+// Send deactivation notification email
+async function sendDeactivationEmail(user, business, reason) {
+    const template = emailTemplates.teamMemberDeactivated(user, business, reason);
+    return await sendEmail(user.email, template);
+}
+
 // Get transporter (for jobs that need direct access)
 function getTransporter() {
     return transporter;
@@ -465,6 +707,9 @@ module.exports = {
     sendBookingReminder,
     sendAdminNotification,
     sendPasswordResetEmail,
+    sendTeamMemberWelcome,
+    sendRoleChangedEmail,
+    sendDeactivationEmail,
     sendEmail,
     emailTemplates,
     getTransporter
