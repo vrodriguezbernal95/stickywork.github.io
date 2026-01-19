@@ -612,9 +612,9 @@ section:nth-child(even)::before {
 .pricing-grid {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    margin-top: 3rem;
-    max-width: 800px;
+    gap: 1.25rem;
+    margin-top: 2rem;
+    max-width: 900px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -622,8 +622,8 @@ section:nth-child(even)::before {
 .pricing-card {
     background-color: var(--bg-primary);
     border: 2px solid var(--border-color);
-    border-radius: 20px;
-    padding: 3rem 2rem;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
     text-align: center;
     transition: var(--transition);
     position: relative;
@@ -665,12 +665,12 @@ section:nth-child(even)::before {
 .pricing-badge {
     background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
     font-weight: bold;
     display: inline-block;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     box-shadow: 0 4px 15px var(--pulse-primary);
     animation: badgeGlow 2s ease-in-out infinite;
 }
@@ -681,17 +681,19 @@ section:nth-child(even)::before {
 }
 
 .pricing-card h3 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
+    font-size: 1.6rem;
+    margin: 0 0 0.5rem 0;
     color: var(--text-primary);
 }
 
 .pricing-price {
-    font-size: 3rem;
+    font-size: 2.25rem;
     font-weight: bold;
     background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin: 0;
     background-clip: text;
     margin-bottom: 0.5rem;
     animation: shimmer 3s ease-in-out infinite;
@@ -699,17 +701,19 @@ section:nth-child(even)::before {
 
 .pricing-period {
     color: var(--text-secondary);
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
 }
 
 .pricing-features {
     list-style: none;
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
     text-align: left;
+    font-size: 0.9rem;
 }
 
 .pricing-features li {
-    padding: 0.75rem 0;
+    padding: 0.4rem 0;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-secondary);
     transition: var(--transition);
@@ -1011,12 +1015,20 @@ section:nth-child(even)::before {
 
     /* Pricing cards */
     .pricing-grid {
-        gap: 1.5rem;
+        gap: 1rem;
         padding: 0 1rem;
     }
 
     .pricing-card {
-        padding: 2rem 1.5rem;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .pricing-price {
+        font-size: 2rem;
+    }
+
+    .pricing-card h3 {
+        font-size: 1.4rem;
     }
 
     /* Contacto/Demo containers */
