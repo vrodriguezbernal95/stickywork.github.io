@@ -610,10 +610,13 @@ section:nth-child(even)::before {
 
 /* Pricing con efectos de brillo */
 .pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
     margin-top: 3rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .pricing-card {
@@ -655,8 +658,8 @@ section:nth-child(even)::before {
 .pricing-card.featured {
     border: 3px solid var(--primary-color);
     background: linear-gradient(135deg, var(--hover-primary), var(--hover-secondary));
-    transform: scale(1.05);
-    box-shadow: var(--shadow-lg), 0 0 30px var(--hover-glow);
+    box-shadow: var(--shadow-lg), 0 0 40px var(--hover-glow);
+    position: relative;
 }
 
 .pricing-badge {
@@ -1008,16 +1011,12 @@ section:nth-child(even)::before {
 
     /* Pricing cards */
     .pricing-grid {
-        grid-template-columns: 1fr;
         gap: 1.5rem;
+        padding: 0 1rem;
     }
 
     .pricing-card {
         padding: 2rem 1.5rem;
-    }
-
-    .pricing-card.featured {
-        transform: scale(1);
     }
 
     /* Contacto/Demo containers */
