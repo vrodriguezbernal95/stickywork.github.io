@@ -47,7 +47,7 @@ const team = {
     // Render team management UI
     render() {
         const contentArea = document.getElementById('contentArea');
-        const currentUser = auth.getUser();
+        const currentUser = auth.userData;
         const isOwner = currentUser.role === 'owner';
 
         // Calculate usage
@@ -61,7 +61,7 @@ const team = {
                 <!-- Header -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div>
-                        <h2 style="margin: 0 0 0.5rem 0;">Equipo de ${auth.getUser().businessName || 'tu negocio'}</h2>
+                        <h2 style="margin: 0 0 0.5rem 0;">Equipo de ${auth.userData.businessName || 'tu negocio'}</h2>
                         <span class="team-usage-badge ${limitReached ? 'limit-reached' : ''}">${usageText}</span>
                     </div>
                     ${isOwner ? `
@@ -95,7 +95,7 @@ const team = {
             `;
         }
 
-        const currentUser = auth.getUser();
+        const currentUser = auth.userData;
         const isOwner = currentUser.role === 'owner';
 
         const rows = this.users.map(user => {
@@ -252,7 +252,24 @@ const team = {
             await this.load(); // Reload team
         } catch (error) {
             console.error('Error creating user:', error);
-            modal.toast(error.response?.data?.message || 'Error al crear usuario', 'error');
+            const errorMsg = error.message || 'Error al crear usuario';
+
+            // Si es error de límite de plan, mostrar mensaje más claro con opción de mejorar
+            if (errorMsg.includes('límite') || errorMsg.includes('plan')) {
+                const wantsUpgrade = await modal.confirm({
+                    title: 'Límite de usuarios alcanzado',
+                    message: `${errorMsg}\n\nPara añadir más usuarios, necesitas mejorar tu plan.`,
+                    confirmText: '🚀 Mejorar Plan',
+                    cancelText: 'Cerrar',
+                    type: 'warning'
+                });
+
+                if (wantsUpgrade) {
+                    window.location.href = 'planes.html';
+                }
+            } else {
+                modal.toast({ message: errorMsg, type: 'error' });
+            }
         }
     },
 
@@ -418,3 +435,6 @@ const team = {
         }
     }
 };
+
+// Export
+window.team = team;

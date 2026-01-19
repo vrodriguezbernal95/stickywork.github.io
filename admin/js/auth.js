@@ -81,6 +81,11 @@ const auth = {
         return this.businessId;
     },
 
+    // Get current user data
+    getUser() {
+        return this.userData;
+    },
+
     // Show/hide AI Reports menu based on business settings
     updateAiReportsMenu() {
         const aiReportsLink = document.getElementById('aiReportsLink');
@@ -99,7 +104,7 @@ const auth = {
         const teamLink = document.getElementById('teamLink');
 
         if (teamLink) {
-            const user = this.getUser();
+            const user = this.userData;
             if (user && (user.role === 'owner' || user.role === 'admin')) {
                 teamLink.style.display = 'flex';
             } else {

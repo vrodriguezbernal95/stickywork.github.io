@@ -18,14 +18,19 @@ const modal = {
      *     type: 'danger'
      * });
      */
-    confirm(options = {}) {
-        const {
-            title = '¿Estás seguro?',
-            message = '',
-            confirmText = 'Confirmar',
-            cancelText = 'Cancelar',
-            type = 'primary' // 'primary', 'danger', 'warning', 'success'
-        } = options;
+    confirm(titleOrOptions = {}, messageParam = '') {
+        // Soportar ambos estilos: confirm('título', 'mensaje') y confirm({ title, message, ... })
+        let title, message, confirmText, cancelText, type;
+
+        if (typeof titleOrOptions === 'string') {
+            title = titleOrOptions;
+            message = messageParam;
+            confirmText = 'Confirmar';
+            cancelText = 'Cancelar';
+            type = 'primary';
+        } else {
+            ({ title = '¿Estás seguro?', message = '', confirmText = 'Confirmar', cancelText = 'Cancelar', type = 'primary' } = titleOrOptions);
+        }
 
         return new Promise((resolve) => {
             // Crear overlay
@@ -205,13 +210,18 @@ const modal = {
      *     duration: 3000
      * });
      */
-    toast(options = {}) {
-        const {
-            message = '',
-            type = 'success',
-            duration = 3000,
-            position = 'top-right'
-        } = options;
+    toast(messageOrOptions = {}, typeParam = 'success') {
+        // Soportar ambos estilos: toast('mensaje', 'tipo') y toast({ message, type })
+        let message, type, duration, position;
+
+        if (typeof messageOrOptions === 'string') {
+            message = messageOrOptions;
+            type = typeParam;
+            duration = 3000;
+            position = 'top-right';
+        } else {
+            ({ message = '', type = 'success', duration = 3000, position = 'top-right' } = messageOrOptions);
+        }
 
         const colors = {
             success: { bg: '#22c55e', icon: '✓' },
