@@ -698,10 +698,11 @@ router.patch('/businesses/:id/change-plan', requireSuperAdmin, async (req, res) 
         const oldLimits = business.plan_limits;
 
         // Definir límites según el plan
+        // Actualizado 16-ene-2026: Nueva estructura de precios
         const planLimits = {
             free: {
-                maxBookingsPerMonth: null,
-                maxServices: null,
+                maxBookingsPerMonth: 30, // Límite de 30 reservas/mes para plan gratuito
+                maxServices: null, // ilimitado
                 maxUsers: 1,
                 features: {
                     aiReports: false,
@@ -715,48 +716,49 @@ router.patch('/businesses/:id/change-plan', requireSuperAdmin, async (req, res) 
                 }
             },
             founders: {
-                maxBookingsPerMonth: null,
-                maxServices: null,
-                maxUsers: 5,
+                maxBookingsPerMonth: null, // ilimitado
+                maxServices: null, // ilimitado
+                maxUsers: 3, // 3 usuarios para pequeños equipos
                 features: {
                     aiReports: true,
-                    aiReportsPerMonth: 1,
+                    aiReportsPerMonth: 1, // 1 reporte al mes
                     whatsapp: true,
                     feedback: true,
                     zones: true,
-                    api: false,
-                    whiteLabel: false,
-                    landingPage: false
+                    api: false, // API no implementada aún
+                    whiteLabel: false, // White Label no implementado aún
+                    landingPage: false // Landing page como add-on (+200€)
                 }
             },
             professional: {
-                maxBookingsPerMonth: null,
-                maxServices: null,
-                maxUsers: 10,
+                maxBookingsPerMonth: null, // ilimitado
+                maxServices: null, // ilimitado
+                maxUsers: 3, // 3 usuarios (igual que founders)
                 features: {
                     aiReports: true,
-                    aiReportsPerMonth: 5,
+                    aiReportsPerMonth: 1, // 1 reporte al mes (igual que founders)
                     whatsapp: true,
                     feedback: true,
                     zones: true,
-                    api: true,
-                    whiteLabel: false,
-                    landingPage: false
+                    api: false, // API no implementada aún
+                    whiteLabel: false, // White Label no implementado aún
+                    landingPage: false // Landing page como add-on (+200€)
                 }
             },
             premium: {
-                maxBookingsPerMonth: null,
-                maxServices: null,
-                maxUsers: null, // ilimitado
+                maxBookingsPerMonth: null, // ilimitado
+                maxServices: null, // ilimitado
+                maxUsers: 10, // 10 usuarios para equipos
                 features: {
                     aiReports: true,
-                    aiReportsPerMonth: null, // ilimitado
+                    aiReportsPerMonth: 8, // 2 reportes a la semana (8 al mes aprox)
                     whatsapp: true,
                     feedback: true,
                     zones: true,
-                    api: true,
-                    whiteLabel: true,
-                    landingPage: true
+                    api: false, // API no implementada aún (feature futura)
+                    whiteLabel: false, // White Label no implementado aún (feature futura)
+                    landingPage: true, // Landing page incluida gratis (valor 200€)
+                    consultancy: true // 1h consultoría al mes
                 }
             }
         };

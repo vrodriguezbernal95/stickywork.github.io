@@ -7,7 +7,7 @@ const supportRoutes = require('./routes/support');
 const feedbackRoutes = require('./routes/feedback');
 const aiReportsRoutes = require('./routes/ai-reports');
 const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
-const { validateServicesLimit, validateUsersLimit, getPlanInfo } = require('./middleware/entitlements');
+const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
 const { createBookingLimiter, contactLimiter } = require('./middleware/rate-limit');
@@ -523,9 +523,9 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             });
         }
 
-        // Obtener configuración del negocio para validar horarios y capacidad
+        // Obtener configuración del negocio para validar horarios, capacidad y límites de plan
         const businessSettingsQuery = await db.query(
-            'SELECT type_key, booking_settings FROM businesses WHERE id = ?',
+            'SELECT type_key, booking_settings, plan, plan_limits FROM businesses WHERE id = ?',
             [businessId]
         );
 
@@ -536,11 +536,43 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             });
         }
 
-        const bookingSettings = businessSettingsQuery[0].booking_settings
-            ? (typeof businessSettingsQuery[0].booking_settings === 'string'
-                ? JSON.parse(businessSettingsQuery[0].booking_settings)
-                : businessSettingsQuery[0].booking_settings)
+        const business = businessSettingsQuery[0];
+        const bookingSettings = business.booking_settings
+            ? (typeof business.booking_settings === 'string'
+                ? JSON.parse(business.booking_settings)
+                : business.booking_settings)
             : {};
+
+        // Validar límite de reservas mensuales según el plan
+        const planLimits = business.plan_limits
+            ? (typeof business.plan_limits === 'string'
+                ? JSON.parse(business.plan_limits)
+                : business.plan_limits)
+            : null;
+
+        if (planLimits && planLimits.maxBookingsPerMonth) {
+            // Contar reservas del mes actual
+            const bookingsCountQuery = await db.query(
+                `SELECT COUNT(*) as total FROM bookings
+                 WHERE business_id = ?
+                 AND MONTH(booking_date) = MONTH(CURRENT_DATE)
+                 AND YEAR(booking_date) = YEAR(CURRENT_DATE)
+                 AND status != 'cancelled'`,
+                [businessId]
+            );
+
+            const currentBookings = bookingsCountQuery[0].total;
+            const limit = planLimits.maxBookingsPerMonth;
+
+            if (currentBookings >= limit) {
+                return res.status(403).json({
+                    success: false,
+                    message: `Este negocio ha alcanzado el límite de ${limit} reservas al mes de su plan. Por favor, contacta con el establecimiento directamente.`,
+                    limitReached: true,
+                    plan: business.plan
+                });
+            }
+        }
 
         // Validar que la zona seleccionada esté activa (solo para restaurantes)
         if (zone && bookingSettings.restaurantZones) {
