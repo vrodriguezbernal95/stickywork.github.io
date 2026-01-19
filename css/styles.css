@@ -710,18 +710,20 @@ section:nth-child(even)::before {
     margin-bottom: 1.25rem;
     text-align: left;
     font-size: 0.9rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1.5rem; /* row-gap column-gap */
 }
 
 .pricing-features li {
-    padding: 0.4rem 0;
-    border-bottom: 1px solid var(--border-color);
+    padding: 0.3rem 0;
     color: var(--text-secondary);
     transition: var(--transition);
 }
 
 .pricing-features li:hover {
     color: var(--primary-color);
-    padding-left: 0.5rem;
+    transform: translateX(3px);
 }
 
 .pricing-features li:before {
@@ -1029,6 +1031,11 @@ section:nth-child(even)::before {
 
     .pricing-card h3 {
         font-size: 1.4rem;
+    }
+
+    .pricing-features {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
     }
 
     /* Contacto/Demo containers */
