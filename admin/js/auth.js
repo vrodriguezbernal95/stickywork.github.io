@@ -135,7 +135,8 @@ const auth = {
             'servicesLink',    // No puede editar servicios
             'widgetLink',      // No puede configurar widget
             'settingsLink',    // No puede acceder a configuración
-            'aiReportsLink'    // No puede ver reportes IA (info estratégica)
+            'aiReportsLink',   // No puede ver reportes IA (info estratégica)
+            'billingLink'      // No puede gestionar facturación
         ];
 
         restrictedElements.forEach(elementId => {

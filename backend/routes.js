@@ -7,6 +7,7 @@ const supportRoutes = require('./routes/support');
 const feedbackRoutes = require('./routes/feedback');
 const aiReportsRoutes = require('./routes/ai-reports');
 const teamRoutes = require('./routes/team');
+const stripeRoutes = require('./routes/stripe');
 const { requireAuth, requireBusinessAccess, requireRole } = require('./middleware/auth');
 const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
@@ -159,6 +160,9 @@ router.use(aiReportsRoutes);
 
 // ==================== TEAM MANAGEMENT ====================
 router.use(teamRoutes);
+
+// ==================== STRIPE / PAGOS ====================
+router.use(stripeRoutes);
 
 // ==================== DEBUG ENDPOINT ====================
 router.get('/api/debug/version', (req, res) => {

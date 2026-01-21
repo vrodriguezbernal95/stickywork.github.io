@@ -2299,3 +2299,358 @@ body::before {
         padding: 0.25rem 0.65rem;
     }
 }
+
+/* ===============================================
+   BILLING / SUBSCRIPTION STYLES
+   =============================================== */
+
+.billing-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.billing-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+}
+
+.billing-section h2 {
+    margin: 0 0 1rem 0;
+    color: #ffffff;
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+/* Current Plan Card */
+.current-plan-card {
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.current-plan-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.current-plan-card.founders::before {
+    background: linear-gradient(90deg, #f59e0b, #eab308);
+}
+
+.current-plan-card.professional::before {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.current-plan-card.premium::before {
+    background: linear-gradient(90deg, #8b5cf6, #a855f7);
+}
+
+.plan-badge {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.current-plan-card.founders .plan-badge {
+    background: linear-gradient(135deg, #f59e0b, #eab308);
+}
+
+.current-plan-card.professional .plan-badge {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.current-plan-card.premium .plan-badge {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+}
+
+.plan-price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.plan-status {
+    margin-bottom: 1rem;
+}
+
+.status-badge.trial {
+    background: rgba(234, 179, 8, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(234, 179, 8, 0.4);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-badge.warning {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-badge.canceled {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+    border: 1px solid rgba(156, 163, 175, 0.4);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.status-badge.free {
+    background: rgba(107, 112, 255, 0.2);
+    color: #a5a8ff;
+    border: 1px solid rgba(107, 112, 255, 0.4);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.trial-info, .renewal-info {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.cancel-warning {
+    color: #f87171;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-weight: 600;
+}
+
+/* Plans Grid */
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.plan-card {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow);
+}
+
+.plan-card.popular {
+    border-color: #f59e0b;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.plan-card.current {
+    border-color: var(--primary-color);
+    background: rgba(77, 83, 255, 0.05);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #f59e0b, #eab308);
+    color: white;
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.plan-card h3 {
+    margin: 0.5rem 0 1rem 0;
+    color: #ffffff;
+    font-size: 1.25rem;
+}
+
+.plan-price-large {
+    margin-bottom: 1.5rem;
+}
+
+.plan-price-large .price {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.plan-price-large .period {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+    text-align: left;
+}
+
+.plan-features li {
+    padding: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.plan-features li:last-child {
+    border-bottom: none;
+}
+
+.btn-upgrade {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-upgrade:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-current {
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: not-allowed;
+}
+
+/* Payment History Table */
+.payment-history-table {
+    overflow-x: auto;
+}
+
+.payment-history-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.payment-history-table th {
+    text-align: left;
+    padding: 1rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.payment-history-table td {
+    padding: 1rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.payment-history-table tr:hover {
+    background: var(--hover-primary);
+}
+
+.payment-status {
+    display: inline-block;
+    padding: 0.3rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.payment-status.success {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+.payment-status.pending {
+    background: rgba(234, 179, 8, 0.2);
+    color: #fbbf24;
+}
+
+.payment-status.failed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.payment-status.refunded {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.btn-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+/* Responsive billing */
+@media (max-width: 768px) {
+    .plans-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .plan-price-large .price {
+        font-size: 2rem;
+    }
+
+    .payment-history-table {
+        font-size: 0.85rem;
+    }
+
+    .payment-history-table th,
+    .payment-history-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}

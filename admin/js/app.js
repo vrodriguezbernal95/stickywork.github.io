@@ -121,6 +121,14 @@ const app = {
                 }
                 break;
 
+            case 'billing':
+                if (window.billing) {
+                    await billing.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             default:
                 this.showUnderConstruction();
         }
