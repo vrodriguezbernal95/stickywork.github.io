@@ -265,6 +265,11 @@ const bookings = {
                 <td style="font-weight: 600;">${utils.formatTime(booking.booking_time)}</td>
                 <td>
                     ${createStatusBadge(booking.status, 'booking')}
+                    ${booking.status === 'cancelled' && booking.cancelled_by_name ? `
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                            por ${booking.cancelled_by_name}
+                        </div>
+                    ` : ''}
                 </td>
                 <td>
                     <div class="booking-actions">

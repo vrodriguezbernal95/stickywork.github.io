@@ -7,7 +7,7 @@ const supportRoutes = require('./routes/support');
 const feedbackRoutes = require('./routes/feedback');
 const aiReportsRoutes = require('./routes/ai-reports');
 const teamRoutes = require('./routes/team');
-const { requireAuth, requireBusinessAccess } = require('./middleware/auth');
+const { requireAuth, requireBusinessAccess, requireRole } = require('./middleware/auth');
 const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
@@ -180,8 +180,8 @@ router.use(setupDemosRoutes);
 
 // ==================== SERVICIOS ====================
 
-// Crear un nuevo servicio (requiere autenticación)
-router.post('/api/services', requireAuth, requireBusinessAccess, validateServicesLimit, async (req, res) => {
+// Crear un nuevo servicio (requiere owner o admin)
+router.post('/api/services', requireAuth, requireRole('owner', 'admin'), requireBusinessAccess, validateServicesLimit, async (req, res) => {
     try {
         const {
             business_id,
@@ -229,8 +229,8 @@ router.post('/api/services', requireAuth, requireBusinessAccess, validateService
     }
 });
 
-// Actualizar un servicio (requiere autenticación)
-router.put('/api/services/:id', requireAuth, async (req, res) => {
+// Actualizar un servicio (requiere owner o admin)
+router.put('/api/services/:id', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const { id } = req.params;
         const {
@@ -285,8 +285,8 @@ router.put('/api/services/:id', requireAuth, async (req, res) => {
     }
 });
 
-// Eliminar un servicio (requiere autenticación)
-router.delete('/api/services/:id', requireAuth, async (req, res) => {
+// Eliminar un servicio (requiere owner o admin)
+router.delete('/api/services/:id', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -1027,16 +1027,23 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
             });
         }
 
-        // Si se está cancelando, guardar información de cancelación
+        // Si se está cancelando, guardar información de cancelación incluyendo quién canceló
         if (status === 'cancelled') {
+            // Obtener nombre del usuario que cancela
+            const cancelledByUserId = req.user.id;
+            const cancelledByName = req.user.fullName || req.user.email || 'Usuario del sistema';
+
             await db.query(
                 `UPDATE bookings
                  SET status = ?,
                      cancellation_date = NOW(),
                      cancellation_reason = ?,
+                     cancelled_by_user_id = ?,
+                     cancelled_by_name = ?,
+                     cancelled_at = NOW(),
                      viewed_by_admin = FALSE
                  WHERE id = ?`,
-                [status, cancellation_reason || null, id]
+                [status, cancellation_reason || null, cancelledByUserId, cancelledByName, id]
             );
         } else {
             // Para otros estados, solo actualizar el status
@@ -1160,8 +1167,8 @@ router.get('/api/business/:businessId', async (req, res) => {
     }
 });
 
-// Actualizar configuración de WhatsApp de un negocio (requiere autenticación)
-router.patch('/api/businesses/:id/whatsapp-settings', requireAuth, async (req, res) => {
+// Actualizar configuración de WhatsApp de un negocio (requiere owner o admin)
+router.patch('/api/businesses/:id/whatsapp-settings', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const businessId = req.params.id;
         const { whatsapp_number, whatsapp_enabled, whatsapp_template } = req.body;
@@ -1722,9 +1729,9 @@ router.get('/api/business/:id/plan', requireAuth, async (req, res) => {
 
 /**
  * PUT /api/business/:id
- * Actualizar información básica del negocio
+ * Actualizar información básica del negocio (requiere owner o admin)
  */
-router.put('/api/business/:id', requireAuth, async (req, res) => {
+router.put('/api/business/:id', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const { id } = req.params;
         const { name, email, phone, address, website, booking_settings } = req.body;
@@ -1830,9 +1837,9 @@ router.put('/api/user/profile', requireAuth, async (req, res) => {
 
 /**
  * PUT /api/business/:businessId/widget-settings
- * Actualizar configuración del widget
+ * Actualizar configuración del widget (requiere owner o admin)
  */
-router.put('/api/business/:businessId/widget-settings', requireAuth, async (req, res) => {
+router.put('/api/business/:businessId/widget-settings', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const { businessId } = req.params;
         const { widgetSettings } = req.body;
@@ -1875,8 +1882,9 @@ router.put('/api/business/:businessId/widget-settings', requireAuth, async (req,
 /**
  * PUT /api/business/:businessId/settings
  * Actualizar configuración del negocio (widget_settings, booking_settings)
+ * Requiere owner o admin
  */
-router.put('/api/business/:businessId/settings', requireAuth, async (req, res) => {
+router.put('/api/business/:businessId/settings', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const { businessId } = req.params;
         const { widgetSettings, bookingSettings } = req.body;
@@ -1975,9 +1983,9 @@ router.put('/api/business/:businessId/settings', requireAuth, async (req, res) =
 
 /**
  * PUT /api/business/:businessId/widget-customization
- * Actualizar personalización visual del widget
+ * Actualizar personalización visual del widget (requiere owner o admin)
  */
-router.put('/api/business/:businessId/widget-customization', requireAuth, async (req, res) => {
+router.put('/api/business/:businessId/widget-customization', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const { businessId } = req.params;
         const { customization } = req.body;

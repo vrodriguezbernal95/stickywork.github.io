@@ -30,6 +30,9 @@ const auth = {
             // Show/hide Team menu based on user role
             this.updateTeamMenu();
 
+            // Restrict menu for staff role
+            this.updateStaffRestrictions();
+
             return true;
         } catch (error) {
             console.error('Auth error:', error);
@@ -116,6 +119,46 @@ const auth = {
     // Check if AI Reports is enabled for this business
     hasAiReportsEnabled() {
         return this.businessData && this.businessData.ai_reports_enabled === true;
+    },
+
+    // Restrict menu items for staff role
+    // Staff can only: view dashboard, bookings, calendar, messages
+    // Staff cannot: edit services, access settings, widget, AI reports
+    updateStaffRestrictions() {
+        const user = this.userData;
+        if (!user) return;
+
+        const isStaff = user.role === 'staff';
+
+        // Elements to hide for staff
+        const restrictedElements = [
+            'servicesLink',    // No puede editar servicios
+            'widgetLink',      // No puede configurar widget
+            'settingsLink',    // No puede acceder a configuración
+            'aiReportsLink'    // No puede ver reportes IA (info estratégica)
+        ];
+
+        restrictedElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (isStaff) {
+                    element.style.display = 'none';
+                } else if (elementId !== 'aiReportsLink') {
+                    // aiReportsLink se maneja en updateAiReportsMenu
+                    element.style.display = 'flex';
+                }
+            }
+        });
+    },
+
+    // Check if current user is staff (for use in other modules)
+    isStaff() {
+        return this.userData && this.userData.role === 'staff';
+    },
+
+    // Check if current user can edit (owner or admin)
+    canEdit() {
+        return this.userData && (this.userData.role === 'owner' || this.userData.role === 'admin');
     }
 };
 
