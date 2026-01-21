@@ -209,15 +209,15 @@ WHERE business_id = ?
 
 ### 🟢 Prioridad ALTA (Bloqueantes para venta)
 
-**3. Sistema Multi-Usuario** (2-3 sesiones)
-- [ ] Modificar tabla `admin_users` para permitir múltiples usuarios por negocio
-- [ ] Sistema de roles: Owner, Admin, Staff
-- [ ] Endpoints de gestión de equipo (invitar, listar, eliminar)
-- [ ] UI en panel admin: Sección "Equipo"
-- [ ] Validación de límite de usuarios según plan
-- [ ] Sistema de invitaciones por email
+**3. Sistema Multi-Usuario** (2-3 sesiones) ✅ COMPLETADO Sesión 3
+- [x] Modificar tabla `admin_users` para permitir múltiples usuarios por negocio
+- [x] Sistema de roles: Owner, Admin, Staff
+- [x] Endpoints de gestión de equipo (invitar, listar, eliminar)
+- [x] UI en panel admin: Sección "Equipo"
+- [x] Validación de límite de usuarios según plan
+- [x] Sistema de invitaciones por email (simplificado: owner crea cuenta directamente)
 
-**Sin esto, no se puede vender plan PREMIUM** (10 usuarios)
+**✅ Ya se puede vender plan PREMIUM** (10 usuarios)
 
 ### 🟡 Prioridad MEDIA (Diferenciadores)
 
@@ -333,7 +333,7 @@ stickywork/
 - ✅ Rate limiting en endpoints públicos
 
 ### Pendientes
-- [ ] Validación de límite de usuarios (requiere sistema multi-usuario)
+- [x] Validación de límite de usuarios ✅ (completado con sistema multi-usuario)
 
 ---
 
@@ -451,6 +451,82 @@ stickywork/
 
 ---
 
+### Sesión 4: 20-ene-2026 - Corrección de Bugs en Panel Admin y Deploy
+
+#### ✅ Completado
+
+**1. Fix: Login expulsaba al usuario inmediatamente**
+- **Problema:** Al hacer login, el usuario entraba al dashboard pero era redirigido al login inmediatamente
+- **Causa:** Faltaba la columna `ai_reports_enabled` en la tabla `businesses` de la BD local
+- **Solución:** `ALTER TABLE businesses ADD COLUMN ai_reports_enabled BOOLEAN DEFAULT FALSE`
+
+**2. Fix: Sección "Equipo" mostraba "en construcción"**
+- **Problema:** Al hacer clic en "Equipo" aparecía mensaje de sección en construcción
+- **Causa:** Faltaba exportar el módulo `window.team = team;` al final de `admin/js/team.js`
+- **Solución:** Añadido export al final del archivo
+
+**3. Fix: Error `auth.getUser()` no existía**
+- **Problema:** Error silencioso que causaba redirect al login
+- **Causa:** Se llamaba a `auth.getUser()` pero el método no existía en el objeto auth
+- **Solución:**
+  - Cambiado `auth.getUser()` a `auth.userData` en `team.js` y `auth.js`
+  - Añadido método `getUser()` a `auth.js` para compatibilidad futura
+
+**4. Fix: `modal.toast` y `modal.confirm` no funcionaban**
+- **Problema:** Los métodos esperaban objeto de opciones pero se llamaban con parámetros posicionales
+- **Solución:** Actualizados ambos métodos en `admin/js/components/modal.js` para soportar ambos estilos:
+  ```javascript
+  // Ahora soporta ambos:
+  modal.toast('mensaje', 'success');
+  modal.toast({ message: 'mensaje', type: 'success' });
+  ```
+
+**5. Mejora UX: Modal de límite de plan con botón de upgrade**
+- **Antes:** Toast simple con mensaje de error
+- **Ahora:** Modal con título, mensaje explicativo y botón "🚀 Mejorar Plan" que redirige a `planes.html`
+
+**6. Deploy a producción - Problema con Railway**
+- **Problema:** Railway no desplegaba los cambios aunque se hacía push a master
+- **Diagnóstico:** La ruta `/api/team/9` devolvía 404 en producción
+- **Solución:** Desconectar y reconectar repo en Railway (Settings > Source > Disconnect)
+- **Nota importante:** Al reconectar, dejar "Root Directory" completamente vacío
+
+#### Archivos modificados:
+- `admin/js/auth.js` - Añadido método `getUser()`, corregida referencia a `userData`
+- `admin/js/team.js` - Añadido export `window.team`, mejorado manejo de errores de límite
+- `admin/js/components/modal.js` - Soporte dual para parámetros posicionales y objeto
+
+#### Commits:
+- `4b12417` - fix: Corregir errores en panel admin y mejorar UX de límite de plan
+- `bdecf9d` - chore: Trigger redeploy for team routes
+
+---
+
+## 🎯 Próximas Tareas (Siguiente Sesión)
+
+### ✅ Completado de Semana 04
+- [x] Sistema Multi-Usuario completo
+- [x] Validación de límites por plan
+- [x] UI de gestión de equipo
+- [x] Deploy a producción funcionando
+
+### 🟡 Pendiente para próximas sesiones
+
+**1. Testing en producción**
+- [ ] Crear usuario de prueba en producción (plan superior a FREE)
+- [ ] Verificar que se pueden añadir usuarios al equipo
+- [ ] Verificar emails de bienvenida se envían correctamente
+
+**2. Consultoría 1h/mes Premium**
+- [ ] Sistema de agendamiento (Calendly o similar)
+- [ ] Email mensual automático a clientes Premium
+
+**3. Mejoras menores detectadas**
+- [ ] Añadir columna `ai_reports_enabled` a BD de producción si no existe
+- [ ] Considerar migración automática al iniciar servidor
+
+---
+
 ## 📚 Referencias
 
 - **Anterior:** [HISTORICO_SEMANA_03_2026.md](./HISTORICO_SEMANA_03_2026.md)
@@ -459,9 +535,165 @@ stickywork/
 
 ---
 
-**Última actualización:** 16-ene-2026
+### Sesión 5: 21-ene-2026 - Sistema de Pagos con Stripe
+
+#### ✅ Completado
+
+**1. Configuración de cuenta Stripe**
+- ✅ Cuenta de Stripe creada (modo producción)
+- ✅ 3 productos configurados con precios recurrentes mensuales:
+  - Founders: €25/mes (`price_1Ss2l3CmufkxijAWiadxQAbd`)
+  - Profesional: €39/mes (`price_1Ss2lvCmufkxijAWrqQh4kDo`)
+  - Premium: €79/mes (`price_1Ss2nLCmufkxijAWb5XWduZE`)
+- ✅ Webhook configurado (`whsec_d1GBcd0eSLwvnKBSWSKKTrx9ZkkxqCxQ`)
+  - Eventos: checkout.session.completed, customer.subscription.*, invoice.paid, invoice.payment_failed
+
+**2. Backend - Endpoints de Stripe**
+- ✅ Creado `backend/routes/stripe.js` con:
+  - POST `/api/stripe/create-checkout-session` - Crea sesión de pago con 7 días trial
+  - POST `/api/stripe/create-portal-session` - Acceso al portal de cliente Stripe
+  - GET `/api/stripe/subscription-status` - Estado actual de suscripción
+  - POST `/api/stripe/webhook` - Maneja eventos de Stripe
+  - GET `/api/stripe/payment-history` - Historial de pagos
+- ✅ Handlers para eventos:
+  - handleCheckoutComplete - Actualiza plan al completar pago
+  - handleSubscriptionUpdate - Sincroniza estado de suscripción
+  - handleSubscriptionCanceled - Degrada a FREE al cancelar
+  - handleInvoicePaid - Registra pago exitoso
+  - handlePaymentFailed - Inicia período de gracia de 5 días
+  - handleTrialEnding - Notifica fin de trial (3 días antes)
+
+**3. Base de datos - Migración ejecutada**
+- ✅ Tabla `subscriptions`:
+  - business_id, stripe_customer_id, stripe_subscription_id
+  - plan_name, status (trialing/active/past_due/canceled)
+  - trial_start, trial_end, current_period_start, current_period_end
+  - cancel_at_period_end, canceled_at
+- ✅ Tabla `payment_history`:
+  - stripe_invoice_id, stripe_payment_intent_id
+  - amount, currency, status, description
+  - invoice_url, invoice_pdf, failure_reason
+- ✅ Tabla `payment_reminders`:
+  - reminder_type (first_warning, second_warning, final_warning, suspended)
+  - grace_period_ends
+- ✅ Columnas añadidas a `businesses`:
+  - stripe_customer_id, subscription_status, trial_ends_at, grace_period_ends_at
+
+**4. Frontend - Sección de Facturación**
+- ✅ Módulo `admin/js/billing.js`:
+  - Muestra plan actual con estado (trial/activo/pendiente/cancelado)
+  - Tarjetas de upgrade para los 3 planes de pago
+  - Historial de pagos (solo para owners)
+  - Botón "Gestionar suscripción" → Portal de Stripe
+  - Botón "Empezar prueba gratis" → Checkout de Stripe
+- ✅ Integrado en sidebar: "💳 Facturación"
+- ✅ Restringido para staff (solo owners y admins ven la sección)
+- ✅ Estilos CSS completos en `admin/css/admin.css`
+
+**5. Variables de entorno en Railway**
+- ✅ STRIPE_SECRET_KEY configurada
+- ✅ STRIPE_PRICE_FOUNDERS configurada
+- ✅ STRIPE_PRICE_PROFESSIONAL configurada
+- ✅ STRIPE_PRICE_PREMIUM configurada
+- ✅ STRIPE_WEBHOOK_SECRET configurada
+
+**6. Restricciones de permisos**
+- ✅ Staff no puede ver sección Facturación (billingLink añadido a restrictedElements)
+- ✅ Solo owners pueden crear checkout y acceder al portal (requireRole('owner'))
+- ✅ Admins pueden ver estado pero no gestionar
+
+#### 📝 Características del sistema de pagos
+
+**Trial de 7 días:**
+- Usuario selecciona plan → Stripe Checkout
+- 7 días de acceso completo sin cobro
+- Al día 8 se cobra automáticamente
+- Si cancela antes del día 7, no se cobra nada
+
+**Período de gracia (5 días):**
+- Si falla el pago → estado "past_due"
+- 5 días para actualizar método de pago
+- Se envían recordatorios (TODO: implementar emails)
+- Después de 5 días → degradación a FREE
+
+**Gestión de suscripción:**
+- Portal de Stripe para:
+  - Cambiar método de pago
+  - Ver facturas
+  - Cancelar suscripción
+  - Actualizar datos de facturación
+
+#### Archivos creados/modificados:
+**Backend:**
+- `backend/routes/stripe.js` - NUEVO (484 líneas)
+- `backend/routes.js` - Import y uso de stripeRoutes
+- `backend/migrations/012_subscriptions.sql` - NUEVO
+- `package.json` - Añadida dependencia stripe
+
+**Frontend:**
+- `admin/js/billing.js` - NUEVO (280 líneas)
+- `admin/js/app.js` - Case 'billing' en routing
+- `admin/js/auth.js` - billingLink en restrictedElements
+- `admin-dashboard.html` - Link sidebar + script
+- `admin/css/admin.css` - ~200 líneas de estilos billing
+
+**Scripts auxiliares:**
+- `run-stripe-migration.js` - Script para ejecutar migración
+
+#### Commits:
+- `1b6c159` - feat: Implementar sistema de pagos con Stripe
+- `9ef2bd9` - fix: Añadir dependencia stripe a package.json
+
+#### ⚠️ Problema recurrente con Railway
+- **Síntoma:** Push a master no despliega automáticamente
+- **Solución temporal:** Settings > Source > Disconnect repo > Reconnect > Deploy
+- **Causa probable:** Webhook de GitHub con Railway no funciona correctamente
+
+---
+
+## 🎯 Pendiente para Próxima Sesión
+
+### 🔴 Prioridad ALTA - Probar sistema de pagos
+
+**1. Configurar modo TEST en Stripe (recomendado)**
+- [ ] Activar "Test mode" en Stripe Dashboard
+- [ ] Obtener claves de test (`sk_test_...`, `pk_test_...`)
+- [ ] Crear productos de test con mismos precios
+- [ ] Configurar webhook de test
+- [ ] Actualizar variables en Railway con claves test
+- [ ] Probar flujo completo con tarjeta `4242 4242 4242 4242`
+
+**2. Probar flujo completo de suscripción**
+- [ ] Crear checkout desde panel admin
+- [ ] Completar pago en Stripe
+- [ ] Verificar webhook actualiza BD
+- [ ] Verificar plan cambia en dashboard
+- [ ] Probar portal de cliente
+- [ ] Probar cancelación
+
+**3. Implementar emails de suscripción (opcional)**
+- [ ] Email de bienvenida al suscribirse
+- [ ] Email de recordatorio fin de trial (3 días antes)
+- [ ] Email de pago fallido
+- [ ] Email de cancelación
+
+### 🟡 Prioridad MEDIA
+
+**4. Mejorar UX de facturación**
+- [ ] Mostrar días restantes de trial
+- [ ] Indicador visual de período de gracia
+- [ ] Notificaciones in-app de estado de pago
+
+**5. Documentar proceso**
+- [ ] Guía para configurar Stripe desde cero
+- [ ] Troubleshooting de problemas comunes
+- [ ] Proceso de reembolsos
+
+---
+
+**Última actualización:** 21-ene-2026
 **Próxima revisión:** 26-ene-2026 (fin de semana 04)
 
 ---
 
-**🎯 Objetivo clave semana 04:** Tener sistema multi-usuario funcionando para poder vender plan PREMIUM sin bloqueantes técnicos.
+**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + Sistema de pagos Stripe implementado y listo para pruebas.
