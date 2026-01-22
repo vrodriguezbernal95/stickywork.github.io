@@ -626,6 +626,374 @@ const emailTemplates = {
 </body>
 </html>
         `
+    }),
+
+    // ========== SUBSCRIPTION EMAILS ==========
+
+    // Subscription welcome email (when subscription is activated)
+    subscriptionWelcome: (business, plan, user) => ({
+        subject: `🎉 ¡Bienvenido a StickyWork ${plan.name}!`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #10b981, #059669); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 32px; }
+        .content { padding: 30px; }
+        .plan-badge { display: inline-block; padding: 8px 20px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border-radius: 25px; font-size: 18px; font-weight: 700; margin: 10px 0; }
+        .features-box { background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 25px 0; border-radius: 8px; }
+        .features-box h3 { margin-top: 0; color: #059669; }
+        .features-box ul { margin: 0; padding-left: 20px; }
+        .features-box li { margin: 8px 0; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #3b82f6, #ef4444); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+        .next-steps { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; }
+        .next-steps h3 { margin-top: 0; color: #333; }
+        .step { display: flex; align-items: flex-start; margin: 15px 0; }
+        .step-number { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 12px; flex-shrink: 0; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .icon { font-size: 60px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">🎉</div>
+            <h1>¡Bienvenido a StickyWork!</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name || business.name}</strong>,</p>
+
+            <p>¡Enhorabuena! Tu suscripción ha sido activada correctamente.</p>
+
+            <p style="text-align: center;">
+                <span class="plan-badge">Plan ${plan.name}</span>
+            </p>
+
+            <div class="features-box">
+                <h3>✨ Lo que incluye tu plan:</h3>
+                <ul>
+                    ${plan.name === 'Founders' || plan.name === 'Profesional' ? `
+                    <li><strong>3 usuarios</strong> administradores</li>
+                    <li><strong>Reservas ilimitadas</strong></li>
+                    <li><strong>1 reporte IA</strong> al mes</li>
+                    <li>Soporte de implementación incluido</li>
+                    ` : ''}
+                    ${plan.name === 'Premium' ? `
+                    <li><strong>10 usuarios</strong> administradores</li>
+                    <li><strong>Reservas ilimitadas</strong></li>
+                    <li><strong>2 reportes IA</strong> a la semana</li>
+                    <li><strong>1 hora de consultoría</strong> al mes</li>
+                    <li><strong>Landing page gratis</strong> (valor 200€)</li>
+                    <li>Soporte prioritario</li>
+                    ` : ''}
+                    <li>Widget personalizable</li>
+                    <li>Notificaciones WhatsApp</li>
+                    <li>Encuestas de feedback</li>
+                </ul>
+            </div>
+
+            <div class="next-steps">
+                <h3>🚀 Próximos pasos:</h3>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <div>
+                        <strong>Configura tus servicios</strong><br>
+                        <span style="color: #666;">Define los servicios que ofreces con precios y duración</span>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <div>
+                        <strong>Personaliza tu widget</strong><br>
+                        <span style="color: #666;">Adapta los colores y textos a tu marca</span>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <div>
+                        <strong>Integra en tu web</strong><br>
+                        <span style="color: #666;">Copia el código del widget en tu página</span>
+                    </div>
+                </div>
+            </div>
+
+            <p style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL || 'https://stickywork.com'}/admin-dashboard.html" class="button">
+                    Ir a mi Dashboard
+                </a>
+            </p>
+
+            <p style="margin-top: 30px;">¿Necesitas ayuda? Respondemos en menos de 24 horas.</p>
+            <p>📧 <a href="mailto:soporte@stickywork.com">soporte@stickywork.com</a></p>
+        </div>
+
+        <div class="footer">
+            <p><strong>StickyWork</strong> - Sistema de Gestión de Reservas</p>
+            <p style="margin-top: 10px;">
+                Gracias por confiar en nosotros. ¡Estamos aquí para ayudarte a crecer!
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
+    // Trial ending reminder (3 days before trial ends)
+    trialEnding: (business, user, daysLeft, trialEndDate) => ({
+        subject: `⏰ Tu prueba gratuita termina en ${daysLeft} días - StickyWork`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .countdown-box { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; padding: 25px; margin: 25px 0; border-radius: 12px; text-align: center; }
+        .countdown-number { font-size: 48px; font-weight: 700; color: #d97706; }
+        .countdown-label { font-size: 18px; color: #92400e; }
+        .benefits-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; }
+        .benefits-box h3 { margin-top: 0; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #3b82f6, #ef4444); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+        .button-secondary { display: inline-block; padding: 12px 30px; background: white; color: #3b82f6; text-decoration: none; border-radius: 8px; margin: 10px; font-weight: 600; border: 2px solid #3b82f6; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">⏰</div>
+            <h1>Tu prueba termina pronto</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name || business.name}</strong>,</p>
+
+            <p>Esperamos que estés disfrutando de StickyWork. Queremos recordarte que tu período de prueba gratuita está a punto de terminar.</p>
+
+            <div class="countdown-box">
+                <div class="countdown-number">${daysLeft}</div>
+                <div class="countdown-label">días restantes</div>
+                <p style="margin-bottom: 0; color: #92400e;">Tu prueba termina el <strong>${new Date(trialEndDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</strong></p>
+            </div>
+
+            <div class="benefits-box">
+                <h3>📊 Lo que has conseguido hasta ahora:</h3>
+                <p>Has estado usando StickyWork para gestionar tus reservas. Para no perder el acceso a todas las funcionalidades, te recomendamos activar tu suscripción antes de que termine la prueba.</p>
+            </div>
+
+            <p><strong>¿Qué pasa cuando termina la prueba?</strong></p>
+            <ul>
+                <li>Tu cuenta pasará automáticamente al <strong>Plan Gratuito</strong> (30 reservas/mes)</li>
+                <li>Tus datos y configuración se mantienen</li>
+                <li>Puedes actualizar a un plan de pago en cualquier momento</li>
+            </ul>
+
+            <p style="text-align: center; margin-top: 30px;">
+                <a href="${process.env.FRONTEND_URL || 'https://stickywork.com'}/admin-dashboard.html#billing" class="button">
+                    Ver Planes y Precios
+                </a>
+            </p>
+
+            <p style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL || 'https://stickywork.com'}/contacto.html" class="button-secondary">
+                    ¿Tienes dudas? Contáctanos
+                </a>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong>StickyWork</strong></p>
+            <p style="margin-top: 10px;">
+                Si decides no continuar, gracias por probar StickyWork. ¡Siempre serás bienvenido!
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
+    // Payment failed notification
+    paymentFailed: (business, user, invoice, nextRetryDate) => ({
+        subject: `⚠️ Problema con tu pago - StickyWork`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .alert-box { background: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; margin: 25px 0; border-radius: 8px; }
+        .alert-box h3 { margin-top: 0; color: #dc2626; }
+        .invoice-details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0; }
+        .invoice-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+        .invoice-row:last-child { border-bottom: none; font-weight: 700; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+        .grace-period { background: #fff7ed; border-left: 4px solid #f97316; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">⚠️</div>
+            <h1>Problema con tu pago</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name || business.name}</strong>,</p>
+
+            <div class="alert-box">
+                <h3>No hemos podido procesar tu pago</h3>
+                <p style="margin-bottom: 0;">Hemos intentado cobrar tu suscripción pero el pago ha sido rechazado. Por favor, actualiza tu método de pago para evitar la interrupción del servicio.</p>
+            </div>
+
+            <div class="invoice-details">
+                <h4 style="margin-top: 0;">Detalles del pago:</h4>
+                <div class="invoice-row">
+                    <span>Concepto:</span>
+                    <span>Suscripción StickyWork</span>
+                </div>
+                <div class="invoice-row">
+                    <span>Importe:</span>
+                    <span>${(invoice.amount / 100).toFixed(2)}€</span>
+                </div>
+                <div class="invoice-row">
+                    <span>Fecha del intento:</span>
+                    <span>${new Date().toLocaleDateString('es-ES')}</span>
+                </div>
+            </div>
+
+            <div class="grace-period">
+                <p style="margin: 0;"><strong>⏳ Período de gracia:</strong> Tienes <strong>5 días</strong> para actualizar tu método de pago antes de que tu cuenta pase al plan gratuito.</p>
+                ${nextRetryDate ? `<p style="margin: 10px 0 0 0;">Volveremos a intentar el cobro el <strong>${new Date(nextRetryDate).toLocaleDateString('es-ES')}</strong>.</p>` : ''}
+            </div>
+
+            <p><strong>¿Cómo solucionarlo?</strong></p>
+            <ol>
+                <li>Accede a tu panel de administración</li>
+                <li>Ve a la sección "Facturación"</li>
+                <li>Actualiza tu tarjeta o método de pago</li>
+            </ol>
+
+            <p style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL || 'https://stickywork.com'}/admin-dashboard.html#billing" class="button">
+                    Actualizar Método de Pago
+                </a>
+            </p>
+
+            <p style="margin-top: 30px; color: #666; font-size: 14px;">
+                <strong>¿Necesitas ayuda?</strong> Contacta con nosotros en <a href="mailto:soporte@stickywork.com">soporte@stickywork.com</a> y te ayudaremos a resolver cualquier problema.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong>StickyWork</strong></p>
+            <p style="margin-top: 10px;">
+                Este es un mensaje importante sobre tu cuenta. Por favor, actúa lo antes posible.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
+    // Subscription canceled confirmation
+    subscriptionCanceled: (business, user, endDate) => ({
+        subject: `😢 Tu suscripción ha sido cancelada - StickyWork`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #6b7280, #4b5563); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .info-box { background: #f3f4f6; border-left: 4px solid #6b7280; padding: 20px; margin: 25px 0; border-radius: 8px; }
+        .highlight-box { background: #dbeafe; border-left: 4px solid #3b82f6; padding: 20px; margin: 25px 0; border-radius: 8px; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #3b82f6, #ef4444); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">😢</div>
+            <h1>Suscripción Cancelada</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name || business.name}</strong>,</p>
+
+            <p>Confirmamos que tu suscripción a StickyWork ha sido cancelada.</p>
+
+            <div class="info-box">
+                <h3 style="margin-top: 0;">📋 Información importante:</h3>
+                <ul style="margin-bottom: 0;">
+                    <li>Tu cuenta pasará al <strong>Plan Gratuito</strong> el <strong>${new Date(endDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</strong></li>
+                    <li>Mantendrás acceso a tus datos y configuración</li>
+                    <li>El plan gratuito incluye hasta 30 reservas al mes</li>
+                    <li>Puedes volver a suscribirte en cualquier momento</li>
+                </ul>
+            </div>
+
+            <div class="highlight-box">
+                <h3 style="margin-top: 0;">💡 ¿Sabías que...?</h3>
+                <p style="margin-bottom: 0;">Si cancelas por precio, escríbenos. Tenemos opciones para negocios con propósito social y descuentos especiales. Queremos que StickyWork sea accesible para todos.</p>
+            </div>
+
+            <p><strong>¿Qué pasa ahora?</strong></p>
+            <ul>
+                <li>Hasta la fecha de fin, mantienes todas las funcionalidades de tu plan actual</li>
+                <li>Después, tu cuenta pasa automáticamente al plan gratuito</li>
+                <li>Tus datos nunca se eliminan</li>
+            </ul>
+
+            <p style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL || 'https://stickywork.com'}/admin-dashboard.html#billing" class="button">
+                    Reactivar Suscripción
+                </a>
+            </p>
+
+            <p style="margin-top: 30px;">Lamentamos verte marchar. Si hay algo que podamos mejorar, nos encantaría saberlo.</p>
+            <p>📧 <a href="mailto:feedback@stickywork.com">feedback@stickywork.com</a></p>
+        </div>
+
+        <div class="footer">
+            <p><strong>StickyWork</strong></p>
+            <p style="margin-top: 10px;">
+                Gracias por haber confiado en nosotros. ¡Siempre serás bienvenido de vuelta!
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
     })
 };
 
@@ -696,6 +1064,32 @@ async function sendDeactivationEmail(user, business, reason) {
     return await sendEmail(user.email, template);
 }
 
+// ========== SUBSCRIPTION EMAIL FUNCTIONS ==========
+
+// Send subscription welcome email
+async function sendSubscriptionWelcome(business, plan, user) {
+    const template = emailTemplates.subscriptionWelcome(business, plan, user);
+    return await sendEmail(user.email, template);
+}
+
+// Send trial ending reminder
+async function sendTrialEndingEmail(business, user, daysLeft, trialEndDate) {
+    const template = emailTemplates.trialEnding(business, user, daysLeft, trialEndDate);
+    return await sendEmail(user.email, template);
+}
+
+// Send payment failed notification
+async function sendPaymentFailedEmail(business, user, invoice, nextRetryDate) {
+    const template = emailTemplates.paymentFailed(business, user, invoice, nextRetryDate);
+    return await sendEmail(user.email, template);
+}
+
+// Send subscription canceled confirmation
+async function sendSubscriptionCanceledEmail(business, user, endDate) {
+    const template = emailTemplates.subscriptionCanceled(business, user, endDate);
+    return await sendEmail(user.email, template);
+}
+
 // Get transporter (for jobs that need direct access)
 function getTransporter() {
     return transporter;
@@ -710,6 +1104,11 @@ module.exports = {
     sendTeamMemberWelcome,
     sendRoleChangedEmail,
     sendDeactivationEmail,
+    // Subscription emails
+    sendSubscriptionWelcome,
+    sendTrialEndingEmail,
+    sendPaymentFailedEmail,
+    sendSubscriptionCanceledEmail,
     sendEmail,
     emailTemplates,
     getTransporter

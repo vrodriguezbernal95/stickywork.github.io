@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
 
+// Email service
+const {
+    sendSubscriptionWelcome,
+    sendTrialEndingEmail,
+    sendPaymentFailedEmail,
+    sendSubscriptionCanceledEmail
+} = require('../email-service');
+
 // Stripe se inicializa con la API key
 let stripe;
 try {
@@ -278,6 +286,27 @@ async function handleCheckoutComplete(session) {
         WHERE id = ?
     `, [planName, businessId]);
 
+    // Enviar email de bienvenida
+    const businessData = await db.query(`
+        SELECT b.*, au.email as owner_email, au.full_name as owner_name
+        FROM businesses b
+        LEFT JOIN admin_users au ON au.business_id = b.id AND au.role = 'owner'
+        WHERE b.id = ?
+    `, [businessId]);
+
+    if (businessData[0]?.owner_email) {
+        const business = businessData[0];
+        const user = { email: business.owner_email, full_name: business.owner_name };
+        const plan = PLAN_DETAILS[planName] || { name: planName };
+
+        try {
+            await sendSubscriptionWelcome(business, plan, user);
+            console.log(`📧 Email de bienvenida enviado a ${user.email}`);
+        } catch (emailError) {
+            console.error('Error enviando email de bienvenida:', emailError.message);
+        }
+    }
+
     console.log(`✅ Negocio ${businessId} actualizado a plan ${planName}`);
 }
 
@@ -339,6 +368,14 @@ async function handleSubscriptionCanceled(subscription) {
     const businessId = subscription.metadata?.business_id;
     if (!businessId) return;
 
+    // Obtener datos del negocio y usuario para el email
+    const businessData = await db.query(`
+        SELECT b.*, au.email as owner_email, au.full_name as owner_name
+        FROM businesses b
+        LEFT JOIN admin_users au ON au.business_id = b.id AND au.role = 'owner'
+        WHERE b.id = ?
+    `, [businessId]);
+
     // Degradar a plan FREE
     await db.query(`
         UPDATE businesses
@@ -354,7 +391,20 @@ async function handleSubscriptionCanceled(subscription) {
         WHERE stripe_subscription_id = ?
     `, [subscription.id]);
 
-    // TODO: Enviar email de cancelación
+    // Enviar email de cancelación
+    if (businessData[0]?.owner_email) {
+        const business = businessData[0];
+        const user = { email: business.owner_email, full_name: business.owner_name };
+        const endDate = subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : new Date();
+
+        try {
+            await sendSubscriptionCanceledEmail(business, user, endDate);
+            console.log(`📧 Email de cancelación enviado a ${user.email}`);
+        } catch (emailError) {
+            console.error('Error enviando email de cancelación:', emailError.message);
+        }
+    }
+
     console.log(`⚠️ Negocio ${businessId} degradado a plan FREE`);
 }
 
@@ -413,8 +463,8 @@ async function handlePaymentFailed(invoice) {
         invoice.last_finalization_error?.message || 'Pago rechazado'
     ]);
 
-    // Iniciar período de gracia de 5 días
-    await startGracePeriod(businessId);
+    // Iniciar período de gracia de 5 días (pasamos invoice para el email)
+    await startGracePeriod(businessId, null, { amount: invoice.amount_due });
 }
 
 async function handleTrialEnding(subscription) {
@@ -423,11 +473,30 @@ async function handleTrialEnding(subscription) {
     const businessId = subscription.metadata?.business_id;
     if (!businessId) return;
 
-    // TODO: Enviar email recordando que el trial termina pronto
-    console.log(`📧 Enviar email de fin de trial a negocio ${businessId}`);
+    // Obtener datos del negocio y usuario
+    const businessData = await db.query(`
+        SELECT b.*, au.email as owner_email, au.full_name as owner_name
+        FROM businesses b
+        LEFT JOIN admin_users au ON au.business_id = b.id AND au.role = 'owner'
+        WHERE b.id = ?
+    `, [businessId]);
+
+    if (businessData[0]?.owner_email) {
+        const business = businessData[0];
+        const user = { email: business.owner_email, full_name: business.owner_name };
+        const trialEndDate = subscription.trial_end ? new Date(subscription.trial_end * 1000) : new Date();
+        const daysLeft = 3; // Stripe envía este evento 3 días antes
+
+        try {
+            await sendTrialEndingEmail(business, user, daysLeft, trialEndDate);
+            console.log(`📧 Email de fin de trial enviado a ${user.email}`);
+        } catch (emailError) {
+            console.error('Error enviando email de fin de trial:', emailError.message);
+        }
+    }
 }
 
-async function startGracePeriod(businessId, subscriptionId = null) {
+async function startGracePeriod(businessId, subscriptionId = null, invoice = null) {
     const gracePeriodDays = 5;
     const gracePeriodEnds = new Date();
     gracePeriodEnds.setDate(gracePeriodEnds.getDate() + gracePeriodDays);
@@ -448,7 +517,27 @@ async function startGracePeriod(businessId, subscriptionId = null) {
         `, [businessId, subscriptionId, gracePeriodEnds]);
     }
 
-    // TODO: Enviar email de aviso de pago fallido
+    // Enviar email de aviso de pago fallido
+    const businessData = await db.query(`
+        SELECT b.*, au.email as owner_email, au.full_name as owner_name
+        FROM businesses b
+        LEFT JOIN admin_users au ON au.business_id = b.id AND au.role = 'owner'
+        WHERE b.id = ?
+    `, [businessId]);
+
+    if (businessData[0]?.owner_email) {
+        const business = businessData[0];
+        const user = { email: business.owner_email, full_name: business.owner_name };
+        const invoiceData = invoice || { amount: 0 };
+
+        try {
+            await sendPaymentFailedEmail(business, user, invoiceData, gracePeriodEnds);
+            console.log(`📧 Email de pago fallido enviado a ${user.email}`);
+        } catch (emailError) {
+            console.error('Error enviando email de pago fallido:', emailError.message);
+        }
+    }
+
     console.log(`⚠️ Período de gracia iniciado para negocio ${businessId}, termina ${gracePeriodEnds}`);
 }
 
