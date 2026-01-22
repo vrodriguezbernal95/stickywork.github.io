@@ -30,6 +30,9 @@ const auth = {
             // Show/hide Team menu based on user role
             this.updateTeamMenu();
 
+            // Show/hide Consultancy menu based on Premium plan
+            this.updateConsultancyMenu();
+
             // Restrict menu for staff role
             this.updateStaffRestrictions();
 
@@ -116,6 +119,25 @@ const auth = {
         }
     },
 
+    // Show/hide Consultancy menu based on Premium plan
+    updateConsultancyMenu() {
+        const consultancyLink = document.getElementById('consultancyLink');
+
+        if (consultancyLink) {
+            // Solo mostrar si el plan es Premium
+            if (this.businessData && this.businessData.plan === 'premium') {
+                consultancyLink.style.display = 'flex';
+            } else {
+                consultancyLink.style.display = 'none';
+            }
+        }
+    },
+
+    // Check if business has Premium plan
+    isPremium() {
+        return this.businessData && this.businessData.plan === 'premium';
+    },
+
     // Check if AI Reports is enabled for this business
     hasAiReportsEnabled() {
         return this.businessData && this.businessData.ai_reports_enabled === true;
@@ -136,7 +158,8 @@ const auth = {
             'widgetLink',      // No puede configurar widget
             'settingsLink',    // No puede acceder a configuración
             'aiReportsLink',   // No puede ver reportes IA (info estratégica)
-            'billingLink'      // No puede gestionar facturación
+            'billingLink',     // No puede gestionar facturación
+            'consultancyLink'  // No puede solicitar consultorías
         ];
 
         restrictedElements.forEach(elementId => {

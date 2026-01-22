@@ -918,6 +918,194 @@ const emailTemplates = {
         `
     }),
 
+    // ========== CONSULTANCY EMAILS ==========
+
+    // New consultancy request notification (to admin)
+    consultancyRequestAdmin: (request, business, user) => ({
+        subject: `💼 Nueva solicitud de consultoría - ${business.name}`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #8b5cf6, #7c3aed); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .request-box { background: #f5f3ff; border-left: 4px solid #8b5cf6; padding: 20px; margin: 25px 0; border-radius: 8px; }
+        .request-box h3 { margin-top: 0; color: #7c3aed; }
+        .detail-row { padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { font-weight: 600; color: #666; display: block; margin-bottom: 5px; }
+        .detail-value { color: #333; }
+        .dates-box { background: #fff7ed; border-left: 4px solid #f97316; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+        .client-info { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">💼</div>
+            <h1>Nueva Solicitud de Consultoría</h1>
+        </div>
+
+        <div class="content">
+            <p>Has recibido una nueva solicitud de consultoría de un cliente Premium.</p>
+
+            <div class="client-info">
+                <p style="margin: 0;"><strong>👤 Cliente:</strong> ${business.name}</p>
+                <p style="margin: 5px 0 0;"><strong>📧 Email:</strong> ${user.email}</p>
+                <p style="margin: 5px 0 0;"><strong>👔 Solicitado por:</strong> ${user.full_name || user.email}</p>
+            </div>
+
+            <div class="request-box">
+                <h3>📋 Detalles de la solicitud</h3>
+
+                <div class="detail-row">
+                    <span class="detail-label">Tema:</span>
+                    <span class="detail-value"><strong>${request.topic}</strong></span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Descripción:</span>
+                    <span class="detail-value">${request.description}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Franja horaria preferida:</span>
+                    <span class="detail-value">${request.preferred_time_slot === 'morning' ? 'Mañana (9:00 - 13:00)' : request.preferred_time_slot === 'afternoon' ? 'Tarde (15:00 - 19:00)' : 'Noche (19:00 - 21:00)'}</span>
+                </div>
+            </div>
+
+            <div class="dates-box">
+                <p style="margin: 0;"><strong>📅 Fechas preferidas por el cliente:</strong></p>
+                <ul style="margin: 10px 0 0; padding-left: 20px;">
+                    <li><strong>Opción 1:</strong> ${new Date(request.preferred_date_1).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</li>
+                    ${request.preferred_date_2 ? `<li><strong>Opción 2:</strong> ${new Date(request.preferred_date_2).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</li>` : ''}
+                    ${request.preferred_date_3 ? `<li><strong>Opción 3:</strong> ${new Date(request.preferred_date_3).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</li>` : ''}
+                </ul>
+            </div>
+
+            <p style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL || 'https://stickywork.com'}/super-admin.html#consultancy" class="button">
+                    Ver en Super Admin
+                </a>
+            </p>
+
+            <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                Recuerda contactar al cliente para confirmar la fecha y hora de la consultoría.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong>StickyWork</strong> - Panel Super Admin</p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
+    // Consultancy scheduled confirmation (to client)
+    consultancyScheduled: (request, business, user) => ({
+        subject: `✅ Tu consultoría ha sido agendada - StickyWork`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #10b981, #059669); padding: 40px 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .schedule-box { background: #f0fdf4; border: 2px solid #10b981; padding: 25px; margin: 25px 0; border-radius: 12px; text-align: center; }
+        .schedule-date { font-size: 24px; font-weight: 700; color: #059669; margin-bottom: 10px; }
+        .schedule-time { font-size: 20px; color: #333; }
+        .meeting-link { background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .meeting-link a { color: #2563eb; font-weight: 600; }
+        .topic-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .tips-box { background: #fefce8; border-left: 4px solid #eab308; padding: 20px; margin: 25px 0; border-radius: 8px; }
+        .button { display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; font-size: 16px; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .icon { font-size: 50px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon">✅</div>
+            <h1>¡Consultoría Agendada!</h1>
+        </div>
+
+        <div class="content">
+            <p>Hola <strong>${user.full_name || business.name}</strong>,</p>
+
+            <p>¡Excelentes noticias! Tu consultoría ha sido agendada. Aquí tienes los detalles:</p>
+
+            <div class="schedule-box">
+                <div class="schedule-date">
+                    📅 ${new Date(request.scheduled_date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </div>
+                <div class="schedule-time">
+                    🕐 ${request.scheduled_time}
+                </div>
+            </div>
+
+            ${request.meeting_link ? `
+            <div class="meeting-link">
+                <p style="margin: 0;"><strong>🔗 Enlace a la reunión:</strong></p>
+                <p style="margin: 10px 0 0;"><a href="${request.meeting_link}">${request.meeting_link}</a></p>
+            </div>
+            ` : ''}
+
+            <div class="topic-box">
+                <p style="margin: 0;"><strong>📋 Tema de la consultoría:</strong></p>
+                <p style="margin: 10px 0 0;">${request.topic}</p>
+            </div>
+
+            <div class="tips-box">
+                <h3 style="margin-top: 0; color: #92400e;">💡 Para aprovechar al máximo tu consultoría:</h3>
+                <ul style="margin-bottom: 0; padding-left: 20px;">
+                    <li>Ten a mano las preguntas específicas que quieras resolver</li>
+                    <li>Prepara ejemplos o datos relevantes de tu negocio</li>
+                    <li>Asegúrate de tener buena conexión a internet</li>
+                    <li>Busca un lugar tranquilo sin interrupciones</li>
+                </ul>
+            </div>
+
+            <p><strong>¿Necesitas cambiar la fecha?</strong></p>
+            <p>Contacta con nosotros al menos 24 horas antes de la consultoría programada para reprogramar.</p>
+
+            <p style="text-align: center;">
+                <a href="mailto:soporte@stickywork.com" class="button">
+                    Contactar Soporte
+                </a>
+            </p>
+
+            <p style="margin-top: 30px;">¡Nos vemos pronto!</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>StickyWork</strong> - Consultoría Premium</p>
+            <p style="margin-top: 10px;">
+                Este email es una confirmación automática de tu consultoría agendada.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `
+    }),
+
     // Subscription canceled confirmation
     subscriptionCanceled: (business, user, endDate) => ({
         subject: `😢 Tu suscripción ha sido cancelada - StickyWork`,
@@ -1090,6 +1278,21 @@ async function sendSubscriptionCanceledEmail(business, user, endDate) {
     return await sendEmail(user.email, template);
 }
 
+// ========== CONSULTANCY EMAIL FUNCTIONS ==========
+
+// Send new consultancy request notification to admin
+async function sendConsultancyRequestToAdmin(request, business, user, adminEmail) {
+    const template = emailTemplates.consultancyRequestAdmin(request, business, user);
+    const recipient = adminEmail || process.env.ADMIN_EMAIL || 'soporte@stickywork.com';
+    return await sendEmail(recipient, template);
+}
+
+// Send consultancy scheduled confirmation to client
+async function sendConsultancyScheduledEmail(request, business, user) {
+    const template = emailTemplates.consultancyScheduled(request, business, user);
+    return await sendEmail(user.email, template);
+}
+
 // Get transporter (for jobs that need direct access)
 function getTransporter() {
     return transporter;
@@ -1109,6 +1312,9 @@ module.exports = {
     sendTrialEndingEmail,
     sendPaymentFailedEmail,
     sendSubscriptionCanceledEmail,
+    // Consultancy emails
+    sendConsultancyRequestToAdmin,
+    sendConsultancyScheduledEmail,
     sendEmail,
     emailTemplates,
     getTransporter

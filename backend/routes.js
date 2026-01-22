@@ -8,6 +8,7 @@ const feedbackRoutes = require('./routes/feedback');
 const aiReportsRoutes = require('./routes/ai-reports');
 const teamRoutes = require('./routes/team');
 const stripeRoutes = require('./routes/stripe');
+const consultancyRoutes = require('./routes/consultancy');
 const { requireAuth, requireBusinessAccess, requireRole } = require('./middleware/auth');
 const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
@@ -21,6 +22,7 @@ function setDatabase(database) {
     db = database;
     authRoutes.setDatabase(database);
     feedbackRoutes.setDatabase(database);
+    consultancyRoutes.setDatabase(database);
 }
 
 router.setDatabase = setDatabase;
@@ -163,6 +165,9 @@ router.use(teamRoutes);
 
 // ==================== STRIPE / PAGOS ====================
 router.use(stripeRoutes);
+
+// ==================== CONSULTORÍAS (PREMIUM) ====================
+router.use('/api/consultancy', consultancyRoutes);
 
 // ==================== DEBUG ENDPOINT ====================
 router.get('/api/debug/version', (req, res) => {

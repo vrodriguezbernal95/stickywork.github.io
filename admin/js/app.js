@@ -129,6 +129,14 @@ const app = {
                 }
                 break;
 
+            case 'consultancy':
+                if (window.consultancy) {
+                    await consultancy.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             default:
                 this.showUnderConstruction();
         }

@@ -7,6 +7,7 @@ const db = require('../../config/database');
 const { requireSuperAdmin } = require('../middleware/super-admin');
 const { superAdminLoginLimiter } = require('../middleware/rate-limit');
 const { getPlanInfo } = require('../middleware/entitlements');
+const { sendConsultancyScheduledEmail } = require('../email-service');
 
 // Login de super-admin
 router.post('/login', superAdminLoginLimiter, async (req, res) => {
@@ -880,6 +881,296 @@ router.get('/plans/stats', requireSuperAdmin, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al obtener estadísticas de planes'
+        });
+    }
+});
+
+// ==================== CONSULTANCY MANAGEMENT ====================
+
+// Listar todas las solicitudes de consultoría
+router.get('/consultancy', requireSuperAdmin, async (req, res) => {
+    try {
+        const { status } = req.query;
+
+        let query = `
+            SELECT
+                cr.*,
+                b.name as business_name,
+                b.email as business_email,
+                b.type as business_type,
+                au.full_name as user_name,
+                au.email as user_email
+            FROM consultancy_requests cr
+            JOIN businesses b ON cr.business_id = b.id
+            JOIN admin_users au ON cr.user_id = au.id
+        `;
+
+        const params = [];
+
+        if (status) {
+            query += ' WHERE cr.status = ?';
+            params.push(status);
+        }
+
+        query += ' ORDER BY cr.created_at DESC';
+
+        const requests = await db.query(query, params);
+
+        // Contar por estado
+        const stats = await db.query(`
+            SELECT
+                status,
+                COUNT(*) as count
+            FROM consultancy_requests
+            GROUP BY status
+        `);
+
+        res.json({
+            success: true,
+            data: requests,
+            stats: stats || []
+        });
+
+    } catch (error) {
+        console.error('Error fetching consultancy requests:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener solicitudes de consultoría'
+        });
+    }
+});
+
+// Ver detalle de una solicitud
+router.get('/consultancy/:id', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const request = await db.query(`
+            SELECT
+                cr.*,
+                b.name as business_name,
+                b.email as business_email,
+                b.phone as business_phone,
+                b.type as business_type,
+                b.plan as business_plan,
+                au.full_name as user_name,
+                au.email as user_email
+            FROM consultancy_requests cr
+            JOIN businesses b ON cr.business_id = b.id
+            JOIN admin_users au ON cr.user_id = au.id
+            WHERE cr.id = ?
+        `, [id]);
+
+        if (!request || request.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Solicitud no encontrada'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: request[0]
+        });
+
+    } catch (error) {
+        console.error('Error fetching consultancy request:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener solicitud'
+        });
+    }
+});
+
+// Agendar una consultoría
+router.patch('/consultancy/:id/schedule', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { scheduled_date, scheduled_time, meeting_link, admin_notes } = req.body;
+
+        if (!scheduled_date || !scheduled_time) {
+            return res.status(400).json({
+                success: false,
+                message: 'Fecha y hora son obligatorias'
+            });
+        }
+
+        // Verificar que la solicitud existe y está pendiente
+        const request = await db.query(
+            'SELECT id, status FROM consultancy_requests WHERE id = ?',
+            [id]
+        );
+
+        if (!request || request.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Solicitud no encontrada'
+            });
+        }
+
+        if (request[0].status !== 'pending') {
+            return res.status(400).json({
+                success: false,
+                message: 'Solo se pueden agendar solicitudes pendientes'
+            });
+        }
+
+        // Actualizar la solicitud
+        await db.query(`
+            UPDATE consultancy_requests
+            SET
+                status = 'scheduled',
+                scheduled_date = ?,
+                scheduled_time = ?,
+                meeting_link = ?,
+                admin_notes = ?,
+                updated_at = NOW()
+            WHERE id = ?
+        `, [scheduled_date, scheduled_time, meeting_link || null, admin_notes || null, id]);
+
+        // Obtener la solicitud actualizada con info del negocio
+        const updatedRequest = await db.query(`
+            SELECT
+                cr.*,
+                b.name as business_name,
+                b.email as business_email,
+                au.full_name as user_name,
+                au.email as user_email
+            FROM consultancy_requests cr
+            JOIN businesses b ON cr.business_id = b.id
+            JOIN admin_users au ON cr.user_id = au.id
+            WHERE cr.id = ?
+        `, [id]);
+
+        // Enviar email de confirmación al cliente
+        try {
+            await sendConsultancyScheduledEmail(
+                {
+                    scheduled_date,
+                    scheduled_time,
+                    meeting_link,
+                    topic: updatedRequest[0].topic
+                },
+                { name: updatedRequest[0].business_name },
+                { email: updatedRequest[0].user_email, full_name: updatedRequest[0].user_name }
+            );
+        } catch (emailError) {
+            console.error('Error sending consultancy scheduled email:', emailError);
+            // No fallar si el email no se envía
+        }
+
+        res.json({
+            success: true,
+            message: 'Consultoría agendada correctamente',
+            data: updatedRequest[0]
+        });
+
+    } catch (error) {
+        console.error('Error scheduling consultancy:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al agendar consultoría'
+        });
+    }
+});
+
+// Marcar consultoría como completada
+router.patch('/consultancy/:id/complete', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { admin_notes } = req.body;
+
+        // Verificar que existe y está agendada
+        const request = await db.query(
+            'SELECT id, status FROM consultancy_requests WHERE id = ?',
+            [id]
+        );
+
+        if (!request || request.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Solicitud no encontrada'
+            });
+        }
+
+        if (request[0].status !== 'scheduled') {
+            return res.status(400).json({
+                success: false,
+                message: 'Solo se pueden completar consultorías agendadas'
+            });
+        }
+
+        await db.query(`
+            UPDATE consultancy_requests
+            SET
+                status = 'completed',
+                admin_notes = COALESCE(?, admin_notes),
+                completed_at = NOW(),
+                updated_at = NOW()
+            WHERE id = ?
+        `, [admin_notes, id]);
+
+        res.json({
+            success: true,
+            message: 'Consultoría marcada como completada'
+        });
+
+    } catch (error) {
+        console.error('Error completing consultancy:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al completar consultoría'
+        });
+    }
+});
+
+// Cancelar solicitud (desde super-admin)
+router.patch('/consultancy/:id/cancel', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
+
+        // Verificar que existe
+        const request = await db.query(
+            'SELECT id, status FROM consultancy_requests WHERE id = ?',
+            [id]
+        );
+
+        if (!request || request.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Solicitud no encontrada'
+            });
+        }
+
+        if (request[0].status === 'completed') {
+            return res.status(400).json({
+                success: false,
+                message: 'No se pueden cancelar consultorías completadas'
+            });
+        }
+
+        await db.query(`
+            UPDATE consultancy_requests
+            SET
+                status = 'canceled',
+                admin_notes = CONCAT(COALESCE(admin_notes, ''), '\n[Cancelada] ', COALESCE(?, 'Sin motivo especificado')),
+                updated_at = NOW()
+            WHERE id = ?
+        `, [reason, id]);
+
+        // TODO: Enviar email de cancelación al cliente
+
+        res.json({
+            success: true,
+            message: 'Solicitud cancelada correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error canceling consultancy:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al cancelar solicitud'
         });
     }
 });
