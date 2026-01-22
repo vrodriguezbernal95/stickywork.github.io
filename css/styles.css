@@ -423,8 +423,9 @@ body::after {
 }
 
 .btn-outline:hover {
-    background-color: var(--hero-text);
+    background-color: #ffffff;
     color: var(--primary-color);
+    border-color: #ffffff;
 }
 
 /* Secciones con fondos dinámicos */
@@ -509,6 +510,19 @@ section:nth-child(even)::before {
     transform: translateY(-10px) scale(1.02);
     box-shadow: var(--shadow-lg), 0 0 30px var(--hover-glow);
     background: linear-gradient(135deg, var(--hover-primary) 0%, var(--hover-secondary) 100%);
+}
+
+/* Mejorar legibilidad del texto en hover - texto blanco sobre fondo de color */
+.feature-card:hover h3 {
+    color: #93c5fd !important; /* azul claro */
+}
+
+.feature-card:hover p,
+.feature-card:hover strong,
+.feature-card:hover div,
+.feature-card:hover ul,
+.feature-card:hover li {
+    color: #ffffff !important;
 }
 
 .feature-icon {

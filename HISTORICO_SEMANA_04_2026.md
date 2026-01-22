@@ -691,9 +691,70 @@ stickywork/
 
 ---
 
+---
+
+### Sesión 5 (continuación): 21-ene-2026 - Pruebas de Stripe Exitosas
+
+#### ✅ Completado
+
+**1. Configuración de modo TEST en Stripe**
+- ✅ Activado entorno de prueba en Stripe
+- ✅ Creados 3 productos de test con mismos precios
+- ✅ Configurado webhook de test
+- ✅ Variables de test actualizadas en Railway
+
+**2. Prueba de flujo de pago completa**
+- ✅ Checkout funciona correctamente
+- ✅ Redirect a dashboard después del pago ✅
+- ✅ Tarjeta de prueba `4242 4242 4242 4242` aceptada
+- ✅ Suscripción creada en modo trial (7 días)
+
+**3. Fix importante encontrado**
+- **Problema:** Después del pago, redirigía a GitHub Pages (404)
+- **Causa:** `FRONTEND_URL` estaba configurado como `https://vrodriguezbernal95.github.io`
+- **Solución:** Cambiado a `https://stickywork.com`
+- **Nota:** Este error podría haber causado otros problemas de redirect en el pasado
+
+**4. Variables restauradas a PRODUCCIÓN**
+- ✅ Claves LIVE restauradas en Railway para uso real
+
+---
+
+## 🔐 Credenciales de Stripe (Referencia)
+
+### PRODUCCIÓN (LIVE) - Usar en producción real
+```
+STRIPE_SECRET_KEY=sk_live_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_PRICE_FOUNDERS=price_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_PRICE_PROFESSIONAL=price_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_PRICE_PREMIUM=price_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_WEBHOOK_SECRET=whsec_XXXXXXXXXX (ver Dashboard Stripe)
+```
+
+### TEST - Usar para pruebas sin cobros reales
+```
+STRIPE_SECRET_KEY=sk_test_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_PRICE_FOUNDERS=price_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_PRICE_PROFESSIONAL=price_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_PRICE_PREMIUM=price_XXXXXXXXXX (ver Dashboard Stripe)
+STRIPE_WEBHOOK_SECRET=whsec_XXXXXXXXXX (ver Dashboard Stripe)
+```
+
+⚠️ **IMPORTANTE**: Las claves reales están en el Dashboard de Stripe y en las variables de entorno de Railway.
+Nunca commitear claves reales a git.
+
+### Tarjeta de prueba (solo funciona con claves TEST)
+```
+Número: 4242 4242 4242 4242
+Fecha: Cualquier fecha futura (ej: 12/28)
+CVC: Cualquier 3 dígitos (ej: 123)
+```
+
+---
+
 **Última actualización:** 21-ene-2026
 **Próxima revisión:** 26-ene-2026 (fin de semana 04)
 
 ---
 
-**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + Sistema de pagos Stripe implementado y listo para pruebas.
+**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito.
