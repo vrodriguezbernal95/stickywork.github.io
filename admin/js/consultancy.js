@@ -22,10 +22,11 @@ const consultancy = {
                 api.get('/api/consultancy/my-requests')
             ]);
 
-            this.canRequest = eligibilityRes.data?.canRequest || false;
-            this.requests = requestsRes.data || [];
+            // La respuesta viene directamente, no envuelta en .data
+            this.canRequest = eligibilityRes?.canRequest || false;
+            this.requests = requestsRes?.data || [];
 
-            this.render(eligibilityRes.data);
+            this.render(eligibilityRes);
         } catch (error) {
             console.error('Error loading consultancy:', error);
             contentArea.innerHTML = `
