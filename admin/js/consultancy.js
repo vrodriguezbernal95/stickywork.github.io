@@ -78,10 +78,19 @@ const consultancy = {
     },
 
     renderEligibilityStatus(eligibility) {
+        // Manejar caso de eligibility undefined o null
+        if (!eligibility) {
+            return `
+                <div class="alert alert-warning">
+                    <strong>No disponible:</strong> No se pudo verificar la elegibilidad. Por favor, recarga la página.
+                </div>
+            `;
+        }
+
         if (this.canRequest) {
             return `
                 <div class="alert alert-success">
-                    <strong>Disponible:</strong> ${eligibility.message}
+                    <strong>Disponible:</strong> ${eligibility.message || 'Puedes solicitar tu consultoría gratuita.'}
                 </div>
             `;
         }
@@ -98,7 +107,7 @@ const consultancy = {
         if (eligibility.reason === 'monthly_limit') {
             return `
                 <div class="alert alert-info">
-                    <strong>Límite alcanzado:</strong> ${eligibility.message}
+                    <strong>Límite alcanzado:</strong> ${eligibility.message || 'Ya has usado tu consultoría de este mes.'}
                 </div>
             `;
         }
