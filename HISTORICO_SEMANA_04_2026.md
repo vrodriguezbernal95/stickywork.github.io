@@ -811,9 +811,73 @@ renderEligibilityStatus(eligibility) {
 
 ---
 
+### Sesión 7: 23-ene-2026 - Optimización SEO y Google Search Console
+
+#### 📊 Análisis de Search Console
+- **9 páginas indexadas**, **30 sin indexar**
+- Revisión de motivos de no indexación
+
+#### ✅ Problemas Resueltos
+
+**1. Errores 404 corregidos:**
+
+| URL | Problema | Solución |
+|-----|----------|----------|
+| `/privacidad.html` | No existía | Creada redirección a `politica-privacidad.html` |
+| `/terminos.html` | No existía | Creada página completa de Términos y Condiciones |
+| `/api/auth/forgot-password` | URL incorrecta | Bug corregido en `forgot-password.html` |
+
+**2. Bugs de funcionalidad encontrados gracias a Search Console:**
+
+| Página | Bug | Causa |
+|--------|-----|-------|
+| `forgot-password.html` | Recuperar contraseña no funcionaba | URL relativa `/api/...` apuntaba a frontend en vez de backend |
+| `index.html` | Formulario contacto no funcionaba | URL antigua de Render (`stickywork-github-io.onrender.com`) |
+
+**3. Sitemap actualizado:**
+- Fechas actualizadas a 2026-01-23
+- Añadidas páginas: `demo.html`, `casos-exito.html`, `terminos.html`, `politica-privacidad.html`
+- Eliminadas demos (tienen `noindex` intencional - solo para mostrar a clientes)
+
+**4. Páginas con redirección (correcto, no hacer nada):**
+- `http://www.stickywork.com/` → `https://stickywork.com/`
+- `http://stickywork.com/` → `https://stickywork.com/`
+- `https://www.stickywork.com/` → `https://stickywork.com/`
+- `https://www.stickywork.com/index.html` → `https://stickywork.com/`
+
+**5. Páginas con noindex intencional (correcto):**
+- `super-admin-login.html`, `super-admin.html`, `404.html`
+- Todas las demos (`demos/*.html`) - solo para mostrar a clientes
+
+#### Archivos creados:
+- `terminos.html` - Página completa de Términos y Condiciones para SaaS
+- `privacidad.html` - Redirección a politica-privacidad.html
+
+#### Archivos modificados:
+- `forgot-password.html` - Añadido API_URL correcto
+- `index.html` - Corregida URL del API (de Render a api.stickywork.com)
+- `sitemap.xml` - Actualizado fechas, añadidas páginas, quitadas demos
+
+#### Commits:
+- `b220e8a` - feat: Añadir página Términos y Condiciones + mejorar SEO
+- `6a17b67` - fix: Corregir URL de API en forgot-password.html
+- `13d8b7e` - fix: Corregir URL de API en formulario de contacto (index.html)
+- `6cfd104` - chore: Quitar demos del sitemap (tienen noindex intencional)
+
+#### 📝 Lecciones aprendidas
+- Google Search Console ayuda a encontrar bugs de funcionalidad, no solo problemas de SEO
+- Las URLs relativas (`/api/...`) en páginas estáticas de GitHub Pages apuntan al frontend, no al backend
+- Mantener consistencia entre `noindex` y `sitemap.xml` - no incluir páginas con noindex en el sitemap
+
+#### 🔧 Acciones pendientes en Search Console
+1. Solicitar indexación de `/privacidad.html` y `/terminos.html`
+2. Las demás URLs incorrectas (api.stickywork.com/demos/*) desaparecerán solas
+
+---
+
 **Última actualización:** 23-ene-2026
 **Próxima revisión:** 26-ene-2026 (fin de semana 04)
 
 ---
 
-**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito + ✅ Bug consultoría corregido.
+**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito + ✅ Bug consultoría corregido + ✅ Optimización SEO y corrección de bugs encontrados via Search Console.
