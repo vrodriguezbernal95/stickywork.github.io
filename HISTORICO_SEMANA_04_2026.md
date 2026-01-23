@@ -752,9 +752,68 @@ CVC: Cualquier 3 dígitos (ej: 123)
 
 ---
 
-**Última actualización:** 21-ene-2026
+### Sesión 6: 23-ene-2026 - Fix Bug Consultoría Premium
+
+#### ✅ Completado
+
+**1. Diagnóstico del problema**
+- **Síntoma:** Error en consola al acceder a la sección Consultoría en el dashboard
+- **Error:** `TypeError: Cannot read properties of undefined (reading 'reason')`
+- **Ubicación:** `consultancy.js:88` en función `renderEligibilityStatus`
+
+**2. Causa raíz identificada (2 problemas)**
+
+**Problema 1: Estructura de respuesta incorrecta**
+- El endpoint `/api/consultancy/can-request` devuelve: `{ success, canRequest, reason, message }`
+- El frontend esperaba: `eligibilityRes.data?.canRequest`
+- Pero la respuesta NO está envuelta en `.data`
+
+**Problema 2: Falta de validación defensiva**
+- La función `renderEligibilityStatus(eligibility)` accedía a `eligibility.reason` sin verificar que `eligibility` existiera
+- Si el API fallaba o devolvía algo inesperado, crasheaba
+
+**3. Solución implementada**
+
+**Fix 1 - Estructura de respuesta (commit `40834b0`):**
+```javascript
+// Antes (incorrecto)
+this.canRequest = eligibilityRes.data?.canRequest || false;
+this.render(eligibilityRes.data);
+
+// Después (correcto)
+this.canRequest = eligibilityRes?.canRequest || false;
+this.render(eligibilityRes);
+```
+
+**Fix 2 - Validación defensiva (commit `66636c5`):**
+```javascript
+renderEligibilityStatus(eligibility) {
+    // Manejar caso de eligibility undefined o null
+    if (!eligibility) {
+        return `<div class="alert alert-warning">
+            <strong>No disponible:</strong> No se pudo verificar la elegibilidad.
+        </div>`;
+    }
+    // ... resto del código
+}
+```
+
+#### Archivos modificados:
+- `admin/js/consultancy.js` - Fix estructura respuesta + validación defensiva
+
+#### Commits:
+- `40834b0` - fix: Corregir estructura de respuesta en módulo consultoría
+- `66636c5` - fix: Manejar eligibility undefined en renderEligibilityStatus
+
+#### 📝 Lección aprendida
+- Los endpoints del backend no son consistentes: algunos devuelven `{ success, data: {...} }` y otros devuelven los datos directamente en el objeto raíz
+- Siempre añadir validaciones defensivas en el frontend para manejar respuestas inesperadas
+
+---
+
+**Última actualización:** 23-ene-2026
 **Próxima revisión:** 26-ene-2026 (fin de semana 04)
 
 ---
 
-**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito.
+**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito + ✅ Bug consultoría corregido.
