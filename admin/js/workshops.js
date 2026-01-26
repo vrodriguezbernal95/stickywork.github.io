@@ -14,7 +14,7 @@ const workshops = {
 
     async loadWorkshops(includePast = false) {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/api/workshops?includesPast=${includePast}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -327,7 +327,7 @@ const workshops = {
         }
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const isEdit = this.currentWorkshop !== null;
             const url = isEdit
                 ? `${API_URL}/api/workshops/${this.currentWorkshop.id}`
@@ -360,7 +360,7 @@ const workshops = {
 
     async toggleActive(id) {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/api/workshops/${id}/toggle`, {
                 method: 'PATCH',
                 headers: {
@@ -394,7 +394,7 @@ const workshops = {
         if (!confirmed) return;
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/api/workshops/${id}`, {
                 method: 'DELETE',
                 headers: {
@@ -418,7 +418,7 @@ const workshops = {
 
     async viewBookings(workshopId) {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/api/workshops/${workshopId}/bookings`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -514,7 +514,7 @@ const workshops = {
 
     async updateBookingStatus(bookingId, status) {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const response = await fetch(`${API_URL}/api/workshops/bookings/${bookingId}/status`, {
                 method: 'PATCH',
                 headers: {
