@@ -812,7 +812,9 @@
                 gap: 1rem;
                 max-height: 400px;
                 overflow-y: auto;
-                padding-right: 0.5rem;
+                padding: 0.5rem;
+                margin: -0.5rem;
+                margin-bottom: 0;
             }
             .stickywork-workshop-card {
                 border: 2px solid ${colors.borderColor};
@@ -821,16 +823,19 @@
                 cursor: pointer;
                 transition: all 0.3s ease;
                 background: ${colors.bgSecondary};
+                position: relative;
             }
             .stickywork-workshop-card:hover:not(.stickywork-workshop-full) {
                 border-color: ${primaryColor};
-                box-shadow: 0 4px 12px ${primaryColor}20;
-                transform: translateY(-2px);
+                box-shadow: 0 6px 20px ${primaryColor}30;
+                transform: translateY(-3px);
+                z-index: 1;
             }
             .stickywork-workshop-card.selected {
                 border-color: ${primaryColor};
                 background: ${primaryColor}10;
                 box-shadow: 0 0 0 3px ${primaryColor}30;
+                z-index: 1;
             }
             .stickywork-workshop-card.stickywork-workshop-full {
                 opacity: 0.6;
