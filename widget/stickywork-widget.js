@@ -1239,7 +1239,10 @@
 
         // Formatear fecha
         const formatDate = (dateStr) => {
-            const date = new Date(dateStr + 'T00:00:00');
+            if (!dateStr) return '';
+            // Manejar tanto formato ISO completo como solo fecha
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr; // Si no es válida, devolver original
             const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
         };
