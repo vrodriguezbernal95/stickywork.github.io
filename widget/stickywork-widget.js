@@ -13,7 +13,7 @@
     const defaultConfig = {
         businessId: 1,
         mode: 'embedded',
-        bookingMode: 'services', // 'services', 'tables', 'classes', 'simple'
+        bookingMode: 'services', // 'services', 'tables', 'classes', 'workshops', 'simple'
         apiUrl: '',
         primaryColor: '#3b82f6',
         secondaryColor: '#ef4444',
@@ -27,7 +27,8 @@
         services: [],
         professionals: [],
         zones: [],
-        classes: []
+        classes: [],
+        workshops: []
     };
 
     let config = {};
@@ -40,6 +41,7 @@
             title: 'Reserva tu Cita',
             titleRestaurant: 'Reserva tu Mesa',
             titleClass: 'Reserva tu Clase',
+            titleWorkshop: 'Reserva tu Taller',
             name: 'Nombre completo',
             email: 'Email',
             phone: 'Telefono',
@@ -52,6 +54,14 @@
             selectZone: 'Sin preferencia',
             class: 'Clase',
             selectClass: 'Selecciona una clase',
+            workshop: 'Taller',
+            selectWorkshop: 'Selecciona un taller',
+            noWorkshops: 'No hay talleres disponibles en este momento',
+            workshopDate: 'Fecha del taller',
+            workshopTime: 'Horario',
+            workshopPrice: 'Precio',
+            workshopSpots: 'Plazas disponibles',
+            workshopFull: 'Completo',
             date: 'Fecha',
             time: 'Hora',
             selectTime: 'Selecciona una hora',
@@ -70,12 +80,14 @@
             people: 'personas',
             person: 'persona',
             minutes: 'min',
-            spots: 'plazas'
+            spots: 'plazas',
+            free: 'Gratis'
         },
         en: {
             title: 'Book Your Appointment',
             titleRestaurant: 'Book Your Table',
             titleClass: 'Book Your Class',
+            titleWorkshop: 'Book Your Workshop',
             name: 'Full name',
             email: 'Email',
             phone: 'Phone',
@@ -88,6 +100,14 @@
             selectZone: 'No preference',
             class: 'Class',
             selectClass: 'Select a class',
+            workshop: 'Workshop',
+            selectWorkshop: 'Select a workshop',
+            noWorkshops: 'No workshops available at this time',
+            workshopDate: 'Workshop date',
+            workshopTime: 'Schedule',
+            workshopPrice: 'Price',
+            workshopSpots: 'Available spots',
+            workshopFull: 'Full',
             date: 'Date',
             time: 'Time',
             selectTime: 'Select a time',
@@ -106,7 +126,8 @@
             people: 'guests',
             person: 'guest',
             minutes: 'min',
-            spots: 'spots'
+            spots: 'spots',
+            free: 'Free'
         }
     };
 
@@ -783,6 +804,96 @@
                     left: 1rem;
                 }
             }
+
+            /* Workshop Styles */
+            .stickywork-workshop-list {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                max-height: 400px;
+                overflow-y: auto;
+                padding-right: 0.5rem;
+            }
+            .stickywork-workshop-card {
+                border: 2px solid ${colors.borderColor};
+                border-radius: ${borderRadius};
+                padding: 1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                background: ${colors.bgSecondary};
+            }
+            .stickywork-workshop-card:hover:not(.stickywork-workshop-full) {
+                border-color: ${primaryColor};
+                box-shadow: 0 4px 12px ${primaryColor}20;
+                transform: translateY(-2px);
+            }
+            .stickywork-workshop-card.selected {
+                border-color: ${primaryColor};
+                background: ${primaryColor}10;
+                box-shadow: 0 0 0 3px ${primaryColor}30;
+            }
+            .stickywork-workshop-card.stickywork-workshop-full {
+                opacity: 0.6;
+                cursor: not-allowed;
+                background: ${colors.bgSecondary};
+            }
+            .stickywork-workshop-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 0.5rem;
+            }
+            .stickywork-workshop-name {
+                margin: 0;
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: ${colors.textPrimary};
+            }
+            .stickywork-workshop-price {
+                background: ${primaryColor};
+                color: white;
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+            .stickywork-workshop-desc {
+                color: ${colors.textSecondary};
+                font-size: 0.9rem;
+                margin: 0.5rem 0;
+                line-height: 1.4;
+            }
+            .stickywork-workshop-info {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                margin: 0.75rem 0;
+            }
+            .stickywork-workshop-date,
+            .stickywork-workshop-time {
+                color: ${colors.textSecondary};
+                font-size: 0.9rem;
+            }
+            .stickywork-workshop-footer {
+                border-top: 1px solid ${colors.borderColor};
+                padding-top: 0.75rem;
+                margin-top: 0.5rem;
+            }
+            .stickywork-workshop-status {
+                font-size: 0.85rem;
+                font-weight: 500;
+            }
+            .stickywork-workshop-status.available {
+                color: #10b981;
+            }
+            .stickywork-workshop-status.full {
+                color: #ef4444;
+            }
+            .stickywork-workshop-empty {
+                text-align: center;
+                padding: 2rem;
+                color: ${colors.textSecondary};
+            }
         `;
         document.head.appendChild(style);
     }
@@ -805,6 +916,26 @@
             console.log('StickyWork: Usando configuracion local');
         }
         return null;
+    }
+
+    // Cargar talleres disponibles
+    async function loadWorkshops() {
+        if (!config.apiUrl || !config.businessId) return [];
+
+        try {
+            console.log('📡 [Widget] Cargando talleres desde:', `${config.apiUrl}/api/workshops/public/${config.businessId}`);
+            const response = await fetch(`${config.apiUrl}/api/workshops/public/${config.businessId}`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.workshops) {
+                    console.log('✅ [Widget] Talleres recibidos:', data.workshops.length);
+                    return data.workshops;
+                }
+            }
+        } catch (error) {
+            console.error('❌ [Widget] Error al cargar talleres:', error);
+        }
+        return [];
     }
 
     // Función auxiliar: Generar slots para un rango de tiempo específico
@@ -921,6 +1052,7 @@
         switch (config.bookingMode) {
             case 'tables': return t.titleRestaurant;
             case 'classes': return t.titleClass;
+            case 'workshops': return t.titleWorkshop;
             default: return t.title;
         }
     }
@@ -934,6 +1066,8 @@
                 return createRestaurantFields(t);
             case 'classes':
                 return createClassFields(t);
+            case 'workshops':
+                return createWorkshopFields(t);
             case 'services':
             default:
                 return createServiceFields(t);
@@ -1044,32 +1178,119 @@
         `;
     }
 
+    // Campos para talleres (workshops)
+    function createWorkshopFields(t) {
+        const workshops = config.workshops || [];
+
+        if (workshops.length === 0) {
+            return `
+                <div class="stickywork-workshop-empty">
+                    <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        ${t.noWorkshops}
+                    </p>
+                </div>
+            `;
+        }
+
+        // Formatear fecha
+        const formatDate = (dateStr) => {
+            const date = new Date(dateStr + 'T00:00:00');
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+        };
+
+        // Formatear hora
+        const formatTime = (timeStr) => {
+            return timeStr ? timeStr.substring(0, 5) : '';
+        };
+
+        // Crear tarjetas de talleres
+        const workshopCards = workshops.map(w => {
+            const availableSpots = w.available_spots || (w.capacity - (w.booked_count || 0));
+            const isFull = availableSpots <= 0;
+            const priceText = w.price > 0 ? `${w.price}€` : t.free;
+
+            return `
+                <div class="stickywork-workshop-card ${isFull ? 'stickywork-workshop-full' : ''}"
+                     data-workshop-id="${w.id}"
+                     ${!isFull ? `onclick="StickyWork.selectWorkshop(${w.id})"` : ''}>
+                    <div class="stickywork-workshop-header">
+                        <h4 class="stickywork-workshop-name">${w.name}</h4>
+                        <span class="stickywork-workshop-price">${priceText}</span>
+                    </div>
+                    ${w.description ? `<p class="stickywork-workshop-desc">${w.description}</p>` : ''}
+                    <div class="stickywork-workshop-info">
+                        <span class="stickywork-workshop-date">📅 ${formatDate(w.workshop_date)}</span>
+                        <span class="stickywork-workshop-time">🕐 ${formatTime(w.start_time)} - ${formatTime(w.end_time)}</span>
+                    </div>
+                    <div class="stickywork-workshop-footer">
+                        ${isFull
+                            ? `<span class="stickywork-workshop-status full">🔴 ${t.workshopFull}</span>`
+                            : `<span class="stickywork-workshop-status available">🟢 ${availableSpots} ${t.workshopSpots}</span>`
+                        }
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="stickywork-field">
+                <label class="stickywork-label">${t.workshop}</label>
+                <div class="stickywork-workshop-list">
+                    ${workshopCards}
+                </div>
+                <input type="hidden" name="workshop_id" required>
+            </div>
+            <div class="stickywork-field">
+                <label class="stickywork-label">${t.numPeople}</label>
+                <div class="stickywork-people-selector">
+                    <button type="button" class="stickywork-people-btn" id="stickywork-people-decrement">-</button>
+                    <input type="number" class="stickywork-people-count" id="stickywork-people-count"
+                           value="1" min="1" max="10"
+                           oninput="StickyWork.updatePeopleCount(this.value)">
+                    <button type="button" class="stickywork-people-btn" id="stickywork-people-increment">+</button>
+                    <span style="color: var(--text-secondary);">${t.people}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Variable para taller seleccionado
+    let selectedWorkshop = null;
+
+    // Seleccionar taller
+    window.StickyWork.selectWorkshop = function(workshopId) {
+        const workshop = config.workshops.find(w => w.id === workshopId);
+        if (!workshop) return;
+
+        selectedWorkshop = workshop;
+
+        // Actualizar input hidden
+        const input = document.querySelector('input[name="workshop_id"]');
+        if (input) input.value = workshopId;
+
+        // Actualizar UI - marcar como seleccionado
+        document.querySelectorAll('.stickywork-workshop-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        const selectedCard = document.querySelector(`.stickywork-workshop-card[data-workshop-id="${workshopId}"]`);
+        if (selectedCard) {
+            selectedCard.classList.add('selected');
+        }
+
+        console.log('🎫 [Widget] Taller seleccionado:', workshop.name);
+    };
+
     // Crear HTML del formulario
     function createFormHTML() {
         const t = translations[config.language];
         const timeSlots = generateTimeSlots();
         const isDemoMode = !config.apiUrl;
         const showNotes = config.bookingMode === 'services';
+        const isWorkshopMode = config.bookingMode === 'workshops';
 
-        return `
-            <div class="stickywork-widget">
-                <h3 class="stickywork-title">${getTitle()}</h3>
-                <form class="stickywork-form" id="stickywork-form">
-                    <div class="stickywork-row">
-                        <div class="stickywork-field">
-                            <label class="stickywork-label">${t.name}</label>
-                            <input type="text" class="stickywork-input" name="name" placeholder="${t.name}" required>
-                        </div>
-                        <div class="stickywork-field">
-                            <label class="stickywork-label">${t.phone}</label>
-                            <input type="tel" class="stickywork-input" name="phone" placeholder="+34 600 000 000" required>
-                        </div>
-                    </div>
-                    <div class="stickywork-field">
-                        <label class="stickywork-label">${t.email}</label>
-                        <input type="email" class="stickywork-input" name="email" placeholder="${t.email}" required>
-                    </div>
-                    ${createModeSpecificFields()}
+        // Para workshops, no necesitamos el row de fecha/hora ya que viene del taller
+        const dateTimeSection = isWorkshopMode ? '' : `
                     <div class="stickywork-row">
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.date}</label>
@@ -1124,6 +1345,28 @@
                             `}
                         </div>
                     </div>
+        `;
+
+        return `
+            <div class="stickywork-widget">
+                <h3 class="stickywork-title">${getTitle()}</h3>
+                <form class="stickywork-form" id="stickywork-form">
+                    <div class="stickywork-row">
+                        <div class="stickywork-field">
+                            <label class="stickywork-label">${t.name}</label>
+                            <input type="text" class="stickywork-input" name="name" placeholder="${t.name}" required>
+                        </div>
+                        <div class="stickywork-field">
+                            <label class="stickywork-label">${t.phone}</label>
+                            <input type="tel" class="stickywork-input" name="phone" placeholder="+34 600 000 000" required>
+                        </div>
+                    </div>
+                    <div class="stickywork-field">
+                        <label class="stickywork-label">${t.email}</label>
+                        <input type="email" class="stickywork-input" name="email" placeholder="${t.email}" required>
+                    </div>
+                    ${createModeSpecificFields()}
+                    ${dateTimeSection}
                     ${showNotes ? `
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.notes}</label>
@@ -1165,6 +1408,11 @@
             `;
         } else if (config.bookingMode === 'classes') {
             details += `<p class="stickywork-success-detail"><strong>${t.class}:</strong> ${formData.class}</p>`;
+        } else if (config.bookingMode === 'workshops') {
+            details += `
+                <p class="stickywork-success-detail"><strong>${t.workshop}:</strong> ${formData.workshopName}</p>
+                <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
+            `;
         } else {
             details += `<p class="stickywork-success-detail"><strong>${t.service}:</strong> ${formData.service}</p>`;
             if (formData.professional) {
@@ -1172,10 +1420,18 @@
             }
         }
 
-        details += `
-            <p class="stickywork-success-detail"><strong>${t.date}:</strong> ${formData.date}</p>
-            <p class="stickywork-success-detail"><strong>${t.time}:</strong> ${formData.time}</p>
-        `;
+        // Para workshops, la fecha y hora vienen del taller seleccionado
+        if (config.bookingMode !== 'workshops') {
+            details += `
+                <p class="stickywork-success-detail"><strong>${t.date}:</strong> ${formData.date}</p>
+                <p class="stickywork-success-detail"><strong>${t.time}:</strong> ${formData.time}</p>
+            `;
+        } else if (formData.workshopDate && formData.workshopTime) {
+            details += `
+                <p class="stickywork-success-detail"><strong>${t.workshopDate}:</strong> ${formData.workshopDate}</p>
+                <p class="stickywork-success-detail"><strong>${t.workshopTime}:</strong> ${formData.workshopTime}</p>
+            `;
+        }
 
         return `
             <div class="stickywork-widget">
@@ -1613,6 +1869,26 @@
         }
 
         try {
+            // Para talleres, usar endpoint especial
+            if (config.bookingMode === 'workshops' && formData.workshopId) {
+                const workshopBookingData = {
+                    customer_name: formData.name,
+                    customer_email: formData.email,
+                    customer_phone: formData.phone || '',
+                    num_people: formData.numPeople || 1,
+                    whatsapp_consent: formData.whatsappConsent || false
+                };
+
+                console.log('📤 [Debug] Enviando reserva de taller:', workshopBookingData);
+
+                const response = await fetch(`${config.apiUrl}/api/workshops/book/${formData.workshopId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(workshopBookingData)
+                });
+                return await response.json();
+            }
+
             // Determinar valor por defecto de personas según el tipo de negocio
             // - Servicios (peluquería, etc.): 1 persona por defecto
             // - Restaurantes/Mesas: 2 personas por defecto
@@ -1656,8 +1932,8 @@
             name: form.name.value,
             email: form.email.value,
             phone: form.phone?.value || '',
-            date: form.date.value,
-            time: form.time.value,
+            date: form.date?.value || '',
+            time: form.time?.value || '',
             whatsappConsent: form.querySelector('input[name="whatsapp_consent"]')?.checked || false
         };
 
@@ -1671,6 +1947,23 @@
             // El servicio se asignará automáticamente en el backend según la hora
         } else if (config.bookingMode === 'classes') {
             formData.class = form.class?.value || '';
+        } else if (config.bookingMode === 'workshops') {
+            // Para talleres
+            const workshopId = form.querySelector('input[name="workshop_id"]')?.value;
+            if (!workshopId || !selectedWorkshop) {
+                alert('Por favor selecciona un taller');
+                return;
+            }
+            formData.workshopId = workshopId;
+            formData.workshopName = selectedWorkshop.name;
+            // Formatear fecha y hora del taller para mostrar en success
+            const date = new Date(selectedWorkshop.workshop_date + 'T00:00:00');
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            formData.workshopDate = `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            formData.workshopTime = `${selectedWorkshop.start_time?.substring(0, 5)} - ${selectedWorkshop.end_time?.substring(0, 5)}`;
+            // Personas
+            const peopleInput = form.querySelector('#stickywork-people-count');
+            formData.numPeople = peopleInput ? parseInt(peopleInput.value) : 1;
         } else {
             formData.service = form.service?.value || '';
             formData.professional = form.professional?.value || '';
@@ -1774,20 +2067,23 @@
         // Inicializar botones de personas
         initPeopleButtons();
 
-        // Inicializar listener de fecha para cargar disponibilidad
-        initDateListener();
+        // Para workshops, no necesitamos calendario ni listeners de fecha/zona
+        if (config.bookingMode !== 'workshops') {
+            // Inicializar listener de fecha para cargar disponibilidad
+            initDateListener();
 
-        // Inicializar listener de zona para actualizar badges
-        initZoneListener();
+            // Inicializar listener de zona para actualizar badges
+            initZoneListener();
 
-        // Resetear bandera antes de inicializar
-        calendarDropdownInitialized = false;
+            // Resetear bandera antes de inicializar
+            calendarDropdownInitialized = false;
 
-        // Renderizar calendario personalizado
-        renderCalendar();
+            // Renderizar calendario personalizado
+            renderCalendar();
 
-        // Inicializar dropdown del calendario
-        initCalendarDropdown();
+            // Inicializar dropdown del calendario
+            initCalendarDropdown();
+        }
     }
 
     // Listener para campo de fecha
@@ -2024,18 +2320,21 @@
         // Inicializar botones de personas en modal (pasar modal como contexto)
         initPeopleButtons(modal);
 
-        // Inicializar listeners
-        initDateListener();
-        initZoneListener();
+        // Para workshops, no necesitamos calendario
+        if (config.bookingMode !== 'workshops') {
+            // Inicializar listeners
+            initDateListener();
+            initZoneListener();
 
-        // Resetear bandera antes de inicializar
-        calendarDropdownInitialized = false;
+            // Resetear bandera antes de inicializar
+            calendarDropdownInitialized = false;
 
-        // Renderizar calendario personalizado
-        renderCalendar();
+            // Renderizar calendario personalizado
+            renderCalendar();
 
-        // Inicializar dropdown del calendario
-        initCalendarDropdown();
+            // Inicializar dropdown del calendario
+            initCalendarDropdown();
+        }
     }
 
     function closeModal() {
@@ -2060,8 +2359,9 @@
     }
 
     function reset() {
-        peopleCount = 2;
+        peopleCount = config.bookingMode === 'workshops' ? 1 : 2;
         selectedDate = null;
+        selectedWorkshop = null;
         calendarDropdownInitialized = false; // Resetear bandera
         if (config.mode === 'embedded') {
             renderEmbedded();
@@ -2070,10 +2370,12 @@
             const form = widgetContainer.querySelector('#stickywork-form');
             if (form) form.addEventListener('submit', handleSubmit);
             initPeopleButtons();
-            initDateListener();
-            initZoneListener();
-            renderCalendar();
-            initCalendarDropdown();
+            if (config.bookingMode !== 'workshops') {
+                initDateListener();
+                initZoneListener();
+                renderCalendar();
+                initCalendarDropdown();
+            }
         }
     }
 
@@ -2087,6 +2389,13 @@
             if (loaded) {
                 businessConfig = loaded;
                 config = { ...config, ...loaded };
+            }
+
+            // Cargar talleres si el modo es workshops
+            if (config.bookingMode === 'workshops') {
+                const workshops = await loadWorkshops();
+                config.workshops = workshops;
+                console.log('🎫 [Widget] Talleres cargados:', workshops.length);
             }
         }
 
