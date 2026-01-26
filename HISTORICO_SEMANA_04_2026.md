@@ -671,11 +671,11 @@ stickywork/
 - [ ] Probar portal de cliente
 - [ ] Probar cancelación
 
-**3. Implementar emails de suscripción (opcional)**
-- [ ] Email de bienvenida al suscribirse
-- [ ] Email de recordatorio fin de trial (3 días antes)
-- [ ] Email de pago fallido
-- [ ] Email de cancelación
+**3. Emails de suscripción** ✅ COMPLETADO (verificado sesión 8)
+- [x] Email de bienvenida al suscribirse
+- [x] Email de recordatorio fin de trial (3 días antes)
+- [x] Email de pago fallido
+- [x] Email de cancelación
 
 ### 🟡 Prioridad MEDIA
 
@@ -875,9 +875,75 @@ renderEligibilityStatus(eligibility) {
 
 ---
 
-**Última actualización:** 23-ene-2026
-**Próxima revisión:** 26-ene-2026 (fin de semana 04)
+### Sesión 8: 26-ene-2026 - Fix Premium Access + Auditoría de Emails
+
+#### ✅ Completado
+
+**1. Fix: Clientes Premium no podían acceder a Consultoría**
+- **Síntoma:** Usuario "La Famiglia" con plan Premium veía mensaje "no eres premium"
+- **Diagnóstico:** La función `isPremiumBusiness()` solo buscaba en tabla `subscriptions` (vacía para clientes legacy)
+- **Causa:** El plan estaba en `businesses.plan = 'premium'` pero la función no verificaba esta tabla
+
+**Solución implementada en `backend/routes/consultancy.js`:**
+```javascript
+async function isPremiumBusiness(businessId) {
+    // 1. Primero verificar tabla subscriptions (Stripe)
+    const subscription = await db.query(`
+        SELECT plan_name, status FROM subscriptions
+        WHERE business_id = ? AND status IN ('active', 'trialing')
+        ORDER BY created_at DESC LIMIT 1
+    `, [businessId]);
+
+    if (subscription?.length > 0) {
+        return subscription[0].plan_name === 'premium';
+    }
+
+    // 2. Fallback: verificar tabla businesses (legacy)
+    const business = await db.query(`
+        SELECT plan, subscription_status FROM businesses WHERE id = ?
+    `, [businessId]);
+
+    if (!business?.length) return false;
+
+    const validStatus = ['active', 'trialing', 'trial'];
+    return business[0].plan === 'premium' &&
+           validStatus.includes(business[0].subscription_status);
+}
+```
+
+**2. Auditoría de Emails de Suscripción - ¡Ya implementados!**
+
+Al revisar los archivos `stripe.js` y `email-service.js`, se descubrió que **todos los emails de suscripción ya estaban implementados** desde la Sesión 5:
+
+| Email | Handler | Cuándo se envía |
+|-------|---------|-----------------|
+| **Bienvenida** | `handleCheckoutComplete()` | Al completar checkout de Stripe |
+| **Fin de trial** | `handleTrialEnding()` | 3 días antes (evento `customer.subscription.trial_will_end`) |
+| **Pago fallido** | `startGracePeriod()` | Al fallar un cobro (evento `invoice.payment_failed`) |
+| **Cancelación** | `handleSubscriptionCanceled()` | Al cancelar suscripción |
+
+**Templates en `email-service.js`:**
+- `subscriptionWelcome` - Bienvenida con info del plan
+- `trialEnding` - Recordatorio con días restantes
+- `paymentFailed` - Aviso con período de gracia de 5 días
+- `subscriptionCanceled` - Confirmación de cancelación
+
+**Nota:** La tarea "Implementar emails de suscripción" marcada como pendiente en Sesión 5 ya estaba resuelta. Los emails se implementaron junto con los webhook handlers de Stripe.
+
+#### 📝 Lecciones aprendidas
+- Siempre hay que verificar múltiples fuentes de datos (en este caso `subscriptions` Y `businesses.plan`)
+- Los clientes que no vinieron vía Stripe (legacy) tienen datos en `businesses.plan` en vez de `subscriptions`
+- Es útil hacer auditorías periódicas del código - a veces hay features implementadas pero no documentadas
+
+#### Commits:
+- `120c811` - chore: Actualizar versión debug endpoint
+- `654d27f` - feat: Implementar sistema de consultorías para clientes Premium
 
 ---
 
-**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito + ✅ Bug consultoría corregido + ✅ Optimización SEO y corrección de bugs encontrados via Search Console.
+**Última actualización:** 26-ene-2026
+**Próxima revisión:** 02-feb-2026 (inicio semana 05)
+
+---
+
+**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito + ✅ Bug consultoría corregido + ✅ Optimización SEO y corrección de bugs encontrados via Search Console + ✅ Fix acceso Premium a Consultoría + ✅ Emails de suscripción verificados como funcionales.

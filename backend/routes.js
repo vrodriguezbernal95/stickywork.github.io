@@ -170,18 +170,110 @@ router.use(stripeRoutes);
 router.use('/api/consultancy', consultancyRoutes);
 
 // ==================== DEBUG ENDPOINT ====================
-router.get('/api/debug/version', (req, res) => {
+router.get('/api/debug/version', async (req, res) => {
+    // Verificar estado del email service
+    let emailStatus = 'not_configured';
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+        try {
+            const transporter = emailService.getTransporter();
+            if (transporter) {
+                await transporter.verify();
+                emailStatus = 'connected';
+            }
+        } catch (error) {
+            emailStatus = 'error: ' + error.message;
+        }
+    }
+
     res.json({
         success: true,
-        version: '654d27f',
-        timestamp: '2026-01-22T13:00:00Z',
-        message: 'Sistema de consultorías Premium',
+        version: '120c811',
+        timestamp: '2026-01-26T10:00:00Z',
+        message: 'Emails de equipo y suscripción',
         features: {
             aiReportsEnabled: true,
             nullHandling: true,
-            apiKeyConfigured: !!process.env.ANTHROPIC_API_KEY
+            apiKeyConfigured: !!process.env.ANTHROPIC_API_KEY,
+            emailConfigured: !!process.env.EMAIL_USER,
+            emailStatus: emailStatus,
+            stripeConfigured: !!process.env.STRIPE_SECRET_KEY
         }
     });
+});
+
+// Endpoint de prueba de email (solo super-admin)
+router.post('/api/debug/test-email', async (req, res) => {
+    // Verificar token de super-admin simple
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({
+            success: false,
+            message: 'No autorizado'
+        });
+    }
+
+    const { email, type } = req.body;
+
+    if (!email) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email requerido'
+        });
+    }
+
+    try {
+        const testUser = {
+            id: 999,
+            email: email,
+            full_name: 'Usuario de Prueba',
+            role: 'staff'
+        };
+
+        const testBusiness = {
+            name: 'Negocio de Prueba',
+            email: 'test@stickywork.com'
+        };
+
+        let result;
+
+        if (type === 'team-welcome') {
+            // Probar email de bienvenida de equipo
+            result = await emailService.sendTeamMemberWelcome(
+                testUser,
+                testBusiness,
+                'password-temporal-123'
+            );
+        } else {
+            // Email genérico de prueba
+            result = await emailService.sendEmail(email, {
+                subject: '🧪 Email de Prueba - StickyWork',
+                html: `
+                    <div style="font-family: Arial, sans-serif; padding: 20px;">
+                        <h1 style="color: #10b981;">✅ Email de Prueba Exitoso</h1>
+                        <p>Este es un email de prueba del sistema StickyWork.</p>
+                        <p>Timestamp: ${new Date().toISOString()}</p>
+                        <p>Si recibes este email, el sistema de emails está funcionando correctamente.</p>
+                    </div>
+                `
+            });
+        }
+
+        res.json({
+            success: true,
+            message: `Email de prueba enviado a ${email}`,
+            result: result
+        });
+
+    } catch (error) {
+        console.error('Error enviando email de prueba:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error enviando email',
+            error: error.message
+        });
+    }
 });
 
 // ==================== SETUP DEMOS ====================
