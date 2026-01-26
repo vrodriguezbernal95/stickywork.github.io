@@ -1989,8 +1989,8 @@
         }
 
         try {
-            // Para talleres, usar endpoint especial
-            if (config.bookingMode === 'workshops' && formData.workshopId) {
+            // Para talleres, usar endpoint especial (detectar por workshopId, no por bookingMode)
+            if (formData.workshopId) {
                 const workshopBookingData = {
                     customer_name: formData.name,
                     customer_email: formData.email,
