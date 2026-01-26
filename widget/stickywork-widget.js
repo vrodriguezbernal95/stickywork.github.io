@@ -2080,9 +2080,11 @@
             formData.workshopId = workshopId;
             formData.workshopName = selectedWorkshop.name;
             // Formatear fecha y hora del taller para mostrar en success
-            const date = new Date(selectedWorkshop.workshop_date + 'T00:00:00');
+            const date = new Date(selectedWorkshop.workshop_date);
             const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            formData.workshopDate = `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            formData.workshopDate = !isNaN(date.getTime())
+                ? `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`
+                : selectedWorkshop.workshop_date;
             formData.workshopTime = `${selectedWorkshop.start_time?.substring(0, 5)} - ${selectedWorkshop.end_time?.substring(0, 5)}`;
             // Personas
             const peopleInput = form.querySelector('#stickywork-people-count');
