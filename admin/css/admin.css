@@ -2798,3 +2798,319 @@ body::before {
 .btn-danger:hover {
     background-color: var(--secondary-dark);
 }
+
+/* ==================== TALLERES / WORKSHOPS ==================== */
+
+.workshops-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.workshops-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.workshops-header .header-left h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.workshops-header .subtitle {
+    margin: 0.5rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.workshops-header .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.workshops-header .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.workshops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.workshop-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.workshop-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.workshop-card.inactive {
+    opacity: 0.7;
+}
+
+.workshop-card.past {
+    opacity: 0.5;
+}
+
+.workshop-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.workshop-title {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.workshop-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.workshop-datetime,
+.workshop-price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.workshop-datetime .icon,
+.workshop-price .icon {
+    font-size: 1rem;
+}
+
+.workshop-capacity {
+    margin-bottom: 1rem;
+}
+
+.capacity-bar {
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.capacity-fill {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.capacity-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.workshop-description {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.workshop-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-green {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.badge-yellow {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.badge-orange {
+    background: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+}
+
+.badge-red {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.badge-blue {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.badge-gray {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    grid-column: 1 / -1;
+}
+
+.empty-state.small {
+    padding: 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    margin: 0 0 0.5rem;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* Bookings table */
+.bookings-summary {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.row-cancelled {
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+
+/* Form utilities */
+.form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.form-row .form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.form-row .form-group.flex-2 {
+    flex: 2;
+}
+
+.form-row .form-group.flex-1 {
+    flex: 1;
+}
+
+.form-input-sm {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+}
+
+/* Button utilities */
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.btn-warning {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid #fbbf24;
+}
+
+.btn-warning:hover {
+    background: rgba(251, 191, 36, 0.3);
+}
+
+.btn-success {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.btn-success:hover {
+    background: rgba(16, 185, 129, 0.3);
+}
+
+/* Modal sizes */
+.modal-lg {
+    max-width: 600px;
+}
+
+.modal-xl {
+    max-width: 900px;
+}
+
+/* Responsive workshops */
+@media (max-width: 768px) {
+    .workshops-header {
+        flex-direction: column;
+    }
+
+    .workshops-header .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .workshops-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .workshop-actions {
+        flex-direction: column;
+    }
+
+    .workshop-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+}

@@ -137,6 +137,14 @@ const app = {
                 }
                 break;
 
+            case 'workshops':
+                if (window.workshops) {
+                    await workshops.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             default:
                 this.showUnderConstruction();
         }
