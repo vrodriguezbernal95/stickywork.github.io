@@ -289,6 +289,75 @@ router.post('/api/debug/test-email', async (req, res) => {
     }
 });
 
+// Endpoint para ejecutar migración de talleres (solo una vez)
+router.post('/api/debug/run-workshops-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        // Crear tabla workshops
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS workshops (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                business_id INT NOT NULL,
+                name VARCHAR(200) NOT NULL,
+                description TEXT,
+                workshop_date DATE NOT NULL,
+                start_time TIME NOT NULL,
+                end_time TIME NOT NULL,
+                capacity INT NOT NULL DEFAULT 10,
+                price DECIMAL(10,2) DEFAULT 0.00,
+                is_active BOOLEAN DEFAULT TRUE,
+                image_url VARCHAR(500),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_workshop_business (business_id),
+                INDEX idx_workshop_date (workshop_date),
+                INDEX idx_workshop_active (is_active)
+            )
+        `);
+
+        // Crear tabla workshop_bookings
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS workshop_bookings (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                workshop_id INT NOT NULL,
+                customer_name VARCHAR(100) NOT NULL,
+                customer_email VARCHAR(100) NOT NULL,
+                customer_phone VARCHAR(20),
+                num_people INT NOT NULL DEFAULT 1,
+                total_price DECIMAL(10,2) DEFAULT 0.00,
+                status ENUM('pending', 'confirmed', 'cancelled', 'attended', 'no_show') DEFAULT 'confirmed',
+                notes TEXT,
+                whatsapp_consent BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_wb_workshop (workshop_id),
+                INDEX idx_wb_email (customer_email),
+                INDEX idx_wb_status (status)
+            )
+        `);
+
+        res.json({
+            success: true,
+            message: 'Migración de talleres ejecutada correctamente',
+            tables: ['workshops', 'workshop_bookings']
+        });
+
+    } catch (error) {
+        console.error('Error en migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);
 
