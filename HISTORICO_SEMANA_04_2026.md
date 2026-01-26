@@ -941,9 +941,111 @@ Al revisar los archivos `stripe.js` y `email-service.js`, se descubrió que **to
 
 ---
 
+### Sesión 9: 26-ene-2026 - Fix Sistema de Emails (Brevo API HTTP)
+
+#### 🐛 Problema Detectado
+
+Al intentar verificar que los emails de equipo funcionaban en producción, se descubrió que **Railway bloquea todas las conexiones SMTP salientes** (puertos 587 y 465).
+
+**Diagnóstico:**
+```json
+{
+  "emailConfigured": true,
+  "emailStatus": "error: Connection timeout"
+}
+```
+
+Se probaron ambos puertos:
+- Puerto 587 (STARTTLS) → Connection timeout
+- Puerto 465 (SSL) → Connection timeout
+
+#### ✅ Solución Implementada
+
+Se migró de **SMTP (Nodemailer)** a **API HTTP de Brevo**, que no tiene restricciones de puertos.
+
+**Cambios en `backend/email-service.js`:**
+```javascript
+// Nueva función para enviar via API HTTP
+async function sendEmailViaBrevoAPI(to, subject, htmlContent) {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+            'api-key': process.env.BREVO_API_KEY,
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            sender: { name: 'StickyWork', email: 'noreply@stickywork.com' },
+            to: [{ email: to }],
+            subject: subject,
+            htmlContent: htmlContent
+        })
+    });
+    // ...
+}
+
+// sendEmail() ahora usa Brevo API si está configurada
+async function sendEmail(to, template) {
+    if (process.env.BREVO_API_KEY) {
+        return await sendEmailViaBrevoAPI(to, template.subject, template.html);
+    }
+    // Fallback a SMTP...
+}
+```
+
+**Nueva variable de entorno en Railway:**
+```
+BREVO_API_KEY=xkeysib-...
+```
+
+**Endpoint de debug mejorado:**
+```json
+{
+  "emailMethod": "brevo_api",
+  "emailStatus": "configured"
+}
+```
+
+#### 🧪 Pruebas Realizadas
+
+1. **Verificación de configuración:** `/api/debug/version` muestra `emailMethod: "brevo_api"`
+2. **Email de prueba genérico:** ✅ Enviado y recibido correctamente
+3. **Email a usuario real:** ✅ Confirmado recibido en Gmail
+
+#### 📧 Emails que ahora funcionan en producción
+
+| Tipo | Función | Estado |
+|------|---------|--------|
+| Bienvenida equipo | `sendTeamMemberWelcome()` | ✅ Funcional |
+| Cambio de rol | `sendRoleChangedEmail()` | ✅ Funcional |
+| Desactivación | `sendDeactivationEmail()` | ✅ Funcional |
+| Reset password | `sendPasswordResetEmail()` | ✅ Funcional |
+| Bienvenida suscripción | `sendSubscriptionWelcome()` | ✅ Funcional |
+| Fin de trial | `sendTrialEndingEmail()` | ✅ Funcional |
+| Pago fallido | `sendPaymentFailedEmail()` | ✅ Funcional |
+| Cancelación | `sendSubscriptionCanceledEmail()` | ✅ Funcional |
+| Confirmación reserva | `sendBookingConfirmation()` | ✅ Funcional |
+| Notificación admin | `sendAdminNotification()` | ✅ Funcional |
+
+#### 📝 Lecciones aprendidas
+
+1. **Railway bloquea SMTP:** Las plataformas cloud suelen bloquear puertos SMTP para prevenir spam
+2. **APIs HTTP son más fiables:** No dependen de puertos específicos, funcionan en cualquier entorno
+3. **Brevo tiene API gratuita:** El plan gratuito de Brevo incluye 300 emails/día via API
+4. **Siempre tener fallback:** El código mantiene soporte SMTP por si se usa en otro hosting
+
+#### Archivos modificados:
+- `backend/email-service.js` - Nueva función `sendEmailViaBrevoAPI()`, lógica de selección de método
+- `backend/routes.js` - Endpoint debug mejorado con `emailMethod`
+
+#### Commits:
+- `3f43ff9` - feat: Añadir diagnóstico de email en endpoint debug
+- `29cf554` - feat: Implementar Brevo API HTTP para envío de emails
+
+---
+
 **Última actualización:** 26-ene-2026
 **Próxima revisión:** 02-feb-2026 (inicio semana 05)
 
 ---
 
-**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito + ✅ Bug consultoría corregido + ✅ Optimización SEO y corrección de bugs encontrados via Search Console + ✅ Fix acceso Premium a Consultoría + ✅ Emails de suscripción verificados como funcionales.
+**🎯 Objetivo clave semana 04:** ~~Tener sistema multi-usuario funcionando~~ ✅ COMPLETADO + ✅ Sistema de pagos Stripe implementado Y PROBADO con éxito + ✅ Bug consultoría corregido + ✅ Optimización SEO y corrección de bugs encontrados via Search Console + ✅ Fix acceso Premium a Consultoría + ✅ Emails de suscripción verificados como funcionales + ✅ **Sistema de emails migrado a Brevo API HTTP y funcionando en producción**.
