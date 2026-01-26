@@ -2152,6 +2152,12 @@
         const context = container || document;
         const decrementBtn = context.querySelector('#stickywork-people-decrement');
         const incrementBtn = context.querySelector('#stickywork-people-increment');
+        const countInput = context.querySelector('#stickywork-people-count');
+
+        // Sincronizar peopleCount con el valor actual del input
+        if (countInput) {
+            peopleCount = parseInt(countInput.value) || 1;
+        }
 
         if (decrementBtn) {
             decrementBtn.addEventListener('click', function(e) {
