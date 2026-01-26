@@ -36,7 +36,7 @@ const workshops = {
     },
 
     render() {
-        const container = document.getElementById('main-content');
+        const container = document.getElementById('contentArea');
         container.innerHTML = `
             <div class="workshops-container">
                 <div class="workshops-header">
