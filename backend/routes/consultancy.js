@@ -14,8 +14,10 @@ router.setDatabase = setDatabase;
 
 /**
  * Verificar si el negocio tiene plan Premium activo
+ * Busca primero en subscriptions (Stripe), luego en businesses.plan (legacy)
  */
 async function isPremiumBusiness(businessId) {
+    // Primero intentar buscar en subscriptions (para suscripciones de Stripe)
     const subscription = await db.query(`
         SELECT plan_name, status
         FROM subscriptions
@@ -25,11 +27,24 @@ async function isPremiumBusiness(businessId) {
         LIMIT 1
     `, [businessId]);
 
-    if (!subscription || subscription.length === 0) {
+    if (subscription && subscription.length > 0) {
+        return subscription[0].plan_name === 'premium';
+    }
+
+    // Si no hay suscripción en Stripe, verificar en la tabla businesses (legacy)
+    const business = await db.query(`
+        SELECT plan, subscription_status
+        FROM businesses
+        WHERE id = ?
+    `, [businessId]);
+
+    if (!business || business.length === 0) {
         return false;
     }
 
-    return subscription[0].plan_name === 'premium';
+    // Verificar que tenga plan premium y estado activo o trial
+    const validStatus = ['active', 'trialing', 'trial'];
+    return business[0].plan === 'premium' && validStatus.includes(business[0].subscription_status);
 }
 
 /**
