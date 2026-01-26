@@ -1,28 +1,82 @@
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-// Create email transporter
+// Determinar si usar API HTTP de Brevo o SMTP
+const useBrevoAPI = !!process.env.BREVO_API_KEY;
+
+// Create email transporter (solo para SMTP fallback)
 let transporter = null;
 
-try {
-    transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.EMAIL_PORT) || 587,
-        secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASSWORD
-        },
-        connectionTimeout: 10000,  // 10 seconds
-        greetingTimeout: 10000,    // 10 seconds
-        socketTimeout: 30000       // 30 seconds
-    });
-} catch (error) {
-    console.error('Error inicializando transporter de email:', error.message);
+if (!useBrevoAPI) {
+    try {
+        transporter = nodemailer.createTransport({
+            host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.EMAIL_PORT) || 587,
+            secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            },
+            connectionTimeout: 10000,  // 10 seconds
+            greetingTimeout: 10000,    // 10 seconds
+            socketTimeout: 30000       // 30 seconds
+        });
+    } catch (error) {
+        console.error('Error inicializando transporter de email:', error.message);
+    }
 }
 
-// Verify transporter configuration
+// Enviar email via API HTTP de Brevo
+async function sendEmailViaBrevoAPI(to, subject, htmlContent) {
+    const apiKey = process.env.BREVO_API_KEY;
+    const senderEmail = process.env.EMAIL_FROM?.match(/<(.+)>/)?.[1] || 'noreply@stickywork.com';
+    const senderName = process.env.EMAIL_FROM?.match(/^([^<]+)/)?.[1]?.trim() || 'StickyWork';
+
+    const body = {
+        sender: {
+            name: senderName,
+            email: senderEmail
+        },
+        to: [{ email: to }],
+        subject: subject,
+        htmlContent: htmlContent
+    };
+
+    try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': apiKey,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log('✓ Email enviado via Brevo API:', data.messageId);
+            return { success: true, messageId: data.messageId };
+        } else {
+            console.error('✗ Error Brevo API:', data.message || data);
+            return { success: false, error: data.message || 'Error desconocido' };
+        }
+    } catch (error) {
+        console.error('✗ Error enviando email via Brevo API:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+// Verify email service configuration
 async function verifyEmailService() {
+    // Preferir Brevo API
+    if (useBrevoAPI) {
+        console.log('✓ Servicio de email configurado (Brevo API HTTP)');
+        return true;
+    }
+
+    // Fallback a SMTP
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
         console.log('⚠️  Email no configurado - las notificaciones están deshabilitadas');
         return false;
@@ -30,7 +84,7 @@ async function verifyEmailService() {
 
     try {
         await transporter.verify();
-        console.log('✓ Servicio de email configurado correctamente');
+        console.log('✓ Servicio de email configurado correctamente (SMTP)');
         return true;
     } catch (error) {
         console.log('⚠️  Error en configuración de email:', error.message);
@@ -1187,7 +1241,12 @@ const emailTemplates = {
 
 // Send email function
 async function sendEmail(to, template, data) {
-    // Check if email is configured
+    // Preferir Brevo API HTTP si está configurada
+    if (useBrevoAPI) {
+        return await sendEmailViaBrevoAPI(to, template.subject, template.html);
+    }
+
+    // Fallback a SMTP
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
         console.log('⚠️  Email no configurado - saltando envío a:', to);
         return { success: false, message: 'Email service not configured' };

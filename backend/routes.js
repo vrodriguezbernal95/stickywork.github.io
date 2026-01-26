@@ -173,7 +173,14 @@ router.use('/api/consultancy', consultancyRoutes);
 router.get('/api/debug/version', async (req, res) => {
     // Verificar estado del email service
     let emailStatus = 'not_configured';
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    let emailMethod = 'none';
+
+    // Preferir Brevo API
+    if (process.env.BREVO_API_KEY) {
+        emailStatus = 'configured';
+        emailMethod = 'brevo_api';
+    } else if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+        emailMethod = 'smtp';
         try {
             const transporter = emailService.getTransporter();
             if (transporter) {
@@ -187,14 +194,15 @@ router.get('/api/debug/version', async (req, res) => {
 
     res.json({
         success: true,
-        version: '120c811',
-        timestamp: '2026-01-26T10:00:00Z',
-        message: 'Emails de equipo y suscripción',
+        version: '3f43ff9',
+        timestamp: '2026-01-26T11:00:00Z',
+        message: 'Brevo API HTTP para emails',
         features: {
             aiReportsEnabled: true,
             nullHandling: true,
             apiKeyConfigured: !!process.env.ANTHROPIC_API_KEY,
-            emailConfigured: !!process.env.EMAIL_USER,
+            emailConfigured: !!process.env.BREVO_API_KEY || !!process.env.EMAIL_USER,
+            emailMethod: emailMethod,
             emailStatus: emailStatus,
             stripeConfigured: !!process.env.STRIPE_SECRET_KEY
         }
