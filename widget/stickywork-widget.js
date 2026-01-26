@@ -894,6 +894,46 @@
                 padding: 2rem;
                 color: ${colors.textSecondary};
             }
+
+            /* Tabs Styles */
+            .stickywork-tabs {
+                display: flex;
+                gap: 0;
+                margin-bottom: 1.5rem;
+                border-bottom: 2px solid ${colors.borderColor};
+            }
+            .stickywork-tab {
+                flex: 1;
+                padding: 0.75rem 1rem;
+                background: transparent;
+                border: none;
+                border-bottom: 3px solid transparent;
+                margin-bottom: -2px;
+                cursor: pointer;
+                font-size: 1rem;
+                font-weight: 500;
+                color: ${colors.textSecondary};
+                transition: all 0.3s ease;
+                font-family: inherit;
+            }
+            .stickywork-tab:hover {
+                color: ${primaryColor};
+                background: ${primaryColor}10;
+            }
+            .stickywork-tab.active {
+                color: ${primaryColor};
+                border-bottom-color: ${primaryColor};
+                font-weight: 600;
+            }
+            .stickywork-tab-icon {
+                margin-right: 0.5rem;
+            }
+            .stickywork-tab-content {
+                display: none;
+            }
+            .stickywork-tab-content.active {
+                display: block;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -1281,6 +1321,48 @@
         console.log('🎫 [Widget] Taller seleccionado:', workshop.name);
     };
 
+    // Cambiar entre tabs (servicios/talleres)
+    window.StickyWork.switchTab = function(mode) {
+        console.log('🔄 [Widget] Cambiando a tab:', mode);
+        currentTabMode = mode;
+        selectedWorkshop = null;
+
+        // Re-renderizar el widget
+        if (widgetContainer) {
+            widgetContainer.innerHTML = createFormHTML();
+            const form = widgetContainer.querySelector('#stickywork-form');
+            if (form) form.addEventListener('submit', handleSubmit);
+
+            // Inicializar componentes
+            initCustomSelect();
+            initPeopleButtons();
+
+            // Solo inicializar calendario si no es modo workshops
+            if (mode !== 'workshops') {
+                calendarDropdownInitialized = false;
+                initDateListener();
+                initZoneListener();
+                renderCalendar();
+                initCalendarDropdown();
+            }
+        }
+    };
+
+    // Variable para rastrear el modo actual (para tabs)
+    let currentTabMode = null;
+
+    // Obtener etiqueta del tab según el modo
+    function getTabLabel(mode) {
+        const t = translations[config.language];
+        switch (mode) {
+            case 'services': return '✂️ Servicios';
+            case 'tables': return '🍽️ Mesas';
+            case 'classes': return '🏋️ Clases';
+            case 'workshops': return '🎫 Talleres';
+            default: return '📅 Reservar';
+        }
+    }
+
     // Crear HTML del formulario
     function createFormHTML() {
         const t = translations[config.language];
@@ -1288,9 +1370,16 @@
         const isDemoMode = !config.apiUrl;
         const showNotes = config.bookingMode === 'services';
         const isWorkshopMode = config.bookingMode === 'workshops';
+        const hasWorkshops = config.workshops && config.workshops.length > 0;
+        const showTabs = hasWorkshops && !isWorkshopMode;
+
+        // Inicializar modo actual si no está definido
+        if (!currentTabMode) {
+            currentTabMode = config.bookingMode;
+        }
 
         // Para workshops, no necesitamos el row de fecha/hora ya que viene del taller
-        const dateTimeSection = isWorkshopMode ? '' : `
+        const dateTimeSection = (isWorkshopMode || currentTabMode === 'workshops') ? '' : `
                     <div class="stickywork-row">
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.date}</label>
@@ -1347,10 +1436,29 @@
                     </div>
         `;
 
+        // Crear tabs HTML si hay talleres disponibles
+        const tabsHTML = showTabs ? `
+            <div class="stickywork-tabs">
+                <button type="button" class="stickywork-tab ${currentTabMode !== 'workshops' ? 'active' : ''}"
+                        onclick="StickyWork.switchTab('${config.bookingMode}')">
+                    ${getTabLabel(config.bookingMode)}
+                </button>
+                <button type="button" class="stickywork-tab ${currentTabMode === 'workshops' ? 'active' : ''}"
+                        onclick="StickyWork.switchTab('workshops')">
+                    ${getTabLabel('workshops')} (${config.workshops.length})
+                </button>
+            </div>
+        ` : '';
+
+        // Determinar qué campos mostrar según el tab activo
+        const modeFields = currentTabMode === 'workshops' ? createWorkshopFields(t) : createModeSpecificFields();
+        const showNotesField = currentTabMode === 'services';
+
         return `
             <div class="stickywork-widget">
-                <h3 class="stickywork-title">${getTitle()}</h3>
-                <form class="stickywork-form" id="stickywork-form">
+                <h3 class="stickywork-title">${currentTabMode === 'workshops' ? t.titleWorkshop : getTitle()}</h3>
+                ${tabsHTML}
+                <form class="stickywork-form" id="stickywork-form" data-mode="${currentTabMode}">
                     <div class="stickywork-row">
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.name}</label>
@@ -1365,9 +1473,9 @@
                         <label class="stickywork-label">${t.email}</label>
                         <input type="email" class="stickywork-input" name="email" placeholder="${t.email}" required>
                     </div>
-                    ${createModeSpecificFields()}
-                    ${dateTimeSection}
-                    ${showNotes ? `
+                    ${modeFields}
+                    ${currentTabMode !== 'workshops' ? dateTimeSection : ''}
+                    ${showNotesField ? `
                         <div class="stickywork-field">
                             <label class="stickywork-label">${t.notes}</label>
                             <textarea class="stickywork-textarea" name="notes" placeholder="${t.notesPlaceholder}"></textarea>
@@ -1395,24 +1503,28 @@
     // Crear HTML de confirmacion
     function createSuccessHTML(formData) {
         const t = translations[config.language];
+        const activeMode = currentTabMode || config.bookingMode;
+        const isWorkshopBooking = formData.workshopId || activeMode === 'workshops';
+
         let details = `
             <p class="stickywork-success-detail"><strong>${t.name}:</strong> ${formData.name}</p>
             <p class="stickywork-success-detail"><strong>${t.email}:</strong> ${formData.email}</p>
             ${formData.phone ? `<p class="stickywork-success-detail"><strong>${t.phone}:</strong> ${formData.phone}</p>` : ''}
         `;
 
-        if (config.bookingMode === 'tables') {
-            details += `
-                <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
-                ${formData.zone ? `<p class="stickywork-success-detail"><strong>${t.zone}:</strong> ${formData.zone}</p>` : ''}
-            `;
-        } else if (config.bookingMode === 'classes') {
-            details += `<p class="stickywork-success-detail"><strong>${t.class}:</strong> ${formData.class}</p>`;
-        } else if (config.bookingMode === 'workshops') {
+        if (isWorkshopBooking) {
+            // Reserva de taller (via tab o modo directo)
             details += `
                 <p class="stickywork-success-detail"><strong>${t.workshop}:</strong> ${formData.workshopName}</p>
                 <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
             `;
+        } else if (activeMode === 'tables') {
+            details += `
+                <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
+                ${formData.zone ? `<p class="stickywork-success-detail"><strong>${t.zone}:</strong> ${formData.zone}</p>` : ''}
+            `;
+        } else if (activeMode === 'classes') {
+            details += `<p class="stickywork-success-detail"><strong>${t.class}:</strong> ${formData.class}</p>`;
         } else {
             details += `<p class="stickywork-success-detail"><strong>${t.service}:</strong> ${formData.service}</p>`;
             if (formData.professional) {
@@ -1421,7 +1533,7 @@
         }
 
         // Para workshops, la fecha y hora vienen del taller seleccionado
-        if (config.bookingMode !== 'workshops') {
+        if (!isWorkshopBooking) {
             details += `
                 <p class="stickywork-success-detail"><strong>${t.date}:</strong> ${formData.date}</p>
                 <p class="stickywork-success-detail"><strong>${t.time}:</strong> ${formData.time}</p>
@@ -1928,6 +2040,9 @@
         e.preventDefault();
         const form = e.target;
 
+        // Determinar el modo actual (puede ser por tab o por config)
+        const activeMode = currentTabMode || config.bookingMode;
+
         const formData = {
             name: form.name.value,
             email: form.email.value,
@@ -1937,18 +2052,18 @@
             whatsappConsent: form.querySelector('input[name="whatsapp_consent"]')?.checked || false
         };
 
-        // Campos segun modo
-        if (config.bookingMode === 'tables') {
+        // Campos segun modo activo (tab o config)
+        if (activeMode === 'tables') {
             // Para restaurantes: leer el valor actual del input (por si lo escribió directamente)
             const peopleInput = form.querySelector('#stickywork-people-count');
             formData.numPeople = peopleInput ? parseInt(peopleInput.value) : peopleCount;
             console.log('🔍 [Debug] peopleInput:', peopleInput, 'value:', peopleInput?.value, 'numPeople final:', formData.numPeople);
             formData.zone = form.zone?.value || ''; // Zona (Terraza/Interior)
             // El servicio se asignará automáticamente en el backend según la hora
-        } else if (config.bookingMode === 'classes') {
+        } else if (activeMode === 'classes') {
             formData.class = form.class?.value || '';
-        } else if (config.bookingMode === 'workshops') {
-            // Para talleres
+        } else if (activeMode === 'workshops') {
+            // Para talleres (modo directo o via tab)
             const workshopId = form.querySelector('input[name="workshop_id"]')?.value;
             if (!workshopId || !selectedWorkshop) {
                 alert('Por favor selecciona un taller');
@@ -2359,9 +2474,11 @@
     }
 
     function reset() {
-        peopleCount = config.bookingMode === 'workshops' ? 1 : 2;
+        const activeMode = currentTabMode || config.bookingMode;
+        peopleCount = activeMode === 'workshops' ? 1 : 2;
         selectedDate = null;
         selectedWorkshop = null;
+        currentTabMode = config.bookingMode; // Reset to original mode
         calendarDropdownInitialized = false; // Resetear bandera
         if (config.mode === 'embedded') {
             renderEmbedded();
@@ -2370,7 +2487,7 @@
             const form = widgetContainer.querySelector('#stickywork-form');
             if (form) form.addEventListener('submit', handleSubmit);
             initPeopleButtons();
-            if (config.bookingMode !== 'workshops') {
+            if (currentTabMode !== 'workshops') {
                 initDateListener();
                 initZoneListener();
                 renderCalendar();
@@ -2391,11 +2508,11 @@
                 config = { ...config, ...loaded };
             }
 
-            // Cargar talleres si el modo es workshops
-            if (config.bookingMode === 'workshops') {
-                const workshops = await loadWorkshops();
-                config.workshops = workshops;
-                console.log('🎫 [Widget] Talleres cargados:', workshops.length);
+            // Siempre cargar talleres para ver si hay disponibles
+            const workshops = await loadWorkshops();
+            config.workshops = workshops;
+            if (workshops.length > 0) {
+                console.log('🎫 [Widget] Talleres disponibles:', workshops.length);
             }
         }
 
