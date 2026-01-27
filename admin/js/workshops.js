@@ -62,7 +62,7 @@ const workshops = {
 
             <!-- Modal Crear/Editar Taller -->
             <div id="workshopModal" class="modal-overlay" style="display: none;">
-                <div class="modal-content modal-lg">
+                <div class="modal-content modal-xl">
                     <div class="modal-header">
                         <h2 id="workshopModalTitle">Crear Taller</h2>
                         <button class="modal-close" onclick="workshops.closeModal()">&times;</button>
