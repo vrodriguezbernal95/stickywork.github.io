@@ -117,12 +117,6 @@ const workshops = {
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="form-group">
-                                <label class="form-label">URL de imagen (opcional)</label>
-                                <input type="url" id="workshopImage" class="form-input"
-                                       placeholder="https://ejemplo.com/imagen.jpg">
-                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" onclick="workshops.closeModal()">
@@ -286,6 +280,10 @@ const workshops = {
         document.getElementById('workshopModalTitle').textContent = 'Editar Taller';
         document.getElementById('workshopSubmitBtn').textContent = 'Guardar Cambios';
 
+        // Establecer fecha mínima (hoy)
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('workshopDate').min = today;
+
         // Rellenar formulario
         document.getElementById('workshopName').value = workshop.name || '';
         document.getElementById('workshopDescription').value = workshop.description || '';
@@ -295,7 +293,6 @@ const workshops = {
         document.getElementById('workshopCapacity').value = workshop.capacity;
         document.getElementById('workshopPrice').value = workshop.price || 0;
         document.getElementById('workshopActive').value = workshop.is_active ? 'true' : 'false';
-        document.getElementById('workshopImage').value = workshop.image_url || '';
 
         document.getElementById('workshopModal').style.display = 'flex';
     },
@@ -308,16 +305,24 @@ const workshops = {
     async saveWorkshop(event) {
         event.preventDefault();
 
+        const startTime = document.getElementById('workshopStartTime').value;
+        const endTime = document.getElementById('workshopEndTime').value;
+
+        // Validar que hora fin sea mayor que hora inicio
+        if (endTime <= startTime) {
+            modal.toast('La hora de fin debe ser posterior a la hora de inicio', 'error');
+            return;
+        }
+
         const workshopData = {
             name: document.getElementById('workshopName').value.trim(),
             description: document.getElementById('workshopDescription').value.trim(),
             workshop_date: document.getElementById('workshopDate').value,
-            start_time: document.getElementById('workshopStartTime').value,
-            end_time: document.getElementById('workshopEndTime').value,
+            start_time: startTime,
+            end_time: endTime,
             capacity: parseInt(document.getElementById('workshopCapacity').value),
             price: parseFloat(document.getElementById('workshopPrice').value) || 0,
-            is_active: document.getElementById('workshopActive').value === 'true',
-            image_url: document.getElementById('workshopImage').value.trim() || null
+            is_active: document.getElementById('workshopActive').value === 'true'
         };
 
         // Validación de horas
