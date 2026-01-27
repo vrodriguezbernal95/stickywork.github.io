@@ -3087,23 +3087,29 @@ body::before {
 }
 
 .modal-xl {
-    max-width: 1100px;
-    width: 95%;
+    max-width: 1200px !important;
+    width: 95% !important;
 }
 
 /* Tabla de reservas de talleres */
-.modal-xl .modal-body {
+#bookingsModal .modal-content {
+    max-width: 1200px;
+    width: 95%;
+}
+
+#bookingsModal .modal-body {
     overflow-x: auto;
+    padding: 1.5rem;
 }
 
-.modal-xl .table {
-    min-width: 100%;
-    white-space: nowrap;
+#bookingsModal .table {
+    width: 100%;
 }
 
-.modal-xl .table th,
-.modal-xl .table td {
+#bookingsModal .table th,
+#bookingsModal .table td {
     padding: 0.75rem 1rem;
+    white-space: nowrap;
 }
 
 .bookings-summary {
@@ -3111,6 +3117,7 @@ body::before {
     background: var(--bg-primary);
     border-radius: 8px;
     margin-bottom: 1rem;
+    font-size: 1.1rem;
 }
 
 /* Responsive workshops */
