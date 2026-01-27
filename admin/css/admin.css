@@ -3120,6 +3120,20 @@ body::before {
     font-size: 1.1rem;
 }
 
+/* Input clickable (fecha/hora) */
+.clickable-input {
+    cursor: pointer;
+}
+
+.clickable-input:hover {
+    background: var(--bg-primary);
+    border-radius: 8px;
+}
+
+.clickable-input .form-input {
+    cursor: pointer;
+}
+
 /* Responsive workshops */
 @media (max-width: 768px) {
     .workshops-header {

@@ -89,15 +89,15 @@ const workshops = {
                             </div>
 
                             <div class="form-row">
-                                <div class="form-group">
+                                <div class="form-group clickable-input" onclick="document.getElementById('workshopDate').showPicker()">
                                     <label class="form-label">Fecha *</label>
                                     <input type="date" id="workshopDate" class="form-input" required>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group clickable-input" onclick="document.getElementById('workshopStartTime').showPicker()">
                                     <label class="form-label">Hora inicio *</label>
                                     <input type="time" id="workshopStartTime" class="form-input" required>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group clickable-input" onclick="document.getElementById('workshopEndTime').showPicker()">
                                     <label class="form-label">Hora fin *</label>
                                     <input type="time" id="workshopEndTime" class="form-input" required>
                                 </div>
