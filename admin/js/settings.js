@@ -85,9 +85,6 @@ const settings = {
                     <button class="settings-tab" data-tab="widget" onclick="settings.switchTab('widget')">
                         🎨 Widget
                     </button>
-                    <button class="settings-tab" data-tab="design" onclick="settings.switchTab('design')">
-                        🖌️ Diseño
-                    </button>
                     <button class="settings-tab" data-tab="notifications" onclick="settings.switchTab('notifications')">
                         📧 Notificaciones
                     </button>
@@ -128,9 +125,6 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-widget">
                         ${this.renderWidgetTab()}
-                    </div>
-                    <div class="settings-tab-content" id="tab-design">
-                        ${this.renderDesignTab()}
                     </div>
                     <div class="settings-tab-content" id="tab-notifications">
                         ${this.renderNotificationsTab()}
@@ -1039,16 +1033,26 @@ const settings = {
             : {
                 primaryColor: '#3b82f6',
                 secondaryColor: '#ef4444',
-                language: 'es',
                 showPrices: true,
                 showDuration: true
             };
+
+        // Obtener customización adicional
+        const customization = business.widget_customization
+            ? (typeof business.widget_customization === 'string'
+                ? JSON.parse(business.widget_customization)
+                : business.widget_customization)
+            : {};
+
+        const fontFamily = customization.fontFamily || 'system-ui';
+        const borderRadius = customization.borderRadius || '12px';
+        const buttonStyle = customization.buttonStyle || 'solid';
 
         return `
             <!-- Colors Section -->
             <div class="settings-section">
                 <div class="settings-section-header">
-                    <h3>Colores del Widget</h3>
+                    <h3>🎨 Colores del Widget</h3>
                     <p>Personaliza los colores para que coincidan con tu marca</p>
                 </div>
 
@@ -1081,7 +1085,7 @@ const settings = {
             <!-- Display Options Section -->
             <div class="settings-section">
                 <div class="settings-section-header">
-                    <h3>Opciones de Visualización</h3>
+                    <h3>👁️ Opciones de Visualización</h3>
                     <p>Configura qué información mostrar en tu widget</p>
                 </div>
 
@@ -1102,17 +1106,46 @@ const settings = {
                         <p class="hint" style="margin: 0.25rem 0 0 0;">Muestra cuánto dura cada servicio</p>
                     </label>
                 </div>
+            </div>
 
-                <div class="form-group" style="margin-top: 1.5rem;">
-                    <label>Idioma del Widget</label>
-                    <select id="widget-language" onchange="settings.updateWidgetPreview()">
-                        <option value="es" ${widgetSettings.language === 'es' ? 'selected' : ''}>Español</option>
-                        <option value="en" ${widgetSettings.language === 'en' ? 'selected' : ''}>English</option>
-                        <option value="fr" ${widgetSettings.language === 'fr' ? 'selected' : ''}>Français</option>
-                        <option value="de" ${widgetSettings.language === 'de' ? 'selected' : ''}>Deutsch</option>
-                    </select>
+            <!-- Design Options Section -->
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>🖌️ Estilo Visual</h3>
+                    <p>Personaliza la apariencia del widget</p>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fuente Tipográfica</label>
+                        <select id="widget-font-family" onchange="settings.updateWidgetPreview()">
+                            <option value="system-ui" ${fontFamily === 'system-ui' ? 'selected' : ''}>Sistema (Por defecto)</option>
+                            <option value="Arial, sans-serif" ${fontFamily === 'Arial, sans-serif' ? 'selected' : ''}>Arial</option>
+                            <option value="'Georgia', serif" ${fontFamily === "'Georgia', serif" ? 'selected' : ''}>Georgia</option>
+                            <option value="'Helvetica', sans-serif" ${fontFamily === "'Helvetica', sans-serif" ? 'selected' : ''}>Helvetica</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estilo de Botones</label>
+                        <select id="widget-button-style" onchange="settings.updateWidgetPreview()">
+                            <option value="solid" ${buttonStyle === 'solid' ? 'selected' : ''}>Sólido</option>
+                            <option value="outline" ${buttonStyle === 'outline' ? 'selected' : ''}>Contorno</option>
+                            <option value="ghost" ${buttonStyle === 'ghost' ? 'selected' : ''}>Fantasma</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Redondez de Bordes: <span id="border-radius-value">${borderRadius}</span></label>
+                    <input type="range" id="widget-border-radius" min="0" max="24" value="${parseInt(borderRadius)}"
+                           oninput="document.getElementById('border-radius-value').textContent = this.value + 'px'; settings.updateWidgetPreview()"
+                           style="width: 100%;">
+                    <p class="hint">0px = Cuadrado, 24px = Muy redondeado</p>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="settings-section">
                 <button class="btn-save" onclick="settings.saveWidgetSettings()">
                     💾 Guardar Configuración del Widget
                 </button>
@@ -1121,16 +1154,16 @@ const settings = {
             <!-- Preview Section -->
             <div class="settings-section">
                 <div class="settings-section-header">
-                    <h3>Vista Previa</h3>
+                    <h3>👀 Vista Previa</h3>
                     <p>Así se verá tu widget con la configuración actual</p>
                 </div>
 
                 <div class="widget-preview-box" id="widget-preview">
-                    <div class="preview-widget">
+                    <div class="preview-widget" id="preview-widget-content">
                         <h3 style="color: #333;">Reserva tu Cita</h3>
                         <p style="color: #666; margin-bottom: 1.5rem;">Selecciona un servicio para continuar</p>
                         <button class="preview-button" id="preview-button"
-                                style="background: ${widgetSettings.primaryColor};">
+                                style="background: ${widgetSettings.primaryColor}; border-radius: ${borderRadius};">
                             Hacer Reserva
                         </button>
                     </div>
@@ -1438,25 +1471,39 @@ const settings = {
     async saveWidgetSettings() {
         const primaryColor = document.getElementById('widget-primary-color').value;
         const secondaryColor = document.getElementById('widget-secondary-color').value;
-        const language = document.getElementById('widget-language').value;
         const showPrices = document.getElementById('widget-show-prices').checked;
         const showDuration = document.getElementById('widget-show-duration').checked;
+
+        // Design options
+        const fontFamily = document.getElementById('widget-font-family')?.value || 'system-ui';
+        const borderRadius = (document.getElementById('widget-border-radius')?.value || '12') + 'px';
+        const buttonStyle = document.getElementById('widget-button-style')?.value || 'solid';
 
         const widgetSettings = {
             primaryColor,
             secondaryColor,
-            language,
             showPrices,
             showDuration
         };
 
+        const widgetCustomization = {
+            primaryColor,
+            secondaryColor,
+            fontFamily,
+            borderRadius,
+            buttonStyle
+        };
+
         try {
+            // Guardar ambas configuraciones
             await api.put(`/api/business/${this.userData.business_id}/widget-settings`, {
-                widgetSettings
+                widgetSettings,
+                widgetCustomization
             });
 
             // Update local data
             this.businessData.widget_settings = JSON.stringify(widgetSettings);
+            this.businessData.widget_customization = JSON.stringify(widgetCustomization);
 
             alert('✅ Configuración del widget guardada correctamente');
         } catch (error) {
