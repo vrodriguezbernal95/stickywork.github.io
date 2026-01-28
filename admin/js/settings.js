@@ -3639,14 +3639,17 @@ const settings = {
                                 </div>
                             ` : ''}
 
-                            <div class="form-group">
-                                <label>
+                            <div class="form-group" style="background: #fff; padding: 1rem; border-radius: 8px; border: 1px dashed #ccc;">
+                                <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; margin: 0;">
                                     <input type="checkbox"
                                            class="feedback-question-required"
                                            data-index="${index}"
                                            ${q.required ? 'checked' : ''}
-                                           style="width: auto; margin-right: 0.5rem;">
-                                    Pregunta obligatoria
+                                           style="width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                                    <span>
+                                        <strong>Respuesta obligatoria</strong>
+                                        <p class="hint" style="margin: 0.25rem 0 0 0; font-size: 0.85rem;">Si marcas esta casilla, el cliente deberá responder esta pregunta para poder enviar el formulario</p>
+                                    </span>
                                 </label>
                             </div>
                         </div>
