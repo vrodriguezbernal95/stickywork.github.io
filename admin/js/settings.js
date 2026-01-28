@@ -1089,22 +1089,29 @@ const settings = {
                     <p>Configura qué información mostrar en tu widget</p>
                 </div>
 
-                <div class="toggle-switch">
-                    <input type="checkbox" id="widget-show-prices" ${widgetSettings.showPrices ? 'checked' : ''}
-                           onchange="settings.updateWidgetPreview()">
-                    <label>
-                        <strong>Mostrar Precios</strong>
-                        <p class="hint" style="margin: 0.25rem 0 0 0;">Muestra el precio de cada servicio</p>
-                    </label>
-                </div>
-
-                <div class="toggle-switch">
-                    <input type="checkbox" id="widget-show-duration" ${widgetSettings.showDuration ? 'checked' : ''}
-                           onchange="settings.updateWidgetPreview()">
-                    <label>
-                        <strong>Mostrar Duración</strong>
-                        <p class="hint" style="margin: 0.25rem 0 0 0;">Muestra cuánto dura cada servicio</p>
-                    </label>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer;">
+                            <input type="checkbox" id="widget-show-prices" ${widgetSettings.showPrices ? 'checked' : ''}
+                                   onchange="settings.updateWidgetPreview()"
+                                   style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>
+                                <strong>Mostrar Precios</strong>
+                                <p class="hint" style="margin: 0.25rem 0 0 0;">Muestra el precio de cada servicio</p>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer;">
+                            <input type="checkbox" id="widget-show-duration" ${widgetSettings.showDuration ? 'checked' : ''}
+                                   onchange="settings.updateWidgetPreview()"
+                                   style="width: 20px; height: 20px; cursor: pointer;">
+                            <span>
+                                <strong>Mostrar Duración</strong>
+                                <p class="hint" style="margin: 0.25rem 0 0 0;">Muestra cuánto dura cada servicio</p>
+                            </span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
