@@ -1328,54 +1328,59 @@ const settings = {
                     <p>Elige qué notificaciones quieres recibir</p>
                 </div>
 
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>📅 Nueva Reserva</h4>
-                        <p>Recibe un email cada vez que un cliente haga una reserva</p>
-                    </div>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="notify-new-booking" checked>
-                    </div>
+                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="notify-new-booking" checked
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>
+                            <strong>📅 Nueva Reserva</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Recibe un email cada vez que un cliente haga una reserva</p>
+                        </span>
+                    </label>
                 </div>
 
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>❌ Reserva Cancelada</h4>
-                        <p>Notificación cuando un cliente cancele su reserva</p>
-                    </div>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="notify-cancelled" checked>
-                    </div>
+                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="notify-cancelled" checked
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>
+                            <strong>❌ Reserva Cancelada</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Notificación cuando un cliente cancele su reserva</p>
+                        </span>
+                    </label>
                 </div>
 
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>✏️ Reserva Modificada</h4>
-                        <p>Aviso cuando un cliente modifique los detalles de su reserva</p>
-                    </div>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="notify-modified" checked>
-                    </div>
+                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="notify-modified" checked
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>
+                            <strong>✏️ Reserva Modificada</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Aviso cuando un cliente modifique los detalles de su reserva</p>
+                        </span>
+                    </label>
                 </div>
 
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>🔔 Recordatorios Automáticos</h4>
-                        <p>Envía recordatorios a tus clientes 24 horas antes de su cita</p>
-                    </div>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="notify-reminders" checked>
-                    </div>
+                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="notify-reminders" checked
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>
+                            <strong>🔔 Recordatorios Automáticos</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Envía recordatorios a tus clientes 24 horas antes de su cita</p>
+                        </span>
+                    </label>
                 </div>
 
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>📊 Resumen Diario</h4>
-                        <p>Recibe un resumen de todas las reservas del día cada mañana</p>
-                    </div>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="notify-daily-summary">
-                    </div>
+                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="notify-daily-summary"
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>
+                            <strong>📊 Resumen Diario</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Recibe un resumen de todas las reservas del día cada mañana</p>
+                        </span>
+                    </label>
                 </div>
             </div>
 
@@ -1412,15 +1417,16 @@ const settings = {
                     </p>
                 </div>
 
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>Activar notificaciones por WhatsApp</h4>
-                        <p>Permite enviar confirmaciones de reserva vía WhatsApp a clientes que den su consentimiento</p>
-                    </div>
-                    <div class="toggle-switch">
+                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1rem; background: ${business.whatsapp_enabled ? 'rgba(37, 211, 102, 0.05)' : 'transparent'};">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
                         <input type="checkbox" id="whatsapp-enabled" ${business.whatsapp_enabled ? 'checked' : ''}
-                               onchange="settings.toggleWhatsAppFields()">
-                    </div>
+                               onchange="settings.toggleWhatsAppFields()"
+                               style="width: 24px; height: 24px; cursor: pointer; accent-color: #25D366;">
+                        <span>
+                            <strong style="font-size: 1.1rem;">💬 Activar notificaciones por WhatsApp</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Permite enviar confirmaciones de reserva vía WhatsApp a clientes que den su consentimiento</p>
+                        </span>
+                    </label>
                 </div>
 
                 <div id="whatsapp-settings-fields" style="display: ${business.whatsapp_enabled ? 'block' : 'none'};">
