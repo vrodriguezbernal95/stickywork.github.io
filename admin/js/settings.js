@@ -1165,13 +1165,25 @@ const settings = {
                     <p>Así se verá tu widget con la configuración actual</p>
                 </div>
 
-                <div class="widget-preview-box" id="widget-preview">
-                    <div class="preview-widget" id="preview-widget-content">
-                        <h3 style="color: #333;">Reserva tu Cita</h3>
-                        <p style="color: #666; margin-bottom: 1.5rem;">Selecciona un servicio para continuar</p>
+                <div class="widget-preview-box" id="widget-preview" style="background: #f8f9fa; padding: 2rem; border-radius: 12px;">
+                    <div class="preview-widget" id="preview-widget-content"
+                         style="background: white; padding: 1.5rem; border-radius: ${borderRadius}; max-width: 350px; margin: 0 auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-family: ${fontFamily};">
+                        <h3 id="preview-title" style="color: ${widgetSettings.primaryColor}; margin: 0 0 0.5rem 0; font-size: 1.25rem;">Reserva tu Cita</h3>
+                        <p style="color: #666; margin: 0 0 1rem 0; font-size: 0.9rem;">Selecciona un servicio</p>
+
+                        <div id="preview-service" style="border: 1px solid #eee; padding: 1rem; border-radius: ${borderRadius}; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s;"
+                             onmouseover="this.style.borderColor='${widgetSettings.primaryColor}'"
+                             onmouseout="this.style.borderColor='#eee'">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: #333;">Corte de Cabello</strong>
+                                <span id="preview-price" style="color: ${widgetSettings.secondaryColor}; font-weight: 600;">${widgetSettings.showPrices ? '15€' : ''}</span>
+                            </div>
+                            <div id="preview-duration" style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">${widgetSettings.showDuration ? '30 min' : ''}</div>
+                        </div>
+
                         <button class="preview-button" id="preview-button"
-                                style="background: ${widgetSettings.primaryColor}; border-radius: ${borderRadius};">
-                            Hacer Reserva
+                                style="width: 100%; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; border-radius: ${borderRadius}; ${buttonStyle === 'solid' ? `background: ${widgetSettings.primaryColor}; color: white; border: none;` : buttonStyle === 'outline' ? `background: transparent; color: ${widgetSettings.primaryColor}; border: 2px solid ${widgetSettings.primaryColor};` : `background: transparent; color: ${widgetSettings.primaryColor}; border: none;`}">
+                            Continuar
                         </button>
                     </div>
                 </div>
@@ -1449,17 +1461,77 @@ const settings = {
 
     // Update widget preview
     updateWidgetPreview() {
-        const primaryColor = document.getElementById('widget-primary-color').value;
-        const previewButton = document.getElementById('preview-button');
+        // Get all values
+        const primaryColor = document.getElementById('widget-primary-color')?.value || '#3b82f6';
+        const secondaryColor = document.getElementById('widget-secondary-color')?.value || '#ef4444';
+        const showPrices = document.getElementById('widget-show-prices')?.checked ?? true;
+        const showDuration = document.getElementById('widget-show-duration')?.checked ?? true;
+        const fontFamily = document.getElementById('widget-font-family')?.value || 'system-ui';
+        const borderRadius = (document.getElementById('widget-border-radius')?.value || '12') + 'px';
+        const buttonStyle = document.getElementById('widget-button-style')?.value || 'solid';
 
-        if (previewButton) {
-            previewButton.style.background = primaryColor;
+        // Update preview container
+        const previewContent = document.getElementById('preview-widget-content');
+        if (previewContent) {
+            previewContent.style.fontFamily = fontFamily;
+            previewContent.style.borderRadius = borderRadius;
         }
 
-        // Sync hex input
-        const hexInput = document.getElementById('widget-primary-color-hex');
-        if (hexInput) {
-            hexInput.value = primaryColor;
+        // Update title color
+        const previewTitle = document.getElementById('preview-title');
+        if (previewTitle) {
+            previewTitle.style.color = primaryColor;
+        }
+
+        // Update service card
+        const previewService = document.getElementById('preview-service');
+        if (previewService) {
+            previewService.style.borderRadius = borderRadius;
+            previewService.onmouseover = function() { this.style.borderColor = primaryColor; };
+            previewService.onmouseout = function() { this.style.borderColor = '#eee'; };
+        }
+
+        // Update price
+        const previewPrice = document.getElementById('preview-price');
+        if (previewPrice) {
+            previewPrice.style.color = secondaryColor;
+            previewPrice.textContent = showPrices ? '15€' : '';
+        }
+
+        // Update duration
+        const previewDuration = document.getElementById('preview-duration');
+        if (previewDuration) {
+            previewDuration.textContent = showDuration ? '30 min' : '';
+        }
+
+        // Update button with style
+        const previewButton = document.getElementById('preview-button');
+        if (previewButton) {
+            previewButton.style.borderRadius = borderRadius;
+
+            if (buttonStyle === 'solid') {
+                previewButton.style.background = primaryColor;
+                previewButton.style.color = 'white';
+                previewButton.style.border = 'none';
+            } else if (buttonStyle === 'outline') {
+                previewButton.style.background = 'transparent';
+                previewButton.style.color = primaryColor;
+                previewButton.style.border = `2px solid ${primaryColor}`;
+            } else { // ghost
+                previewButton.style.background = 'transparent';
+                previewButton.style.color = primaryColor;
+                previewButton.style.border = 'none';
+            }
+        }
+
+        // Sync hex inputs
+        const primaryHex = document.getElementById('widget-primary-color-hex');
+        if (primaryHex) {
+            primaryHex.value = primaryColor;
+        }
+        const secondaryHex = document.getElementById('widget-secondary-color-hex');
+        if (secondaryHex) {
+            secondaryHex.value = secondaryColor;
         }
     },
 
