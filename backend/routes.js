@@ -1812,6 +1812,216 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
     }
 });
 
+/**
+ * POST /api/booking/:id/repeat
+ * Repetir una reserva para semanas futuras
+ */
+router.post('/api/booking/:id/repeat', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { frequency, repetitions } = req.body;
+
+        // Validar parámetros
+        if (!frequency || !repetitions) {
+            return res.status(400).json({
+                success: false,
+                message: 'Frecuencia y número de repeticiones son obligatorios'
+            });
+        }
+
+        const freqWeeks = parseInt(frequency);
+        const numReps = parseInt(repetitions);
+
+        if (freqWeeks < 1 || freqWeeks > 4) {
+            return res.status(400).json({
+                success: false,
+                message: 'La frecuencia debe ser entre 1 y 4 semanas'
+            });
+        }
+
+        if (numReps < 1 || numReps > 12) {
+            return res.status(400).json({
+                success: false,
+                message: 'El número de repeticiones debe ser entre 1 y 12'
+            });
+        }
+
+        // Obtener la reserva original
+        const bookingQuery = await db.query(
+            'SELECT * FROM bookings WHERE id = ?',
+            [id]
+        );
+
+        if (bookingQuery.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reserva no encontrada'
+            });
+        }
+
+        const original = bookingQuery[0];
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (req.user.businessId != original.business_id) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes acceso a esta reserva'
+            });
+        }
+
+        // Crear las reservas repetidas
+        const createdBookings = [];
+        const originalDate = new Date(original.booking_date);
+
+        for (let i = 1; i <= numReps; i++) {
+            // Calcular nueva fecha
+            const newDate = new Date(originalDate);
+            newDate.setDate(newDate.getDate() + (freqWeeks * 7 * i));
+            const formattedDate = newDate.toISOString().split('T')[0];
+
+            try {
+                const result = await db.query(
+                    `INSERT INTO bookings
+                    (business_id, service_id, customer_name, customer_email, customer_phone,
+                     booking_date, booking_time, num_people, num_adults, num_children, zone, notes, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
+                    [
+                        original.business_id,
+                        original.service_id,
+                        original.customer_name,
+                        original.customer_email,
+                        original.customer_phone,
+                        formattedDate,
+                        original.booking_time,
+                        original.num_people,
+                        original.num_adults,
+                        original.num_children,
+                        original.zone,
+                        original.notes ? `${original.notes} (Repetida)` : 'Cita repetida'
+                    ]
+                );
+
+                createdBookings.push({
+                    id: result.insertId,
+                    date: formattedDate,
+                    time: original.booking_time
+                });
+
+                // Actualizar estadísticas del cliente (asíncrono)
+                db.query(
+                    `UPDATE customers
+                     SET total_bookings = total_bookings + 1,
+                         last_booking_date = ?
+                     WHERE business_id = ? AND email = ? AND phone = ?`,
+                    [formattedDate, original.business_id, original.customer_email, original.customer_phone]
+                ).catch(err => console.error('Error actualizando cliente:', err.message));
+
+            } catch (err) {
+                console.error(`Error creando reserva para ${formattedDate}:`, err.message);
+                // Continuar con las siguientes aunque falle una
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Se crearon ${createdBookings.length} reservas`,
+            data: {
+                original_id: id,
+                created: createdBookings
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al repetir reserva:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al repetir reserva',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * PATCH /api/booking/:id/reschedule
+ * Cambiar fecha y/o hora de una reserva
+ */
+router.patch('/api/booking/:id/reschedule', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { booking_date, booking_time } = req.body;
+
+        if (!booking_date && !booking_time) {
+            return res.status(400).json({
+                success: false,
+                message: 'Debes proporcionar fecha o hora para modificar'
+            });
+        }
+
+        // Obtener la reserva original
+        const bookingQuery = await db.query(
+            'SELECT * FROM bookings WHERE id = ?',
+            [id]
+        );
+
+        if (bookingQuery.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reserva no encontrada'
+            });
+        }
+
+        const original = bookingQuery[0];
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (req.user.businessId != original.business_id) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes acceso a esta reserva'
+            });
+        }
+
+        // Construir query de actualización
+        const updates = [];
+        const params = [];
+
+        if (booking_date) {
+            updates.push('booking_date = ?');
+            params.push(booking_date);
+        }
+        if (booking_time) {
+            updates.push('booking_time = ?');
+            params.push(booking_time);
+        }
+
+        params.push(id);
+
+        await db.query(
+            `UPDATE bookings SET ${updates.join(', ')} WHERE id = ?`,
+            params
+        );
+
+        // Obtener reserva actualizada
+        const updatedBooking = await db.query(
+            'SELECT * FROM bookings WHERE id = ?',
+            [id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Reserva reprogramada correctamente',
+            data: updatedBooking[0]
+        });
+
+    } catch (error) {
+        console.error('Error al reprogramar reserva:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al reprogramar reserva',
+            error: error.message
+        });
+    }
+});
+
 // Obtener reservas canceladas futuras (requiere autenticación)
 router.get('/api/bookings/:businessId/cancelled-future', requireAuth, async (req, res) => {
     try {

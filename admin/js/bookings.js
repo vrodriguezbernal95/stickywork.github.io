@@ -314,6 +314,28 @@ const bookings = {
             `);
         }
 
+        // Repetir cita (solo si no está cancelada)
+        if (booking.status !== 'cancelled') {
+            actions.push(`
+                <button class="btn-action btn-repeat"
+                        onclick="bookings.showRepeatModal(${booking.id})"
+                        title="Repetir cita">
+                    🔄
+                </button>
+            `);
+        }
+
+        // Reprogramar (cambiar fecha/hora) - solo si no está cancelada ni completada
+        if (booking.status !== 'cancelled' && booking.status !== 'completed') {
+            actions.push(`
+                <button class="btn-action btn-reschedule"
+                        onclick="bookings.showRescheduleModal(${booking.id})"
+                        title="Cambiar fecha/hora">
+                    📅
+                </button>
+            `);
+        }
+
         // Cancelar (siempre disponible, excepto si ya está cancelada o completada)
         if (booking.status !== 'cancelled' && booking.status !== 'completed') {
             actions.push(`
@@ -626,6 +648,263 @@ const bookings = {
             notification.style.animation = 'slideOut 0.3s ease-out';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    },
+
+    // Show repeat booking modal
+    showRepeatModal(bookingId) {
+        const booking = this.allBookings.find(b => b.id === bookingId);
+        if (!booking) return;
+
+        const bookingDate = utils.formatDateShort(booking.booking_date);
+        const bookingTime = utils.formatTime(booking.booking_time);
+
+        // Create modal
+        const overlay = document.createElement('div');
+        overlay.id = 'repeatModal';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.2s ease;
+        `;
+
+        overlay.innerHTML = `
+            <div style="background: var(--bg-secondary); border-radius: 16px; max-width: 450px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);">
+                <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h2 style="margin: 0; font-size: 1.3rem; color: var(--text-primary);">
+                        🔄 Repetir Cita
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        ${booking.customer_name} - ${bookingDate} a las ${bookingTime}
+                    </p>
+                </div>
+
+                <div style="padding: 1.5rem;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">
+                            Repetir cada
+                        </label>
+                        <select id="repeatFrequency" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 1rem;">
+                            <option value="1">1 semana</option>
+                            <option value="2">2 semanas</option>
+                            <option value="3">3 semanas</option>
+                            <option value="4">4 semanas</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">
+                            Número de repeticiones
+                        </label>
+                        <select id="repeatCount" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 1rem;">
+                            <option value="2">2 citas</option>
+                            <option value="4" selected>4 citas</option>
+                            <option value="6">6 citas</option>
+                            <option value="8">8 citas</option>
+                            <option value="12">12 citas</option>
+                        </select>
+                    </div>
+
+                    <div id="repeatPreview" style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; color: var(--text-secondary); font-size: 0.9rem;">
+                        Se crearán citas para las próximas semanas
+                    </div>
+                </div>
+
+                <div style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button id="repeatCancelBtn" style="padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Cancelar
+                    </button>
+                    <button id="repeatConfirmBtn" style="padding: 0.75rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Crear Citas
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Update preview when options change
+        const updatePreview = () => {
+            const freq = parseInt(document.getElementById('repeatFrequency').value);
+            const count = parseInt(document.getElementById('repeatCount').value);
+            const baseDate = new Date(booking.booking_date);
+
+            let previewText = `Se crearán ${count} citas:<br>`;
+            for (let i = 1; i <= Math.min(count, 4); i++) {
+                const newDate = new Date(baseDate);
+                newDate.setDate(newDate.getDate() + (freq * 7 * i));
+                previewText += `• ${newDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} a las ${bookingTime}<br>`;
+            }
+            if (count > 4) {
+                previewText += `• ... y ${count - 4} más`;
+            }
+
+            document.getElementById('repeatPreview').innerHTML = previewText;
+        };
+
+        document.getElementById('repeatFrequency').addEventListener('change', updatePreview);
+        document.getElementById('repeatCount').addEventListener('change', updatePreview);
+        updatePreview();
+
+        // Event handlers
+        const cleanup = () => overlay.remove();
+
+        document.getElementById('repeatCancelBtn').addEventListener('click', cleanup);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cleanup();
+        });
+
+        document.getElementById('repeatConfirmBtn').addEventListener('click', async () => {
+            const frequency = document.getElementById('repeatFrequency').value;
+            const repetitions = document.getElementById('repeatCount').value;
+
+            document.getElementById('repeatConfirmBtn').disabled = true;
+            document.getElementById('repeatConfirmBtn').textContent = 'Creando...';
+
+            await this.repeatBooking(bookingId, frequency, repetitions);
+            cleanup();
+        });
+    },
+
+    // Repeat booking API call
+    async repeatBooking(bookingId, frequency, repetitions) {
+        try {
+            const result = await api.post(`/api/booking/${bookingId}/repeat`, {
+                frequency: parseInt(frequency),
+                repetitions: parseInt(repetitions)
+            });
+
+            modal.toast({
+                message: `Se crearon ${result.data.created.length} citas correctamente`,
+                type: 'success'
+            });
+
+            this.load(); // Reload bookings
+        } catch (error) {
+            console.error('Error repeating booking:', error);
+            modal.toast({
+                message: `Error al repetir cita: ${error.message}`,
+                type: 'error'
+            });
+        }
+    },
+
+    // Show reschedule modal
+    showRescheduleModal(bookingId) {
+        const booking = this.allBookings.find(b => b.id === bookingId);
+        if (!booking) return;
+
+        // Create modal
+        const overlay = document.createElement('div');
+        overlay.id = 'rescheduleModal';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.2s ease;
+        `;
+
+        // Format current date for input
+        const currentDate = booking.booking_date.split('T')[0];
+        const currentTime = booking.booking_time.substring(0, 5);
+
+        overlay.innerHTML = `
+            <div style="background: var(--bg-secondary); border-radius: 16px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);">
+                <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h2 style="margin: 0; font-size: 1.3rem; color: var(--text-primary);">
+                        📅 Cambiar Fecha/Hora
+                    </h2>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        ${booking.customer_name}
+                    </p>
+                </div>
+
+                <div style="padding: 1.5rem;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">
+                            Nueva fecha
+                        </label>
+                        <input type="date" id="rescheduleDate" value="${currentDate}"
+                               style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 1rem; box-sizing: border-box;">
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">
+                            Nueva hora
+                        </label>
+                        <input type="time" id="rescheduleTime" value="${currentTime}"
+                               style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 1rem; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button id="rescheduleCancelBtn" style="padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Cancelar
+                    </button>
+                    <button id="rescheduleConfirmBtn" style="padding: 0.75rem 1.5rem; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Event handlers
+        const cleanup = () => overlay.remove();
+
+        document.getElementById('rescheduleCancelBtn').addEventListener('click', cleanup);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cleanup();
+        });
+
+        document.getElementById('rescheduleConfirmBtn').addEventListener('click', async () => {
+            const newDate = document.getElementById('rescheduleDate').value;
+            const newTime = document.getElementById('rescheduleTime').value;
+
+            document.getElementById('rescheduleConfirmBtn').disabled = true;
+            document.getElementById('rescheduleConfirmBtn').textContent = 'Guardando...';
+
+            await this.rescheduleBooking(bookingId, newDate, newTime + ':00');
+            cleanup();
+        });
+    },
+
+    // Reschedule booking API call
+    async rescheduleBooking(bookingId, newDate, newTime) {
+        try {
+            await api.patch(`/api/booking/${bookingId}/reschedule`, {
+                booking_date: newDate,
+                booking_time: newTime
+            });
+
+            modal.toast({
+                message: 'Cita reprogramada correctamente',
+                type: 'success'
+            });
+
+            this.load(); // Reload bookings
+        } catch (error) {
+            console.error('Error rescheduling booking:', error);
+            modal.toast({
+                message: `Error al reprogramar: ${error.message}`,
+                type: 'error'
+            });
+        }
     }
 };
 
@@ -709,6 +988,24 @@ style.textContent = `
 
     .btn-cancel:hover {
         background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+
+    .btn-repeat {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+    }
+
+    .btn-repeat:hover {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    }
+
+    .btn-reschedule {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+
+    .btn-reschedule:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
     }
 
     /* Modal Styles */
