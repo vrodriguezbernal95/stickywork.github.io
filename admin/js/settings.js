@@ -2927,6 +2927,19 @@ const settings = {
         if (detailsDiv) {
             detailsDiv.style.display = enabled ? 'block' : 'none';
         }
+
+        // Actualizar visualmente el toggle
+        const checkbox = document.getElementById('children-enabled');
+        if (checkbox) {
+            const toggleBg = checkbox.nextElementSibling;
+            const toggleKnob = toggleBg?.querySelector('span');
+            if (toggleBg) {
+                toggleBg.style.backgroundColor = enabled ? '#10b981' : '#6b7280';
+            }
+            if (toggleKnob) {
+                toggleKnob.style.left = enabled ? '26px' : '3px';
+            }
+        }
     },
 
     // Update shifts count visibility
@@ -3261,11 +3274,14 @@ const settings = {
 
                         <div class="form-group" style="margin-top: 1rem;">
                             <label class="toggle-container" style="display: flex; align-items: center; gap: 1rem; cursor: pointer;">
-                                <span class="toggle-switch">
+                                <label style="position: relative; display: inline-block; width: 50px; height: 26px;">
                                     <input type="checkbox" id="children-enabled" ${childrenEnabled ? 'checked' : ''}
-                                           onchange="settings.toggleChildrenSettings(this.checked)">
-                                    <span class="toggle-slider"></span>
-                                </span>
+                                           onchange="settings.toggleChildrenSettings(this.checked)"
+                                           style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${childrenEnabled ? '#10b981' : '#6b7280'}; transition: 0.3s; border-radius: 26px;">
+                                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: ${childrenEnabled ? '26px' : '3px'}; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                                    </span>
+                                </label>
                                 <span style="color: var(--text-primary);">Activar diferenciación adultos/niños</span>
                             </label>
                             <p class="hint">Si está activo, el widget mostrará selectores separados para adultos y niños</p>
