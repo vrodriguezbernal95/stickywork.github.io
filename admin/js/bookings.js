@@ -688,31 +688,33 @@ const bookings = {
 
                 <div style="padding: 1.5rem;">
                     <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">
+                        <label style="display: block; margin-bottom: 0.75rem; color: var(--text-primary); font-weight: 600;">
                             Repetir cada
                         </label>
-                        <select id="repeatFrequency" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 1rem;">
-                            <option value="1">1 semana</option>
-                            <option value="2">2 semanas</option>
-                            <option value="3">3 semanas</option>
-                            <option value="4">4 semanas</option>
-                        </select>
+                        <div style="display: flex; gap: 0.5rem;" id="frequencyButtons">
+                            <button type="button" data-value="1" class="freq-btn active" style="flex: 1; padding: 0.75rem; border: 2px solid #8b5cf6; background: rgba(139, 92, 246, 0.2); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">1 sem</button>
+                            <button type="button" data-value="2" class="freq-btn" style="flex: 1; padding: 0.75rem; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">2 sem</button>
+                            <button type="button" data-value="3" class="freq-btn" style="flex: 1; padding: 0.75rem; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">3 sem</button>
+                            <button type="button" data-value="4" class="freq-btn" style="flex: 1; padding: 0.75rem; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">4 sem</button>
+                        </div>
+                        <input type="hidden" id="repeatFrequency" value="1">
                     </div>
 
                     <div style="margin-bottom: 1.5rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 600;">
-                            Número de repeticiones
+                        <label style="display: block; margin-bottom: 0.75rem; color: var(--text-primary); font-weight: 600;">
+                            Número de citas a crear
                         </label>
-                        <select id="repeatCount" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 1rem;">
-                            <option value="2">2 citas</option>
-                            <option value="4" selected>4 citas</option>
-                            <option value="6">6 citas</option>
-                            <option value="8">8 citas</option>
-                            <option value="12">12 citas</option>
-                        </select>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="countButtons">
+                            <button type="button" data-value="2" class="count-btn" style="flex: 1; min-width: 60px; padding: 0.75rem; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">2</button>
+                            <button type="button" data-value="4" class="count-btn active" style="flex: 1; min-width: 60px; padding: 0.75rem; border: 2px solid #8b5cf6; background: rgba(139, 92, 246, 0.2); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">4</button>
+                            <button type="button" data-value="6" class="count-btn" style="flex: 1; min-width: 60px; padding: 0.75rem; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">6</button>
+                            <button type="button" data-value="8" class="count-btn" style="flex: 1; min-width: 60px; padding: 0.75rem; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">8</button>
+                            <button type="button" data-value="12" class="count-btn" style="flex: 1; min-width: 60px; padding: 0.75rem; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;">12</button>
+                        </div>
+                        <input type="hidden" id="repeatCount" value="4">
                     </div>
 
-                    <div id="repeatPreview" style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 8px; color: var(--text-secondary); font-size: 0.9rem;">
+                    <div id="repeatPreview" style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px; color: var(--text-secondary); font-size: 0.9rem; border: 1px solid rgba(139, 92, 246, 0.2);">
                         Se crearán citas para las próximas semanas
                     </div>
                 </div>
@@ -721,7 +723,7 @@ const bookings = {
                     <button id="repeatCancelBtn" style="padding: 0.75rem 1.5rem; background: rgba(255, 255, 255, 0.1); color: var(--text-primary); border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
                         Cancelar
                     </button>
-                    <button id="repeatConfirmBtn" style="padding: 0.75rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    <button id="repeatConfirmBtn" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
                         Crear Citas
                     </button>
                 </div>
@@ -736,7 +738,7 @@ const bookings = {
             const count = parseInt(document.getElementById('repeatCount').value);
             const baseDate = new Date(booking.booking_date);
 
-            let previewText = `Se crearán ${count} citas:<br>`;
+            let previewText = `Se crearán <strong>${count} citas</strong>:<br>`;
             for (let i = 1; i <= Math.min(count, 4); i++) {
                 const newDate = new Date(baseDate);
                 newDate.setDate(newDate.getDate() + (freq * 7 * i));
@@ -749,8 +751,38 @@ const bookings = {
             document.getElementById('repeatPreview').innerHTML = previewText;
         };
 
-        document.getElementById('repeatFrequency').addEventListener('change', updatePreview);
-        document.getElementById('repeatCount').addEventListener('change', updatePreview);
+        // Frequency button handlers
+        document.querySelectorAll('.freq-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.freq-btn').forEach(b => {
+                    b.style.border = '2px solid rgba(255,255,255,0.2)';
+                    b.style.background = 'transparent';
+                    b.style.color = 'var(--text-secondary)';
+                });
+                btn.style.border = '2px solid #8b5cf6';
+                btn.style.background = 'rgba(139, 92, 246, 0.2)';
+                btn.style.color = 'white';
+                document.getElementById('repeatFrequency').value = btn.dataset.value;
+                updatePreview();
+            });
+        });
+
+        // Count button handlers
+        document.querySelectorAll('.count-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.count-btn').forEach(b => {
+                    b.style.border = '2px solid rgba(255,255,255,0.2)';
+                    b.style.background = 'transparent';
+                    b.style.color = 'var(--text-secondary)';
+                });
+                btn.style.border = '2px solid #8b5cf6';
+                btn.style.background = 'rgba(139, 92, 246, 0.2)';
+                btn.style.color = 'white';
+                document.getElementById('repeatCount').value = btn.dataset.value;
+                updatePreview();
+            });
+        });
+
         updatePreview();
 
         // Event handlers
