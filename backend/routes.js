@@ -358,6 +358,68 @@ router.post('/api/debug/run-workshops-migration', async (req, res) => {
     }
 });
 
+// Endpoint para ejecutar migración de adultos/niños en reservas (solo una vez)
+router.post('/api/debug/run-children-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: Diferenciación Adultos/Niños');
+
+        // Agregar columna num_adults a bookings
+        console.log('📝 Agregando columna num_adults...');
+        try {
+            await db.query(`
+                ALTER TABLE bookings
+                ADD COLUMN num_adults INT DEFAULT NULL
+                COMMENT 'Número de adultos en la reserva'
+            `);
+            console.log('✅ Columna num_adults agregada');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna num_adults ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // Agregar columna num_children a bookings
+        console.log('📝 Agregando columna num_children...');
+        try {
+            await db.query(`
+                ALTER TABLE bookings
+                ADD COLUMN num_children INT DEFAULT NULL
+                COMMENT 'Número de niños en la reserva'
+            `);
+            console.log('✅ Columna num_children agregada');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna num_children ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Migración de adultos/niños ejecutada correctamente',
+            columns: ['num_adults', 'num_children']
+        });
+
+    } catch (error) {
+        console.error('Error en migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);
 
@@ -688,10 +750,21 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const customerPhone = req.body.customerPhone || req.body.customer_phone;
         const bookingDate = req.body.bookingDate || req.body.booking_date;
         const bookingTime = req.body.bookingTime || req.body.booking_time;
-        const numPeople = parseInt(req.body.numPeople || req.body.num_people) || 2; // Default 2 personas, convertir a número
         const zone = req.body.zone || null; // Zona (Terraza, Interior, etc.)
         const notes = req.body.notes;
         const whatsappConsent = req.body.whatsappConsent || req.body.whatsapp_consent || false; // Consentimiento para WhatsApp
+
+        // Soporte para diferenciación adultos/niños
+        const numAdults = req.body.num_adults !== undefined ? parseInt(req.body.num_adults) : null;
+        const numChildren = req.body.num_children !== undefined ? parseInt(req.body.num_children) : null;
+
+        // Calcular numPeople: si hay adultos/niños, sumar; si no, usar valor directo
+        let numPeople;
+        if (numAdults !== null && numChildren !== null) {
+            numPeople = numAdults + numChildren;
+        } else {
+            numPeople = parseInt(req.body.numPeople || req.body.num_people) || 2;
+        }
 
         // Validaciones básicas
         if (!businessId || !customerName || !customerEmail || !customerPhone || !bookingDate || !bookingTime) {
@@ -796,6 +869,29 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                     success: false,
                     message: `El máximo de comensales por reserva es ${maxPerBooking} personas`
                 });
+            }
+        }
+
+        // Validar configuración de adultos/niños si está habilitada
+        const childrenSettings = bookingSettings.childrenSettings;
+        if (childrenSettings && childrenSettings.enabled && numAdults !== null) {
+            // Validar mínimo de adultos
+            const minAdults = childrenSettings.minAdults || 1;
+            if (numAdults < minAdults) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Se requiere al menos ${minAdults} adulto${minAdults > 1 ? 's' : ''} por reserva`
+                });
+            }
+
+            // Validar máximo de niños si está configurado
+            if (childrenSettings.maxChildren !== null && childrenSettings.maxChildren !== undefined) {
+                if (numChildren > childrenSettings.maxChildren) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `El máximo de niños por reserva es ${childrenSettings.maxChildren}`
+                    });
+                }
             }
         }
 
@@ -1019,10 +1115,10 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
         const result = await db.query(
             `INSERT INTO bookings
             (business_id, service_id, customer_name, customer_email, customer_phone,
-             booking_date, booking_time, num_people, zone, notes, whatsapp_consent, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+             booking_date, booking_time, num_people, num_adults, num_children, zone, notes, whatsapp_consent, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
             [businessId, autoAssignedServiceId || null, customerName, customerEmail, customerPhone,
-             bookingDate, bookingTime, numPeople, zone, notes || null, whatsappConsent]
+             bookingDate, bookingTime, numPeople, numAdults, numChildren, zone, notes || null, whatsappConsent]
         );
 
         // Obtener la reserva creada con información del servicio
@@ -1789,7 +1885,9 @@ router.get('/api/widget/:businessId', async (req, res) => {
             services: (bookingMode === 'services' || bookingMode === 'tables') ? services : [],
             professionals,
             restaurantZones, // Zonas configurables desde dashboard (Terraza, Interior, etc.)
-            classes
+            classes,
+            // Configuración de diferenciación adultos/niños (para restaurantes principalmente)
+            childrenSettings: bookingSettings.childrenSettings || null
         });
     } catch (error) {
         console.error('Error obteniendo config del widget:', error);

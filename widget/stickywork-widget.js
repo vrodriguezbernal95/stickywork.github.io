@@ -81,7 +81,10 @@
             person: 'persona',
             minutes: 'min',
             spots: 'plazas',
-            free: 'Gratis'
+            free: 'Gratis',
+            adults: 'Adultos',
+            children: 'Ninos',
+            childrenAge: 'anos'
         },
         en: {
             title: 'Book Your Appointment',
@@ -127,7 +130,10 @@
             person: 'guest',
             minutes: 'min',
             spots: 'spots',
-            free: 'Free'
+            free: 'Free',
+            adults: 'Adults',
+            children: 'Children',
+            childrenAge: 'years'
         }
     };
 
@@ -1177,18 +1183,62 @@
                 <option value="Terraza">Terraza</option>
             `;
 
-        return `
-            <div class="stickywork-field">
-                <label class="stickywork-label">${t.numPeople}</label>
-                <div class="stickywork-people-selector">
-                    <button type="button" class="stickywork-people-btn" id="stickywork-people-decrement">-</button>
-                    <input type="number" class="stickywork-people-count" id="stickywork-people-count"
-                           value="2" min="1" max="50"
-                           oninput="StickyWork.updatePeopleCount(this.value)">
-                    <button type="button" class="stickywork-people-btn" id="stickywork-people-increment">+</button>
-                    <span style="color: var(--text-secondary);">${t.people}</span>
+        // Verificar si está habilitada la diferenciación adultos/niños
+        const childrenSettings = config.childrenSettings;
+        const childrenEnabled = childrenSettings && childrenSettings.enabled;
+
+        // Selector de personas (estándar o diferenciado adultos/niños)
+        let peopleSelector;
+
+        if (childrenEnabled) {
+            // Modo diferenciado: adultos + niños
+            const maxChildAge = childrenSettings.maxChildAge || 12;
+            const minAdults = childrenSettings.minAdults || 1;
+            const customMessage = childrenSettings.customMessage || `(0-${maxChildAge} ${t.childrenAge})`;
+
+            peopleSelector = `
+                <div class="stickywork-field">
+                    <label class="stickywork-label">${t.adults}</label>
+                    <div class="stickywork-people-selector">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-adults-decrement">-</button>
+                        <input type="number" class="stickywork-people-count" id="stickywork-adults-count"
+                               name="num_adults"
+                               value="${minAdults}" min="${minAdults}" max="50"
+                               oninput="StickyWork.updateAdultsCount(this.value)">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-adults-increment">+</button>
+                    </div>
                 </div>
-            </div>
+                <div class="stickywork-field">
+                    <label class="stickywork-label">${t.children} <span style="font-weight: normal; color: var(--text-secondary); font-size: 0.85em;">${customMessage}</span></label>
+                    <div class="stickywork-people-selector">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-children-decrement">-</button>
+                        <input type="number" class="stickywork-people-count" id="stickywork-children-count"
+                               name="num_children"
+                               value="0" min="0" max="50"
+                               oninput="StickyWork.updateChildrenCount(this.value)">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-children-increment">+</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Modo estándar: solo número de personas
+            peopleSelector = `
+                <div class="stickywork-field">
+                    <label class="stickywork-label">${t.numPeople}</label>
+                    <div class="stickywork-people-selector">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-people-decrement">-</button>
+                        <input type="number" class="stickywork-people-count" id="stickywork-people-count"
+                               value="2" min="1" max="50"
+                               oninput="StickyWork.updatePeopleCount(this.value)">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-people-increment">+</button>
+                        <span style="color: var(--text-secondary);">${t.people}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            ${peopleSelector}
             <div class="stickywork-field">
                 <label class="stickywork-label">${t.zone}</label>
                 <select class="stickywork-select" name="zone">
@@ -1527,10 +1577,20 @@
                 <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
             `;
         } else if (activeMode === 'tables') {
-            details += `
-                <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
-                ${formData.zone ? `<p class="stickywork-success-detail"><strong>${t.zone}:</strong> ${formData.zone}</p>` : ''}
-            `;
+            // Verificar si tenemos desglose adultos/niños
+            if (formData.numAdults !== undefined && formData.numChildren !== undefined) {
+                details += `
+                    <p class="stickywork-success-detail"><strong>${t.adults}:</strong> ${formData.numAdults}</p>
+                    <p class="stickywork-success-detail"><strong>${t.children}:</strong> ${formData.numChildren}</p>
+                `;
+            } else {
+                details += `
+                    <p class="stickywork-success-detail"><strong>${t.numPeople}:</strong> ${formData.numPeople} ${formData.numPeople > 1 ? t.people : t.person}</p>
+                `;
+            }
+            if (formData.zone) {
+                details += `<p class="stickywork-success-detail"><strong>${t.zone}:</strong> ${formData.zone}</p>`;
+            }
         } else if (activeMode === 'classes') {
             details += `<p class="stickywork-success-detail"><strong>${t.class}:</strong> ${formData.class}</p>`;
         } else {
@@ -2029,6 +2089,12 @@
                 whatsapp_consent: formData.whatsappConsent || false
             };
 
+            // Añadir num_adults y num_children si están presentes (modo diferenciado)
+            if (formData.numAdults !== undefined && formData.numChildren !== undefined) {
+                bookingData.num_adults = formData.numAdults;
+                bookingData.num_children = formData.numChildren;
+            }
+
             console.log('📤 [Debug] Enviando al backend:', bookingData);
 
             const response = await fetch(`${config.apiUrl}/api/bookings`, {
@@ -2062,10 +2128,27 @@
 
         // Campos segun modo activo (tab o config)
         if (activeMode === 'tables') {
-            // Para restaurantes: leer el valor actual del input (por si lo escribió directamente)
-            const peopleInput = form.querySelector('#stickywork-people-count');
-            formData.numPeople = peopleInput ? parseInt(peopleInput.value) : peopleCount;
-            console.log('🔍 [Debug] peopleInput:', peopleInput, 'value:', peopleInput?.value, 'numPeople final:', formData.numPeople);
+            // Verificar si está habilitada la diferenciación adultos/niños
+            const childrenSettings = config.childrenSettings;
+            const childrenEnabled = childrenSettings && childrenSettings.enabled;
+
+            if (childrenEnabled) {
+                // Modo diferenciado: capturar adultos y niños por separado
+                const adultsInput = form.querySelector('#stickywork-adults-count');
+                const childrenInput = form.querySelector('#stickywork-children-count');
+
+                formData.numAdults = adultsInput ? parseInt(adultsInput.value) : adultsCount;
+                formData.numChildren = childrenInput ? parseInt(childrenInput.value) : childrenCount;
+                formData.numPeople = formData.numAdults + formData.numChildren;
+
+                console.log('🔍 [Debug] Modo adultos/ninos - Adultos:', formData.numAdults, 'Ninos:', formData.numChildren, 'Total:', formData.numPeople);
+            } else {
+                // Modo estándar: solo número de personas
+                const peopleInput = form.querySelector('#stickywork-people-count');
+                formData.numPeople = peopleInput ? parseInt(peopleInput.value) : peopleCount;
+                console.log('🔍 [Debug] peopleInput:', peopleInput, 'value:', peopleInput?.value, 'numPeople final:', formData.numPeople);
+            }
+
             formData.zone = form.zone?.value || ''; // Zona (Terraza/Interior)
             // El servicio se asignará automáticamente en el backend según la hora
         } else if (activeMode === 'classes') {
@@ -2120,6 +2203,10 @@
     // Contador de personas
     let peopleCount = 2;
 
+    // Contadores de adultos y niños (para modo diferenciado)
+    let adultsCount = 1;
+    let childrenCount = 0;
+
     window.StickyWork.incrementPeople = function() {
         if (peopleCount < 50) {
             peopleCount++;
@@ -2144,6 +2231,68 @@
     function updatePeopleCountDisplay() {
         const countEl = document.querySelector('#stickywork-people-count');
         if (countEl) countEl.value = peopleCount;
+    }
+
+    // Funciones para adultos
+    window.StickyWork.incrementAdults = function() {
+        const maxPerBooking = config.maxPerBooking || 50;
+        if (adultsCount + childrenCount < maxPerBooking) {
+            adultsCount++;
+            updateAdultsCountDisplay();
+        }
+    };
+
+    window.StickyWork.decrementAdults = function() {
+        const minAdults = config.childrenSettings?.minAdults || 1;
+        if (adultsCount > minAdults) {
+            adultsCount--;
+            updateAdultsCountDisplay();
+        }
+    };
+
+    window.StickyWork.updateAdultsCount = function(value) {
+        const numValue = parseInt(value);
+        const minAdults = config.childrenSettings?.minAdults || 1;
+        if (!isNaN(numValue) && numValue >= minAdults && numValue <= 50) {
+            adultsCount = numValue;
+        }
+    };
+
+    function updateAdultsCountDisplay() {
+        const countEl = document.querySelector('#stickywork-adults-count');
+        if (countEl) countEl.value = adultsCount;
+    }
+
+    // Funciones para niños
+    window.StickyWork.incrementChildren = function() {
+        const maxPerBooking = config.maxPerBooking || 50;
+        const maxChildren = config.childrenSettings?.maxChildren;
+        const canAddMore = adultsCount + childrenCount < maxPerBooking;
+        const withinChildLimit = maxChildren === null || maxChildren === undefined || childrenCount < maxChildren;
+
+        if (canAddMore && withinChildLimit) {
+            childrenCount++;
+            updateChildrenCountDisplay();
+        }
+    };
+
+    window.StickyWork.decrementChildren = function() {
+        if (childrenCount > 0) {
+            childrenCount--;
+            updateChildrenCountDisplay();
+        }
+    };
+
+    window.StickyWork.updateChildrenCount = function(value) {
+        const numValue = parseInt(value);
+        if (!isNaN(numValue) && numValue >= 0 && numValue <= 50) {
+            childrenCount = numValue;
+        }
+    };
+
+    function updateChildrenCountDisplay() {
+        const countEl = document.querySelector('#stickywork-children-count');
+        if (countEl) countEl.value = childrenCount;
     }
 
     // Inicializar botones de personas
@@ -2176,6 +2325,52 @@
                     peopleCount++;
                     updatePeopleCountDisplay();
                 }
+            });
+        }
+
+        // Inicializar botones de adultos (si existen)
+        const adultsDecrementBtn = context.querySelector('#stickywork-adults-decrement');
+        const adultsIncrementBtn = context.querySelector('#stickywork-adults-increment');
+        const adultsInput = context.querySelector('#stickywork-adults-count');
+
+        if (adultsInput) {
+            adultsCount = parseInt(adultsInput.value) || 1;
+        }
+
+        if (adultsDecrementBtn) {
+            adultsDecrementBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                StickyWork.decrementAdults();
+            });
+        }
+
+        if (adultsIncrementBtn) {
+            adultsIncrementBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                StickyWork.incrementAdults();
+            });
+        }
+
+        // Inicializar botones de niños (si existen)
+        const childrenDecrementBtn = context.querySelector('#stickywork-children-decrement');
+        const childrenIncrementBtn = context.querySelector('#stickywork-children-increment');
+        const childrenInput = context.querySelector('#stickywork-children-count');
+
+        if (childrenInput) {
+            childrenCount = parseInt(childrenInput.value) || 0;
+        }
+
+        if (childrenDecrementBtn) {
+            childrenDecrementBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                StickyWork.decrementChildren();
+            });
+        }
+
+        if (childrenIncrementBtn) {
+            childrenIncrementBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                StickyWork.incrementChildren();
             });
         }
     }

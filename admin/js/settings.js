@@ -1875,6 +1875,25 @@ const settings = {
                 currentSettings.maxPerBooking = maxPerBooking;
             }
 
+            // Guardar configuración de adultos/niños (solo para restaurantes)
+            if (bookingMode === 'tables') {
+                const childrenEnabled = document.getElementById('children-enabled');
+                if (childrenEnabled) {
+                    const maxChildAge = document.getElementById('max-child-age');
+                    const minAdults = document.getElementById('min-adults');
+                    const maxChildren = document.getElementById('max-children');
+                    const customMessage = document.getElementById('children-custom-message');
+
+                    currentSettings.childrenSettings = {
+                        enabled: childrenEnabled.checked,
+                        maxChildAge: maxChildAge ? parseInt(maxChildAge.value) || 12 : 12,
+                        minAdults: minAdults ? parseInt(minAdults.value) || 1 : 1,
+                        maxChildren: maxChildren && maxChildren.value !== '' ? parseInt(maxChildren.value) : null,
+                        customMessage: customMessage ? customMessage.value.trim() : ''
+                    };
+                }
+            }
+
             // Guardar usando endpoint existente (requiere todos los campos del negocio)
             const response = await api.put(`/api/business/${businessId}`, {
                 name: this.businessData.name,
@@ -2904,6 +2923,14 @@ const settings = {
         }
     },
 
+    // Toggle children settings visibility
+    toggleChildrenSettings(enabled) {
+        const detailsDiv = document.getElementById('children-settings-details');
+        if (detailsDiv) {
+            detailsDiv.style.display = enabled ? 'block' : 'none';
+        }
+    },
+
     // Update shifts count visibility
     updateShiftsCount() {
         const numShifts = parseInt(document.getElementById('num-shifts').value);
@@ -3198,6 +3225,15 @@ const settings = {
                 `;
             }).join('');
 
+            // Configuración de diferenciación adultos/niños
+            const childrenSettings = bookingSettings.childrenSettings || {};
+            const childrenEnabled = childrenSettings.enabled || false;
+            const maxChildAge = childrenSettings.maxChildAge || 12;
+            const minAdults = childrenSettings.minAdults || 1;
+            const maxChildren = childrenSettings.maxChildren !== null && childrenSettings.maxChildren !== undefined
+                ? childrenSettings.maxChildren : '';
+            const customMessage = childrenSettings.customMessage || '';
+
             return `
                 <div class="settings-section">
                     <div class="settings-section-header">
@@ -3216,7 +3252,68 @@ const settings = {
                         <p class="hint">Número máximo de personas que pueden reservar en una sola mesa</p>
                     </div>
 
-                    <button class="btn-save" onclick="settings.saveCapacity()">
+                    <!-- Sección Adultos/Niños -->
+                    <div class="settings-subsection" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                        <div class="settings-section-header">
+                            <h4 style="margin: 0 0 0.5rem 0;">👨‍👧 Diferenciación Adultos/Niños</h4>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                                Permite a los clientes especificar cuántos adultos y niños asistirán
+                            </p>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label class="toggle-container" style="display: flex; align-items: center; gap: 1rem; cursor: pointer;">
+                                <span class="toggle-switch">
+                                    <input type="checkbox" id="children-enabled" ${childrenEnabled ? 'checked' : ''}
+                                           onchange="settings.toggleChildrenSettings(this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </span>
+                                <span style="color: var(--text-primary);">Activar diferenciación adultos/niños</span>
+                            </label>
+                            <p class="hint">Si está activo, el widget mostrará selectores separados para adultos y niños</p>
+                        </div>
+
+                        <div id="children-settings-details" style="display: ${childrenEnabled ? 'block' : 'none'}; margin-top: 1.5rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 8px;">
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label>Edad máxima niño</label>
+                                    <input type="number" id="max-child-age"
+                                           min="1" max="18"
+                                           value="${maxChildAge}"
+                                           placeholder="12">
+                                    <p class="hint">Hasta qué edad se considera niño</p>
+                                </div>
+                                <div class="form-group">
+                                    <label>Mínimo de adultos</label>
+                                    <input type="number" id="min-adults"
+                                           min="1" max="10"
+                                           value="${minAdults}"
+                                           placeholder="1">
+                                    <p class="hint">Adultos mínimos requeridos por reserva</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Máximo de niños por reserva (opcional)</label>
+                                <input type="number" id="max-children"
+                                       min="0" max="50"
+                                       value="${maxChildren}"
+                                       placeholder="Sin límite">
+                                <p class="hint">Dejar vacío para no limitar</p>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mensaje personalizado (opcional)</label>
+                                <input type="text" id="children-custom-message"
+                                       value="${customMessage}"
+                                       placeholder="Ej: Niños de 0 a 12 años"
+                                       maxlength="100">
+                                <p class="hint">Se mostrará junto al selector de niños en el widget</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-save" onclick="settings.saveCapacity()" style="margin-top: 1.5rem;">
                         💾 Guardar Capacidad
                     </button>
                 </div>

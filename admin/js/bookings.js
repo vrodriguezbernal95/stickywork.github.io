@@ -251,9 +251,14 @@ const bookings = {
                 <td style="font-size: 0.9rem;">${booking.customer_phone}</td>
                 <td>${booking.service_name || 'Sin servicio'}</td>
                 <td style="text-align: center; font-weight: 600;">
-                    <span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #3b82f6;">
-                        👥 ${booking.num_people || 2}
-                    </span>
+                    ${booking.num_adults !== null && booking.num_adults !== undefined
+                        ? `<span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #3b82f6;">
+                               👨 ${booking.num_adults} + 👶 ${booking.num_children || 0}
+                           </span>`
+                        : `<span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #3b82f6;">
+                               👥 ${booking.num_people || 2}
+                           </span>`
+                    }
                 </td>
                 <td style="text-align: center;">
                     ${booking.zone
