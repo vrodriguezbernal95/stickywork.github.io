@@ -1638,8 +1638,8 @@ router.get('/api/bookings/:businessId', requireAuth, requireBusinessAccess, asyn
             FROM bookings b
             LEFT JOIN services s ON b.service_id = s.id
             LEFT JOIN customers c ON c.business_id = b.business_id
-                AND c.email = b.customer_email
-                AND c.phone = b.customer_phone
+                AND c.email COLLATE utf8mb4_unicode_ci = b.customer_email COLLATE utf8mb4_unicode_ci
+                AND c.phone COLLATE utf8mb4_unicode_ci = b.customer_phone COLLATE utf8mb4_unicode_ci
             WHERE b.business_id = ?
         `;
         const params = [businessId];
