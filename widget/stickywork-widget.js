@@ -1149,6 +1149,43 @@
             `
             : '';
 
+        // Verificar si está habilitada la diferenciación adultos/niños
+        const childrenSettings = config.childrenSettings;
+        const childrenEnabled = childrenSettings && childrenSettings.enabled;
+
+        let peopleSelector = '';
+        if (childrenEnabled) {
+            // Modo diferenciado: adultos + niños
+            const maxChildAge = childrenSettings.maxChildAge || 12;
+            const minAdults = childrenSettings.minAdults || 1;
+            const customMessage = childrenSettings.customMessage || `(0-${maxChildAge} ${t.childrenAge})`;
+
+            peopleSelector = `
+                <div class="stickywork-field">
+                    <label class="stickywork-label">${t.adults}</label>
+                    <div class="stickywork-people-selector">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-adults-decrement">-</button>
+                        <input type="number" class="stickywork-people-count" id="stickywork-adults-count"
+                               name="num_adults"
+                               value="${minAdults}" min="${minAdults}" max="50"
+                               oninput="StickyWork.updateAdultsCount(this.value)">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-adults-increment">+</button>
+                    </div>
+                </div>
+                <div class="stickywork-field">
+                    <label class="stickywork-label">${t.children} <span style="font-weight: normal; color: var(--text-secondary); font-size: 0.85em;">${customMessage}</span></label>
+                    <div class="stickywork-people-selector">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-children-decrement">-</button>
+                        <input type="number" class="stickywork-people-count" id="stickywork-children-count"
+                               name="num_children"
+                               value="0" min="0" max="50"
+                               oninput="StickyWork.updateChildrenCount(this.value)">
+                        <button type="button" class="stickywork-people-btn" id="stickywork-children-increment">+</button>
+                    </div>
+                </div>
+            `;
+        }
+
         return `
             <div class="stickywork-field">
                 <label class="stickywork-label">${t.service}</label>
@@ -1158,6 +1195,7 @@
                 </select>
             </div>
             ${professionalField}
+            ${peopleSelector}
         `;
     }
 
@@ -1597,6 +1635,13 @@
             details += `<p class="stickywork-success-detail"><strong>${t.service}:</strong> ${formData.service}</p>`;
             if (formData.professional) {
                 details += `<p class="stickywork-success-detail"><strong>${t.professional}:</strong> ${formData.professional}</p>`;
+            }
+            // Mostrar adultos/niños si están presentes (modo diferenciado activado)
+            if (formData.numAdults !== undefined && formData.numChildren !== undefined) {
+                details += `
+                    <p class="stickywork-success-detail"><strong>${t.adults}:</strong> ${formData.numAdults}</p>
+                    <p class="stickywork-success-detail"><strong>${t.children}:</strong> ${formData.numChildren}</p>
+                `;
             }
         }
 
@@ -2176,6 +2221,21 @@
             formData.service = form.service?.value || '';
             formData.professional = form.professional?.value || '';
             formData.notes = form.notes?.value || '';
+
+            // Verificar si está habilitada la diferenciación adultos/niños para servicios
+            const childrenSettings = config.childrenSettings;
+            const childrenEnabled = childrenSettings && childrenSettings.enabled;
+
+            if (childrenEnabled) {
+                const adultsInput = form.querySelector('#stickywork-adults-count');
+                const childrenInput = form.querySelector('#stickywork-children-count');
+
+                formData.numAdults = adultsInput ? parseInt(adultsInput.value) : adultsCount;
+                formData.numChildren = childrenInput ? parseInt(childrenInput.value) : childrenCount;
+                formData.numPeople = formData.numAdults + formData.numChildren;
+
+                console.log('🔍 [Debug] Servicios con adultos/ninos - Adultos:', formData.numAdults, 'Ninos:', formData.numChildren, 'Total:', formData.numPeople);
+            }
         }
 
         const submitBtn = form.querySelector('button[type="submit"]');
