@@ -420,8 +420,433 @@ router.post('/api/debug/run-children-migration', async (req, res) => {
     }
 });
 
+// Endpoint para ejecutar migración de clientes/customers (solo una vez)
+router.post('/api/debug/run-customers-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: Sistema de Clientes Premium/VIP');
+
+        // Crear tabla customers
+        console.log('📝 Creando tabla customers...');
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS customers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                business_id INT NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                phone VARCHAR(50) NOT NULL,
+                is_premium BOOLEAN DEFAULT FALSE,
+                notes TEXT,
+                total_bookings INT DEFAULT 0,
+                last_booking_date DATE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_customer (business_id, email, phone),
+                INDEX idx_business (business_id),
+                INDEX idx_premium (business_id, is_premium),
+                FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
+            )
+        `);
+        console.log('✅ Tabla customers creada');
+
+        res.json({
+            success: true,
+            message: 'Migración de clientes ejecutada correctamente',
+            table: 'customers'
+        });
+
+    } catch (error) {
+        console.error('Error en migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);
+
+// ==================== CLIENTES / CUSTOMERS ====================
+
+/**
+ * GET /api/customers/:businessId
+ * Lista de clientes del negocio con filtros
+ */
+router.get('/api/customers/:businessId', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { premium, search, sort } = req.query;
+
+        let query = `
+            SELECT * FROM customers
+            WHERE business_id = ?
+        `;
+        const params = [businessId];
+
+        // Filtro por premium
+        if (premium === 'true') {
+            query += ' AND is_premium = TRUE';
+        } else if (premium === 'false') {
+            query += ' AND is_premium = FALSE';
+        }
+
+        // Búsqueda por nombre, email o teléfono
+        if (search) {
+            query += ' AND (name LIKE ? OR email LIKE ? OR phone LIKE ?)';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm);
+        }
+
+        // Ordenamiento
+        switch (sort) {
+            case 'bookings':
+                query += ' ORDER BY total_bookings DESC';
+                break;
+            case 'recent':
+                query += ' ORDER BY last_booking_date DESC';
+                break;
+            case 'name':
+            default:
+                query += ' ORDER BY name ASC';
+        }
+
+        const customers = await db.query(query, params);
+
+        res.json({
+            success: true,
+            data: customers
+        });
+    } catch (error) {
+        console.error('Error al obtener clientes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener clientes',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/customers/:businessId/:customerId
+ * Detalle de cliente con historial de reservas
+ */
+router.get('/api/customers/:businessId/:customerId', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId, customerId } = req.params;
+
+        // Obtener cliente
+        const customerQuery = await db.query(
+            'SELECT * FROM customers WHERE id = ? AND business_id = ?',
+            [customerId, businessId]
+        );
+
+        if (customerQuery.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cliente no encontrado'
+            });
+        }
+
+        const customer = customerQuery[0];
+
+        // Obtener historial de reservas (últimas 20)
+        const bookingsQuery = await db.query(`
+            SELECT b.*, s.name as service_name
+            FROM bookings b
+            LEFT JOIN services s ON b.service_id = s.id
+            WHERE b.business_id = ?
+            AND (b.customer_email = ? OR b.customer_phone = ?)
+            ORDER BY b.booking_date DESC, b.booking_time DESC
+            LIMIT 20
+        `, [businessId, customer.email, customer.phone]);
+
+        res.json({
+            success: true,
+            data: {
+                ...customer,
+                bookings: bookingsQuery
+            }
+        });
+    } catch (error) {
+        console.error('Error al obtener cliente:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener cliente',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/customers/:businessId
+ * Crear cliente manualmente
+ */
+router.post('/api/customers/:businessId', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { name, email, phone, is_premium, notes } = req.body;
+
+        // Validaciones
+        if (!name || !email || !phone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nombre, email y teléfono son obligatorios'
+            });
+        }
+
+        // Verificar si ya existe
+        const existingQuery = await db.query(
+            'SELECT id FROM customers WHERE business_id = ? AND email = ? AND phone = ?',
+            [businessId, email, phone]
+        );
+
+        if (existingQuery.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Ya existe un cliente con ese email y teléfono'
+            });
+        }
+
+        // Crear cliente
+        const result = await db.query(
+            `INSERT INTO customers (business_id, name, email, phone, is_premium, notes)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [businessId, name, email, phone, is_premium || false, notes || null]
+        );
+
+        // Obtener cliente creado
+        const customerQuery = await db.query(
+            'SELECT * FROM customers WHERE id = ?',
+            [result.insertId]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Cliente creado exitosamente',
+            data: customerQuery[0]
+        });
+    } catch (error) {
+        console.error('Error al crear cliente:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al crear cliente',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * PATCH /api/customers/:businessId/:customerId
+ * Actualizar cliente (marcar premium, notas, etc.)
+ */
+router.patch('/api/customers/:businessId/:customerId', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId, customerId } = req.params;
+        const { name, email, phone, is_premium, notes } = req.body;
+
+        // Verificar que existe
+        const existingQuery = await db.query(
+            'SELECT id FROM customers WHERE id = ? AND business_id = ?',
+            [customerId, businessId]
+        );
+
+        if (existingQuery.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cliente no encontrado'
+            });
+        }
+
+        // Construir query dinámico
+        const updates = [];
+        const params = [];
+
+        if (name !== undefined) {
+            updates.push('name = ?');
+            params.push(name);
+        }
+        if (email !== undefined) {
+            updates.push('email = ?');
+            params.push(email);
+        }
+        if (phone !== undefined) {
+            updates.push('phone = ?');
+            params.push(phone);
+        }
+        if (is_premium !== undefined) {
+            updates.push('is_premium = ?');
+            params.push(is_premium);
+        }
+        if (notes !== undefined) {
+            updates.push('notes = ?');
+            params.push(notes);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No hay campos para actualizar'
+            });
+        }
+
+        params.push(customerId, businessId);
+
+        await db.query(
+            `UPDATE customers SET ${updates.join(', ')} WHERE id = ? AND business_id = ?`,
+            params
+        );
+
+        // Obtener cliente actualizado
+        const customerQuery = await db.query(
+            'SELECT * FROM customers WHERE id = ?',
+            [customerId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Cliente actualizado exitosamente',
+            data: customerQuery[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar cliente:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar cliente',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/customers/:businessId/:customerId
+ * Eliminar cliente
+ */
+router.delete('/api/customers/:businessId/:customerId', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId, customerId } = req.params;
+
+        // Verificar que existe
+        const existingQuery = await db.query(
+            'SELECT id FROM customers WHERE id = ? AND business_id = ?',
+            [customerId, businessId]
+        );
+
+        if (existingQuery.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cliente no encontrado'
+            });
+        }
+
+        await db.query(
+            'DELETE FROM customers WHERE id = ? AND business_id = ?',
+            [customerId, businessId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Cliente eliminado exitosamente'
+        });
+    } catch (error) {
+        console.error('Error al eliminar cliente:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar cliente',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/customers/:businessId/sync
+ * Sincronizar clientes desde reservas existentes
+ */
+router.post('/api/customers/:businessId/sync', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+
+        console.log('🔄 Sincronizando clientes desde reservas para negocio:', businessId);
+
+        // Obtener clientes únicos de las reservas
+        const bookingsQuery = await db.query(`
+            SELECT
+                customer_name as name,
+                customer_email as email,
+                customer_phone as phone,
+                COUNT(*) as total_bookings,
+                MAX(booking_date) as last_booking_date
+            FROM bookings
+            WHERE business_id = ?
+            AND customer_email IS NOT NULL
+            AND customer_phone IS NOT NULL
+            GROUP BY customer_email, customer_phone, customer_name
+        `, [businessId]);
+
+        let created = 0;
+        let updated = 0;
+        let skipped = 0;
+
+        for (const booking of bookingsQuery) {
+            // Verificar si ya existe
+            const existingQuery = await db.query(
+                'SELECT id, total_bookings FROM customers WHERE business_id = ? AND email = ? AND phone = ?',
+                [businessId, booking.email, booking.phone]
+            );
+
+            if (existingQuery.length > 0) {
+                // Actualizar estadísticas si es necesario
+                const existing = existingQuery[0];
+                if (booking.total_bookings > existing.total_bookings) {
+                    await db.query(
+                        `UPDATE customers
+                         SET total_bookings = ?, last_booking_date = ?, name = ?
+                         WHERE id = ?`,
+                        [booking.total_bookings, booking.last_booking_date, booking.name, existing.id]
+                    );
+                    updated++;
+                } else {
+                    skipped++;
+                }
+            } else {
+                // Crear nuevo cliente
+                await db.query(
+                    `INSERT INTO customers (business_id, name, email, phone, total_bookings, last_booking_date)
+                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    [businessId, booking.name, booking.email, booking.phone, booking.total_bookings, booking.last_booking_date]
+                );
+                created++;
+            }
+        }
+
+        console.log(`✅ Sincronización completada: ${created} creados, ${updated} actualizados, ${skipped} sin cambios`);
+
+        res.json({
+            success: true,
+            message: 'Sincronización completada',
+            stats: {
+                total: bookingsQuery.length,
+                created,
+                updated,
+                skipped
+            }
+        });
+    } catch (error) {
+        console.error('Error al sincronizar clientes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al sincronizar clientes',
+            error: error.message
+        });
+    }
+});
 
 // ==================== SERVICIOS ====================
 
@@ -1151,6 +1576,40 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 .catch(err => console.error('✗ Error enviando email al admin:', err.message));
         }
 
+        // Auto-detectar/crear cliente (asíncrono, no bloqueante)
+        (async () => {
+            try {
+                // Buscar si existe cliente con ese email+phone
+                const existingCustomer = await db.query(
+                    'SELECT id, total_bookings FROM customers WHERE business_id = ? AND email = ? AND phone = ?',
+                    [businessId, customerEmail, customerPhone]
+                );
+
+                if (existingCustomer.length > 0) {
+                    // Actualizar estadísticas del cliente existente
+                    await db.query(
+                        `UPDATE customers
+                         SET total_bookings = total_bookings + 1,
+                             last_booking_date = ?,
+                             name = ?
+                         WHERE id = ?`,
+                        [bookingDate, customerName, existingCustomer[0].id]
+                    );
+                    console.log('✓ Cliente actualizado:', customerEmail);
+                } else {
+                    // Crear nuevo cliente
+                    await db.query(
+                        `INSERT INTO customers (business_id, name, email, phone, total_bookings, last_booking_date)
+                         VALUES (?, ?, ?, ?, 1, ?)`,
+                        [businessId, customerName, customerEmail, customerPhone, bookingDate]
+                    );
+                    console.log('✓ Nuevo cliente creado:', customerEmail);
+                }
+            } catch (err) {
+                console.error('✗ Error auto-detectando cliente:', err.message);
+            }
+        })();
+
         res.status(201).json({
             success: true,
             message: 'Reserva creada exitosamente',
@@ -1174,9 +1633,13 @@ router.get('/api/bookings/:businessId', requireAuth, requireBusinessAccess, asyn
         const { date, status } = req.query;
 
         let query = `
-            SELECT b.*, s.name as service_name, s.duration, s.price
+            SELECT b.*, s.name as service_name, s.duration, s.price,
+                   c.is_premium as customer_is_premium
             FROM bookings b
             LEFT JOIN services s ON b.service_id = s.id
+            LEFT JOIN customers c ON c.business_id = b.business_id
+                AND c.email = b.customer_email
+                AND c.phone = b.customer_phone
             WHERE b.business_id = ?
         `;
         const params = [businessId];

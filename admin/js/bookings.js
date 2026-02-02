@@ -246,7 +246,10 @@ const bookings = {
     renderBookingRow(booking) {
         return `
             <tr>
-                <td style="font-weight: 600;">${booking.customer_name}</td>
+                <td style="font-weight: 600;">
+                    ${booking.customer_is_premium ? '<span class="badge-vip">VIP</span>' : ''}
+                    ${booking.customer_name}
+                </td>
                 <td style="font-size: 0.9rem;">${booking.customer_email}</td>
                 <td style="font-size: 0.9rem;">${booking.customer_phone}</td>
                 <td>${booking.service_name || 'Sin servicio'}</td>
@@ -828,6 +831,18 @@ style.textContent = `
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
+    }
+
+    .badge-vip {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-right: 8px;
+        text-transform: uppercase;
+        display: inline-block;
     }
 
     @media (max-width: 768px) {

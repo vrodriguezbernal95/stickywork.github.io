@@ -61,6 +61,14 @@ const app = {
                 await bookings.load();
                 break;
 
+            case 'clients':
+                if (window.clients) {
+                    await clients.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
             case 'messages':
                 await messages.load();
                 break;
