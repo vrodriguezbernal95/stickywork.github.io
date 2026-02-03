@@ -101,6 +101,9 @@ const settings = {
                     <button class="settings-tab" data-tab="feedback" onclick="settings.switchTab('feedback')">
                         ⭐ Feedback
                     </button>
+                    <button class="settings-tab" data-tab="publicpage" onclick="settings.switchTab('publicpage')">
+                        🌐 Mi Página
+                    </button>
                     <button class="settings-tab" data-tab="billing" onclick="settings.switchTab('billing')">
                         💳 Plan
                     </button>
@@ -140,6 +143,9 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-feedback">
                         ${this.renderFeedbackTab()}
+                    </div>
+                    <div class="settings-tab-content" id="tab-publicpage">
+                        ${this.renderPublicPageTab()}
                     </div>
                     <div class="settings-tab-content" id="tab-billing">
                         ${this.renderBillingTab()}
@@ -2048,6 +2054,286 @@ const settings = {
                 </button>
             </div>
         `;
+    },
+
+    // Render Public Page Tab (Mi Página)
+    renderPublicPageTab() {
+        const business = this.businessData;
+        const slug = business.slug || '';
+        const baseUrl = window.location.hostname === 'localhost'
+            ? 'http://localhost:5500'
+            : 'https://stickywork.com';
+        const publicUrl = `${baseUrl}/reservar?n=${slug}`;
+
+        // Parsear configuración de página pública
+        let publicPageSettings = {};
+        try {
+            publicPageSettings = typeof business.public_page_settings === 'string'
+                ? JSON.parse(business.public_page_settings || '{}')
+                : (business.public_page_settings || {});
+        } catch (e) {
+            publicPageSettings = {};
+        }
+
+        const pageEnabled = publicPageSettings.pageEnabled !== false;
+        const showPhone = publicPageSettings.showPhone !== false;
+        const showAddress = publicPageSettings.showAddress !== false;
+        const showWebsite = publicPageSettings.showWebsite !== false;
+        const showSchedule = publicPageSettings.showSchedule !== false;
+
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>🌐 Tu Página de Reservas</h3>
+                    <p>Comparte esta URL para que tus clientes puedan reservar directamente, sin necesidad de tener una web propia</p>
+                </div>
+
+                <!-- URL Pública -->
+                <div style="background: linear-gradient(135deg, #8b5cf6, #6366f1); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <label style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">
+                        Tu enlace de reservas:
+                    </label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="text"
+                               id="public-url-display"
+                               value="${publicUrl}"
+                               readonly
+                               style="flex: 1; padding: 0.75rem 1rem; border-radius: 8px; border: none; background: rgba(255,255,255,0.95); font-size: 0.95rem; color: #1f2937;">
+                        <button onclick="settings.copyPublicUrl()"
+                                class="btn"
+                                style="padding: 0.75rem 1.25rem; background: white; color: #8b5cf6; border: none; border-radius: 8px; font-weight: 600; white-space: nowrap;">
+                            📋 Copiar
+                        </button>
+                        <a href="${publicUrl}" target="_blank"
+                           class="btn"
+                           style="padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; white-space: nowrap;">
+                            👁️ Ver
+                        </a>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin: 0.75rem 0 0 0;">
+                        Comparte este enlace en redes sociales, Google Maps, WhatsApp, tarjetas de visita...
+                    </p>
+                </div>
+
+                <!-- Activar/Desactivar página -->
+                <div class="form-group" style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 10px; margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
+                        <div style="position: relative; width: 50px; height: 26px;">
+                            <input type="checkbox"
+                                   id="public-page-enabled"
+                                   ${pageEnabled ? 'checked' : ''}
+                                   onchange="settings.togglePublicPage(this.checked)"
+                                   style="opacity: 0; width: 0; height: 0;">
+                            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${pageEnabled ? '#10b981' : '#6b7280'}; transition: 0.3s; border-radius: 26px;">
+                                <span style="position: absolute; content: ''; height: 20px; width: 20px; left: ${pageEnabled ? '26px' : '3px'}; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                            </span>
+                        </div>
+                        <div>
+                            <strong style="color: var(--text-primary);">Página pública activa</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Si desactivas la página, los visitantes verán un mensaje de "no disponible"</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Editar Slug -->
+                <div class="form-group">
+                    <label>Personaliza tu URL</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <span style="color: var(--text-secondary); white-space: nowrap;">stickywork.com/reservar?n=</span>
+                        <input type="text"
+                               id="public-page-slug"
+                               value="${slug}"
+                               placeholder="mi-negocio"
+                               pattern="[a-z0-9-]+"
+                               style="flex: 1;">
+                        <button onclick="settings.updateSlug()"
+                                class="btn btn-primary"
+                                style="padding: 0.6rem 1rem; white-space: nowrap;">
+                            Guardar
+                        </button>
+                    </div>
+                    <p class="hint">Solo letras minúsculas, números y guiones. Sin espacios ni caracteres especiales.</p>
+                </div>
+            </div>
+
+            <!-- Configuración de Privacidad -->
+            <div class="settings-section" style="margin-top: 2rem;">
+                <div class="settings-section-header">
+                    <h3>🔒 Información a Mostrar</h3>
+                    <p>Elige qué datos de tu negocio aparecerán en la página pública</p>
+                </div>
+
+                <div style="display: grid; gap: 1rem;">
+                    <label class="privacy-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox"
+                               id="show-phone"
+                               ${showPhone ? 'checked' : ''}
+                               onchange="settings.updatePublicPageSettings()"
+                               style="width: 20px; height: 20px;">
+                        <div>
+                            <strong>📞 Teléfono</strong>
+                            <p class="hint" style="margin: 0;">Mostrar tu número de teléfono</p>
+                        </div>
+                    </label>
+
+                    <label class="privacy-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox"
+                               id="show-address"
+                               ${showAddress ? 'checked' : ''}
+                               onchange="settings.updatePublicPageSettings()"
+                               style="width: 20px; height: 20px;">
+                        <div>
+                            <strong>📍 Dirección</strong>
+                            <p class="hint" style="margin: 0;">Mostrar la dirección de tu negocio</p>
+                        </div>
+                    </label>
+
+                    <label class="privacy-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox"
+                               id="show-website"
+                               ${showWebsite ? 'checked' : ''}
+                               onchange="settings.updatePublicPageSettings()"
+                               style="width: 20px; height: 20px;">
+                        <div>
+                            <strong>🌐 Sitio Web</strong>
+                            <p class="hint" style="margin: 0;">Mostrar enlace a tu web (si tienes)</p>
+                        </div>
+                    </label>
+
+                    <label class="privacy-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox"
+                               id="show-schedule"
+                               ${showSchedule ? 'checked' : ''}
+                               onchange="settings.updatePublicPageSettings()"
+                               style="width: 20px; height: 20px;">
+                        <div>
+                            <strong>🕐 Horarios</strong>
+                            <p class="hint" style="margin: 0;">Mostrar tus horarios de atención</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1.5rem; margin-top: 2rem; border-radius: 8px;">
+                <h4 style="margin: 0 0 1rem 0; color: #1e40af;">💡 Ideas para usar tu enlace</h4>
+                <ul style="margin: 0; padding-left: 1.25rem; color: #1e40af;">
+                    <li>Añádelo a tu perfil de Instagram y Facebook</li>
+                    <li>Inclúyelo en tu ficha de Google Maps</li>
+                    <li>Compártelo por WhatsApp a tus clientes</li>
+                    <li>Imprímelo en tarjetas de visita con un código QR</li>
+                    <li>Úsalo en tu firma de email</li>
+                </ul>
+            </div>
+        `;
+    },
+
+    // Copiar URL pública al portapapeles
+    copyPublicUrl() {
+        const urlInput = document.getElementById('public-url-display');
+        urlInput.select();
+        document.execCommand('copy');
+
+        // Feedback visual
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ Copiado!';
+        btn.style.background = '#10b981';
+        btn.style.color = 'white';
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = 'white';
+            btn.style.color = '#8b5cf6';
+        }, 2000);
+    },
+
+    // Activar/desactivar página pública
+    async togglePublicPage(enabled) {
+        try {
+            const response = await api.patch(`/api/business/${this.businessData.id}/public-page-settings`, {
+                pageEnabled: enabled,
+                showPhone: document.getElementById('show-phone')?.checked !== false,
+                showAddress: document.getElementById('show-address')?.checked !== false,
+                showWebsite: document.getElementById('show-website')?.checked !== false,
+                showSchedule: document.getElementById('show-schedule')?.checked !== false
+            });
+
+            if (response.success) {
+                // Actualizar datos locales
+                this.businessData.public_page_settings = response.data;
+                // Re-renderizar para actualizar el toggle visual
+                document.getElementById('tab-publicpage').innerHTML = this.renderPublicPageTab();
+                alert(enabled ? '✅ Página pública activada' : '⚠️ Página pública desactivada');
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            console.error('Error toggling public page:', error);
+            alert('❌ Error al actualizar: ' + error.message);
+            // Revertir checkbox
+            document.getElementById('public-page-enabled').checked = !enabled;
+        }
+    },
+
+    // Actualizar slug
+    async updateSlug() {
+        const slugInput = document.getElementById('public-page-slug');
+        const newSlug = slugInput.value.trim().toLowerCase();
+
+        // Validar formato
+        if (!newSlug || newSlug.length < 3) {
+            alert('⚠️ El slug debe tener al menos 3 caracteres');
+            return;
+        }
+
+        if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(newSlug)) {
+            alert('⚠️ Solo puedes usar letras minúsculas, números y guiones');
+            return;
+        }
+
+        try {
+            const response = await api.patch(`/api/business/${this.businessData.id}/slug`, {
+                slug: newSlug
+            });
+
+            if (response.success) {
+                this.businessData.slug = newSlug;
+                // Actualizar la URL mostrada
+                const baseUrl = window.location.hostname === 'localhost'
+                    ? 'http://localhost:5500'
+                    : 'https://stickywork.com';
+                document.getElementById('public-url-display').value = `${baseUrl}/reservar?n=${newSlug}`;
+                alert('✅ URL actualizada correctamente');
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            console.error('Error updating slug:', error);
+            alert('❌ ' + (error.message || 'Error al actualizar el slug'));
+        }
+    },
+
+    // Actualizar configuración de privacidad
+    async updatePublicPageSettings() {
+        try {
+            const response = await api.patch(`/api/business/${this.businessData.id}/public-page-settings`, {
+                pageEnabled: document.getElementById('public-page-enabled')?.checked !== false,
+                showPhone: document.getElementById('show-phone')?.checked,
+                showAddress: document.getElementById('show-address')?.checked,
+                showWebsite: document.getElementById('show-website')?.checked,
+                showSchedule: document.getElementById('show-schedule')?.checked
+            });
+
+            if (response.success) {
+                this.businessData.public_page_settings = response.data;
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (error) {
+            console.error('Error updating public page settings:', error);
+            // No mostrar alerta para no interrumpir, el cambio visual ya está hecho
+        }
     },
 
     // Render Billing Tab
