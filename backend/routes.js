@@ -2251,7 +2251,7 @@ router.get('/api/public/business/:slug', async (req, res) => {
         const services = await db.query(
             `SELECT id, name, description, duration, price, category
             FROM services
-            WHERE business_id = ? AND active = 1
+            WHERE business_id = ? AND is_active = TRUE
             ORDER BY category, name`,
             [businessData.id]
         );
