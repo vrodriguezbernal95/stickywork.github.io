@@ -389,21 +389,16 @@ router.post('/api/debug/run-workshop-sessions-migration', async (req, res) => {
         `);
         console.log('✅ Tabla workshop_sessions creada');
 
-        // 2. Migrar datos existentes (solo si no hay sesiones ya migradas)
-        const existingSessions = await db.query('SELECT COUNT(*) as count FROM workshop_sessions');
-        if (existingSessions[0].count === 0) {
-            console.log('📝 Migrando talleres existentes a sesiones...');
-            await db.query(`
-                INSERT INTO workshop_sessions (workshop_id, session_date, start_time, end_time, capacity)
-                SELECT id, workshop_date, start_time, end_time, capacity
-                FROM workshops
-                WHERE workshop_date IS NOT NULL
-            `);
-            const migrated = await db.query('SELECT COUNT(*) as count FROM workshop_sessions');
-            console.log(`✅ ${migrated[0].count} sesiones migradas`);
-        } else {
-            console.log('ℹ️  Ya hay sesiones migradas, saltando...');
-        }
+        // 2. Migrar talleres que no tengan sesiones todavía
+        console.log('📝 Migrando talleres sin sesiones...');
+        const result = await db.query(`
+            INSERT INTO workshop_sessions (workshop_id, session_date, start_time, end_time, capacity)
+            SELECT w.id, w.workshop_date, w.start_time, w.end_time, w.capacity
+            FROM workshops w
+            LEFT JOIN workshop_sessions ws ON w.id = ws.workshop_id
+            WHERE w.workshop_date IS NOT NULL AND ws.id IS NULL
+        `);
+        console.log(`✅ ${result.affectedRows || 0} sesiones migradas`);
 
         // 3. Añadir columna session_id a workshop_bookings
         console.log('📝 Añadiendo columna session_id a workshop_bookings...');
