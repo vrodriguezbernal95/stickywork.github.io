@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QNNFJWC6PV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-QNNFJWC6PV');
+    </script>
+    <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "us5furlqob");
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Reservar Cita - StickyWork</title>
+    <meta name="description" id="page-description" content="Reserva tu cita de forma rapida y sencilla">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <!-- Open Graph para compartir en redes -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" id="og-title" content="Reservar Cita">
+    <meta property="og:description" id="og-description" content="Reserva tu cita de forma rapida y sencilla">
+    <meta property="og:image" id="og-image" content="https://stickywork.com/images/og-image.png">
+
+    <style>
+        :root {
+            --page-primary: #8b5cf6;
+            --page-secondary: #6366f1;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header del negocio */
+        .business-header {
+            background: linear-gradient(135deg, var(--page-primary), var(--page-secondary));
+            padding: 2rem 1rem;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .business-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255,255,255,0.3);
+            margin-bottom: 1rem;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .business-logo.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .business-name {
+            margin: 0;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .business-type {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* Info del negocio */
+        .business-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .business-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .business-info-item a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .business-info-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Container principal */
+        .booking-container {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .booking-content {
+            width: 100%;
+            max-width: 650px;
+        }
+
+        #stickywork-widget {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        /* Estados de carga y error */
+        .loading-state, .error-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--page-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-state h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--page-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .booking-footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-primary);
+        }
+
+        .booking-footer a {
+            color: var(--page-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .booking-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-cta {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .business-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .business-logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            #stickywork-widget {
+                padding: 1.5rem 1rem;
+                border-radius: 12px;
+            }
+
+            .business-info {
+                gap: 0.5rem;
+            }
+
+            .business-info-item {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header del negocio (se llena dinamicamente) -->
+    <header class="business-header" id="business-header" style="display: none;">
+        <img src="" alt="Logo" class="business-logo" id="business-logo">
+        <h1 class="business-name" id="business-name">Cargando...</h1>
+        <p class="business-type" id="business-type"></p>
+        <div class="business-info" id="business-info"></div>
+    </header>
+
+    <!-- Header generico mientras carga -->
+    <header class="business-header" id="loading-header">
+        <div class="loading-spinner"></div>
+        <h1 class="business-name">Cargando negocio...</h1>
+    </header>
+
+    <main class="booking-container">
+        <div class="booking-content">
+            <div id="stickywork-widget">
+                <div class="loading-state" id="widget-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Preparando formulario de reservas...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="booking-footer">
+        <div>
+            Reservas gestionadas con <a href="https://stickywork.com" target="_blank">StickyWork</a>
+        </div>
+        <div class="footer-cta">
+            <a href="https://stickywork.com/registro" target="_blank">Quiero esto para mi negocio</a>
+        </div>
+    </footer>
+
+    <!-- StickyWork Widget -->
+    <script src="widget/stickywork-widget.js"></script>
+
+    <script>
+        // Configuracion API
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://api.stickywork.com';
+
+        // Obtener parametros de URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const slug = urlParams.get('n') || urlParams.get('slug');
+        const businessId = urlParams.get('business') || urlParams.get('id');
+
+        // Funcion para mostrar error
+        function showError(title, message) {
+            document.getElementById('loading-header').style.display = 'none';
+            document.getElementById('business-header').style.display = 'none';
+            document.getElementById('stickywork-widget').innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">😕</div>
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    <a href="https://stickywork.com" class="back-link">Ir a StickyWork</a>
+                </div>
+            `;
+        }
+
+        // Funcion para actualizar header con datos del negocio
+        function updateHeader(business) {
+            document.getElementById('loading-header').style.display = 'none';
+            document.getElementById('business-header').style.display = 'block';
+
+            // Logo
+            const logoEl = document.getElementById('business-logo');
+            if (business.logo_url) {
+                logoEl.src = business.logo_url;
+                logoEl.classList.remove('placeholder');
+            } else {
+                // Usar emoji segun tipo de negocio
+                const typeEmojis = {
+                    'restaurant': '🍽️',
+                    'salon': '💇',
+                    'spa': '💆',
+                    'gym': '🏋️',
+                    'clinic': '🏥',
+                    'lawyer': '⚖️',
+                    'default': '📅'
+                };
+                logoEl.outerHTML = `<div class="business-logo placeholder" id="business-logo">${typeEmojis[business.type_key] || typeEmojis.default}</div>`;
+            }
+
+            // Nombre y tipo
+            document.getElementById('business-name').textContent = business.name;
+            document.getElementById('business-type').textContent = business.type || '';
+
+            // Info adicional
+            const infoContainer = document.getElementById('business-info');
+            let infoHTML = '';
+
+            if (business.address) {
+                infoHTML += `<div class="business-info-item">📍 ${business.address}</div>`;
+            }
+            if (business.phone) {
+                infoHTML += `<div class="business-info-item"><a href="tel:${business.phone}">📞 ${business.phone}</a></div>`;
+            }
+            if (business.website) {
+                const websiteUrl = business.website.startsWith('http') ? business.website : 'https://' + business.website;
+                infoHTML += `<div class="business-info-item"><a href="${websiteUrl}" target="_blank">🌐 Web</a></div>`;
+            }
+
+            infoContainer.innerHTML = infoHTML;
+
+            // Actualizar colores si hay personalizacion
+            if (business.widget_customization) {
+                const colors = business.widget_customization;
+                if (colors.primaryColor) {
+                    document.documentElement.style.setProperty('--page-primary', colors.primaryColor);
+                }
+                if (colors.secondaryColor) {
+                    document.documentElement.style.setProperty('--page-secondary', colors.secondaryColor);
+                }
+            }
+
+            // Actualizar meta tags para SEO y compartir
+            document.getElementById('page-title').textContent = `Reservar en ${business.name} - StickyWork`;
+            document.getElementById('page-description').content = `Reserva tu cita en ${business.name} de forma rapida y sencilla`;
+            document.getElementById('og-title').content = `Reservar en ${business.name}`;
+            document.getElementById('og-description').content = `Reserva tu cita en ${business.name}`;
+            if (business.logo_url) {
+                document.getElementById('og-image').content = business.logo_url;
+            }
+        }
+
+        // Funcion principal para cargar el negocio
+        async function loadBusiness() {
+            try {
+                let businessData;
+
+                if (slug) {
+                    // Cargar por slug
+                    const response = await fetch(`${API_URL}/api/public/business/${slug}`);
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        showError('Negocio no encontrado', 'No hemos encontrado ningún negocio con ese nombre. Verifica que el enlace sea correcto.');
+                        return;
+                    }
+
+                    businessData = result.data;
+
+                    // Verificar si la pagina publica esta habilitada
+                    if (businessData.public_page_settings && businessData.public_page_settings.pageEnabled === false) {
+                        showError('Pagina no disponible', 'Este negocio ha desactivado su pagina de reservas publica.');
+                        return;
+                    }
+
+                } else if (businessId) {
+                    // Cargar por ID (legacy)
+                    const response = await fetch(`${API_URL}/api/business/${businessId}`);
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        showError('Negocio no encontrado', 'No hemos encontrado el negocio solicitado.');
+                        return;
+                    }
+
+                    businessData = result.data;
+
+                    // Parsear JSON si es necesario
+                    if (typeof businessData.widget_customization === 'string') {
+                        try {
+                            businessData.widget_customization = JSON.parse(businessData.widget_customization);
+                        } catch (e) {
+                            businessData.widget_customization = {};
+                        }
+                    }
+
+                } else {
+                    // Sin parametros
+                    showError('Enlace incompleto', 'Este enlace necesita especificar un negocio. Contacta con el negocio para obtener el enlace correcto.');
+                    return;
+                }
+
+                // Actualizar header con info del negocio
+                updateHeader(businessData);
+
+                // Inicializar widget
+                document.getElementById('widget-loading').style.display = 'none';
+
+                StickyWork.init({
+                    businessId: businessData.id,
+                    mode: 'embedded',
+                    apiUrl: API_URL,
+                    language: 'es',
+                    showPrices: true,
+                    showDuration: true
+                });
+
+            } catch (error) {
+                console.error('Error loading business:', error);
+                showError('Error de conexion', 'No pudimos conectar con el servidor. Por favor, intenta de nuevo en unos momentos.');
+            }
+        }
+
+        // Iniciar carga
+        loadBusiness();
+
+        // Dark mode (sync con preferencia del sistema)
+        const html = document.documentElement;
+        const savedTheme = localStorage.getItem('theme');
+
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            html.setAttribute('data-theme', 'light');
+        }
+    </script>
+</body>
+</html>

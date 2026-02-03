@@ -471,6 +471,68 @@ router.post('/api/debug/run-customers-migration', async (req, res) => {
     }
 });
 
+// Migración para página pública de reservas
+router.post('/api/debug/run-public-page-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: Página Pública de Reservas');
+
+        // Agregar columna public_page_settings a businesses
+        console.log('📝 Agregando columna public_page_settings...');
+        try {
+            await db.query(`
+                ALTER TABLE businesses
+                ADD COLUMN public_page_settings JSON DEFAULT NULL
+                COMMENT 'Configuración de la página pública de reservas (qué mostrar, privacidad)'
+            `);
+            console.log('✅ Columna public_page_settings agregada');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna public_page_settings ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // Establecer configuración por defecto para negocios existentes
+        console.log('📝 Estableciendo configuración por defecto...');
+        const defaultSettings = JSON.stringify({
+            pageEnabled: true,
+            showPhone: true,
+            showAddress: true,
+            showWebsite: true,
+            showSchedule: true
+        });
+
+        await db.query(`
+            UPDATE businesses
+            SET public_page_settings = ?
+            WHERE public_page_settings IS NULL
+        `, [defaultSettings]);
+        console.log('✅ Configuración por defecto establecida');
+
+        res.json({
+            success: true,
+            message: 'Migración de página pública ejecutada correctamente',
+            column: 'public_page_settings'
+        });
+
+    } catch (error) {
+        console.error('Error en migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
 // ==================== SETUP DEMOS ====================
 router.use(setupDemosRoutes);
 
@@ -2125,6 +2187,194 @@ router.get('/api/business/:businessId', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al obtener negocio',
+            error: error.message
+        });
+    }
+});
+
+// ==================== PÁGINA PÚBLICA DE RESERVAS ====================
+
+// Obtener negocio por slug (PÚBLICO - para página de reservas)
+router.get('/api/public/business/:slug', async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        const business = await db.query(
+            `SELECT
+                id, name, slug, type_key, type,
+                phone, address, website, logo_url, description,
+                widget_settings, booking_settings, widget_customization,
+                public_page_settings
+            FROM businesses
+            WHERE slug = ?`,
+            [slug]
+        );
+
+        if (business.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Negocio no encontrado'
+            });
+        }
+
+        const businessData = business[0];
+
+        // Parsear JSON fields
+        try {
+            businessData.widget_settings = JSON.parse(businessData.widget_settings || '{}');
+        } catch (e) {
+            businessData.widget_settings = {};
+        }
+        try {
+            businessData.booking_settings = JSON.parse(businessData.booking_settings || '{}');
+        } catch (e) {
+            businessData.booking_settings = {};
+        }
+        try {
+            businessData.widget_customization = JSON.parse(businessData.widget_customization || '{}');
+        } catch (e) {
+            businessData.widget_customization = {};
+        }
+        try {
+            businessData.public_page_settings = JSON.parse(businessData.public_page_settings || '{}');
+        } catch (e) {
+            businessData.public_page_settings = {};
+        }
+
+        // Aplicar configuración de privacidad de la página pública
+        const pageSettings = businessData.public_page_settings;
+        if (!pageSettings.showPhone) delete businessData.phone;
+        if (!pageSettings.showAddress) delete businessData.address;
+        if (!pageSettings.showWebsite) delete businessData.website;
+
+        // Obtener servicios del negocio (para mostrar en la página)
+        const services = await db.query(
+            `SELECT id, name, description, duration, price, category
+            FROM services
+            WHERE business_id = ? AND active = 1
+            ORDER BY category, name`,
+            [businessData.id]
+        );
+
+        res.json({
+            success: true,
+            data: {
+                ...businessData,
+                services
+            }
+        });
+    } catch (error) {
+        console.error('Error al obtener negocio por slug:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener negocio',
+            error: error.message
+        });
+    }
+});
+
+// Actualizar slug del negocio (requiere owner o admin)
+router.patch('/api/business/:id/slug', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
+    try {
+        const businessId = req.params.id;
+        const { slug } = req.body;
+
+        // Verificar permisos
+        if (parseInt(businessId) !== parseInt(req.user.businessId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes permiso para modificar este negocio'
+            });
+        }
+
+        // Validar formato del slug
+        if (!slug || slug.length < 3 || slug.length > 50) {
+            return res.status(400).json({
+                success: false,
+                message: 'El slug debe tener entre 3 y 50 caracteres'
+            });
+        }
+
+        // Solo permitir letras minúsculas, números y guiones
+        const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+        if (!slugRegex.test(slug)) {
+            return res.status(400).json({
+                success: false,
+                message: 'El slug solo puede contener letras minúsculas, números y guiones (sin espacios ni caracteres especiales)'
+            });
+        }
+
+        // Verificar que no exista otro negocio con ese slug
+        const existing = await db.query(
+            'SELECT id FROM businesses WHERE slug = ? AND id != ?',
+            [slug, businessId]
+        );
+
+        if (existing.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este slug ya está en uso. Por favor elige otro.'
+            });
+        }
+
+        // Actualizar el slug
+        await db.query(
+            'UPDATE businesses SET slug = ? WHERE id = ?',
+            [slug, businessId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Slug actualizado correctamente',
+            data: { slug }
+        });
+    } catch (error) {
+        console.error('Error al actualizar slug:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar slug',
+            error: error.message
+        });
+    }
+});
+
+// Actualizar configuración de página pública (requiere owner o admin)
+router.patch('/api/business/:id/public-page-settings', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
+    try {
+        const businessId = req.params.id;
+        const { showPhone, showAddress, showWebsite, showSchedule, pageEnabled } = req.body;
+
+        // Verificar permisos
+        if (parseInt(businessId) !== parseInt(req.user.businessId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes permiso para modificar este negocio'
+            });
+        }
+
+        const settings = {
+            showPhone: showPhone !== false,
+            showAddress: showAddress !== false,
+            showWebsite: showWebsite !== false,
+            showSchedule: showSchedule !== false,
+            pageEnabled: pageEnabled !== false
+        };
+
+        await db.query(
+            'UPDATE businesses SET public_page_settings = ? WHERE id = ?',
+            [JSON.stringify(settings), businessId]
+        );
+
+        res.json({
+            success: true,
+            message: 'Configuración de página pública actualizada',
+            data: settings
+        });
+    } catch (error) {
+        console.error('Error al actualizar configuración de página pública:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al actualizar configuración',
             error: error.message
         });
     }
