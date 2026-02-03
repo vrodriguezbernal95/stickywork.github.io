@@ -1065,9 +1065,12 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
 
         if (bookingMode === 'tables' && hasZoneCapacities) {
             // MODO TABLES CON ZONAS: Sumar num_people por slot y zona
+            // Redondear al par superior (3 personas ocupan mesa de 4)
             bookings.forEach(booking => {
                 const time = booking.booking_time.substring(0, 5); // "HH:MM"
                 const zone = booking.zone || 'Sin zona';
+                const numPeople = booking.num_people || 1;
+                const occupiedSeats = numPeople + (numPeople % 2); // Redondeo al par superior
 
                 if (!availability[time]) {
                     availability[time] = {};
@@ -1075,16 +1078,20 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
                 if (!availability[time][zone]) {
                     availability[time][zone] = { occupied: 0 };
                 }
-                availability[time][zone].occupied += booking.num_people || 1;
+                availability[time][zone].occupied += occupiedSeats;
             });
         } else if (bookingMode === 'tables') {
             // MODO TABLES SIN ZONAS: Sumar num_people por slot
+            // Redondear al par superior (3 personas ocupan mesa de 4)
             bookings.forEach(booking => {
                 const time = booking.booking_time.substring(0, 5);
+                const numPeople = booking.num_people || 1;
+                const occupiedSeats = numPeople + (numPeople % 2); // Redondeo al par superior
+
                 if (!availability[time]) {
                     availability[time] = { occupied: 0 };
                 }
-                availability[time].occupied += booking.num_people || 1;
+                availability[time].occupied += occupiedSeats;
             });
         } else if (bookingMode === 'classes') {
             // MODO CLASSES: Contar reservas por slot
@@ -1484,13 +1491,17 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 queryParams = [businessId, bookingDate, bookingTime];
             }
 
+            // Para restaurantes: redondear al par superior (3 personas ocupan mesa de 4)
+            // La fórmula num_people + (num_people % 2) suma 1 si es impar, 0 si es par
             const sumQuery = await db.query(
-                `SELECT COALESCE(SUM(num_people), 0) as total_people FROM bookings ${queryWhere}`,
+                `SELECT COALESCE(SUM(num_people + (num_people % 2)), 0) as total_people FROM bookings ${queryWhere}`,
                 queryParams
             );
 
             const currentPeople = parseInt(sumQuery[0].total_people) || 0;
-            const requestedPeople = parseInt(numPeople) || 1;
+            const rawRequestedPeople = parseInt(numPeople) || 1;
+            // Redondear al par superior: 1→2, 2→2, 3→4, 4→4, 5→6, etc.
+            const requestedPeople = rawRequestedPeople + (rawRequestedPeople % 2);
 
             console.log('🔍 [DEBUG CAPACITY] zone:', zone || 'sin zona');
             console.log('🔍 [DEBUG CAPACITY] hasZoneCapacities:', hasZoneCapacities);
