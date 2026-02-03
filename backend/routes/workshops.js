@@ -11,6 +11,19 @@ function setDatabase(database) {
 
 router.setDatabase = setDatabase;
 
+// Debug temporal - ver estado de talleres y sesiones
+router.get('/debug/:businessId', async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const workshops = await db.query('SELECT id, name, is_active, workshop_date, start_time, end_time, capacity FROM workshops WHERE business_id = ?', [businessId]);
+        const sessions = await db.query('SELECT ws.* FROM workshop_sessions ws JOIN workshops w ON ws.workshop_id = w.id WHERE w.business_id = ?', [businessId]);
+        const bookings = await db.query('SELECT wb.id, wb.workshop_id, wb.session_id FROM workshop_bookings wb JOIN workshops w ON wb.workshop_id = w.id WHERE w.business_id = ?', [businessId]);
+        res.json({ workshops, sessions, bookings });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ==================== ENDPOINTS PÚBLICOS (para widget) ====================
 
 /**
