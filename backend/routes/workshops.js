@@ -11,19 +11,6 @@ function setDatabase(database) {
 
 router.setDatabase = setDatabase;
 
-// Debug temporal - ver estado de talleres y sesiones
-router.get('/debug/:businessId', async (req, res) => {
-    try {
-        const { businessId } = req.params;
-        const workshops = await db.query('SELECT id, name, is_active, workshop_date, start_time, end_time, capacity FROM workshops WHERE business_id = ?', [businessId]);
-        const sessions = await db.query('SELECT ws.* FROM workshop_sessions ws JOIN workshops w ON ws.workshop_id = w.id WHERE w.business_id = ?', [businessId]);
-        const bookings = await db.query('SELECT wb.id, wb.workshop_id, wb.session_id FROM workshop_bookings wb JOIN workshops w ON wb.workshop_id = w.id WHERE w.business_id = ?', [businessId]);
-        res.json({ workshops, sessions, bookings });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // ==================== ENDPOINTS PÚBLICOS (para widget) ====================
 
 /**
@@ -42,10 +29,11 @@ router.get('/public/:businessId', async (req, res) => {
         `, [businessId]);
 
         if (workshopsRows.length === 0) {
-            return res.json({ success: true, workshops: [], _debug: 'no_workshops_found', businessId });
+            return res.json({ success: true, workshops: [] });
         }
 
         const workshopIds = workshopsRows.map(w => w.id);
+        const placeholders = workshopIds.map(() => '?').join(',');
 
         // Obtener sesiones futuras con disponibilidad
         const sessions = await db.query(`
@@ -60,12 +48,12 @@ router.get('/public/:businessId', async (req, res) => {
                 ws.capacity - COALESCE(SUM(CASE WHEN wb.status NOT IN ('cancelled') THEN wb.num_people ELSE 0 END), 0) AS available_spots
             FROM workshop_sessions ws
             LEFT JOIN workshop_bookings wb ON ws.id = wb.session_id
-            WHERE ws.workshop_id IN (?)
+            WHERE ws.workshop_id IN (${placeholders})
               AND ws.session_date >= CURDATE()
             GROUP BY ws.id
             HAVING available_spots > 0
             ORDER BY ws.session_date ASC, ws.start_time ASC
-        `, [workshopIds]);
+        `, [...workshopIds]);
 
         // Agrupar sesiones dentro de cada taller
         const workshops = workshopsRows.map(w => ({
@@ -75,8 +63,7 @@ router.get('/public/:businessId', async (req, res) => {
 
         res.json({
             success: true,
-            workshops: workshops,
-            _debug: { workshopsFound: workshopsRows.length, sessionsFound: sessions.length, workshopIds }
+            workshops: workshops
         });
 
     } catch (error) {
@@ -593,14 +580,15 @@ router.put('/:id', requireAuth, requireRole('owner', 'admin'), async (req, res) 
 
             // Eliminar sesiones que ya no están (solo si no tienen reservas activas)
             if (keepIds.length > 0) {
+                const keepPlaceholders = keepIds.map(() => '?').join(',');
                 await db.query(`
                     DELETE FROM workshop_sessions
-                    WHERE workshop_id = ? AND id NOT IN (?)
+                    WHERE workshop_id = ? AND id NOT IN (${keepPlaceholders})
                     AND id NOT IN (
                         SELECT DISTINCT session_id FROM workshop_bookings
                         WHERE status NOT IN ('cancelled') AND session_id IS NOT NULL
                     )
-                `, [id, keepIds]);
+                `, [id, ...keepIds]);
             } else {
                 // Eliminar todas las que no tengan reservas activas
                 await db.query(`
