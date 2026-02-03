@@ -2115,6 +2115,35 @@ const settings = {
                     </p>
                 </div>
 
+                <!-- Código QR -->
+                <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <span style="font-size: 1.5rem;">📱</span>
+                        <div>
+                            <h4 style="margin: 0; color: var(--text-primary);">Código QR</h4>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Imprímelo en tu local, tarjetas o folletos</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                        <div style="background: white; padding: 1rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <img id="qr-code-image"
+                                 src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(publicUrl)}"
+                                 alt="Código QR"
+                                 style="display: block; width: 180px; height: 180px;">
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <p style="color: var(--text-secondary); margin: 0 0 1rem 0; font-size: 0.9rem;">
+                                Tus clientes pueden escanear este código con la cámara de su móvil para acceder directamente a tu página de reservas.
+                            </p>
+                            <button onclick="settings.downloadQRCode()"
+                                    class="btn btn-primary"
+                                    style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem;">
+                                ⬇️ Descargar QR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Activar/Desactivar página -->
                 <div class="form-group" style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 10px; margin-bottom: 1.5rem;">
                     <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
@@ -2246,6 +2275,40 @@ const settings = {
             btn.style.background = 'white';
             btn.style.color = '#8b5cf6';
         }, 2000);
+    },
+
+    // Descargar código QR como imagen
+    async downloadQRCode() {
+        const qrImage = document.getElementById('qr-code-image');
+        const businessName = this.businessData.name || 'mi-negocio';
+        const fileName = `QR-${businessName.replace(/[^a-zA-Z0-9]/g, '-')}.png`;
+
+        try {
+            // Obtener la imagen como blob
+            const response = await fetch(qrImage.src);
+            const blob = await response.blob();
+
+            // Crear enlace de descarga
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            // Feedback visual
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Descargado!';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
+        } catch (error) {
+            console.error('Error descargando QR:', error);
+            alert('Error al descargar el código QR. Puedes hacer clic derecho en la imagen y seleccionar "Guardar imagen como..."');
+        }
     },
 
     // Activar/desactivar página pública
