@@ -358,6 +358,97 @@ router.post('/api/debug/run-workshops-migration', async (req, res) => {
     }
 });
 
+// Migración para sesiones múltiples en talleres
+router.post('/api/debug/run-workshop-sessions-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: Sesiones múltiples para talleres');
+
+        // 1. Crear tabla workshop_sessions
+        console.log('📝 Creando tabla workshop_sessions...');
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS workshop_sessions (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                workshop_id INT NOT NULL,
+                session_date DATE NOT NULL,
+                start_time TIME NOT NULL,
+                end_time TIME NOT NULL,
+                capacity INT NOT NULL DEFAULT 10,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_ws_workshop (workshop_id),
+                INDEX idx_ws_date (session_date),
+                FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+            )
+        `);
+        console.log('✅ Tabla workshop_sessions creada');
+
+        // 2. Migrar datos existentes (solo si no hay sesiones ya migradas)
+        const existingSessions = await db.query('SELECT COUNT(*) as count FROM workshop_sessions');
+        if (existingSessions[0].count === 0) {
+            console.log('📝 Migrando talleres existentes a sesiones...');
+            await db.query(`
+                INSERT INTO workshop_sessions (workshop_id, session_date, start_time, end_time, capacity)
+                SELECT id, workshop_date, start_time, end_time, capacity
+                FROM workshops
+                WHERE workshop_date IS NOT NULL
+            `);
+            const migrated = await db.query('SELECT COUNT(*) as count FROM workshop_sessions');
+            console.log(`✅ ${migrated[0].count} sesiones migradas`);
+        } else {
+            console.log('ℹ️  Ya hay sesiones migradas, saltando...');
+        }
+
+        // 3. Añadir columna session_id a workshop_bookings
+        console.log('📝 Añadiendo columna session_id a workshop_bookings...');
+        try {
+            await db.query(`
+                ALTER TABLE workshop_bookings
+                ADD COLUMN session_id INT DEFAULT NULL AFTER workshop_id,
+                ADD INDEX idx_wb_session (session_id)
+            `);
+            console.log('✅ Columna session_id añadida');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna session_id ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // 4. Vincular bookings existentes a sus sesiones
+        console.log('📝 Vinculando reservas existentes a sesiones...');
+        await db.query(`
+            UPDATE workshop_bookings wb
+            JOIN workshop_sessions ws ON ws.workshop_id = wb.workshop_id
+            SET wb.session_id = ws.id
+            WHERE wb.session_id IS NULL
+        `);
+        console.log('✅ Reservas vinculadas');
+
+        res.json({
+            success: true,
+            message: 'Migración de sesiones ejecutada correctamente',
+            tables: ['workshop_sessions'],
+            columns: ['workshop_bookings.session_id']
+        });
+
+    } catch (error) {
+        console.error('Error en migración de sesiones:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
 // Endpoint para ejecutar migración de adultos/niños en reservas (solo una vez)
 router.post('/api/debug/run-children-migration', async (req, res) => {
     const authHeader = req.headers.authorization;

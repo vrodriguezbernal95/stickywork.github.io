@@ -905,6 +905,51 @@
                 padding: 2rem;
                 color: ${colors.textSecondary};
             }
+            .stickywork-sessions-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.4rem;
+                margin-top: 0.75rem;
+            }
+            .stickywork-session-option {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem 0.75rem;
+                border: 1px solid ${colors.borderColor};
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                background: ${colors.bgPrimary};
+            }
+            .stickywork-session-option:hover:not(.stickywork-session-full) {
+                border-color: ${primaryColor};
+                background: ${primaryColor}08;
+            }
+            .stickywork-session-option.selected {
+                border-color: ${primaryColor};
+                background: ${primaryColor}12;
+                box-shadow: 0 0 0 1px ${primaryColor};
+            }
+            .stickywork-session-full {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+            .stickywork-session-datetime {
+                font-size: 0.85rem;
+                color: ${colors.textPrimary};
+                font-weight: 500;
+            }
+            .stickywork-session-spots {
+                font-size: 0.8rem;
+                font-weight: 500;
+            }
+            .stickywork-session-spots.available {
+                color: #10b981;
+            }
+            .stickywork-session-spots.full {
+                color: #ef4444;
+            }
 
             /* Tabs Styles */
             .stickywork-tabs {
@@ -1328,11 +1373,11 @@
         // Formatear fecha
         const formatDate = (dateStr) => {
             if (!dateStr) return '';
-            // Manejar tanto formato ISO completo como solo fecha
             const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return dateStr; // Si no es válida, devolver original
+            if (isNaN(date.getTime())) return dateStr;
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
             const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            return `${dayNames[date.getDay()]} ${date.getDate()} ${monthNames[date.getMonth()]}`;
         };
 
         // Formatear hora
@@ -1340,30 +1385,66 @@
             return timeStr ? timeStr.substring(0, 5) : '';
         };
 
-        // Crear tarjetas de talleres
+        // Crear tarjetas de talleres con sesiones
         const workshopCards = workshops.map(w => {
-            const availableSpots = w.available_spots || (w.capacity - (w.booked_count || 0));
-            const isFull = availableSpots <= 0;
             const priceText = w.price > 0 ? `${w.price}€` : t.free;
+            const sessions = w.sessions || [];
+
+            // Generar opciones de sesiones
+            const sessionsList = sessions.map(s => {
+                const availableSpots = s.available_spots || 0;
+                const isFull = availableSpots <= 0;
+
+                return `
+                    <div class="stickywork-session-option ${isFull ? 'stickywork-session-full' : ''}"
+                         data-session-id="${s.id}"
+                         ${!isFull ? `onclick="StickyWork.selectSession(${w.id}, ${s.id})"` : ''}>
+                        <span class="stickywork-session-datetime">
+                            📅 ${formatDate(s.session_date)} &nbsp; 🕐 ${formatTime(s.start_time)} - ${formatTime(s.end_time)}
+                        </span>
+                        <span class="stickywork-session-spots ${isFull ? 'full' : 'available'}">
+                            ${isFull ? '🔴 ' + t.workshopFull : '🟢 ' + availableSpots + ' ' + t.workshopSpots}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            // Si no hay sesiones (formato legacy), mostrar como antes
+            if (sessions.length === 0 && w.workshop_date) {
+                const availableSpots = w.available_spots || (w.capacity - (w.booked_count || 0));
+                const isFull = availableSpots <= 0;
+                return `
+                    <div class="stickywork-workshop-card ${isFull ? 'stickywork-workshop-full' : ''}"
+                         data-workshop-id="${w.id}"
+                         ${!isFull ? `onclick="StickyWork.selectWorkshop(${w.id})"` : ''}>
+                        <div class="stickywork-workshop-header">
+                            <h4 class="stickywork-workshop-name">${w.name}</h4>
+                            <span class="stickywork-workshop-price">${priceText}</span>
+                        </div>
+                        ${w.description ? `<p class="stickywork-workshop-desc">${w.description}</p>` : ''}
+                        <div class="stickywork-workshop-info">
+                            <span class="stickywork-workshop-date">📅 ${formatDate(w.workshop_date)}</span>
+                            <span class="stickywork-workshop-time">🕐 ${formatTime(w.start_time)} - ${formatTime(w.end_time)}</span>
+                        </div>
+                        <div class="stickywork-workshop-footer">
+                            ${isFull
+                                ? `<span class="stickywork-workshop-status full">🔴 ${t.workshopFull}</span>`
+                                : `<span class="stickywork-workshop-status available">🟢 ${availableSpots} ${t.workshopSpots}</span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }
 
             return `
-                <div class="stickywork-workshop-card ${isFull ? 'stickywork-workshop-full' : ''}"
-                     data-workshop-id="${w.id}"
-                     ${!isFull ? `onclick="StickyWork.selectWorkshop(${w.id})"` : ''}>
+                <div class="stickywork-workshop-card" data-workshop-id="${w.id}">
                     <div class="stickywork-workshop-header">
                         <h4 class="stickywork-workshop-name">${w.name}</h4>
                         <span class="stickywork-workshop-price">${priceText}</span>
                     </div>
                     ${w.description ? `<p class="stickywork-workshop-desc">${w.description}</p>` : ''}
-                    <div class="stickywork-workshop-info">
-                        <span class="stickywork-workshop-date">📅 ${formatDate(w.workshop_date)}</span>
-                        <span class="stickywork-workshop-time">🕐 ${formatTime(w.start_time)} - ${formatTime(w.end_time)}</span>
-                    </div>
-                    <div class="stickywork-workshop-footer">
-                        ${isFull
-                            ? `<span class="stickywork-workshop-status full">🔴 ${t.workshopFull}</span>`
-                            : `<span class="stickywork-workshop-status available">🟢 ${availableSpots} ${t.workshopSpots}</span>`
-                        }
+                    <div class="stickywork-sessions-list">
+                        ${sessionsList}
                     </div>
                 </div>
             `;
@@ -1376,6 +1457,7 @@
                     ${workshopCards}
                 </div>
                 <input type="hidden" name="workshop_id" required>
+                <input type="hidden" name="session_id">
             </div>
             <div class="stickywork-field">
                 <label class="stickywork-label">${t.numPeople}</label>
@@ -1391,17 +1473,52 @@
         `;
     }
 
-    // Variable para taller seleccionado
+    // Variables para taller y sesión seleccionados
     let selectedWorkshop = null;
+    let selectedSession = null;
 
-    // Seleccionar taller
+    // Seleccionar sesión de un taller
+    window.StickyWork.selectSession = function(workshopId, sessionId) {
+        const workshop = config.workshops.find(w => w.id === workshopId);
+        if (!workshop) return;
+        const session = (workshop.sessions || []).find(s => s.id === sessionId);
+        if (!session) return;
+
+        selectedWorkshop = workshop;
+        selectedSession = session;
+
+        // Actualizar inputs hidden
+        const workshopInput = document.querySelector('input[name="workshop_id"]');
+        if (workshopInput) workshopInput.value = workshopId;
+        const sessionInput = document.querySelector('input[name="session_id"]');
+        if (sessionInput) sessionInput.value = sessionId;
+
+        // UI: marcar sesión seleccionada
+        document.querySelectorAll('.stickywork-session-option').forEach(el => el.classList.remove('selected'));
+        const card = document.querySelector(`.stickywork-session-option[data-session-id="${sessionId}"]`);
+        if (card) card.classList.add('selected');
+
+        console.log('🎫 [Widget] Sesión seleccionada:', workshop.name, sessionId);
+    };
+
+    // Seleccionar taller (backward compat para formato legacy sin sesiones)
     window.StickyWork.selectWorkshop = function(workshopId) {
         const workshop = config.workshops.find(w => w.id === workshopId);
         if (!workshop) return;
 
         selectedWorkshop = workshop;
+        selectedSession = null;
 
-        // Actualizar input hidden
+        // Si tiene sesiones, seleccionar la primera disponible
+        if (workshop.sessions && workshop.sessions.length > 0) {
+            const available = workshop.sessions.find(s => s.available_spots > 0);
+            if (available) {
+                StickyWork.selectSession(workshopId, available.id);
+                return;
+            }
+        }
+
+        // Actualizar input hidden (legacy)
         const input = document.querySelector('input[name="workshop_id"]');
         if (input) input.value = workshopId;
 
@@ -1422,6 +1539,7 @@
         console.log('🔄 [Widget] Cambiando a tab:', mode);
         currentTabMode = mode;
         selectedWorkshop = null;
+        selectedSession = null;
 
         // Re-renderizar el widget
         if (widgetContainer) {
@@ -2094,8 +2212,8 @@
         }
 
         try {
-            // Para talleres, usar endpoint especial (detectar por workshopId, no por bookingMode)
-            if (formData.workshopId) {
+            // Para talleres, usar endpoint de sesión o legacy
+            if (formData.sessionId || formData.workshopId) {
                 const workshopBookingData = {
                     customer_name: formData.name,
                     customer_email: formData.email,
@@ -2104,9 +2222,14 @@
                     whatsapp_consent: formData.whatsappConsent || false
                 };
 
-                console.log('📤 [Debug] Enviando reserva de taller:', workshopBookingData);
+                // Usar endpoint de sesión si hay sessionId, si no, legacy
+                const endpoint = formData.sessionId
+                    ? `${config.apiUrl}/api/workshops/book-session/${formData.sessionId}`
+                    : `${config.apiUrl}/api/workshops/book/${formData.workshopId}`;
 
-                const response = await fetch(`${config.apiUrl}/api/workshops/book/${formData.workshopId}`, {
+                console.log('📤 [Debug] Enviando reserva de taller:', endpoint, workshopBookingData);
+
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(workshopBookingData)
@@ -2199,21 +2322,35 @@
         } else if (activeMode === 'classes') {
             formData.class = form.class?.value || '';
         } else if (activeMode === 'workshops') {
-            // Para talleres (modo directo o via tab)
+            // Para talleres con sesiones
+            const sessionId = form.querySelector('input[name="session_id"]')?.value;
             const workshopId = form.querySelector('input[name="workshop_id"]')?.value;
-            if (!workshopId || !selectedWorkshop) {
-                alert('Por favor selecciona un taller');
+
+            if (selectedSession && sessionId) {
+                // Nuevo flujo con sesiones
+                formData.sessionId = sessionId;
+                formData.workshopId = workshopId;
+                formData.workshopName = selectedWorkshop.name;
+                const date = new Date(selectedSession.session_date);
+                const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                formData.workshopDate = !isNaN(date.getTime())
+                    ? `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`
+                    : selectedSession.session_date;
+                formData.workshopTime = `${selectedSession.start_time?.substring(0, 5)} - ${selectedSession.end_time?.substring(0, 5)}`;
+            } else if (workshopId && selectedWorkshop) {
+                // Fallback legacy (sin sesiones)
+                formData.workshopId = workshopId;
+                formData.workshopName = selectedWorkshop.name;
+                const date = new Date(selectedWorkshop.workshop_date);
+                const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                formData.workshopDate = !isNaN(date.getTime())
+                    ? `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`
+                    : selectedWorkshop.workshop_date;
+                formData.workshopTime = `${selectedWorkshop.start_time?.substring(0, 5)} - ${selectedWorkshop.end_time?.substring(0, 5)}`;
+            } else {
+                alert('Por favor selecciona una sesión del taller');
                 return;
             }
-            formData.workshopId = workshopId;
-            formData.workshopName = selectedWorkshop.name;
-            // Formatear fecha y hora del taller para mostrar en success
-            const date = new Date(selectedWorkshop.workshop_date);
-            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            formData.workshopDate = !isNaN(date.getTime())
-                ? `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`
-                : selectedWorkshop.workshop_date;
-            formData.workshopTime = `${selectedWorkshop.start_time?.substring(0, 5)} - ${selectedWorkshop.end_time?.substring(0, 5)}`;
             // Personas
             const peopleInput = form.querySelector('#stickywork-people-count');
             formData.numPeople = peopleInput ? parseInt(peopleInput.value) : 1;
@@ -2749,6 +2886,7 @@
         peopleCount = activeMode === 'workshops' ? 1 : 2;
         selectedDate = null;
         selectedWorkshop = null;
+        selectedSession = null;
         currentTabMode = config.bookingMode; // Reset to original mode
         calendarDropdownInitialized = false; // Resetear bandera
         if (config.mode === 'embedded') {
