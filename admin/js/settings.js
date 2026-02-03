@@ -3222,16 +3222,18 @@ const settings = {
             const maxPerBooking = bookingSettings.maxPerBooking || 10;
 
             const zoneFields = zones.map(zone => {
-                const capacity = zoneCapacities[zone] || 20;
+                // Soportar tanto formato antiguo (string) como nuevo (objeto)
+                const zoneName = typeof zone === 'string' ? zone : zone.name;
+                const capacity = zoneCapacities[zoneName] || 20;
                 return `
                     <div class="form-group">
-                        <label>Capacidad ${zone}</label>
+                        <label>Capacidad ${zoneName}</label>
                         <input type="number" class="zone-capacity-input"
-                               data-zone="${zone}"
+                               data-zone="${zoneName}"
                                min="1" max="1000"
                                value="${capacity}"
                                placeholder="20">
-                        <p class="hint">Número máximo de comensales en ${zone} por turno</p>
+                        <p class="hint">Número máximo de comensales en ${zoneName} por turno</p>
                     </div>
                 `;
             }).join('');
