@@ -38,11 +38,11 @@ router.get('/public/:businessId', async (req, res) => {
         const workshopsRows = await db.query(`
             SELECT id, name, description, price, image_url
             FROM workshops
-            WHERE business_id = ? AND is_active = TRUE
+            WHERE business_id = ? AND is_active = 1
         `, [businessId]);
 
         if (workshopsRows.length === 0) {
-            return res.json({ success: true, workshops: [] });
+            return res.json({ success: true, workshops: [], _debug: 'no_workshops_found', businessId });
         }
 
         const workshopIds = workshopsRows.map(w => w.id);
@@ -75,7 +75,8 @@ router.get('/public/:businessId', async (req, res) => {
 
         res.json({
             success: true,
-            workshops: workshops
+            workshops: workshops,
+            _debug: { workshopsFound: workshopsRows.length, sessionsFound: sessions.length, workshopIds }
         });
 
     } catch (error) {
