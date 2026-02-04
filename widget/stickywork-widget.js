@@ -33,6 +33,7 @@
 
     let config = {};
     let widgetContainer = null;
+    let embeddedContainer = null;
     let businessConfig = null;
 
     // Traducciones
@@ -1488,14 +1489,14 @@
         selectedSession = session;
 
         // Actualizar inputs hidden
-        const workshopInput = document.querySelector('input[name="workshop_id"]');
+        const workshopInput = widgetContainer.querySelector('input[name="workshop_id"]');
         if (workshopInput) workshopInput.value = workshopId;
-        const sessionInput = document.querySelector('input[name="session_id"]');
+        const sessionInput = widgetContainer.querySelector('input[name="session_id"]');
         if (sessionInput) sessionInput.value = sessionId;
 
         // UI: marcar sesión seleccionada
-        document.querySelectorAll('.stickywork-session-option').forEach(el => el.classList.remove('selected'));
-        const card = document.querySelector(`.stickywork-session-option[data-session-id="${sessionId}"]`);
+        widgetContainer.querySelectorAll('.stickywork-session-option').forEach(el => el.classList.remove('selected'));
+        const card = widgetContainer.querySelector(`.stickywork-session-option[data-session-id="${sessionId}"]`);
         if (card) card.classList.add('selected');
 
         console.log('🎫 [Widget] Sesión seleccionada:', workshop.name, sessionId);
@@ -1519,14 +1520,14 @@
         }
 
         // Actualizar input hidden (legacy)
-        const input = document.querySelector('input[name="workshop_id"]');
+        const input = widgetContainer.querySelector('input[name="workshop_id"]');
         if (input) input.value = workshopId;
 
         // Actualizar UI - marcar como seleccionado
-        document.querySelectorAll('.stickywork-workshop-card').forEach(card => {
+        widgetContainer.querySelectorAll('.stickywork-workshop-card').forEach(card => {
             card.classList.remove('selected');
         });
-        const selectedCard = document.querySelector(`.stickywork-workshop-card[data-workshop-id="${workshopId}"]`);
+        const selectedCard = widgetContainer.querySelector(`.stickywork-workshop-card[data-workshop-id="${workshopId}"]`);
         if (selectedCard) {
             selectedCard.classList.add('selected');
         }
@@ -1823,7 +1824,7 @@
         // Si tiene zonas, usar la zona seleccionada por el usuario
         if (availability.zones) {
             // Obtener zona seleccionada en el dropdown
-            const zoneSelect = document.querySelector('select[name="zone"]');
+            const zoneSelect = widgetContainer.querySelector('select[name="zone"]');
             const selectedZone = zoneSelect ? zoneSelect.value : '';
 
             if (selectedZone && availability.zones[selectedZone]) {
@@ -1883,7 +1884,7 @@
 
         // Si tiene zonas, verificar la zona seleccionada
         if (availability.zones) {
-            const zoneSelect = document.querySelector('select[name="zone"]');
+            const zoneSelect = widgetContainer.querySelector('select[name="zone"]');
             const selectedZone = zoneSelect ? zoneSelect.value : '';
 
             if (selectedZone && availability.zones[selectedZone]) {
@@ -1907,7 +1908,7 @@
 
     // Renderizar calendario
     async function renderCalendar() {
-        const calendarEl = document.getElementById('stickywork-calendar');
+        const calendarEl = widgetContainer.querySelector('#stickywork-calendar');
         if (!calendarEl) return;
 
         const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -2003,7 +2004,7 @@
         calendarEl.innerHTML = html;
 
         // Event listeners para navegación
-        document.getElementById('prev-month')?.addEventListener('click', () => {
+        widgetContainer.querySelector('#prev-month')?.addEventListener('click', () => {
             currentCalendarMonth--;
             if (currentCalendarMonth < 0) {
                 currentCalendarMonth = 11;
@@ -2012,7 +2013,7 @@
             renderCalendar();
         });
 
-        document.getElementById('next-month')?.addEventListener('click', () => {
+        widgetContainer.querySelector('#next-month')?.addEventListener('click', () => {
             currentCalendarMonth++;
             if (currentCalendarMonth > 11) {
                 currentCalendarMonth = 0;
@@ -2114,7 +2115,7 @@
         selectedDate = dateStr;
 
         // Actualizar input hidden
-        const dateInput = document.querySelector('input[name="date"]');
+        const dateInput = widgetContainer.querySelector('input[name="date"]');
         if (dateInput) {
             dateInput.value = dateStr;
             // Disparar evento change
@@ -2128,7 +2129,7 @@
         const formattedDate = `${date.getDate()} de ${monthNames[date.getMonth()]} de ${date.getFullYear()}`;
 
         // Actualizar texto del trigger
-        const valueEl = document.querySelector('.stickywork-calendar-value');
+        const valueEl = widgetContainer.querySelector('.stickywork-calendar-value');
         if (valueEl) {
             valueEl.textContent = formattedDate;
             valueEl.classList.remove('placeholder');
@@ -2147,8 +2148,8 @@
 
     // Abrir/cerrar dropdown del calendario
     function toggleCalendarDropdown(forceState) {
-        const trigger = document.querySelector('.stickywork-calendar-trigger');
-        const dropdown = document.querySelector('.stickywork-calendar-dropdown-content');
+        const trigger = widgetContainer.querySelector('.stickywork-calendar-trigger');
+        const dropdown = widgetContainer.querySelector('.stickywork-calendar-dropdown-content');
 
         if (!trigger || !dropdown) {
             console.warn('⚠️ [Widget] Calendario dropdown no encontrado');
@@ -2171,7 +2172,7 @@
 
     // Inicializar dropdown del calendario
     function initCalendarDropdown() {
-        const trigger = document.querySelector('.stickywork-calendar-trigger');
+        const trigger = widgetContainer.querySelector('.stickywork-calendar-trigger');
 
         if (!trigger) {
             console.warn('⚠️ [Widget] Trigger del calendario no encontrado');
@@ -2193,7 +2194,7 @@
 
         // Cerrar al hacer click fuera (solo una vez)
         document.addEventListener('click', (e) => {
-            const calendarDropdown = document.querySelector('.stickywork-calendar-dropdown');
+            const calendarDropdown = widgetContainer.querySelector('.stickywork-calendar-dropdown');
             if (calendarDropdown && !calendarDropdown.contains(e.target)) {
                 toggleCalendarDropdown(false);
             }
@@ -2426,7 +2427,7 @@
     };
 
     function updatePeopleCountDisplay() {
-        const countEl = document.querySelector('#stickywork-people-count');
+        const countEl = widgetContainer.querySelector('#stickywork-people-count');
         if (countEl) countEl.value = peopleCount;
     }
 
@@ -2456,7 +2457,7 @@
     };
 
     function updateAdultsCountDisplay() {
-        const countEl = document.querySelector('#stickywork-adults-count');
+        const countEl = widgetContainer.querySelector('#stickywork-adults-count');
         if (countEl) countEl.value = adultsCount;
     }
 
@@ -2488,7 +2489,7 @@
     };
 
     function updateChildrenCountDisplay() {
-        const countEl = document.querySelector('#stickywork-children-count');
+        const countEl = widgetContainer.querySelector('#stickywork-children-count');
         if (countEl) countEl.value = childrenCount;
     }
 
@@ -2574,14 +2575,15 @@
 
     // Renderizar embedded
     function renderEmbedded() {
-        widgetContainer = document.getElementById('stickywork-widget');
+        widgetContainer = document.getElementById(config.containerId || 'stickywork-widget');
         if (!widgetContainer) {
             console.error('StickyWork: No se encontro el contenedor #stickywork-widget');
             return;
         }
+        embeddedContainer = widgetContainer;
 
         widgetContainer.innerHTML = createFormHTML();
-        const form = document.getElementById('stickywork-form');
+        const form = widgetContainer.querySelector('#stickywork-form');
         if (form) form.addEventListener('submit', handleSubmit);
 
         // Inicializar custom select
@@ -2611,7 +2613,7 @@
 
     // Listener para campo de fecha
     function initDateListener() {
-        const dateInput = document.querySelector('input[name="date"]');
+        const dateInput = widgetContainer.querySelector('input[name="date"]');
         if (dateInput) {
             dateInput.addEventListener('change', async (e) => {
                 const selectedDate = e.target.value;
@@ -2628,7 +2630,7 @@
 
     // Listener para campo de zona
     function initZoneListener() {
-        const zoneSelect = document.querySelector('select[name="zone"]');
+        const zoneSelect = widgetContainer.querySelector('select[name="zone"]');
         if (zoneSelect) {
             zoneSelect.addEventListener('change', (e) => {
                 console.log('🏷️ [Widget] Zona seleccionada:', e.target.value);
@@ -2641,8 +2643,8 @@
     // Actualizar slots de tiempo sin resetear el formulario
     function updateTimeSlots() {
         const timeSlots = generateTimeSlots();
-        const customSelect = document.querySelector('.stickywork-custom-select');
-        const normalSelect = document.querySelector('.stickywork-select[name="time"]');
+        const customSelect = widgetContainer.querySelector('.stickywork-custom-select');
+        const normalSelect = widgetContainer.querySelector('.stickywork-select[name="time"]');
 
         if (customSelect) {
             // Actualizar dropdown de custom select
@@ -2811,6 +2813,19 @@
     }
 
     function openModal() {
+        // Resetear estado para formulario limpio en el modal
+        selectedDate = null;
+        selectedWorkshop = null;
+        selectedSession = null;
+        slotsAvailability = {};
+        calendarBlockedDays = new Set();
+        calendarNoAvailabilityDays = new Set();
+        currentCalendarYear = new Date().getFullYear();
+        currentCalendarMonth = new Date().getMonth();
+        currentTabMode = config.bookingMode;
+        const activeMode = currentTabMode || config.bookingMode;
+        peopleCount = activeMode === 'workshops' ? 1 : 2;
+
         const overlay = document.createElement('div');
         overlay.className = 'stickywork-modal-overlay';
         overlay.id = 'stickywork-overlay';
@@ -2865,6 +2880,10 @@
         const modal = document.getElementById('stickywork-modal');
         if (overlay) overlay.remove();
         if (modal) modal.remove();
+        // Restaurar widgetContainer al embebido si existe
+        if (embeddedContainer) {
+            widgetContainer = embeddedContainer;
+        }
     }
 
     // Renderizar botón flotante
@@ -2889,7 +2908,15 @@
         selectedSession = null;
         currentTabMode = config.bookingMode; // Reset to original mode
         calendarDropdownInitialized = false; // Resetear bandera
-        if (config.mode === 'embedded') {
+
+        // Determinar contexto correcto
+        if (document.getElementById('stickywork-modal')) {
+            // widgetContainer ya apunta al modal
+        } else if (embeddedContainer) {
+            widgetContainer = embeddedContainer;
+        }
+
+        if (embeddedContainer && !document.getElementById('stickywork-modal')) {
             renderEmbedded();
         } else {
             widgetContainer.innerHTML = createFormHTML();
@@ -2927,11 +2954,19 @@
 
         injectStyles();
 
-        if (config.mode === 'embedded') {
+        // Auto-detectar elementos presentes en la pagina
+        const hasEmbeddedContainer = document.getElementById(config.containerId || 'stickywork-widget');
+        const hasModalButton = document.getElementById('stickywork-btn');
+
+        // Renderizar TODOS los modos que tengan elementos
+        if (hasEmbeddedContainer) {
             renderEmbedded();
-        } else if (config.mode === 'modal') {
+        }
+        if (hasModalButton) {
             renderModal();
-        } else if (config.mode === 'floating') {
+        }
+        // Floating solo si se pide explicitamente y no hay boton manual
+        if (config.mode === 'floating' && !hasModalButton) {
             renderFloating();
         }
     };
