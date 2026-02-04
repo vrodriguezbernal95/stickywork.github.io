@@ -375,6 +375,43 @@ Endpoints admin:
 
 ---
 
+## Sesión 5: 04-feb-2026 - Widget Dual-Mode + Reestructuración Guía
+
+### Completado
+
+**1. Widget Dual-Mode (formulario embebido + botón modal en la misma página)**
+- Problema: el widget era singleton con `if/else` exclusivo, solo un modo podía estar activo
+- Solución: auto-detección de elementos (`#stickywork-widget` y `#stickywork-btn`) en `init()`
+- Renderiza TODOS los modos que tengan elementos HTML presentes
+- Escopadas todas las queries DOM a `widgetContainer` (15 funciones) para evitar conflictos entre formulario embebido y modal
+- Reset de estado al abrir modal para formulario limpio
+- Restauración de `widgetContainer` al cerrar modal
+- Backward compatible: páginas con un solo modo siguen funcionando igual
+- Demo implementada en `demos/psicologo.html` con botón "Reservar Cita" en el header
+
+**Archivos modificados:**
+- `widget/stickywork-widget.js` — lógica dual-mode, DOM scoping
+- `demos/psicologo.html` — botón `#stickywork-btn` + CSS `.nav-cta`
+
+**Commits:**
+- `f5a6470` feat: Widget dual-mode (formulario embebido + botón modal en la misma página)
+
+**2. Reestructuración completa de la Guía del Dashboard**
+- Reescrita la guía (Configuración → Guía) de 10 secciones temáticas a 15 secciones que siguen el orden del menú del dashboard
+- Nueva estructura: Dashboard, Reservas, Clientes, Servicios, Calendario, Widget/QR, Opiniones, Reportes IA, Equipo, Consultoría, Talleres, Facturación, Configuración, FAQs, Soporte
+- Cada sección explica qué se puede hacer en esa parte del dashboard
+- Secciones Premium marcadas con badge visual
+- Configuración desglosada en sus 12 subsecciones
+- Buscador y acordeón sin cambios (misma UX)
+
+**Archivos modificados:**
+- `admin/js/settings.js` — función `renderGuideTab()` (479 líneas nuevas, 226 eliminadas)
+
+**Commits:**
+- `3002456` docs: Reestructurar guía del dashboard sección por sección
+
+---
+
 ## Próximas tareas sugeridas
 
 1. **Notificaciones por email** al cliente cuando se crean citas repetidas
@@ -384,5 +421,5 @@ Endpoints admin:
 
 ---
 
-**Última actualización:** 03-feb-2026
+**Última actualización:** 04-feb-2026
 **Próxima revisión:** 09-feb-2026 (inicio semana 07)
