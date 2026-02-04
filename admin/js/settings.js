@@ -2636,148 +2636,277 @@ const settings = {
                 <!-- Acordeón de secciones -->
                 <div class="guide-accordion" id="guide-content">
 
-                    <!-- 1. Gestión de Reservas -->
-                    <div class="guide-section" data-keywords="reservas aprobar rechazar confirmar cancelar filtrar buscar estado pendiente confirmada">
+                    <!-- 1. Dashboard (Inicio) -->
+                    <div class="guide-section" data-keywords="dashboard inicio estadisticas resumen agenda tendencia comparativa reservas recientes">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">📊</span>
+                            <h4>Dashboard (Inicio)</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <p>Es la pantalla principal que ves al entrar. Te da un resumen completo del estado de tu negocio.</p>
+
+                            <h5>Tarjetas de Estadísticas</h5>
+                            <p>En la parte superior verás tarjetas con datos clave:</p>
+                            <ul>
+                                <li><strong>Total reservas:</strong> Número total de reservas registradas</li>
+                                <li><strong>Este mes:</strong> Reservas del mes actual</li>
+                                <li><strong>Pendientes:</strong> Reservas que esperan tu confirmación</li>
+                                <li><strong>Confirmadas:</strong> Reservas ya aprobadas</li>
+                                <li><strong>Canceladas:</strong> Reservas que fueron canceladas</li>
+                            </ul>
+
+                            <h5>Agenda del Día</h5>
+                            <ul>
+                                <li>Muestra las próximas reservas de hoy en orden cronológico</li>
+                                <li>Puedes ver nombre del cliente, servicio, hora y estado</li>
+                                <li>Acceso rápido a los detalles de cada reserva</li>
+                            </ul>
+
+                            <h5>Tendencia de Reservas</h5>
+                            <ul>
+                                <li>Gráfico con la evolución de reservas en las últimas 7 semanas</li>
+                                <li>Te permite ver si tu negocio está creciendo o decreciendo</li>
+                            </ul>
+
+                            <h5>Comparativa Mensual</h5>
+                            <ul>
+                                <li>Compara el mes actual con el anterior</li>
+                                <li>Indica porcentaje de variación (subida o bajada)</li>
+                            </ul>
+
+                            <h5>Reservas Recientes</h5>
+                            <ul>
+                                <li>Tabla con las últimas reservas recibidas</li>
+                                <li>Muestra: cliente, servicio, fecha, hora y estado</li>
+                                <li>Click en cualquier fila para ver detalles completos</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 2. Reservas -->
+                    <div class="guide-section" data-keywords="reservas aprobar rechazar confirmar cancelar completar repetir reprogramar filtrar buscar estado pendiente whatsapp crear nueva manual">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">📅</span>
-                            <h4>Gestión de Reservas</h4>
+                            <h4>Reservas</h4>
                             <span class="guide-arrow">▼</span>
                         </div>
                         <div class="guide-content">
-                            <h5>Aprobar o Rechazar Reservas</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Reservas</p>
+                            <p>Aquí gestionas todas las reservas de tu negocio.</p>
+
+                            <h5>Ver Listado de Reservas</h5>
                             <ul>
-                                <li>Las nuevas reservas aparecen con estado <span class="badge-pending">Pendiente</span></li>
-                                <li>Haz clic en la reserva para ver los detalles completos</li>
-                                <li>Usa el botón <strong>✓ Aprobar</strong> para confirmar la reserva</li>
-                                <li>Usa el botón <strong>✗ Rechazar</strong> para cancelarla</li>
-                                <li>Puedes añadir una nota interna antes de confirmar/rechazar</li>
+                                <li>Todas las reservas aparecen en una tabla ordenada por fecha</li>
+                                <li>Cada reserva muestra: cliente, servicio, fecha, hora, estado y acciones</li>
+                                <li>Paginación de 50 reservas por página</li>
                             </ul>
 
-                            <h5>Filtrar y Buscar Reservas</h5>
+                            <h5>Crear Reserva Manual</h5>
                             <ul>
-                                <li><strong>Por estado:</strong> Usa los filtros de la parte superior (Todas, Pendientes, Confirmadas, Completadas, Canceladas)</li>
-                                <li><strong>Por fecha:</strong> Usa el selector de fecha para ver reservas de un día específico</li>
-                                <li><strong>Por cliente:</strong> Usa la barra de búsqueda para encontrar por nombre, email o teléfono</li>
+                                <li>Click en <strong>"+ Nueva Reserva"</strong> en la parte superior</li>
+                                <li>Rellena los datos: nombre, email, teléfono, servicio, fecha y hora</li>
+                                <li>La reserva se crea directamente con estado <span class="badge-pending">Pendiente</span></li>
                             </ul>
 
-                            <h5>Cambiar Estado de Reserva</h5>
+                            <h5>Acciones por Reserva</h5>
                             <ul>
-                                <li><strong>Marcar como completada:</strong> Cuando el cliente haya recibido el servicio</li>
-                                <li><strong>Cancelar:</strong> Si el cliente no acude o cancela</li>
-                                <li>💡 <em>Tip:</em> Las reservas completadas son las que envían solicitud de feedback automáticamente (24h después)</li>
+                                <li><strong>✓ Confirmar:</strong> Aprueba una reserva pendiente. El cliente recibe notificación si está activada</li>
+                                <li><strong>✔ Completar:</strong> Marca que el servicio se realizó. Activa el envío de feedback (24h después)</li>
+                                <li><strong>🔄 Repetir cita:</strong> Crea una copia de la reserva para otra fecha (citas recurrentes)</li>
+                                <li><strong>📅 Reprogramar:</strong> Cambia la fecha y hora de una reserva existente</li>
+                                <li><strong>✗ Cancelar:</strong> Cancela la reserva. Se registra el motivo</li>
+                            </ul>
+
+                            <h5>Filtrar y Buscar</h5>
+                            <ul>
+                                <li><strong>Por estado:</strong> Botones de filtro en la parte superior (Todas, Pendientes, Confirmadas, Completadas, Canceladas)</li>
+                                <li><strong>Por fecha:</strong> Selector de fecha para ver reservas de un día específico</li>
+                                <li><strong>Por cliente:</strong> Barra de búsqueda por nombre, email o teléfono</li>
+                            </ul>
+
+                            <h5>WhatsApp por Reserva</h5>
+                            <ul>
+                                <li>Cada reserva tiene un botón <strong>💬 Enviar WhatsApp</strong></li>
+                                <li><span class="badge-success">Verde</span> — Cliente dio consentimiento y WhatsApp configurado</li>
+                                <li><span class="badge-secondary">Gris</span> — Falta configurar WhatsApp en Configuración → Notificaciones</li>
+                                <li>Al hacer click se abre WhatsApp con el mensaje pre-rellenado al número del cliente</li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- 2. Configurar Horarios y Servicios -->
-                    <div class="guide-section" data-keywords="horarios servicios turnos horario partido continuo dias laborables cerrado abierto precio duracion">
+                    <!-- 3. Clientes -->
+                    <div class="guide-section" data-keywords="clientes premium vip normal filtrar buscar sincronizar historial nuevo crear telefono email">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
-                            <span class="guide-icon">⏰</span>
-                            <h4>Configurar Horarios y Servicios</h4>
+                            <span class="guide-icon">👥</span>
+                            <h4>Clientes</h4>
                             <span class="guide-arrow">▼</span>
                         </div>
                         <div class="guide-content">
-                            <h5>Configurar Horarios de Apertura</h5>
-                            <p><strong>Ruta:</strong> Configuración → Horarios</p>
+                            <p>Gestión completa de tu base de clientes.</p>
+
+                            <h5>Ver Listado de Clientes</h5>
                             <ul>
-                                <li><strong>Días laborables:</strong> Marca/desmarca los días que tu negocio abre</li>
-                                <li><strong>Horario continuo:</strong> Un solo horario de apertura-cierre (Ej: 09:00 - 20:00)</li>
-                                <li><strong>Horario partido:</strong> Varios turnos en el día (Ej: Mañana 09:00-14:00, Tarde 17:00-21:00)</li>
-                                <li><strong>Duración de slots:</strong> Cada cuántos minutos aparecen horas disponibles (15, 30, 60 min)</li>
+                                <li>Tabla con todos los clientes registrados</li>
+                                <li>Muestra: nombre, email, teléfono, tipo (Premium/Normal) y número de reservas</li>
                             </ul>
 
-                            <h5>Gestionar Servicios</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Servicios</p>
+                            <h5>Filtros</h5>
                             <ul>
-                                <li><strong>Crear servicio:</strong> Click en "+ Nuevo Servicio"</li>
-                                <li><strong>Configurar:</strong> Nombre, descripción, precio, duración, capacidad</li>
-                                <li><strong>Activar/Desactivar:</strong> Usa el toggle para ocultar servicios temporalmente sin borrarlos</li>
-                                <li><strong>Editar:</strong> Click en el lápiz ✏️ del servicio</li>
-                                <li><strong>Eliminar:</strong> Click en la papelera 🗑️ (⚠️ acción irreversible)</li>
+                                <li><strong>Todos:</strong> Muestra todos los clientes</li>
+                                <li><strong>Premium:</strong> Solo clientes marcados como premium/VIP</li>
+                                <li><strong>Normal:</strong> Clientes estándar</li>
+                                <li><strong>Búsqueda:</strong> Encuentra clientes por nombre, email o teléfono</li>
                             </ul>
 
-                            <h5>Capacidad del Negocio</h5>
-                            <p><strong>Ruta:</strong> Configuración → Capacidad</p>
+                            <h5>Sincronizar desde Reservas</h5>
                             <ul>
-                                <li>Define cuántos clientes pueden reservar a la misma hora</li>
-                                <li>Ejemplo: Si tienes 3 peluqueros, capacidad = 3</li>
-                                <li>El sistema bloquea automáticamente cuando se alcanza el límite</li>
+                                <li>Click en <strong>"Sincronizar Clientes"</strong></li>
+                                <li>Importa automáticamente los datos de clientes que ya tienen reservas pero no están en la lista</li>
+                                <li>No duplica clientes existentes</li>
+                            </ul>
+
+                            <h5>Crear Nuevo Cliente</h5>
+                            <ul>
+                                <li>Click en <strong>"+ Nuevo Cliente"</strong></li>
+                                <li>Rellena: nombre, email, teléfono</li>
+                                <li>Opción de marcarlo como Premium/VIP</li>
+                            </ul>
+
+                            <h5>Historial de Reservas</h5>
+                            <ul>
+                                <li>Click en un cliente para ver su ficha completa</li>
+                                <li>Historial de todas sus reservas pasadas y futuras</li>
+                                <li>Estadísticas del cliente: total de visitas, último servicio, frecuencia</li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- 3. Personalizar Widget -->
-                    <div class="guide-section" data-keywords="widget personalizar colores diseño fuente botones estilo qr floating embebido">
+                    <!-- 4. Servicios -->
+                    <div class="guide-section" data-keywords="servicios crear editar eliminar precio duracion capacidad activar desactivar nombre descripcion">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
-                            <span class="guide-icon">🎨</span>
-                            <h4>Personalizar el Widget de Reservas</h4>
+                            <span class="guide-icon">🛠️</span>
+                            <h4>Servicios</h4>
                             <span class="guide-arrow">▼</span>
                         </div>
                         <div class="guide-content">
-                            <h5>Diseño Visual del Widget</h5>
-                            <p><strong>Ruta:</strong> Configuración → Diseño</p>
+                            <p>Aquí defines los servicios que ofreces a tus clientes.</p>
+
+                            <h5>Crear Servicio</h5>
                             <ul>
-                                <li><strong>Color principal:</strong> Color de botones y elementos destacados</li>
-                                <li><strong>Color secundario:</strong> Color de fondos y detalles</li>
-                                <li><strong>Familia de fuente:</strong> Elige entre 6 tipografías (System UI, Inter, Roboto, Poppins, Georgia, Courier)</li>
-                                <li><strong>Radio de bordes:</strong> Ajusta qué tan redondeados son los bordes (0-30px)</li>
-                                <li><strong>Estilo de botones:</strong>
+                                <li>Click en <strong>"+ Nuevo Servicio"</strong></li>
+                                <li>Configura:
                                     <ul>
-                                        <li><em>Solid:</em> Botón con gradiente de colores (recomendado)</li>
-                                        <li><em>Outline:</em> Botón con borde pero sin relleno</li>
-                                        <li><em>Ghost:</em> Botón semi-transparente</li>
+                                        <li><strong>Nombre:</strong> Nombre visible para el cliente</li>
+                                        <li><strong>Descripción:</strong> Detalle del servicio</li>
+                                        <li><strong>Duración:</strong> En minutos (ej: 30, 60, 90)</li>
+                                        <li><strong>Precio:</strong> Precio del servicio</li>
+                                        <li><strong>Capacidad máxima:</strong> Cuántas personas pueden reservar este servicio a la vez</li>
                                     </ul>
                                 </li>
-                                <li>💡 <em>Tip:</em> Usa el preview en tiempo real para ver cómo queda antes de guardar</li>
                             </ul>
 
-                            <h5>Configurar Textos y Campos</h5>
-                            <p><strong>Ruta:</strong> Configuración → Widget</p>
+                            <h5>Editar Servicio</h5>
                             <ul>
-                                <li>Cambia el título del widget</li>
-                                <li>Personaliza el texto de los botones</li>
-                                <li>Activa/desactiva campos opcionales (notas, profesional)</li>
-                                <li>Define si mostrar precios y duración</li>
+                                <li>Click en el icono ✏️ del servicio que quieras modificar</li>
+                                <li>Cambia cualquier campo y guarda</li>
+                                <li>Los cambios se reflejan en el widget inmediatamente</li>
+                            </ul>
+
+                            <h5>Activar / Desactivar</h5>
+                            <ul>
+                                <li>Usa el toggle para ocultar un servicio temporalmente sin borrarlo</li>
+                                <li>Los servicios desactivados no aparecen en el widget de reservas</li>
+                                <li>Puedes reactivarlos cuando quieras</li>
+                            </ul>
+
+                            <h5>Eliminar Servicio</h5>
+                            <ul>
+                                <li>Click en el icono 🗑️ del servicio</li>
+                                <li>⚠️ <strong>Acción irreversible:</strong> El servicio se elimina permanentemente</li>
+                                <li>Las reservas existentes con ese servicio no se borran</li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- 4. Implementar Widget en tu Web -->
-                    <div class="guide-section" data-keywords="widget implementar web codigo html qr floating embebido integrar instalar">
+                    <!-- 5. Calendario -->
+                    <div class="guide-section" data-keywords="calendario vista mes dia reservas disponibilidad colores navegar azul rojo gris">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
-                            <span class="guide-icon">💻</span>
-                            <h4>Implementar Widget en tu Web</h4>
+                            <span class="guide-icon">📆</span>
+                            <h4>Calendario</h4>
                             <span class="guide-arrow">▼</span>
                         </div>
                         <div class="guide-content">
-                            <h5>Opción 1: Formulario Embebido</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Widget/QR → Formulario Embebido</p>
+                            <p>Vista visual de todas tus reservas organizadas por fecha.</p>
+
+                            <h5>Vista Mes</h5>
                             <ul>
+                                <li>Visualiza todas las reservas del mes de un vistazo</li>
+                                <li>Cada día muestra el número de reservas y los horarios ocupados</li>
+                                <li>Usa las flechas ◀ ▶ para navegar entre meses</li>
+                                <li>Botón <strong>"Hoy"</strong> para volver al mes actual</li>
+                            </ul>
+
+                            <h5>Vista Día</h5>
+                            <ul>
+                                <li>Haz click en cualquier día del calendario para ver sus reservas</li>
+                                <li>Muestra todas las reservas de esa fecha con detalle completo</li>
+                                <li>Puedes gestionar cada reserva directamente desde esta vista</li>
+                            </ul>
+
+                            <h5>Colores del Calendario</h5>
+                            <ul>
+                                <li><span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px;">Azul</span> — Día con disponibilidad</li>
+                                <li><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px;">Rojo</span> — Sin disponibilidad (todos los slots ocupados)</li>
+                                <li><span style="opacity: 0.3; padding: 2px 6px;">Gris tenue</span> — Día cerrado (no laborable)</li>
+                                <li><span style="opacity: 0.4; padding: 2px 6px;">Gris claro</span> — Días de otros meses</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 6. Widget/QR -->
+                    <div class="guide-section" data-keywords="widget qr codigo embebido flotante floating modal boton integrar implementar web dual copiar">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">💻</span>
+                            <h4>Widget / QR</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <p>Aquí obtienes el código para integrar el sistema de reservas en tu web y el QR para compartir.</p>
+
+                            <h5>Formulario Embebido</h5>
+                            <ul>
+                                <li>Click en la pestaña <strong>"Formulario Embebido"</strong></li>
                                 <li>Copia el código HTML proporcionado</li>
                                 <li>Pégalo en tu página web donde quieras que aparezca el formulario</li>
-                                <li>El widget aparece como parte de tu página</li>
+                                <li>El widget aparece como parte de tu página, integrado en el contenido</li>
                                 <li>✅ <em>Mejor para:</em> Página dedicada de reservas</li>
                             </ul>
 
-                            <h5>Opción 2: Botón Flotante</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Widget/QR → Botón Flotante</p>
+                            <h5>Botón Flotante</h5>
                             <ul>
-                                <li>Copia el código HTML</li>
-                                <li>Pégalo antes del cierre <code>&lt;/body&gt;</code> de tu web</li>
-                                <li>Aparece un botón flotante en todas las páginas</li>
-                                <li>Al hacer click, se abre el formulario en modal</li>
-                                <li>Puedes personalizar: posición (esquina), color, texto del botón</li>
-                                <li>✅ <em>Mejor para:</em> Tener reservas disponibles en toda tu web</li>
+                                <li>Click en la pestaña <strong>"Botón Flotante"</strong></li>
+                                <li>Copia el código y pégalo antes del cierre <code>&lt;/body&gt;</code> de tu web</li>
+                                <li>Aparece un botón fijo en una esquina de todas las páginas</li>
+                                <li>Al hacer click, se abre el formulario en un modal</li>
+                                <li>Personalizable: posición (esquina), color y texto del botón</li>
+                                <li>✅ <em>Mejor para:</em> Tener reservas accesibles en toda tu web</li>
                             </ul>
 
-                            <h5>Opción 3: Código QR</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Widget/QR → Código QR</p>
+                            <h5>Modo Dual (Embebido + Modal)</h5>
                             <ul>
-                                <li>Descarga la imagen del QR haciendo click en "Descargar imagen QR"</li>
+                                <li>Puedes tener ambos en la misma página: un formulario embebido + un botón que abre modal</li>
+                                <li>Añade un <code>&lt;button id="stickywork-btn"&gt;</code> en tu HTML donde quieras el botón</li>
+                                <li>El sistema detecta automáticamente ambos elementos</li>
+                                <li>Cada formulario funciona de forma independiente</li>
+                            </ul>
+
+                            <h5>Código QR</h5>
+                            <ul>
+                                <li>Click en la pestaña <strong>"Código QR"</strong></li>
+                                <li>Descarga la imagen con <strong>"Descargar imagen QR"</strong></li>
                                 <li>Imprímelo en: menús, folletos, tarjetas, carteles del local</li>
                                 <li>Compártelo en redes sociales o WhatsApp</li>
-                                <li>Los clientes escanean con su móvil y acceden directamente al formulario de reservas</li>
+                                <li>Los clientes escanean con su móvil y acceden directamente a la página de reservas</li>
                                 <li>✅ <em>Mejor para:</em> Clientes que están en tu local o ven material físico</li>
                             </ul>
 
@@ -2786,219 +2915,352 @@ const settings = {
                                 <li>Después de implementar, abre tu web en modo incógnito</li>
                                 <li>Haz una reserva de prueba con datos reales</li>
                                 <li>Verifica que llega al dashboard correctamente</li>
-                                <li>Comprueba que el email de confirmación se envía (si está activado)</li>
+                                <li>Comprueba que las notificaciones se envían (si están activadas)</li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- 5. WhatsApp -->
-                    <div class="guide-section" data-keywords="whatsapp notificaciones mensaje plantilla confirmacion feedback opiniones">
-                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
-                            <span class="guide-icon">💬</span>
-                            <h4>Usar WhatsApp para Notificaciones</h4>
-                            <span class="guide-arrow">▼</span>
-                        </div>
-                        <div class="guide-content">
-                            <h5>Configurar WhatsApp</h5>
-                            <p><strong>Ruta:</strong> Configuración → Notificaciones → Sección WhatsApp</p>
-                            <ul>
-                                <li><strong>Activar toggle:</strong> Habilita las notificaciones por WhatsApp</li>
-                                <li><strong>Número de WhatsApp:</strong> Introduce tu número en formato internacional sin + (Ej: 34687767133)</li>
-                                <li><strong>Plantilla de mensaje:</strong> Personaliza el mensaje que se enviará
-                                    <ul>
-                                        <li><code>{nombre}</code> - Nombre del cliente</li>
-                                        <li><code>{fecha}</code> - Fecha de la reserva</li>
-                                        <li><code>{hora}</code> - Hora de la reserva</li>
-                                        <li><code>{servicio}</code> - Servicio reservado</li>
-                                        <li><code>{negocio}</code> o <code>{nombre_negocio}</code> - Nombre de tu negocio</li>
-                                    </ul>
-                                </li>
-                                <li><strong>Restaurar plantilla:</strong> Vuelve al mensaje por defecto</li>
-                            </ul>
-
-                            <h5>Enviar Confirmación por WhatsApp</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Reservas</p>
-                            <ul>
-                                <li>En cada reserva verás el botón <strong>💬 Enviar WhatsApp</strong></li>
-                                <li>El botón está:
-                                    <ul>
-                                        <li><span class="badge-success">Verde activo</span> - Cliente dio consentimiento Y WhatsApp configurado</li>
-                                        <li><span class="badge-secondary">Gris deshabilitado</span> - Cliente dio consentimiento PERO falta configurar WhatsApp</li>
-                                        <li><em>Texto informativo</em> - Cliente NO dio consentimiento (GDPR)</li>
-                                    </ul>
-                                </li>
-                                <li>Al hacer click:
-                                    <ol>
-                                        <li>Se abre WhatsApp Web/App con el mensaje pre-rellenado</li>
-                                        <li>El número es el del CLIENTE (no el tuyo)</li>
-                                        <li>Envías el mensaje desde tu WhatsApp personal</li>
-                                    </ol>
-                                </li>
-                                <li>💡 <em>Ventaja:</em> Sistema 100% gratuito, sin límites</li>
-                            </ul>
-
-                            <h5>Checkbox de Consentimiento (GDPR)</h5>
-                            <ul>
-                                <li>En el widget aparece: "Quiero recibir confirmación por WhatsApp (opcional)"</li>
-                                <li>El cliente debe marcarlo voluntariamente</li>
-                                <li>Cumple con normativa GDPR de protección de datos</li>
-                                <li>Link a política de privacidad incluido</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- 6. Sistema de Opiniones -->
-                    <div class="guide-section" data-keywords="opiniones feedback valoraciones reseñas estrellas formulario preguntas whatsapp solicitar">
+                    <!-- 7. Opiniones -->
+                    <div class="guide-section" data-keywords="opiniones feedback valoraciones reseñas estrellas solicitar whatsapp pendientes recibidas">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">⭐</span>
-                            <h4>Sistema de Opiniones y Feedback</h4>
+                            <h4>Opiniones</h4>
                             <span class="guide-arrow">▼</span>
                         </div>
                         <div class="guide-content">
+                            <p>Sistema para recopilar y gestionar las opiniones de tus clientes.</p>
+
+                            <h5>Solicitudes Pendientes</h5>
+                            <ul>
+                                <li>Cuando una reserva se marca como <strong>Completada</strong>, 24 horas después aparece en la sección de solicitudes pendientes</li>
+                                <li>Verás una caja amarilla con los clientes que ya pueden recibir la solicitud de feedback</li>
+                            </ul>
+
                             <h5>Solicitar Opinión por WhatsApp</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Opiniones</p>
                             <ul>
-                                <li>Cuando una reserva se marca como <strong>Completada</strong>, 24 horas después aparece en "📝 Solicitudes Pendientes"</li>
-                                <li>Verás una caja amarilla con los clientes que ya pueden recibir la solicitud</li>
-                                <li>Haz click en <strong>💬 Solicitar Opinión</strong></li>
-                                <li>Se abre WhatsApp con un mensaje personalizado + link al formulario</li>
-                                <li>El cliente hace click en el link y rellena su valoración</li>
-                                <li>La opinión aparece automáticamente en "Opiniones Recibidas"</li>
+                                <li>Click en <strong>💬 Solicitar Opinión</strong> junto al cliente</li>
+                                <li>Se abre WhatsApp con un mensaje personalizado + link al formulario de feedback</li>
+                                <li>El cliente hace click en el link, rellena su valoración y la opinión aparece automáticamente</li>
                             </ul>
 
-                            <h5>Personalizar Formulario de Feedback</h5>
-                            <p><strong>Ruta:</strong> Configuración → Feedback</p>
-                            <ul>
-                                <li>Puedes crear hasta 3 preguntas personalizadas + 1 pregunta genérica (siempre incluida)</li>
-                                <li><strong>Tipos de preguntas:</strong>
-                                    <ul>
-                                        <li><em>Rating (estrellas):</em> Valoración de 1-5 estrellas</li>
-                                        <li><em>Texto libre:</em> Comentario abierto</li>
-                                        <li><em>Opción múltiple:</em> Lista de opciones predefinidas</li>
-                                    </ul>
-                                </li>
-                                <li>Marca preguntas como <strong>obligatorias</strong> si quieres asegurar respuesta</li>
-                                <li>Ejemplo para restaurante:
-                                    <ul>
-                                        <li>Q1: ¿Cómo valoras la comida? (Rating)</li>
-                                        <li>Q2: ¿Recomendarías nuestro restaurante? (Múltiple: Sí / Probablemente / No)</li>
-                                        <li>Q3: ¿Qué podríamos mejorar? (Texto libre)</li>
-                                    </ul>
-                                </li>
-                            </ul>
-
-                            <h5>Ver y Analizar Opiniones</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Opiniones → Opiniones Recibidas</p>
+                            <h5>Opiniones Recibidas</h5>
                             <ul>
                                 <li>Tarjetas con todas las respuestas del cliente</li>
                                 <li>Visualización clara: pregunta → respuesta</li>
                                 <li>Ratings mostrados con estrellas ⭐</li>
-                                <li>Comentarios destacados para análisis con IA (próximamente)</li>
                                 <li>Filtra por fecha o valoración</li>
                             </ul>
+
+                            <h5>Personalizar Preguntas del Feedback</h5>
+                            <p><strong>Ruta:</strong> Configuración → Feedback</p>
+                            <ul>
+                                <li>Crea hasta 3 preguntas personalizadas + 1 genérica (siempre incluida)</li>
+                                <li><strong>Tipos:</strong> Rating (estrellas), Texto libre, Opción múltiple</li>
+                                <li>Marca preguntas como obligatorias si quieres asegurar respuesta</li>
+                            </ul>
                         </div>
                     </div>
 
-                    <!-- 7. Calendario -->
-                    <div class="guide-section" data-keywords="calendario vista mes semana dia reservas bloqueados disponibilidad">
+                    <!-- 8. Reportes IA -->
+                    <div class="guide-section" data-keywords="reportes ia inteligencia artificial analisis rendimiento fortalezas debilidades recomendaciones historico premium">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
-                            <span class="guide-icon">📆</span>
-                            <h4>Usar el Calendario</h4>
+                            <span class="guide-icon">🤖</span>
+                            <h4>Reportes IA <span class="badge-premium" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 600; margin-left: 8px;">Premium</span></h4>
                             <span class="guide-arrow">▼</span>
                         </div>
                         <div class="guide-content">
-                            <h5>Vista de Calendario</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Calendario</p>
+                            <p>Reportes mensuales generados automáticamente con inteligencia artificial.</p>
+
+                            <h5>Generar Reporte</h5>
                             <ul>
-                                <li>Visualiza todas las reservas del mes de un vistazo</li>
-                                <li>Cada día muestra:
+                                <li>Click en <strong>"Generar Reporte"</strong> para crear un análisis del mes</li>
+                                <li>La IA analiza tus datos de reservas, servicios y feedback de clientes</li>
+                                <li>El reporte se genera en unos segundos</li>
+                            </ul>
+
+                            <h5>Contenido del Reporte</h5>
+                            <ul>
+                                <li><strong>Análisis de rendimiento:</strong> Comparativa con meses anteriores</li>
+                                <li><strong>Fortalezas:</strong> Qué está funcionando bien en tu negocio</li>
+                                <li><strong>Áreas de mejora:</strong> Dónde puedes optimizar</li>
+                                <li><strong>Análisis de feedback:</strong> Resumen de las opiniones de tus clientes</li>
+                                <li><strong>Recomendaciones:</strong> Acciones concretas para mejorar</li>
+                            </ul>
+
+                            <h5>Histórico de Reportes</h5>
+                            <ul>
+                                <li>Todos los reportes generados se guardan en un histórico</li>
+                                <li>Puedes consultarlos en cualquier momento</li>
+                                <li>Compara la evolución mes a mes</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 9. Equipo -->
+                    <div class="guide-section" data-keywords="equipo miembros usuarios invitar roles permisos premium limite">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">👥</span>
+                            <h4>Equipo <span class="badge-premium" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 600; margin-left: 8px;">Premium</span></h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <p>Gestiona los miembros de tu equipo que pueden acceder al dashboard.</p>
+
+                            <h5>Invitar Miembros</h5>
+                            <ul>
+                                <li>Click en <strong>"Invitar Usuario"</strong></li>
+                                <li>Introduce el email del miembro del equipo</li>
+                                <li>Recibirá un enlace para unirse al dashboard</li>
+                            </ul>
+
+                            <h5>Roles y Permisos</h5>
+                            <ul>
+                                <li><strong>Administrador:</strong> Acceso completo a todas las funcionalidades</li>
+                                <li><strong>Miembro:</strong> Acceso a reservas y calendario, sin acceso a configuración</li>
+                            </ul>
+
+                            <h5>Límites según Plan</h5>
+                            <ul>
+                                <li>El número de miembros del equipo depende de tu plan</li>
+                                <li>Puedes ver cuántos puestos tienes disponibles en la parte superior</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 10. Consultoría -->
+                    <div class="guide-section" data-keywords="consultoria sesion asesoria optimizacion estrategia configuracion analisis metricas premium">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">💼</span>
+                            <h4>Consultoría <span class="badge-premium" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: 600; margin-left: 8px;">Premium</span></h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <p>Sesiones de asesoría personalizada para sacar el máximo partido a StickyWork.</p>
+
+                            <h5>Solicitar Sesión</h5>
+                            <ul>
+                                <li>Click en <strong>"Solicitar Consultoría"</strong></li>
+                                <li>Elige el tema de la sesión</li>
+                                <li>Nos pondremos en contacto para agendar la llamada</li>
+                            </ul>
+
+                            <h5>Temas Disponibles</h5>
+                            <ul>
+                                <li><strong>Optimización:</strong> Mejorar el rendimiento de tu negocio con los datos</li>
+                                <li><strong>Estrategias:</strong> Cómo atraer más clientes y aumentar reservas</li>
+                                <li><strong>Configuración avanzada:</strong> Ajustar StickyWork a las necesidades específicas de tu negocio</li>
+                                <li><strong>Análisis de métricas:</strong> Interpretar los datos y tomar decisiones</li>
+                            </ul>
+
+                            <h5>Incluido en Premium</h5>
+                            <ul>
+                                <li>1 hora de consultoría al mes incluida en el plan Premium</li>
+                                <li>Sesiones adicionales disponibles bajo petición</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 11. Talleres -->
+                    <div class="guide-section" data-keywords="talleres eventos crear sesiones multiples capacidad fecha hora precio inscripcion pasados">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">🎫</span>
+                            <h4>Talleres</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <p>Gestiona talleres y eventos grupales con inscripciones online.</p>
+
+                            <h5>Crear Taller</h5>
+                            <ul>
+                                <li>Click en <strong>"+ Nuevo Taller"</strong></li>
+                                <li>Configura: nombre, descripción y precio</li>
+                                <li>Los talleres aparecen automáticamente en el widget de reservas</li>
+                            </ul>
+
+                            <h5>Gestionar Sesiones</h5>
+                            <ul>
+                                <li>Cada taller puede tener <strong>múltiples sesiones</strong> (fechas/horarios diferentes)</li>
+                                <li>Para cada sesión configura: fecha, hora de inicio, hora de fin y capacidad máxima</li>
+                                <li>Los clientes eligen la sesión que les viene mejor al reservar</li>
+                                <li>El sistema controla automáticamente las plazas disponibles</li>
+                            </ul>
+
+                            <h5>Talleres Pasados</h5>
+                            <ul>
+                                <li>Usa el toggle <strong>"Mostrar pasados"</strong> para ver u ocultar talleres cuyas sesiones ya han pasado</li>
+                                <li>Los talleres pasados se ocultan por defecto para mantener la vista limpia</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 12. Facturación -->
+                    <div class="guide-section" data-keywords="facturacion planes suscripcion pago stripe gratis founders profesional premium cambiar historial renovacion">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">💳</span>
+                            <h4>Facturación</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <p>Gestiona tu suscripción y consulta el historial de pagos.</p>
+
+                            <h5>Estado de Suscripción</h5>
+                            <ul>
+                                <li>Muestra tu plan actual y su estado (activo, trial, expirado)</li>
+                                <li>Fecha de próxima renovación</li>
+                                <li>Funcionalidades incluidas en tu plan</li>
+                            </ul>
+
+                            <h5>Planes Disponibles</h5>
+                            <ul>
+                                <li><strong>Gratis:</strong> Funcionalidades básicas, ideal para empezar</li>
+                                <li><strong>Founders:</strong> Plan especial para early adopters</li>
+                                <li><strong>Profesional:</strong> Funcionalidades avanzadas para negocios en crecimiento</li>
+                                <li><strong>Premium:</strong> Todo incluido: Reportes IA, Equipo, Consultoría y más</li>
+                            </ul>
+
+                            <h5>Historial de Pagos</h5>
+                            <ul>
+                                <li>Consulta todos los pagos realizados</li>
+                                <li>Fecha, importe y estado de cada transacción</li>
+                            </ul>
+
+                            <h5>Cambiar de Plan</h5>
+                            <ul>
+                                <li>Click en <strong>"Cambiar Plan"</strong> o en el plan que deseas</li>
+                                <li>Sigue los pasos de pago con Stripe (pago seguro)</li>
+                                <li>El cambio se aplica inmediatamente</li>
+                                <li>Tus datos se mantienen intactos al cambiar de plan</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 13. Configuración -->
+                    <div class="guide-section" data-keywords="configuracion perfil seguridad negocio widget notificaciones email whatsapp horarios capacidad zonas mesas feedback pagina publica plan avanzado exportar">
+                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
+                            <span class="guide-icon">⚙️</span>
+                            <h4>Configuración</h4>
+                            <span class="guide-arrow">▼</span>
+                        </div>
+                        <div class="guide-content">
+                            <p>Todas las opciones de personalización de tu cuenta y negocio, organizadas en pestañas.</p>
+
+                            <h5>👤 Perfil</h5>
+                            <ul>
+                                <li>Datos personales: nombre, email de la cuenta</li>
+                                <li>Datos de la empresa: nombre del negocio, teléfono, dirección</li>
+                            </ul>
+
+                            <h5>🔐 Seguridad</h5>
+                            <ul>
+                                <li>Cambiar contraseña de acceso</li>
+                                <li>Activar autenticación de dos factores (2FA) para mayor seguridad</li>
+                            </ul>
+
+                            <h5>🏢 Negocio</h5>
+                            <ul>
+                                <li>Información pública del negocio: nombre, descripción, dirección</li>
+                                <li>Estos datos se usan en el widget y las notificaciones</li>
+                            </ul>
+
+                            <h5>🎨 Widget (Diseño)</h5>
+                            <ul>
+                                <li><strong>Color principal:</strong> Color de botones y elementos destacados</li>
+                                <li><strong>Color secundario:</strong> Color de fondos y detalles</li>
+                                <li><strong>Familia de fuente:</strong> Elige entre 6 tipografías</li>
+                                <li><strong>Radio de bordes:</strong> Ajusta qué tan redondeados son los bordes (0-30px)</li>
+                                <li><strong>Estilo de botones:</strong> Solid (gradiente), Outline (borde), Ghost (semi-transparente)</li>
+                                <li>Preview en tiempo real antes de guardar</li>
+                            </ul>
+
+                            <h5>📧 Notificaciones</h5>
+                            <ul>
+                                <li><strong>Email:</strong> Activa/desactiva emails de confirmación al cliente</li>
+                                <li><strong>WhatsApp:</strong> Configura tu número, personaliza la plantilla de mensaje
                                     <ul>
-                                        <li><strong>Número de reservas</strong> ese día</li>
-                                        <li><strong>Horarios ocupados</strong> en vista compacta</li>
+                                        <li>Variables: <code>{nombre}</code>, <code>{fecha}</code>, <code>{hora}</code>, <code>{servicio}</code>, <code>{negocio}</code></li>
                                     </ul>
                                 </li>
-                                <li>Haz click en un día para ver las reservas completas de esa fecha</li>
-                                <li>Usa las flechas ◀ ▶ para navegar entre meses</li>
+                                <li>El checkbox de consentimiento GDPR aparece automáticamente en el widget</li>
                             </ul>
 
-                            <h5>Colores en el Calendario</h5>
+                            <h5>⏰ Horarios</h5>
                             <ul>
-                                <li><span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px;">Azul</span> - Día con disponibilidad</li>
-                                <li><span style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px;">Rojo (🔴)</span> - Sin disponibilidad (todos los slots ocupados)</li>
-                                <li><span style="opacity: 0.3; padding: 2px 6px;">Gris tenue</span> - Día cerrado (no laborable)</li>
-                                <li><span style="opacity: 0.4; padding: 2px 6px;">Gris claro</span> - Días de otros meses</li>
+                                <li><strong>Días laborables:</strong> Marca/desmarca los días que tu negocio abre</li>
+                                <li><strong>Horario continuo:</strong> Un solo tramo (Ej: 09:00 - 20:00)</li>
+                                <li><strong>Horario partido:</strong> Varios turnos (Ej: Mañana 09:00-14:00, Tarde 17:00-21:00)</li>
+                                <li><strong>Duración de slots:</strong> Cada cuántos minutos aparecen horas disponibles (15, 30, 60 min)</li>
                             </ul>
 
-                            <h5>Responsive en Móvil</h5>
+                            <h5>👥 Capacidad</h5>
                             <ul>
-                                <li>El calendario se adapta automáticamente a pantallas pequeñas</li>
-                                <li>Días abreviados (D, L, M, X, J, V, S)</li>
-                                <li>Tamaños optimizados para touch</li>
+                                <li>Define cuántos clientes pueden reservar a la misma hora</li>
+                                <li>Ejemplo: Si tienes 3 peluqueros, capacidad = 3</li>
+                                <li>El sistema bloquea automáticamente cuando se alcanza el límite</li>
+                            </ul>
+
+                            <h5>🏢 Zonas (solo restaurantes)</h5>
+                            <ul>
+                                <li>Crea zonas o áreas de tu local (ej: Terraza, Interior, Barra)</li>
+                                <li>Asigna mesas y capacidad a cada zona</li>
+                                <li>Los clientes pueden elegir zona al reservar</li>
+                                <li>El widget muestra disponibilidad por zona</li>
+                            </ul>
+
+                            <h5>⭐ Feedback</h5>
+                            <ul>
+                                <li>Crea hasta 3 preguntas personalizadas para el formulario de feedback</li>
+                                <li>Tipos: Rating (estrellas), Texto libre, Opción múltiple</li>
+                                <li>Marca preguntas como obligatorias</li>
+                                <li>Personaliza la plantilla del mensaje de solicitud de feedback por WhatsApp</li>
+                            </ul>
+
+                            <h5>🌐 Mi Página</h5>
+                            <ul>
+                                <li>Página pública de tu negocio con formulario de reservas integrado</li>
+                                <li>Personalizable con los datos y colores de tu negocio</li>
+                                <li>Comparte el enlace directo con tus clientes</li>
+                            </ul>
+
+                            <h5>💳 Plan</h5>
+                            <ul>
+                                <li>Información de tu plan actual y funcionalidades incluidas</li>
+                                <li>Acceso directo a cambiar de plan</li>
+                            </ul>
+
+                            <h5>⚙️ Avanzado</h5>
+                            <ul>
+                                <li><strong>Exportar datos:</strong> Descarga tus datos en formato JSON o CSV</li>
+                                <li>Incluye: reservas, clientes y servicios</li>
+                                <li>Configuración técnica adicional</li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- 8. Estadísticas -->
-                    <div class="guide-section" data-keywords="estadisticas metricas graficos datos ingresos clientes servicios populares">
-                        <div class="guide-header" onclick="settings.toggleGuideSection(this)">
-                            <span class="guide-icon">📊</span>
-                            <h4>Estadísticas y Reportes</h4>
-                            <span class="guide-arrow">▼</span>
-                        </div>
-                        <div class="guide-content">
-                            <h5>Panel de Estadísticas</h5>
-                            <p><strong>Ruta:</strong> Dashboard → Inicio (vista principal)</p>
-                            <ul>
-                                <li><strong>Total de reservas:</strong> Contador general</li>
-                                <li><strong>Reservas pendientes:</strong> Requieren tu atención</li>
-                                <li><strong>Tasa de completadas:</strong> Porcentaje de servicios realizados</li>
-                                <li><strong>Ingresos estimados:</strong> Suma de precios de reservas completadas</li>
-                            </ul>
-
-                            <h5>Servicios Más Populares</h5>
-                            <ul>
-                                <li>Gráfico de barras o lista con servicios más reservados</li>
-                                <li>Útil para identificar qué ofrecer más o promocionar</li>
-                                <li>Datos en tiempo real</li>
-                            </ul>
-
-                            <h5>Próximas Mejoras</h5>
-                            <ul>
-                                <li>📈 Gráficos de tendencias mensuales</li>
-                                <li>📅 Comparativa mes actual vs anterior</li>
-                                <li>💰 Ingresos proyectados</li>
-                                <li>📧 Reportes automáticos por email</li>
-                                <li>📊 Exportar datos a Excel/CSV</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- 9. FAQs -->
-                    <div class="guide-section" data-keywords="faq preguntas frecuentes dudas ayuda soporte problemas soluciones">
+                    <!-- 14. FAQs -->
+                    <div class="guide-section" data-keywords="faq preguntas frecuentes dudas ayuda problemas soluciones email widget idioma exportar festivo logo">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">❓</span>
                             <h4>Preguntas Frecuentes (FAQs)</h4>
                             <span class="guide-arrow">▼</span>
                         </div>
                         <div class="guide-content">
-                            <h5>❓ ¿Cómo cambio mi plan de Free a Premium?</h5>
-                            <p><strong>Ruta:</strong> Configuración → Plan</p>
-                            <p>Haz click en "Actualizar a Premium" y sigue los pasos de pago. Tus datos se mantienen intactos.</p>
+                            <h5>❓ ¿Cómo cambio mi plan?</h5>
+                            <p><strong>Ruta:</strong> Facturación → Cambiar Plan</p>
+                            <p>Selecciona el plan que deseas y sigue los pasos de pago. Tus datos se mantienen intactos.</p>
 
                             <h5>❓ ¿Puedo tener varios usuarios gestionando el dashboard?</h5>
-                            <p>Actualmente cada negocio tiene un único usuario administrador. La funcionalidad de múltiples usuarios está en nuestro roadmap.</p>
+                            <p>Sí, con el plan Premium. Ve a Equipo → Invitar Usuario para añadir miembros a tu equipo.</p>
 
                             <h5>❓ No llegan emails de confirmación a los clientes</h5>
                             <p><strong>Soluciones:</strong></p>
                             <ul>
                                 <li>Verifica que el email esté activado en Configuración → Notificaciones</li>
                                 <li>Comprueba la carpeta de SPAM del cliente</li>
-                                <li>Asegúrate de tener un plan activo (Free tiene limitaciones de emails)</li>
                                 <li>Usa WhatsApp como alternativa (98% tasa de apertura vs 20% email)</li>
                             </ul>
 
                             <h5>❓ ¿Cómo bloqueo un día específico (festivo)?</h5>
-                            <p>Por ahora, desmarca ese día en Configuración → Horarios. Próximamente tendremos gestión de excepciones (festivos específicos).</p>
+                            <p>Desmarca ese día en Configuración → Horarios. Próximamente tendremos gestión de excepciones para festivos específicos.</p>
 
                             <h5>❓ ¿Puedo personalizar el formulario con mi logo?</h5>
                             <p>La personalización de logo está disponible en el plan Premium. Contacta con soporte para activarlo.</p>
@@ -3007,7 +3269,7 @@ const settings = {
                             <p><strong>Checklist:</strong></p>
                             <ul>
                                 <li>✓ Verifica que copiaste el código completo (incluyendo las etiquetas &lt;script&gt;)</li>
-                                <li>✓ Asegúrate de que el businessId en el código coincide con tu ID (Dashboard → Widget/QR)</li>
+                                <li>✓ Asegúrate de que el businessId coincide con tu ID (ve a Widget/QR para comprobarlo)</li>
                                 <li>✓ Abre la consola del navegador (F12) y busca errores en rojo</li>
                                 <li>✓ Prueba en modo incógnito para descartar problemas de caché</li>
                             </ul>
@@ -3017,15 +3279,15 @@ const settings = {
                             <p>Descarga en formato JSON o CSV. Incluye reservas, clientes y servicios.</p>
 
                             <h5>❓ ¿Qué pasa si un cliente no completa la reserva?</h5>
-                            <p>Las reservas incompletas (sin enviar) NO se guardan en el sistema. Solo se registran cuando el cliente hace click en "Confirmar Reserva".</p>
+                            <p>Las reservas incompletas (sin enviar) NO se guardan. Solo se registran cuando el cliente hace click en "Confirmar Reserva".</p>
 
                             <h5>❓ ¿Puedo cambiar el idioma del widget?</h5>
-                            <p>Actualmente solo español e inglés están disponibles. Configúralo en el código del widget con <code>language: 'es'</code> o <code>language: 'en'</code>.</p>
+                            <p>Actualmente español e inglés. Configúralo en el código del widget con <code>language: 'es'</code> o <code>language: 'en'</code>.</p>
                         </div>
                     </div>
 
-                    <!-- 10. Soporte y Ayuda -->
-                    <div class="guide-section" data-keywords="soporte ayuda contacto email chat asistencia problemas bugs reportar">
+                    <!-- 15. Soporte y Contacto -->
+                    <div class="guide-section" data-keywords="soporte ayuda contacto email whatsapp chat asistencia problemas bugs reportar ideas mejoras">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">💬</span>
                             <h4>Soporte y Contacto</h4>
@@ -3046,22 +3308,13 @@ const settings = {
                             </div>
 
                             <h5>Reportar un Bug</h5>
-                            <p>Si encuentras algún error o comportamiento inesperado, ayúdanos a mejorar reportándolo:</p>
                             <ul>
                                 <li>Envía un email a <strong>bugs@stickywork.com</strong></li>
-                                <li>Incluye:
-                                    <ul>
-                                        <li>Descripción del problema</li>
-                                        <li>Pasos para reproducirlo</li>
-                                        <li>Capturas de pantalla si es posible</li>
-                                        <li>Navegador y sistema operativo</li>
-                                    </ul>
-                                </li>
+                                <li>Incluye: descripción del problema, pasos para reproducirlo, capturas de pantalla y navegador usado</li>
                             </ul>
 
                             <h5>Sugerir Mejoras</h5>
-                            <p>¿Tienes ideas para nuevas funcionalidades? ¡Queremos escucharte!</p>
-                            <p>Escríbenos a <strong>ideas@stickywork.com</strong> con tu sugerencia.</p>
+                            <p>¿Tienes ideas para nuevas funcionalidades? Escríbenos a <strong>ideas@stickywork.com</strong></p>
 
                             <h5>Horario de Atención</h5>
                             <ul>
