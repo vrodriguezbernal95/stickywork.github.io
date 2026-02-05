@@ -5,7 +5,10 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const path = require('path');
 const cron = require('node-cron');
-require('dotenv').config();
+// Solo cargar dotenv en desarrollo (en producción Railway inyecta las variables)
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 const db = require('./config/database');
 const routes = require('./backend/routes');

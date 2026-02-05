@@ -1,5 +1,8 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+// Solo cargar dotenv en desarrollo
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 // Configuración de la conexión a MySQL
 // Prioriza MYSQL_URL (Railway) sobre variables individuales
