@@ -22,9 +22,11 @@ if (process.env.MYSQL_URL || process.env.MYSQLURL) {
             charset: 'utf8mb4',
             waitForConnections: true,
             connectionLimit: 10,
-            queueLimit: 0
+            queueLimit: 0,
+            // SSL requerido para conexiones públicas de Railway
+            ssl: urlMatch[3].includes('proxy.rlwy.net') ? { rejectUnauthorized: false } : undefined
         };
-        console.log('📦 Configuración parseada:', { host: dbConfig.host, port: dbConfig.port, database: dbConfig.database });
+        console.log('📦 Configuración parseada:', { host: dbConfig.host, port: dbConfig.port, database: dbConfig.database, ssl: !!dbConfig.ssl });
     } else {
         console.error('❌ No se pudo parsear MYSQL_URL');
         dbConfig = url;
