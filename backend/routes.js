@@ -641,7 +641,8 @@ router.post('/api/debug/run-customer-status-migration', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error en migración',
-            error: error.message
+            error: error.message || error.sqlMessage || String(error),
+            code: error.code
         });
     }
 });
