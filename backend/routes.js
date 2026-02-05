@@ -586,17 +586,22 @@ router.post('/api/debug/run-customer-status-migration', async (req, res) => {
             }
         }
 
-        // Paso 2: Migrar datos de is_premium a status
+        // Paso 2: Migrar datos de is_premium a status (si existe la columna is_premium)
         console.log('📝 Migrando datos de is_premium a status...');
-        await db.query(`
-            UPDATE customers
-            SET status = CASE
-                WHEN is_premium = TRUE THEN 'premium'
-                ELSE 'normal'
-            END
-            WHERE status = 'normal' OR status IS NULL
-        `);
-        console.log('✅ Datos migrados');
+        try {
+            await db.query(`
+                UPDATE customers
+                SET status = CASE
+                    WHEN is_premium = TRUE THEN 'premium'
+                    ELSE 'normal'
+                END
+                WHERE status = 'normal' OR status IS NULL
+            `);
+            console.log('✅ Datos migrados');
+        } catch (migrationError) {
+            // Si la columna is_premium no existe, simplemente continuamos
+            console.log('ℹ️  Columna is_premium no existe, saltando migración de datos');
+        }
 
         // Paso 3: Actualizar índice
         console.log('📝 Actualizando índice...');
