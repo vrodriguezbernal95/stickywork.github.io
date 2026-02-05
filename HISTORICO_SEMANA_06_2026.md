@@ -412,14 +412,91 @@ Endpoints admin:
 
 ---
 
-## Próximas tareas sugeridas
+## Sesión 6: 05-feb-2026 - Sistema de Niveles de Clientes
 
-1. **Notificaciones por email** al cliente cuando se crean citas repetidas
-2. **Filtrar reservas** por cliente Premium/Normal
-3. **Estadísticas de clientes** (retención, frecuencia de visitas)
-4. **Recordatorios automáticos** para clientes que no vienen hace X tiempo
+### Contexto
+Ampliación del sistema de clientes Premium para incluir niveles negativos: clientes de "Riesgo" (no acuden a citas) y "Baneados" (bloqueados de hacer reservas).
+
+### Completado
+
+**1. Nuevo sistema de niveles de clientes**
+- Cambio de `is_premium BOOLEAN` a `status ENUM('normal', 'premium', 'riesgo', 'baneado')`
+- Migración automática de datos existentes
+- Nuevo índice `idx_status` para búsquedas eficientes
+
+**2. Backend - Endpoints actualizados**
+- `GET /api/customers/:businessId` - Filtro por status (normal, premium, riesgo, baneado)
+- `POST /api/customers/:businessId` - Crear con status
+- `PATCH /api/customers/:businessId/:customerId` - Cambiar nivel del cliente
+- Compatibilidad hacia atrás con parámetro `is_premium`
+
+**3. Bloqueo de clientes baneados**
+- Validación en `POST /api/bookings` - Rechaza reservas de clientes baneados
+- Validación en `POST /api/workshops/book-session/:sessionId` - Igual para talleres
+- Mensaje amigable: "Lo sentimos, no es posible realizar esta reserva. Por favor, contacta directamente con el establecimiento."
+- Código de error: `CUSTOMER_BANNED`
+
+**4. Frontend - Sección Clientes actualizada**
+- Filtros por los 4 niveles (Todos, Premium, Normal, Riesgo, Baneado)
+- Modal de cambio de nivel con botones visuales
+- Badges de colores por nivel en la tabla
+- Selector de nivel en el formulario de crear/editar cliente
+
+**5. Badges en Reservas**
+- Badge VIP dorado para Premium
+- Badge RIESGO naranja para clientes de riesgo
+- Badge BANEADO rojo para clientes bloqueados
+
+**6. Fix crítico: Proyecto Railway duplicado**
+- Problema: Variables configuradas en proyecto `selfless-success` pero dominio apuntaba a `chic-fascination`
+- Diagnóstico: dotenv no era el problema, era que había 2 proyectos de Railway
+- Solución: Eliminar proyecto viejo y usar solo `selfless-success`
+- Dominio correcto: `api.stickywork.com`
+
+### Archivos modificados:
+- `backend/routes.js` - Migración + endpoints de customers + validación baneados
+- `backend/routes/workshops.js` - Validación de baneados en talleres
+- `admin/js/clients.js` - Reescritura completa con sistema de niveles
+- `admin/js/bookings.js` - Badges de nivel en reservas
+- `config/database-mysql.js` - SSL para conexiones públicas
+- `server.js` - Condicional para dotenv en producción
+
+### Commits:
+- `c63b166` feat: Sistema de niveles de clientes (Normal, Premium, Riesgo, Baneado)
+- `ae4add6` fix: Manejar caso donde is_premium no existe en migración
+- `dd2c299` fix: Mejorar logging de errores en migración
+- `eab3c68` fix: Añadir SSL para conexiones públicas de Railway MySQL
+- `3521836` fix: No cargar dotenv en producción
+- `59ee9b4` fix: Renombrar .env.example para evitar conflictos
 
 ---
 
-**Última actualización:** 04-feb-2026
+## Resumen Sistema de Niveles de Clientes
+
+| Nivel | Icono | Color | Descripción |
+|-------|-------|-------|-------------|
+| Normal | 👤 | Gris | Cliente estándar (por defecto) |
+| Premium | ⭐ | Dorado | Cliente VIP, trato preferente |
+| Riesgo | ⚠️ | Naranja | No acude a citas, vigilar |
+| Baneado | 🚫 | Rojo | Bloqueado, no puede reservar |
+
+### Cómo usar el sistema de niveles
+1. Ir a **Dashboard → Clientes**
+2. Click en el icono de nivel del cliente (⭐, 👤, ⚠️, 🚫)
+3. Seleccionar el nuevo nivel en el modal
+4. Los clientes baneados no podrán hacer reservas desde el widget
+
+---
+
+## Próximas tareas sugeridas
+
+1. **Notificaciones por email** al cliente cuando se crean citas repetidas
+2. **Filtrar reservas** por nivel de cliente
+3. **Estadísticas de clientes** (retención, frecuencia de visitas)
+4. **Recordatorios automáticos** para clientes que no vienen hace X tiempo
+5. **Auto-degradar a Riesgo** clientes que no acuden X veces
+
+---
+
+**Última actualización:** 05-feb-2026
 **Próxima revisión:** 09-feb-2026 (inicio semana 07)
