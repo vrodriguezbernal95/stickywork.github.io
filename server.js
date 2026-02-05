@@ -85,14 +85,23 @@ app.get('/api/health', (req, res) => {
 
 // Debug de variables de entorno (solo en producción)
 app.get('/api/debug/env', (req, res) => {
+    // Buscar todas las variables que contengan DB, MYSQL, HOST, PORT
+    const relevantVars = {};
+    Object.keys(process.env).forEach(key => {
+        if (key.includes('DB') || key.includes('MYSQL') || key.includes('HOST') || key.includes('PORT') || key === 'NODE_ENV') {
+            // Ocultar passwords
+            if (key.includes('PASSWORD') || key.includes('SECRET')) {
+                relevantVars[key] = '***SET***';
+            } else {
+                relevantVars[key] = process.env[key];
+            }
+        }
+    });
     res.json({
+        totalEnvVars: Object.keys(process.env).length,
+        relevantVars,
         hasMySQL_URL: !!process.env.MYSQL_URL,
-        hasMYSQLURL: !!process.env.MYSQLURL,
-        hasDB_HOST: !!process.env.DB_HOST,
-        hasMYSQLHOST: !!process.env.MYSQLHOST,
-        NODE_ENV: process.env.NODE_ENV,
-        DB_HOST_value: process.env.DB_HOST || 'not set',
-        MYSQLHOST_value: process.env.MYSQLHOST || 'not set'
+        hasDB_HOST: !!process.env.DB_HOST
     });
 });
 
