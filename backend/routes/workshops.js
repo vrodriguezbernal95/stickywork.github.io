@@ -140,6 +140,22 @@ router.post('/book-session/:sessionId', async (req, res) => {
             });
         }
 
+        // Verificar si el cliente está baneado
+        if (customer_email && customer_phone) {
+            const bannedCheck = await db.query(
+                `SELECT id FROM customers WHERE business_id = ? AND email = ? AND phone = ? AND status = 'baneado'`,
+                [s.business_id, customer_email, customer_phone]
+            );
+
+            if (bannedCheck.length > 0) {
+                return res.status(403).json({
+                    success: false,
+                    message: '😔 Lo sentimos, no es posible realizar esta reserva. Por favor, contacta directamente con el establecimiento.',
+                    code: 'CUSTOMER_BANNED'
+                });
+            }
+        }
+
         const availableSpots = s.capacity - s.booked_spots;
         if (people > availableSpots) {
             return res.status(400).json({

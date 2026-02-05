@@ -242,12 +242,22 @@ const bookings = {
         }
     },
 
+    // Get customer status badge for booking row
+    getCustomerBadge(status) {
+        const badges = {
+            premium: '<span class="badge-vip">VIP</span>',
+            riesgo: '<span class="badge-riesgo">RIESGO</span>',
+            baneado: '<span class="badge-baneado">BANEADO</span>'
+        };
+        return badges[status] || '';
+    },
+
     // Render a single booking row
     renderBookingRow(booking) {
         return `
             <tr>
                 <td style="font-weight: 600;">
-                    ${booking.customer_is_premium ? '<span class="badge-vip">VIP</span>' : ''}
+                    ${this.getCustomerBadge(booking.customer_status)}
                     ${booking.customer_name}
                 </td>
                 <td style="font-size: 0.9rem;">${booking.customer_email}</td>
@@ -1164,6 +1174,30 @@ style.textContent = `
 
     .badge-vip {
         background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-right: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .badge-riesgo {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-right: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .badge-baneado {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
         color: white;
         padding: 2px 8px;
         border-radius: 4px;

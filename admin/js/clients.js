@@ -1,9 +1,18 @@
-// Clients Module - Gestión de Clientes Premium/VIP
+// Clients Module - Gestión de Clientes con Sistema de Niveles
+// Niveles: normal, premium, riesgo, baneado
 
 const clients = {
     allClients: [],
-    currentFilter: 'all', // 'all', 'premium', 'normal'
+    currentFilter: 'all', // 'all', 'premium', 'normal', 'riesgo', 'baneado'
     searchTerm: '',
+
+    // Status config (colores e iconos)
+    statusConfig: {
+        premium: { label: 'Premium', icon: '⭐', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)' },
+        normal: { label: 'Normal', icon: '👤', color: '#6b7280', bgColor: 'rgba(107, 114, 128, 0.15)' },
+        riesgo: { label: 'Riesgo', icon: '⚠️', color: '#f97316', bgColor: 'rgba(249, 115, 22, 0.15)' },
+        baneado: { label: 'Baneado', icon: '🚫', color: '#ef4444', bgColor: 'rgba(239, 68, 68, 0.15)' }
+    },
 
     // Load clients view
     async load() {
@@ -37,10 +46,9 @@ const clients = {
     async fetchClients() {
         let url = `/api/customers/${auth.getBusinessId()}?sort=name`;
 
-        if (this.currentFilter === 'premium') {
-            url += '&premium=true';
-        } else if (this.currentFilter === 'normal') {
-            url += '&premium=false';
+        // Filtro por status (nuevo sistema)
+        if (this.currentFilter !== 'all') {
+            url += `&status=${this.currentFilter}`;
         }
 
         if (this.searchTerm) {
@@ -72,18 +80,29 @@ const clients = {
 
             <!-- Filters -->
             <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
-                <div class="filter-tabs" style="display: flex; gap: 0.5rem;">
+                <div class="filter-tabs" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                     <button class="filter-tab ${this.currentFilter === 'all' ? 'active' : ''}"
                             onclick="clients.setFilter('all')">
                         Todos (${this.getCountByFilter('all')})
                     </button>
                     <button class="filter-tab ${this.currentFilter === 'premium' ? 'active' : ''}"
-                            onclick="clients.setFilter('premium')">
+                            onclick="clients.setFilter('premium')"
+                            style="${this.currentFilter === 'premium' ? '' : 'border-color: #f59e0b; color: #f59e0b;'}">
                         ⭐ Premium (${this.getCountByFilter('premium')})
                     </button>
                     <button class="filter-tab ${this.currentFilter === 'normal' ? 'active' : ''}"
                             onclick="clients.setFilter('normal')">
                         Normal (${this.getCountByFilter('normal')})
+                    </button>
+                    <button class="filter-tab ${this.currentFilter === 'riesgo' ? 'active' : ''}"
+                            onclick="clients.setFilter('riesgo')"
+                            style="${this.currentFilter === 'riesgo' ? '' : 'border-color: #f97316; color: #f97316;'}">
+                        ⚠️ Riesgo (${this.getCountByFilter('riesgo')})
+                    </button>
+                    <button class="filter-tab ${this.currentFilter === 'baneado' ? 'active' : ''}"
+                            onclick="clients.setFilter('baneado')"
+                            style="${this.currentFilter === 'baneado' ? '' : 'border-color: #ef4444; color: #ef4444;'}">
+                        🚫 Baneado (${this.getCountByFilter('baneado')})
                     </button>
                 </div>
                 <div style="flex: 1; min-width: 200px; max-width: 300px;">
@@ -125,7 +144,7 @@ const clients = {
                                 <th>Teléfono</th>
                                 <th style="text-align: center;">Reservas</th>
                                 <th>Última Reserva</th>
-                                <th style="text-align: center;">Estado</th>
+                                <th style="text-align: center;">Nivel</th>
                                 <th style="text-align: center;">Acciones</th>
                             </tr>
                         </thead>
@@ -166,13 +185,13 @@ const clients = {
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
-                                    <input type="checkbox" id="clientPremium" style="width: 20px; height: 20px;">
-                                    <span style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <span class="badge-vip">VIP</span>
-                                        Cliente Premium/VIP
-                                    </span>
-                                </label>
+                                <label for="clientStatus" class="form-label">Nivel del Cliente</label>
+                                <select id="clientStatus" class="form-input">
+                                    <option value="normal">👤 Normal - Cliente estándar</option>
+                                    <option value="premium">⭐ Premium - Cliente VIP</option>
+                                    <option value="riesgo">⚠️ Riesgo - No acude a citas</option>
+                                    <option value="baneado">🚫 Baneado - No puede reservar</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
@@ -206,7 +225,28 @@ const clients = {
                     </div>
                 </div>
             </div>
+
+            <!-- Change Status Modal -->
+            <div id="changeStatusModal" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2 style="margin: 0;">Cambiar Nivel</h2>
+                        <button class="modal-close" onclick="clients.closeStatusModal()">&times;</button>
+                    </div>
+                    <div class="modal-body" id="changeStatusContent">
+                        <!-- Content loaded dynamically -->
+                    </div>
+                </div>
+            </div>
         `;
+    },
+
+    // Get status badge HTML
+    getStatusBadge(status) {
+        const config = this.statusConfig[status] || this.statusConfig.normal;
+        return `<span class="client-badge" style="background: ${config.bgColor}; color: ${config.color};">
+            ${config.icon} ${config.label}
+        </span>`;
     },
 
     // Render single client row
@@ -215,10 +255,13 @@ const clients = {
             ? utils.formatDateShort(client.last_booking_date)
             : 'Nunca';
 
+        const status = client.status || 'normal';
+        const config = this.statusConfig[status] || this.statusConfig.normal;
+
         return `
-            <tr>
+            <tr style="${status === 'baneado' ? 'opacity: 0.6;' : ''}">
                 <td style="font-weight: 600;">
-                    ${client.is_premium ? '<span class="badge-vip">VIP</span>' : ''}
+                    ${status === 'premium' ? '<span class="badge-vip">VIP</span>' : ''}
                     ${client.name}
                 </td>
                 <td style="font-size: 0.9rem;">${client.email}</td>
@@ -230,9 +273,7 @@ const clients = {
                 </td>
                 <td>${lastBooking}</td>
                 <td style="text-align: center;">
-                    ${client.is_premium
-                        ? '<span style="color: #f59e0b; font-weight: 600;">⭐ Premium</span>'
-                        : '<span style="color: var(--text-secondary);">Normal</span>'}
+                    ${this.getStatusBadge(status)}
                 </td>
                 <td style="text-align: center;">
                     <div style="display: flex; gap: 0.5rem; justify-content: center;">
@@ -243,10 +284,10 @@ const clients = {
                             👁
                         </button>
                         <button class="btn-action"
-                                onclick="clients.togglePremium(${client.id}, ${!client.is_premium})"
-                                title="${client.is_premium ? 'Quitar Premium' : 'Marcar Premium'}"
-                                style="background: ${client.is_premium ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)'}; color: ${client.is_premium ? '#ef4444' : '#f59e0b'};">
-                            ${client.is_premium ? '★' : '☆'}
+                                onclick="clients.showStatusModal(${client.id})"
+                                title="Cambiar nivel"
+                                style="background: ${config.bgColor}; color: ${config.color};">
+                            ${config.icon}
                         </button>
                         <button class="btn-action"
                                 onclick="clients.editClient(${client.id})"
@@ -269,9 +310,7 @@ const clients = {
     // Get count by filter type
     getCountByFilter(filter) {
         if (filter === 'all') return this.allClients.length;
-        if (filter === 'premium') return this.allClients.filter(c => c.is_premium).length;
-        if (filter === 'normal') return this.allClients.filter(c => !c.is_premium).length;
-        return 0;
+        return this.allClients.filter(c => (c.status || 'normal') === filter).length;
     },
 
     // Set filter and reload
@@ -325,6 +364,7 @@ const clients = {
         document.getElementById('clientSubmitBtn').textContent = 'Crear Cliente';
         document.getElementById('clientForm').reset();
         document.getElementById('clientId').value = '';
+        document.getElementById('clientStatus').value = 'normal';
         document.getElementById('clientModal').style.display = 'flex';
         setTimeout(() => document.getElementById('clientName').focus(), 100);
     },
@@ -340,7 +380,7 @@ const clients = {
         document.getElementById('clientName').value = client.name;
         document.getElementById('clientEmail').value = client.email;
         document.getElementById('clientPhone').value = client.phone;
-        document.getElementById('clientPremium').checked = client.is_premium;
+        document.getElementById('clientStatus').value = client.status || 'normal';
         document.getElementById('clientNotes').value = client.notes || '';
         document.getElementById('clientModal').style.display = 'flex';
     },
@@ -360,7 +400,7 @@ const clients = {
             name: document.getElementById('clientName').value,
             email: document.getElementById('clientEmail').value,
             phone: document.getElementById('clientPhone').value,
-            is_premium: document.getElementById('clientPremium').checked,
+            status: document.getElementById('clientStatus').value,
             notes: document.getElementById('clientNotes').value || null
         };
 
@@ -384,23 +424,84 @@ const clients = {
         }
     },
 
-    // Toggle premium status
-    async togglePremium(clientId, newStatus) {
+    // Show status change modal
+    showStatusModal(clientId) {
+        const client = this.allClients.find(c => c.id === clientId);
+        if (!client) return;
+
+        const currentStatus = client.status || 'normal';
+
+        document.getElementById('changeStatusContent').innerHTML = `
+            <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                Selecciona el nuevo nivel para <strong>${client.name}</strong>:
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${Object.entries(this.statusConfig).map(([status, config]) => `
+                    <button class="status-option ${status === currentStatus ? 'active' : ''}"
+                            onclick="clients.changeStatus(${clientId}, '${status}')"
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 0.75rem;
+                                padding: 0.75rem 1rem;
+                                border: 2px solid ${status === currentStatus ? config.color : 'var(--border-color)'};
+                                background: ${status === currentStatus ? config.bgColor : 'var(--bg-secondary)'};
+                                border-radius: 8px;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                text-align: left;
+                            ">
+                        <span style="font-size: 1.25rem;">${config.icon}</span>
+                        <div>
+                            <div style="font-weight: 600; color: ${config.color};">${config.label}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                ${this.getStatusDescription(status)}
+                            </div>
+                        </div>
+                        ${status === currentStatus ? '<span style="margin-left: auto; color: var(--primary-color);">✓</span>' : ''}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        document.getElementById('changeStatusModal').style.display = 'flex';
+    },
+
+    // Get status description
+    getStatusDescription(status) {
+        const descriptions = {
+            premium: 'Cliente VIP, trato preferente',
+            normal: 'Cliente estándar sin marcas',
+            riesgo: 'Ha faltado a citas, vigilar',
+            baneado: 'Bloqueado, no puede reservar'
+        };
+        return descriptions[status] || '';
+    },
+
+    // Close status modal
+    closeStatusModal() {
+        document.getElementById('changeStatusModal').style.display = 'none';
+    },
+
+    // Change client status
+    async changeStatus(clientId, newStatus) {
         try {
             await api.patch(`/api/customers/${auth.getBusinessId()}/${clientId}`, {
-                is_premium: newStatus
+                status: newStatus
             });
 
+            const config = this.statusConfig[newStatus];
             modal.toast({
-                message: newStatus ? 'Cliente marcado como Premium' : 'Cliente desmarcado como Premium',
+                message: `Cliente marcado como ${config.label}`,
                 type: 'success'
             });
 
+            this.closeStatusModal();
             await this.fetchClients();
             this.render();
         } catch (error) {
-            console.error('Error toggling premium:', error);
-            modal.toast({ message: 'Error al actualizar estado', type: 'error' });
+            console.error('Error changing status:', error);
+            modal.toast({ message: 'Error al cambiar nivel', type: 'error' });
         }
     },
 
@@ -409,6 +510,7 @@ const clients = {
         try {
             const result = await api.get(`/api/customers/${auth.getBusinessId()}/${clientId}`);
             const client = result.data;
+            const status = client.status || 'normal';
 
             document.getElementById('clientDetailTitle').textContent = client.name;
             document.getElementById('clientDetailContent').innerHTML = `
@@ -422,11 +524,9 @@ const clients = {
                         <div style="font-weight: 500;">${client.phone}</div>
                     </div>
                     <div>
-                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.25rem;">Estado</div>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.25rem;">Nivel</div>
                         <div style="font-weight: 500;">
-                            ${client.is_premium
-                                ? '<span class="badge-vip">VIP</span> Premium'
-                                : 'Normal'}
+                            ${this.getStatusBadge(status)}
                         </div>
                     </div>
                     <div>
@@ -530,6 +630,16 @@ clientsStyles.textContent = `
         display: inline-block;
     }
 
+    .client-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
     .filter-tabs {
         display: flex;
         gap: 0.5rem;
@@ -556,6 +666,11 @@ clientsStyles.textContent = `
         background: var(--primary-color);
         border-color: var(--primary-color);
         color: white;
+    }
+
+    .status-option:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 `;
 document.head.appendChild(clientsStyles);

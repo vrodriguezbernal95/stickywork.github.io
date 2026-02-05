@@ -557,6 +557,90 @@ router.post('/api/debug/run-customers-migration', async (req, res) => {
     }
 });
 
+// Migración para sistema de niveles de clientes (normal, premium, riesgo, baneado)
+router.post('/api/debug/run-customer-status-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: Sistema de Niveles de Clientes');
+
+        // Paso 1: Añadir columna status si no existe
+        console.log('📝 Añadiendo columna status...');
+        try {
+            await db.query(`
+                ALTER TABLE customers
+                ADD COLUMN status ENUM('normal', 'premium', 'riesgo', 'baneado') DEFAULT 'normal'
+                AFTER phone
+            `);
+            console.log('✅ Columna status añadida');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna status ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // Paso 2: Migrar datos de is_premium a status
+        console.log('📝 Migrando datos de is_premium a status...');
+        await db.query(`
+            UPDATE customers
+            SET status = CASE
+                WHEN is_premium = TRUE THEN 'premium'
+                ELSE 'normal'
+            END
+            WHERE status = 'normal' OR status IS NULL
+        `);
+        console.log('✅ Datos migrados');
+
+        // Paso 3: Actualizar índice
+        console.log('📝 Actualizando índice...');
+        try {
+            await db.query('DROP INDEX idx_premium ON customers');
+            console.log('✅ Índice idx_premium eliminado');
+        } catch (error) {
+            console.log('ℹ️  Índice idx_premium no existía');
+        }
+
+        try {
+            await db.query('CREATE INDEX idx_status ON customers (business_id, status)');
+            console.log('✅ Índice idx_status creado');
+        } catch (error) {
+            if (error.code === 'ER_DUP_KEYNAME') {
+                console.log('ℹ️  Índice idx_status ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // Nota: No eliminamos is_premium para mantener compatibilidad temporal
+        // Se puede eliminar en una migración futura
+
+        res.json({
+            success: true,
+            message: 'Migración de niveles de clientes completada',
+            changes: [
+                'Añadida columna status ENUM(normal, premium, riesgo, baneado)',
+                'Migrados datos de is_premium a status',
+                'Creado índice idx_status'
+            ]
+        });
+
+    } catch (error) {
+        console.error('Error en migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
 // Migración para página pública de reservas
 router.post('/api/debug/run-public-page-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
@@ -631,7 +715,7 @@ router.use(setupDemosRoutes);
 router.get('/api/customers/:businessId', requireAuth, requireBusinessAccess, async (req, res) => {
     try {
         const { businessId } = req.params;
-        const { premium, search, sort } = req.query;
+        const { status, premium, search, sort } = req.query;
 
         let query = `
             SELECT * FROM customers
@@ -639,11 +723,18 @@ router.get('/api/customers/:businessId', requireAuth, requireBusinessAccess, asy
         `;
         const params = [businessId];
 
-        // Filtro por premium
-        if (premium === 'true') {
-            query += ' AND is_premium = TRUE';
+        // Filtro por status (nuevo sistema de niveles)
+        if (status && ['normal', 'premium', 'riesgo', 'baneado'].includes(status)) {
+            query += ' AND status = ?';
+            params.push(status);
+        } else if (premium === 'true') {
+            // Compatibilidad: premium=true → status='premium'
+            query += ' AND status = ?';
+            params.push('premium');
         } else if (premium === 'false') {
-            query += ' AND is_premium = FALSE';
+            // Compatibilidad: premium=false → status='normal'
+            query += ' AND status = ?';
+            params.push('normal');
         }
 
         // Búsqueda por nombre, email o teléfono
@@ -740,7 +831,7 @@ router.get('/api/customers/:businessId/:customerId', requireAuth, requireBusines
 router.post('/api/customers/:businessId', requireAuth, requireBusinessAccess, async (req, res) => {
     try {
         const { businessId } = req.params;
-        const { name, email, phone, is_premium, notes } = req.body;
+        const { name, email, phone, status, is_premium, notes } = req.body;
 
         // Validaciones
         if (!name || !email || !phone) {
@@ -748,6 +839,16 @@ router.post('/api/customers/:businessId', requireAuth, requireBusinessAccess, as
                 success: false,
                 message: 'Nombre, email y teléfono son obligatorios'
             });
+        }
+
+        // Validar status si viene
+        const validStatuses = ['normal', 'premium', 'riesgo', 'baneado'];
+        let customerStatus = 'normal';
+        if (status && validStatuses.includes(status)) {
+            customerStatus = status;
+        } else if (is_premium) {
+            // Compatibilidad: is_premium=true → status='premium'
+            customerStatus = 'premium';
         }
 
         // Verificar si ya existe
@@ -765,9 +866,9 @@ router.post('/api/customers/:businessId', requireAuth, requireBusinessAccess, as
 
         // Crear cliente
         const result = await db.query(
-            `INSERT INTO customers (business_id, name, email, phone, is_premium, notes)
+            `INSERT INTO customers (business_id, name, email, phone, status, notes)
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [businessId, name, email, phone, is_premium || false, notes || null]
+            [businessId, name, email, phone, customerStatus, notes || null]
         );
 
         // Obtener cliente creado
@@ -793,12 +894,12 @@ router.post('/api/customers/:businessId', requireAuth, requireBusinessAccess, as
 
 /**
  * PATCH /api/customers/:businessId/:customerId
- * Actualizar cliente (marcar premium, notas, etc.)
+ * Actualizar cliente (cambiar nivel, notas, etc.)
  */
 router.patch('/api/customers/:businessId/:customerId', requireAuth, requireBusinessAccess, async (req, res) => {
     try {
         const { businessId, customerId } = req.params;
-        const { name, email, phone, is_premium, notes } = req.body;
+        const { name, email, phone, status, is_premium, notes } = req.body;
 
         // Verificar que existe
         const existingQuery = await db.query(
@@ -829,9 +930,15 @@ router.patch('/api/customers/:businessId/:customerId', requireAuth, requireBusin
             updates.push('phone = ?');
             params.push(phone);
         }
-        if (is_premium !== undefined) {
-            updates.push('is_premium = ?');
-            params.push(is_premium);
+        // Nuevo campo status
+        const validStatuses = ['normal', 'premium', 'riesgo', 'baneado'];
+        if (status !== undefined && validStatuses.includes(status)) {
+            updates.push('status = ?');
+            params.push(status);
+        } else if (is_premium !== undefined) {
+            // Compatibilidad: is_premium → status
+            updates.push('status = ?');
+            params.push(is_premium ? 'premium' : 'normal');
         }
         if (notes !== undefined) {
             updates.push('notes = ?');
@@ -1363,6 +1470,21 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             });
         }
 
+        // Verificar si el cliente está baneado
+        const bannedCheck = await db.query(
+            `SELECT id, status FROM customers
+             WHERE business_id = ? AND email = ? AND phone = ? AND status = 'baneado'`,
+            [businessId, customerEmail, customerPhone]
+        );
+
+        if (bannedCheck.length > 0) {
+            return res.status(403).json({
+                success: false,
+                message: '😔 Lo sentimos, no es posible realizar esta reserva. Por favor, contacta directamente con el establecimiento.',
+                code: 'CUSTOMER_BANNED'
+            });
+        }
+
         // Obtener configuración del negocio para validar horarios, capacidad y límites de plan
         const businessSettingsQuery = await db.query(
             'SELECT type_key, booking_settings, plan, plan_limits FROM businesses WHERE id = ?',
@@ -1793,7 +1915,7 @@ router.get('/api/bookings/:businessId', requireAuth, requireBusinessAccess, asyn
 
         let query = `
             SELECT b.*, s.name as service_name, s.duration, s.price,
-                   c.is_premium as customer_is_premium
+                   c.status as customer_status
             FROM bookings b
             LEFT JOIN services s ON b.service_id = s.id
             LEFT JOIN customers c ON c.business_id = b.business_id
