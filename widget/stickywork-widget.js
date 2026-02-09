@@ -319,8 +319,9 @@
                 margin-top: 0.5rem;
                 padding: 0.6rem 0.75rem;
                 font-size: 0.85em;
-                color: ${config.primaryColor};
-                background: ${config.primaryColor}0a;
+                color: #1f2937;
+                font-weight: 600;
+                background: #ffffff;
                 border-left: 3px solid ${config.primaryColor};
                 border-radius: 0 6px 6px 0;
                 line-height: 1.4;
