@@ -430,24 +430,26 @@ const dashboard = {
         return `
             <div style="padding: 1rem;">
                 <!-- Chart Bars -->
-                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; height: 200px; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; height: 200px; padding-top: 35px; margin-bottom: 1rem; overflow: visible;">
                     ${trendData.map((week, index) => {
                         const height = maxCount > 0 ? (week.count / maxCount) * 100 : 0;
                         const isCurrentWeek = index === trendData.length - 1;
 
                         return `
-                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; overflow: visible;">
                                 <!-- Bar -->
-                                <div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-end; height: 100%;">
+                                <div style="width: 100%; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; overflow: visible;">
                                     ${week.count > 0 ? `
                                         <div style="
                                             width: 100%;
                                             height: ${height}%;
+                                            min-height: 8px;
                                             background: ${isCurrentWeek ? 'linear-gradient(180deg, var(--primary-color), var(--secondary-color))' : 'linear-gradient(180deg, rgba(59, 130, 246, 0.8), rgba(59, 130, 246, 0.5))'};
                                             border-radius: 8px 8px 0 0;
                                             transition: all 0.3s ease;
                                             position: relative;
                                             cursor: pointer;
+                                            overflow: visible;
                                             box-shadow: 0 -2px 8px rgba(59, 130, 246, 0.3);
                                         "
                                         onmouseover="this.style.transform='scaleY(1.05)'; this.style.boxShadow='0 -4px 12px rgba(59, 130, 246, 0.5)'"
