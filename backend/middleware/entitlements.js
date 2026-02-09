@@ -15,11 +15,24 @@ async function getBusinessPlan(businessId) {
 
     const business = rows[0];
 
-    return {
-        plan: business.plan,
-        limits: typeof business.plan_limits === 'string'
+    // Límites por defecto si plan_limits es NULL (sin restricciones)
+    const defaultLimits = {
+        maxServices: null,
+        maxBookingsPerMonth: null,
+        maxUsers: null,
+        features: {}
+    };
+
+    let limits = defaultLimits;
+    if (business.plan_limits) {
+        limits = typeof business.plan_limits === 'string'
             ? JSON.parse(business.plan_limits)
-            : business.plan_limits
+            : business.plan_limits;
+    }
+
+    return {
+        plan: business.plan || 'free',
+        limits
     };
 }
 
