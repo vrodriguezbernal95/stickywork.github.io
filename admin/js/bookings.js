@@ -5,6 +5,7 @@ const bookings = {
     allBookings: [], // Store all bookings
     currentPage: 1, // Current page number
     itemsPerPage: 50, // Items per page
+    currentFilter: 'all', // Customer level filter
 
     // Load all bookings
     async load() {
@@ -41,10 +42,23 @@ const bookings = {
         }
     },
 
+    // Get filtered bookings based on current filter
+    getFilteredBookings() {
+        if (this.currentFilter === 'all') return this.allBookings;
+        return this.allBookings.filter(b => (b.customer_status || 'normal') === this.currentFilter);
+    },
+
+    // Set filter and re-render
+    setFilter(filter) {
+        this.currentFilter = filter;
+        this.currentPage = 1;
+        this.render();
+    },
+
     // Render bookings table with pagination
     render() {
         const contentArea = document.getElementById('contentArea');
-        const bookingsList = this.allBookings;
+        const bookingsList = this.getFilteredBookings();
 
         contentArea.innerHTML = `
             <!-- Nueva Reserva Button -->
@@ -55,9 +69,18 @@ const bookings = {
                 </button>
             </div>
 
+            <!-- Filtros por nivel de cliente -->
+            <div class="booking-filters" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                ${this.renderFilterButton('all', 'Todos', this.allBookings.length)}
+                ${this.renderFilterButton('premium', '⭐ VIP', this.allBookings.filter(b => b.customer_status === 'premium').length)}
+                ${this.renderFilterButton('normal', '👤 Normal', this.allBookings.filter(b => !b.customer_status || b.customer_status === 'normal').length)}
+                ${this.renderFilterButton('riesgo', '⚠️ Riesgo', this.allBookings.filter(b => b.customer_status === 'riesgo').length)}
+                ${this.renderFilterButton('baneado', '🚫 Baneado', this.allBookings.filter(b => b.customer_status === 'baneado').length)}
+            </div>
+
             <div class="table-container">
                 <div class="table-header">
-                    <div class="table-title">Todas las Reservas (${bookingsList.length})</div>
+                    <div class="table-title">${this.currentFilter === 'all' ? 'Todas las' : this.getFilterLabel(this.currentFilter)} Reservas (${bookingsList.length})</div>
                 </div>
 
                 ${bookingsList.length === 0 ? `
@@ -151,6 +174,36 @@ const bookings = {
         `;
     },
 
+    // Render a filter button
+    renderFilterButton(filter, label, count) {
+        const isActive = this.currentFilter === filter;
+        const colors = {
+            all: { border: '#6366f1', bg: 'rgba(99, 102, 241, 0.2)' },
+            premium: { border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.2)' },
+            normal: { border: '#6b7280', bg: 'rgba(107, 114, 128, 0.2)' },
+            riesgo: { border: '#f97316', bg: 'rgba(249, 115, 22, 0.2)' },
+            baneado: { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)' }
+        };
+        const c = colors[filter];
+        return `<button onclick="bookings.setFilter('${filter}')" style="
+            padding: 0.5rem 1rem;
+            border: 2px solid ${isActive ? c.border : 'rgba(255,255,255,0.15)'};
+            background: ${isActive ? c.bg : 'transparent'};
+            color: ${isActive ? 'white' : 'var(--text-secondary)'};
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        ">${label} <span style="opacity: 0.7; font-weight: 400;">(${count})</span></button>`;
+    },
+
+    // Get label for current filter
+    getFilterLabel(filter) {
+        const labels = { premium: 'VIP', normal: 'Normal', riesgo: 'Riesgo', baneado: 'Baneado' };
+        return labels[filter] || 'Todas las';
+    },
+
     // Render paginated table with controls
     renderPaginatedTable(bookingsList) {
         // Calculate pagination
@@ -212,7 +265,7 @@ const bookings = {
 
     // Go to next page
     nextPage() {
-        const totalPages = Math.ceil(this.allBookings.length / this.itemsPerPage);
+        const totalPages = Math.ceil(this.getFilteredBookings().length / this.itemsPerPage);
         if (this.currentPage < totalPages) {
             this.currentPage++;
             this.render();
@@ -233,7 +286,7 @@ const bookings = {
 
     // Go to specific page
     goToPage(page) {
-        const totalPages = Math.ceil(this.allBookings.length / this.itemsPerPage);
+        const totalPages = Math.ceil(this.getFilteredBookings().length / this.itemsPerPage);
         if (page >= 1 && page <= totalPages) {
             this.currentPage = page;
             this.render();
