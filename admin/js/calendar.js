@@ -283,7 +283,7 @@ const calendar = {
         // Days of month
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(year, month, day);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dayBookings = monthBookings.filter(b => b.booking_date.startsWith(dateStr));
             const isToday = this.isToday(date);
 
@@ -322,7 +322,7 @@ const calendar = {
 
     // Render day view
     renderDayView() {
-        const dateStr = this.currentDate.toISOString().split('T')[0];
+        const dateStr = `${this.currentDate.getFullYear()}-${String(this.currentDate.getMonth() + 1).padStart(2, '0')}-${String(this.currentDate.getDate()).padStart(2, '0')}`;
         const dayBookings = this.bookings.filter(b => b.booking_date.startsWith(dateStr));
 
         // Sort by time

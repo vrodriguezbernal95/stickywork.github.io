@@ -220,7 +220,8 @@ const workshops = {
         this.sessionCounter++;
         const container = document.getElementById('workshopSessions');
         const index = this.sessionCounter;
-        const today = new Date().toISOString().split('T')[0];
+        const _now = new Date();
+        const today = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
 
         const dateVal = data?.session_date ? data.session_date.split('T')[0] : '';
         const startVal = data?.start_time ? data.start_time.substring(0, 5) : '';

@@ -19,7 +19,8 @@ const dashboard = {
             const bookings = allBookings.slice(0, 10); // Last 10 bookings
 
             // Get today's bookings
-            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             const todayBookings = allBookings.filter(booking =>
                 booking.booking_date.startsWith(today) &&
                 booking.status !== 'cancelled'
