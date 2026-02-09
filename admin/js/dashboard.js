@@ -430,7 +430,7 @@ const dashboard = {
         return `
             <div style="padding: 1rem;">
                 <!-- Chart Bars -->
-                <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; height: 200px; padding-top: 35px; margin-bottom: 1rem; overflow: visible;">
+                <div style="display: flex; align-items: stretch; justify-content: space-between; gap: 0.5rem; height: 220px; padding-top: 35px; margin-bottom: 1rem; overflow: visible;">
                     ${trendData.map((week, index) => {
                         const height = maxCount > 0 ? (week.count / maxCount) * 100 : 0;
                         const isCurrentWeek = index === trendData.length - 1;
