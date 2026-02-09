@@ -314,6 +314,18 @@
                 box-shadow: 0 0 0 3px ${config.primaryColor}20;
             }
 
+            /* Descripcion del servicio */
+            .stickywork-service-description {
+                margin-top: 0.5rem;
+                padding: 0.6rem 0.75rem;
+                font-size: 0.85em;
+                color: ${config.primaryColor};
+                background: ${config.primaryColor}0a;
+                border-left: 3px solid ${config.primaryColor};
+                border-radius: 0 6px 6px 0;
+                line-height: 1.4;
+            }
+
             /* Calendario personalizado como dropdown */
             .stickywork-calendar-dropdown {
                 position: relative;
@@ -1235,10 +1247,12 @@
         return `
             <div class="stickywork-field">
                 <label class="stickywork-label">${t.service}</label>
-                <select class="stickywork-select" name="service" required>
+                <select class="stickywork-select" name="service" required
+                        onchange="StickyWork.showServiceDescription(this.value)">
                     <option value="">${t.selectService}</option>
                     ${serviceOptions}
                 </select>
+                <div id="stickywork-service-desc" class="stickywork-service-description" style="display: none;"></div>
             </div>
             ${professionalField}
             ${peopleSelector}
@@ -2492,6 +2506,29 @@
         const countEl = widgetContainer.querySelector('#stickywork-children-count');
         if (countEl) countEl.value = childrenCount;
     }
+
+    // Mostrar descripción del servicio seleccionado
+    window.StickyWork.showServiceDescription = function(serviceId) {
+        const descEl = widgetContainer
+            ? widgetContainer.querySelector('#stickywork-service-desc')
+            : document.getElementById('stickywork-service-desc');
+        if (!descEl) return;
+
+        if (!serviceId) {
+            descEl.style.display = 'none';
+            descEl.textContent = '';
+            return;
+        }
+
+        const service = config.services.find(s => String(s.id) === String(serviceId));
+        if (service && service.description) {
+            descEl.textContent = service.description;
+            descEl.style.display = 'block';
+        } else {
+            descEl.style.display = 'none';
+            descEl.textContent = '';
+        }
+    };
 
     // Inicializar botones de personas
     function initPeopleButtons(container) {
