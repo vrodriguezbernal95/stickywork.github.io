@@ -108,11 +108,21 @@ Sesión enfocada en resolver bugs acumulados, mejorar la experiencia del dashboa
 
 ## Próximas tareas sugeridas
 
+### Pendientes del histórico
 1. **Notificaciones por email** al cliente cuando se crean citas repetidas
-2. **Estadísticas de clientes** (retención, frecuencia de visitas)
-3. **Recordatorios automáticos** para clientes que no vienen hace X tiempo
-4. **Auto-degradar a Riesgo** clientes que no acuden X veces
+2. ~~**Estadísticas de clientes** (retención, frecuencia de visitas)~~ ✅ Hecho 11-feb
+3. ~~**Recordatorios automáticos** para clientes que no vienen hace X tiempo~~ ✅ Hecho 11-feb
+4. **Auto-degradar a Riesgo** clientes que faltan a X citas (automático desde backend)
 5. **Páginas "Sobre nosotros" y "Blog"** — enlaces del footer aún apuntan a `#`
+
+### Mejoras de alto impacto
+6. **Recordatorio por WhatsApp** a clientes inactivos desde la pestaña de Recordatorios
+7. **Estadísticas del negocio mejoradas** — gráfico de ingresos mensuales, tasa de cancelación, horas punta
+8. **Exportar clientes a CSV/Excel** — muy pedido por pymes para sus gestorías
+9. **Búsqueda global** en el dashboard (buscar reservas, clientes, servicios desde un solo sitio)
+
+### Mejoras técnicas / limpieza
+10. **Limpiar archivos sueltos del repo** — ~40 scripts de test/migración en la raíz
 
 ---
 

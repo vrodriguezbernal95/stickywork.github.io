@@ -3,6 +3,7 @@
 
 const clients = {
     allClients: [],
+    businessData: null,
     currentFilter: 'all', // 'all', 'premium', 'normal', 'riesgo', 'baneado'
     searchTerm: '',
     currentTab: 'clientes', // 'clientes', 'estadisticas', 'recordatorios'
@@ -28,6 +29,7 @@ const clients = {
 
         try {
             await this.fetchClients();
+            await this.fetchBusinessData();
             this.render();
         } catch (error) {
             console.error('Error loading clients:', error);
@@ -48,6 +50,17 @@ const clients = {
         const url = `/api/customers/${auth.getBusinessId()}?sort=name`;
         const data = await api.get(url);
         this.allClients = data.data;
+    },
+
+    // Fetch business data (for WhatsApp settings)
+    async fetchBusinessData() {
+        try {
+            const result = await api.get(`/api/business/${auth.getBusinessId()}`);
+            this.businessData = result.data;
+        } catch (error) {
+            console.error('Error loading business data:', error);
+            this.businessData = null;
+        }
     },
 
     // Get clients filtered by current filter and search
@@ -491,6 +504,7 @@ const clients = {
 
     renderReminders() {
         const inactiveClients = this.getInactiveClients();
+        const whatsappReady = this.businessData && this.businessData.whatsapp_enabled && this.businessData.whatsapp_number;
 
         return `
             <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary);">Recordatorios</h2>
@@ -508,11 +522,23 @@ const clients = {
                     </div>
                     <div class="reminder-alert-desc">
                         ${inactiveClients.length > 0
-                            ? 'Considera contactarlos para reactivar su interés'
+                            ? 'Contacta con ellos por WhatsApp para reactivar su interés'
                             : 'No hay clientes inactivos en este momento'}
                     </div>
                 </div>
             </div>
+
+            ${!whatsappReady && inactiveClients.length > 0 ? `
+                <div class="reminder-alert" style="margin-top: 1rem; background: rgba(37, 211, 102, 0.08); border-color: rgba(37, 211, 102, 0.3);">
+                    <div class="reminder-alert-icon">💬</div>
+                    <div>
+                        <div class="reminder-alert-title">Configura WhatsApp para contactar clientes</div>
+                        <div class="reminder-alert-desc">
+                            Activa WhatsApp en <strong>Configuración > Notificaciones</strong> para enviar recordatorios directamente desde aquí.
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
 
             ${inactiveClients.length > 0 ? `
                 <!-- Inactive clients table -->
@@ -529,6 +555,7 @@ const clients = {
                                 <th>Última visita</th>
                                 <th style="text-align: center;">Días sin venir</th>
                                 <th style="text-align: center;">Nivel</th>
+                                ${whatsappReady ? '<th style="text-align: center;">Acción</th>' : ''}
                             </tr>
                         </thead>
                         <tbody>
@@ -550,6 +577,15 @@ const clients = {
                                             </span>
                                         </td>
                                         <td style="text-align: center;">${this.getStatusBadge(c.status || 'normal')}</td>
+                                        ${whatsappReady ? `
+                                            <td style="text-align: center;">
+                                                <button class="btn-whatsapp-reminder"
+                                                        onclick="clients.sendReminderWhatsApp(${c.id})"
+                                                        title="Enviar recordatorio por WhatsApp">
+                                                    💬 WhatsApp
+                                                </button>
+                                            </td>
+                                        ` : ''}
                                     </tr>
                                 `;
                             }).join('')}
@@ -558,6 +594,39 @@ const clients = {
                 </div>
             ` : ''}
         `;
+    },
+
+    // Send reminder via WhatsApp (Click-to-Chat)
+    sendReminderWhatsApp(clientId) {
+        const client = this.allClients.find(c => c.id === clientId);
+        if (!client) return;
+
+        if (!client.phone) {
+            modal.toast({ message: 'Este cliente no tiene número de teléfono', type: 'error' });
+            return;
+        }
+
+        if (!this.businessData || !this.businessData.whatsapp_enabled || !this.businessData.whatsapp_number) {
+            modal.toast({ message: 'WhatsApp no está configurado. Ve a Configuración > Notificaciones.', type: 'error' });
+            return;
+        }
+
+        const businessName = this.businessData.name || 'nuestro negocio';
+
+        // Build reminder message
+        const message = `Hola ${client.name}!\n\nHace tiempo que no te vemos por ${businessName}. Te echamos de menos!\n\n¿Te gustaría reservar una nueva cita? Estaremos encantados de atenderte.\n\n${businessName}`;
+
+        // Clean phone number
+        let phoneNumber = client.phone.replace(/\D/g, '');
+
+        // Add Spain prefix if needed (9 digits starting with 6/7/8/9)
+        if (phoneNumber.length === 9 && /^[6789]/.test(phoneNumber)) {
+            phoneNumber = '34' + phoneNumber;
+        }
+
+        // Open WhatsApp Click-to-Chat
+        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
     },
 
     // =============================================
@@ -1192,6 +1261,25 @@ clientsStyles.textContent = `
         font-size: 0.9rem;
         color: var(--text-secondary);
         margin-top: 0.25rem;
+    }
+
+    /* ========== WHATSAPP REMINDER BUTTON ========== */
+    .btn-whatsapp-reminder {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-whatsapp-reminder:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4);
     }
 `;
 document.head.appendChild(clientsStyles);
