@@ -15,7 +15,7 @@ const aiReports = {
                 .ai-tabs {
                     display: flex;
                     gap: 0;
-                    border-bottom: 2px solid var(--border);
+                    border-bottom: 2px solid var(--border-color);
                     margin-bottom: 1.5rem;
                 }
                 .ai-tab {
@@ -32,11 +32,11 @@ const aiReports = {
                 }
                 .ai-tab:hover {
                     color: var(--text-primary);
-                    background: rgba(59, 130, 246, 0.05);
+                    background: rgba(77, 83, 255, 0.1);
                 }
                 .ai-tab.active {
-                    color: var(--primary);
-                    border-bottom-color: var(--primary);
+                    color: var(--primary-color);
+                    border-bottom-color: var(--primary-color);
                     font-weight: 600;
                 }
                 .ai-tab-content {
@@ -50,14 +50,14 @@ const aiReports = {
                     gap: 1.5rem;
                 }
                 .context-card {
-                    background: var(--card-bg, #fff);
-                    border: 1px solid var(--border);
+                    background: var(--bg-tertiary);
+                    border: 1px solid var(--border-color);
                     border-radius: 12px;
                     padding: 1.5rem;
                     transition: border-color 0.2s;
                 }
                 .context-card:hover {
-                    border-color: var(--primary);
+                    border-color: var(--primary-color);
                 }
                 .context-card-header {
                     display: flex;
@@ -67,12 +67,13 @@ const aiReports = {
                 }
                 .context-card-header h4 {
                     margin: 0;
-                    font-size: 1rem;
-                    color: var(--text-primary);
+                    font-size: 1.05rem;
+                    color: var(--primary-light);
+                    font-weight: 600;
                 }
                 .context-card-help {
                     font-size: 0.85rem;
-                    color: var(--text-secondary);
+                    color: var(--text-tertiary);
                     margin-bottom: 0.75rem;
                     line-height: 1.4;
                 }
@@ -80,24 +81,24 @@ const aiReports = {
                     width: 100%;
                     min-height: 80px;
                     padding: 0.75rem;
-                    border: 1px solid var(--border);
+                    border: 1px solid var(--border-color);
                     border-radius: 8px;
                     font-family: inherit;
                     font-size: 0.9rem;
                     resize: vertical;
-                    background: var(--input-bg, #fff);
+                    background: var(--bg-secondary);
                     color: var(--text-primary);
                     transition: border-color 0.2s;
                     box-sizing: border-box;
                 }
                 .context-card textarea:focus {
                     outline: none;
-                    border-color: var(--primary);
-                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                    border-color: var(--primary-color);
+                    box-shadow: 0 0 0 3px rgba(77, 83, 255, 0.2);
                 }
                 .context-card textarea::placeholder {
-                    color: var(--text-secondary);
-                    opacity: 0.7;
+                    color: var(--text-tertiary);
+                    opacity: 0.6;
                 }
                 .context-save-bar {
                     display: flex;
@@ -106,11 +107,11 @@ const aiReports = {
                     align-items: center;
                     margin-top: 1.5rem;
                     padding-top: 1.5rem;
-                    border-top: 1px solid var(--border);
+                    border-top: 1px solid var(--border-color);
                 }
                 .context-save-bar .save-status {
                     font-size: 0.9rem;
-                    color: var(--success);
+                    color: #22c55e;
                     display: none;
                 }
             </style>
@@ -218,10 +219,10 @@ const aiReports = {
                             <h3>🏢 Contexto de Mi Negocio</h3>
                         </div>
                         <div class="card-body">
-                            <p style="color: var(--text-secondary); line-height: 1.6;">
+                            <p style="color: var(--text-tertiary); line-height: 1.6;">
                                 Describe tu negocio para que la IA genere reportes mucho más personalizados y
                                 relevantes. Cuanta más información proporciones, mejor serán las recomendaciones
-                                y el análisis. Todos los campos son opcionales.
+                                y el análisis. <span style="color: var(--secondary-color);">Todos los campos son opcionales.</span>
                             </p>
                         </div>
                     </div>
