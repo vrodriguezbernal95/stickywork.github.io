@@ -87,42 +87,117 @@ Sesión enfocada en resolver bugs acumulados, mejorar la experiencia del dashboa
 
 ---
 
-## Resumen de Cambios
+## Sesión 2: 11-feb-2026 - Features del Dashboard + IA + Limpieza
 
-### Bugs corregidos
-| Bug | Causa | Archivo |
-|-----|-------|---------|
-| Gráfico de tendencia plano | `align-items: flex-end` impedía altura proporcional | `dashboard.js` |
-| Error 500 al crear servicio | `plan_limits` NULL → TypeError | `entitlements.js` |
-| Fechas +1 día en calendario | `toISOString()` convierte a UTC | `calendar.js`, `dashboard.js`, `bookings.js`, `workshops.js` |
-| Enlaces legales rotos en footer | `href="#"` en 6 páginas | 6 HTML + `registro.html` + `politica-privacidad.html` |
+### Completado
 
-### Features nuevas
-| Feature | Estado |
-|---------|--------|
-| Filtrar reservas por nivel de cliente | ✅ |
-| Descripción de servicios en widget | ✅ |
-| Páginas legales enlazadas y noindex | ✅ |
+**1. Permitir reservas a cualquier hora**
+- **Problema:** Al crear reserva manual, solo permitía horas en punto o y media (:00, :30)
+- **Causa:** `step="1800"` en el input de hora + restricciones `min="09:00" max="20:00"`
+- **Solución:** Cambiado a `step="60"`, eliminadas restricciones de min/max
+- **Archivo:** `admin/js/bookings.js`
+
+**2. Pestañas Estadísticas y Recordatorios en Clientes**
+- Nuevo sistema de tabs en la sección Clientes (mismo patrón que Configuración)
+- **Tab Estadísticas:** Total clientes, distribución por nivel (VIP/Normal/Riesgo/Baneado), top 5 clientes frecuentes, clientes recientes
+- **Tab Recordatorios:** Lista de clientes inactivos (40+ días sin venir) con botón WhatsApp para enviar recordatorio
+- Filtrado local de clientes (ya no recarga desde API al cambiar filtro)
+
+**3. Botón WhatsApp en Recordatorios**
+- Cada cliente inactivo tiene un botón "WhatsApp" que abre wa.me con mensaje pre-rellenado
+- Usa la plantilla configurada en Ajustes > Notificaciones o un mensaje por defecto
+
+**4. Fix trust proxy para Railway**
+- **Problema:** CORS error `ERR_ERL_UNEXPECTED_X_FORWARDED_FOR` tras push
+- **Causa:** express-rate-limit requiere `trust proxy` cuando hay un proxy delante (Railway)
+- **Solución:** `app.set('trust proxy', 1)` en `server.js`
+
+**5. Estadísticas de negocio mejoradas en Dashboard**
+- 2 nuevos stat cards: "Ingresos Este Mes" (con % vs mes anterior) y "Tasa Cancelación" (con color según severidad)
+- 2 nuevos gráficos: "Horas Punta" (barras horizontales) y "Ingresos Mensuales" (barras verticales, últimos 6 meses)
+
+**6. Exportar clientes a CSV**
+- Botón "Exportar CSV" en la pestaña Clientes
+- Formato: UTF-8 BOM, separador punto y coma (compatible con Excel español)
+- Respeta el filtro activo (solo exporta los clientes filtrados)
+
+**7. Contexto de negocio en Reportes IA (pestaña "Mi Negocio")**
+- Nueva pestaña "Mi Negocio" en Reportes IA con 7 cajas de texto: descripción, diferenciación, servicios, percepción, retos, público objetivo, objetivos
+- El propietario describe su negocio y la IA lo usa para generar reportes más personalizados
+- Backend: nueva columna `business_context` (JSON) en tabla `businesses` + endpoints GET/PATCH
+- Claude service: inyecta el contexto en el prompt al generar reportes
+- Requiere migración: `POST /api/debug/run-business-context-migration`
+
+**8. Búsqueda global en el dashboard**
+- Barra de búsqueda en el header (topbar), siempre visible
+- Busca en paralelo en clientes, reservas y servicios con un solo endpoint `GET /api/search?q=`
+- Resultados en dropdown agrupados por categoría con resaltado de coincidencias
+- Debounce 300ms, cierre con Escape, clic navega a la sección correspondiente
+- Responsive: se adapta a móvil
+
+**9. Limpieza del repositorio**
+- Eliminados 37 scripts sueltos de test/migración/debug de la raíz
+- Movidos 11 archivos de histórico a carpeta `historico/`
+- Conservados 4 archivos .md de análisis/notas
+
+### Archivos modificados/creados:
+- `admin/js/bookings.js` — Fix step hora
+- `admin/js/clients.js` — Tabs + estadísticas + recordatorios + WhatsApp + CSV export
+- `admin/js/dashboard.js` — Estadísticas mejoradas (ingresos, cancelación, horas punta)
+- `admin/js/ai-reports.js` — Tabs + formulario "Mi Negocio" con 7 cajas
+- `admin/js/global-search.js` — **Nuevo** módulo de búsqueda global
+- `admin/css/admin.css` — Estilos de búsqueda global
+- `admin-dashboard.html` — Barra de búsqueda en topbar + script tag
+- `server.js` — Trust proxy
+- `backend/routes.js` — Endpoints: búsqueda global + contexto negocio + migración
+- `backend/routes/ai-reports.js` — Cargar business_context al generar reporte
+- `backend/services/claude-service.js` — Inyectar contexto en prompt de Claude
+
+### Commits:
+- `56a7feb` — fix: Permitir crear reservas a cualquier hora en el dashboard
+- `76ab28a` — feat: Añadir pestañas Estadísticas y Recordatorios en sección Clientes
+- `2064378` — feat: Botón de WhatsApp en pestaña Recordatorios para clientes inactivos
+- `4b65c26` — fix: Añadir trust proxy para express-rate-limit en Railway
+- `fa8f4a4` — feat: Estadísticas de negocio mejoradas + exportar clientes a CSV
+- `35435b4` — feat: Contexto de negocio en Reportes IA (pestaña Mi Negocio)
+- `8ec8fc7` — style: Corregir colores de Mi Negocio para dark mode del dashboard
+- `931ef78` — feat: Búsqueda global en el dashboard
 
 ---
 
-## Próximas tareas sugeridas
+## Resumen de Cambios
 
-### Pendientes del histórico
+### Bugs corregidos
+| Bug | Causa | Archivo | Sesión |
+|-----|-------|---------|--------|
+| Gráfico de tendencia plano | `align-items: flex-end` impedía altura proporcional | `dashboard.js` | S1 |
+| Error 500 al crear servicio | `plan_limits` NULL → TypeError | `entitlements.js` | S1 |
+| Fechas +1 día en calendario | `toISOString()` convierte a UTC | `calendar.js`, `dashboard.js`, `bookings.js`, `workshops.js` | S1 |
+| Enlaces legales rotos en footer | `href="#"` en 6 páginas | 6 HTML + `registro.html` | S1 |
+| Reservas solo a horas exactas | `step="1800"` en input hora | `bookings.js` | S2 |
+| CORS error en Railway | Falta `trust proxy` para express-rate-limit | `server.js` | S2 |
+
+### Features nuevas
+| Feature | Estado | Sesión |
+|---------|--------|--------|
+| Filtrar reservas por nivel de cliente | ✅ | S1 |
+| Descripción de servicios en widget | ✅ | S1 |
+| Páginas legales enlazadas y noindex | ✅ | S1 |
+| Pestañas Estadísticas y Recordatorios en Clientes | ✅ | S2 |
+| Botón WhatsApp en Recordatorios | ✅ | S2 |
+| Estadísticas de negocio mejoradas (ingresos, cancelación, horas punta) | ✅ | S2 |
+| Exportar clientes a CSV | ✅ | S2 |
+| Contexto de negocio en Reportes IA ("Mi Negocio") | ✅ | S2 |
+| Búsqueda global en el dashboard | ✅ | S2 |
+| Limpieza repo (37 scripts + históricos organizados) | ✅ | S2 |
+
+---
+
+## Próximas tareas pendientes
+
 1. **Notificaciones por email** al cliente cuando se crean citas repetidas
-2. ~~**Estadísticas de clientes** (retención, frecuencia de visitas)~~ ✅ Hecho 11-feb
-3. ~~**Recordatorios automáticos** para clientes que no vienen hace X tiempo~~ ✅ Hecho 11-feb
 4. **Auto-degradar a Riesgo** clientes que faltan a X citas (automático desde backend)
 5. **Páginas "Sobre nosotros" y "Blog"** — enlaces del footer aún apuntan a `#`
-
-### Mejoras de alto impacto
-6. **Recordatorio por WhatsApp** a clientes inactivos desde la pestaña de Recordatorios
-7. **Estadísticas del negocio mejoradas** — gráfico de ingresos mensuales, tasa de cancelación, horas punta
-8. **Exportar clientes a CSV/Excel** — muy pedido por pymes para sus gestorías
-9. **Búsqueda global** en el dashboard (buscar reservas, clientes, servicios desde un solo sitio)
-
-### Mejoras técnicas / limpieza
-10. **Limpiar archivos sueltos del repo** — ~40 scripts de test/migración en la raíz
 
 ---
 
@@ -134,5 +209,5 @@ Sesión enfocada en resolver bugs acumulados, mejorar la experiencia del dashboa
 
 ---
 
-**Última actualización:** 09-feb-2026
+**Última actualización:** 11-feb-2026
 **Próxima revisión:** 16-feb-2026 (inicio semana 08)
