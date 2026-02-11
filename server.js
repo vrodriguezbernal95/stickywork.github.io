@@ -34,6 +34,9 @@ async function runMigrations() {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Confiar en el proxy de Railway para X-Forwarded-For (necesario para express-rate-limit)
+app.set('trust proxy', 1);
+
 // ==================== MIDDLEWARE ====================
 
 // Security Headers - Helmet (debe ir primero)
