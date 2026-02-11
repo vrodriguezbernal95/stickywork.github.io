@@ -235,6 +235,9 @@ const clients = {
             <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <h2 style="margin: 0; color: var(--text-primary);">Gestión de Clientes</h2>
                 <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <button class="btn-secondary" onclick="clients.exportCSV()">
+                        📥 Exportar CSV
+                    </button>
                     <button class="btn-secondary" onclick="clients.syncFromBookings()">
                         🔄 Sincronizar desde Reservas
                     </button>
@@ -723,6 +726,47 @@ const clients = {
                 tabContent.innerHTML = this.renderClientsList();
             }
         }
+    },
+
+    // Export clients to CSV
+    exportCSV() {
+        const clientsList = this.getFilteredClients();
+        if (clientsList.length === 0) {
+            modal.toast({ message: 'No hay clientes para exportar', type: 'error' });
+            return;
+        }
+
+        const headers = ['Nombre', 'Email', 'Teléfono', 'Nivel', 'Total Reservas', 'Última Reserva', 'Notas'];
+        const rows = clientsList.map(c => [
+            c.name,
+            c.email,
+            c.phone,
+            (c.status || 'normal').charAt(0).toUpperCase() + (c.status || 'normal').slice(1),
+            c.total_bookings || 0,
+            c.last_booking_date ? new Date(c.last_booking_date).toLocaleDateString('es-ES') : 'Nunca',
+            (c.notes || '').replace(/"/g, '""')
+        ]);
+
+        const csvContent = [
+            headers.join(';'),
+            ...rows.map(row => row.map(val => `"${val}"`).join(';'))
+        ].join('\n');
+
+        // UTF-8 BOM for Excel compatibility
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `clientes_${dateStr}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        modal.toast({ message: `${clientsList.length} clientes exportados`, type: 'success' });
     },
 
     // Sync clients from bookings

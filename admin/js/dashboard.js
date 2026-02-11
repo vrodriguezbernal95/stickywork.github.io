@@ -32,6 +32,18 @@ const dashboard = {
             // Calculate month comparison
             const monthComparison = this.calculateMonthComparison(allBookings);
 
+            // Calculate revenue data
+            const revenueData = this.calculateRevenue(allBookings);
+
+            // Calculate cancellation rate
+            const cancellationRate = this.calculateCancellationRate(allBookings);
+
+            // Calculate peak hours
+            const peakHoursData = this.calculatePeakHours(allBookings);
+
+            // Calculate monthly revenue (last 6 months)
+            const monthlyRevenue = this.calculateMonthlyRevenue(allBookings);
+
             // Load business info
             const businessData = await api.get(`/api/business/${auth.getBusinessId()}`);
             document.getElementById('businessName').textContent = businessData.data.name;
@@ -127,6 +139,37 @@ const dashboard = {
                             </div>
                         </div>
                     </div>
+
+                    <div class="stat-card" style="transition: transform 0.2s ease;"
+                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1);">💰</div>
+                        <div class="stat-content">
+                            <div class="stat-value">${revenueData.thisMonth.toFixed(0)}€</div>
+                            <div class="stat-label">Ingresos Este Mes</div>
+                            ${revenueData.change !== 0 ? `
+                                <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                    <span style="color: ${revenueData.change > 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 0.9rem;">
+                                        ${revenueData.change > 0 ? '▲' : '▼'} ${Math.abs(revenueData.percentage)}%
+                                    </span>
+                                    <span style="color: var(--text-tertiary); font-size: 0.8rem;">vs mes anterior</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="transition: transform 0.2s ease;"
+                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                        <div class="stat-icon" style="background: rgba(${cancellationRate.rate > 20 ? '239, 68, 68' : cancellationRate.rate > 10 ? '249, 115, 22' : '34, 197, 94'}, 0.1);">📉</div>
+                        <div class="stat-content">
+                            <div class="stat-value" style="color: ${cancellationRate.rate > 20 ? '#ef4444' : cancellationRate.rate > 10 ? '#f97316' : '#22c55e'};">${cancellationRate.rate}%</div>
+                            <div class="stat-label">Tasa Cancelación</div>
+                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
+                                ${cancellationRate.cancelled} de ${cancellationRate.total}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Today's Agenda Widget -->
@@ -181,6 +224,27 @@ const dashboard = {
                         </h2>
 
                         ${this.renderMonthComparison(monthComparison)}
+                    </div>
+                </div>
+
+                <!-- Peak Hours & Monthly Revenue -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <!-- Peak Hours Chart -->
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary); font-size: 1.3rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 1.5rem;">🕐</span>
+                            Horas Punta
+                        </h2>
+                        ${this.renderPeakHours(peakHoursData)}
+                    </div>
+
+                    <!-- Monthly Revenue Chart -->
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                        <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary); font-size: 1.3rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 1.5rem;">💰</span>
+                            Ingresos Mensuales
+                        </h2>
+                        ${this.renderMonthlyRevenue(monthlyRevenue)}
                     </div>
                 </div>
 
@@ -239,6 +303,149 @@ const dashboard = {
                 </div>
             `;
         }
+    },
+
+    // Calculate revenue for current and previous month
+    calculateRevenue(bookings) {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+        let thisMonth = 0;
+        let prevMonth = 0;
+
+        bookings.forEach(b => {
+            if (b.status === 'cancelled' || !b.price) return;
+            const d = new Date(b.booking_date);
+            const m = d.getMonth();
+            const y = d.getFullYear();
+            if (m === currentMonth && y === currentYear) thisMonth += parseFloat(b.price);
+            if (m === lastMonth && y === lastMonthYear) prevMonth += parseFloat(b.price);
+        });
+
+        const change = thisMonth - prevMonth;
+        const percentage = prevMonth > 0 ? Math.round((change / prevMonth) * 100) : 0;
+
+        return { thisMonth, prevMonth, change, percentage };
+    },
+
+    // Calculate cancellation rate
+    calculateCancellationRate(bookings) {
+        const total = bookings.length;
+        const cancelled = bookings.filter(b => b.status === 'cancelled').length;
+        const rate = total > 0 ? Math.round((cancelled / total) * 100) : 0;
+        return { total, cancelled, rate };
+    },
+
+    // Calculate peak hours
+    calculatePeakHours(bookings) {
+        const hourCounts = {};
+        bookings.forEach(b => {
+            if (b.status === 'cancelled') return;
+            const hour = parseInt(b.booking_time.substring(0, 2));
+            hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+        });
+
+        const hours = Object.entries(hourCounts)
+            .map(([hour, count]) => ({ hour: parseInt(hour), count }))
+            .sort((a, b) => a.hour - b.hour);
+
+        const maxCount = Math.max(...hours.map(h => h.count), 1);
+        return { hours, maxCount };
+    },
+
+    // Calculate monthly revenue (last 6 months)
+    calculateMonthlyRevenue(bookings) {
+        const now = new Date();
+        const months = [];
+
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const m = d.getMonth();
+            const y = d.getFullYear();
+            const label = d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+
+            let revenue = 0;
+            bookings.forEach(b => {
+                if (b.status === 'cancelled' || !b.price) return;
+                const bd = new Date(b.booking_date);
+                if (bd.getMonth() === m && bd.getFullYear() === y) {
+                    revenue += parseFloat(b.price);
+                }
+            });
+
+            months.push({ label, month: m, year: y, revenue });
+        }
+
+        const maxRevenue = Math.max(...months.map(m => m.revenue), 1);
+        return { months, maxRevenue };
+    },
+
+    // Render peak hours horizontal bar chart
+    renderPeakHours(data) {
+        if (data.hours.length === 0) {
+            return '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay datos de reservas</p>';
+        }
+
+        return `
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                ${data.hours.map(h => {
+                    const pct = (h.count / data.maxCount) * 100;
+                    const isPeak = h.count === data.maxCount;
+                    return `
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="min-width: 50px; text-align: right; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">
+                                ${String(h.hour).padStart(2, '0')}:00
+                            </span>
+                            <div style="flex: 1; height: 22px; background: var(--bg-tertiary); border-radius: 6px; overflow: hidden; position: relative;">
+                                <div style="height: 100%; width: ${pct}%; background: ${isPeak ? 'linear-gradient(90deg, #3b82f6, #8b5cf6)' : 'rgba(59, 130, 246, 0.6)'}; border-radius: 6px; transition: width 0.5s;"></div>
+                            </div>
+                            <span style="min-width: 30px; font-size: 0.85rem; font-weight: 700; color: ${isPeak ? '#8b5cf6' : 'var(--text-primary)'};">
+                                ${h.count}
+                            </span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    // Render monthly revenue vertical bar chart
+    renderMonthlyRevenue(data) {
+        if (data.months.every(m => m.revenue === 0)) {
+            return '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No hay datos de ingresos</p>';
+        }
+
+        return `
+            <div style="display: flex; align-items: flex-end; justify-content: space-around; height: 200px; padding-top: 35px; overflow: visible; position: relative;">
+                ${data.months.map(m => {
+                    const pct = (m.revenue / data.maxRevenue) * 100;
+                    const isCurrentMonth = m.month === new Date().getMonth() && m.year === new Date().getFullYear();
+                    return `
+                        <div style="display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%;">
+                            <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; width: 100%;">
+                                <span style="font-size: 0.75rem; font-weight: 700; color: ${isCurrentMonth ? '#10b981' : 'var(--text-secondary)'}; margin-bottom: 4px;">
+                                    ${m.revenue > 0 ? m.revenue.toFixed(0) + '€' : ''}
+                                </span>
+                                <div style="
+                                    width: 70%;
+                                    max-width: 50px;
+                                    height: ${Math.max(pct, 3)}%;
+                                    background: ${isCurrentMonth ? 'linear-gradient(180deg, #10b981, #059669)' : 'linear-gradient(180deg, #3b82f6, #2563eb)'};
+                                    border-radius: 6px 6px 0 0;
+                                    transition: height 0.5s;
+                                "></div>
+                            </div>
+                            <span style="margin-top: 8px; font-size: 0.8rem; font-weight: ${isCurrentMonth ? '700' : '500'}; color: ${isCurrentMonth ? '#10b981' : 'var(--text-secondary)'}; text-transform: capitalize;">
+                                ${m.label}
+                            </span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
     },
 
     // Calculate month-over-month comparison
