@@ -149,7 +149,7 @@ const bookings = {
                                 <div class="form-group">
                                     <label for="bookingTime" class="form-label">Hora *</label>
                                     <input type="time" id="bookingTime" class="form-input" required
-                                           min="09:00" max="20:00" step="1800">
+                                           step="60">
                                 </div>
                             </div>
 
