@@ -5,6 +5,7 @@ const clients = {
     allClients: [],
     currentFilter: 'all', // 'all', 'premium', 'normal', 'riesgo', 'baneado'
     searchTerm: '',
+    currentTab: 'clientes', // 'clientes', 'estadisticas', 'recordatorios'
 
     // Status config (colores e iconos)
     statusConfig: {
@@ -42,29 +43,181 @@ const clients = {
         }
     },
 
-    // Fetch clients from API
+    // Fetch all clients from API (no filter - we filter locally)
     async fetchClients() {
-        let url = `/api/customers/${auth.getBusinessId()}?sort=name`;
-
-        // Filtro por status (nuevo sistema)
-        if (this.currentFilter !== 'all') {
-            url += `&status=${this.currentFilter}`;
-        }
-
-        if (this.searchTerm) {
-            url += `&search=${encodeURIComponent(this.searchTerm)}`;
-        }
-
+        const url = `/api/customers/${auth.getBusinessId()}?sort=name`;
         const data = await api.get(url);
         this.allClients = data.data;
     },
 
-    // Render clients view
+    // Get clients filtered by current filter and search
+    getFilteredClients() {
+        let filtered = this.allClients;
+
+        if (this.currentFilter !== 'all') {
+            filtered = filtered.filter(c => (c.status || 'normal') === this.currentFilter);
+        }
+
+        if (this.searchTerm) {
+            const term = this.searchTerm.toLowerCase();
+            filtered = filtered.filter(c =>
+                c.name.toLowerCase().includes(term) ||
+                c.email.toLowerCase().includes(term) ||
+                c.phone.includes(term)
+            );
+        }
+
+        return filtered;
+    },
+
+    // Main render - tab structure
     render() {
         const contentArea = document.getElementById('contentArea');
-        const clientsList = this.allClients;
+
+        // Count inactive clients for badge
+        const inactiveCount = this.getInactiveClients().length;
 
         contentArea.innerHTML = `
+            <div class="clients-container">
+                <div class="clients-tabs">
+                    <button class="clients-tab ${this.currentTab === 'clientes' ? 'active' : ''}"
+                            data-tab="clientes" onclick="clients.switchTab('clientes')">
+                        👥 Clientes
+                    </button>
+                    <button class="clients-tab ${this.currentTab === 'estadisticas' ? 'active' : ''}"
+                            data-tab="estadisticas" onclick="clients.switchTab('estadisticas')">
+                        📊 Estadísticas
+                    </button>
+                    <button class="clients-tab ${this.currentTab === 'recordatorios' ? 'active' : ''}"
+                            data-tab="recordatorios" onclick="clients.switchTab('recordatorios')">
+                        🔔 Recordatorios ${inactiveCount > 0 ? `<span class="clients-badge-count">${inactiveCount}</span>` : ''}
+                    </button>
+                </div>
+
+                <div class="clients-content">
+                    <div class="clients-tab-content ${this.currentTab === 'clientes' ? 'active' : ''}" id="tab-clientes">
+                        ${this.renderClientsList()}
+                    </div>
+                    <div class="clients-tab-content ${this.currentTab === 'estadisticas' ? 'active' : ''}" id="tab-estadisticas">
+                        ${this.renderStats()}
+                    </div>
+                    <div class="clients-tab-content ${this.currentTab === 'recordatorios' ? 'active' : ''}" id="tab-recordatorios">
+                        ${this.renderReminders()}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create/Edit Client Modal -->
+            <div id="clientModal" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h2 style="margin: 0;" id="clientModalTitle">Nuevo Cliente</h2>
+                        <button class="modal-close" onclick="clients.closeModal()">&times;</button>
+                    </div>
+                    <form id="clientForm" onsubmit="clients.saveClient(event)">
+                        <div class="modal-body">
+                            <input type="hidden" id="clientId">
+
+                            <div class="form-group">
+                                <label for="clientName" class="form-label">Nombre Completo *</label>
+                                <input type="text" id="clientName" class="form-input" required
+                                       placeholder="Ej: Juan Pérez García">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="clientEmail" class="form-label">Email *</label>
+                                <input type="email" id="clientEmail" class="form-input" required
+                                       placeholder="cliente@email.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="clientPhone" class="form-label">Teléfono *</label>
+                                <input type="tel" id="clientPhone" class="form-input" required
+                                       placeholder="+34 600 123 456">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="clientStatus" class="form-label">Nivel del Cliente</label>
+                                <select id="clientStatus" class="form-input">
+                                    <option value="normal">👤 Normal - Cliente estándar</option>
+                                    <option value="premium">⭐ Premium - Cliente VIP</option>
+                                    <option value="riesgo">⚠️ Riesgo - No acude a citas</option>
+                                    <option value="baneado">🚫 Baneado - No puede reservar</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="clientNotes" class="form-label">Notas</label>
+                                <textarea id="clientNotes" class="form-input" rows="3"
+                                          placeholder="Información adicional sobre el cliente..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn-secondary" onclick="clients.closeModal()">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn-primary" id="clientSubmitBtn">
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Client Detail Modal -->
+            <div id="clientDetailModal" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <h2 style="margin: 0;" id="clientDetailTitle">Detalle del Cliente</h2>
+                        <button class="modal-close" onclick="clients.closeDetailModal()">&times;</button>
+                    </div>
+                    <div class="modal-body" id="clientDetailContent">
+                        <!-- Content loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Status Modal -->
+            <div id="changeStatusModal" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2 style="margin: 0;">Cambiar Nivel</h2>
+                        <button class="modal-close" onclick="clients.closeStatusModal()">&times;</button>
+                    </div>
+                    <div class="modal-body" id="changeStatusContent">
+                        <!-- Content loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    // Switch tab
+    switchTab(tabName) {
+        this.currentTab = tabName;
+
+        document.querySelectorAll('.clients-tab').forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.dataset.tab === tabName) {
+                tab.classList.add('active');
+            }
+        });
+
+        document.querySelectorAll('.clients-tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+    },
+
+    // =============================================
+    // TAB 1: CLIENTES (vista existente)
+    // =============================================
+
+    renderClientsList() {
+        const clientsList = this.getFilteredClients();
+
+        return `
             <!-- Header -->
             <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <h2 style="margin: 0; color: var(--text-primary);">Gestión de Clientes</h2>
@@ -154,92 +307,262 @@ const clients = {
                     </table>
                 `}
             </div>
+        `;
+    },
 
-            <!-- Create/Edit Client Modal -->
-            <div id="clientModal" class="modal" style="display: none;">
-                <div class="modal-content" style="max-width: 500px;">
-                    <div class="modal-header">
-                        <h2 style="margin: 0;" id="clientModalTitle">Nuevo Cliente</h2>
-                        <button class="modal-close" onclick="clients.closeModal()">&times;</button>
+    // =============================================
+    // TAB 2: ESTADÍSTICAS
+    // =============================================
+
+    renderStats() {
+        const total = this.allClients.length;
+        if (total === 0) {
+            return `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <p>No hay clientes para mostrar estadísticas</p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+                        Sincroniza clientes desde reservas para ver las estadísticas
+                    </p>
+                </div>
+            `;
+        }
+
+        // Calculate metrics
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const newThisMonth = this.allClients.filter(c => {
+            if (!c.created_at) return false;
+            const d = new Date(c.created_at);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        }).length;
+
+        const totalBookings = this.allClients.reduce((sum, c) => sum + (c.total_bookings || 0), 0);
+        const avgBookings = total > 0 ? (totalBookings / total).toFixed(1) : 0;
+
+        const activeLast30 = this.allClients.filter(c => {
+            if (!c.last_booking_date) return false;
+            return new Date(c.last_booking_date) >= thirtyDaysAgo;
+        }).length;
+
+        // Status distribution
+        const statusCounts = { premium: 0, normal: 0, riesgo: 0, baneado: 0 };
+        this.allClients.forEach(c => {
+            const s = c.status || 'normal';
+            if (statusCounts[s] !== undefined) statusCounts[s]++;
+        });
+
+        // Top 5 clients
+        const topClients = [...this.allClients]
+            .sort((a, b) => (b.total_bookings || 0) - (a.total_bookings || 0))
+            .slice(0, 5);
+
+        return `
+            <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary);">Estadísticas de Clientes</h2>
+
+            <!-- Metric Cards -->
+            <div class="stats-cards-grid">
+                <div class="stats-card">
+                    <div class="stats-card-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">👥</div>
+                    <div class="stats-card-info">
+                        <div class="stats-card-value">${total}</div>
+                        <div class="stats-card-label">Total clientes</div>
                     </div>
-                    <form id="clientForm" onsubmit="clients.saveClient(event)">
-                        <div class="modal-body">
-                            <input type="hidden" id="clientId">
-
-                            <div class="form-group">
-                                <label for="clientName" class="form-label">Nombre Completo *</label>
-                                <input type="text" id="clientName" class="form-input" required
-                                       placeholder="Ej: Juan Pérez García">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="clientEmail" class="form-label">Email *</label>
-                                <input type="email" id="clientEmail" class="form-input" required
-                                       placeholder="cliente@email.com">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="clientPhone" class="form-label">Teléfono *</label>
-                                <input type="tel" id="clientPhone" class="form-input" required
-                                       placeholder="+34 600 123 456">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="clientStatus" class="form-label">Nivel del Cliente</label>
-                                <select id="clientStatus" class="form-input">
-                                    <option value="normal">👤 Normal - Cliente estándar</option>
-                                    <option value="premium">⭐ Premium - Cliente VIP</option>
-                                    <option value="riesgo">⚠️ Riesgo - No acude a citas</option>
-                                    <option value="baneado">🚫 Baneado - No puede reservar</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="clientNotes" class="form-label">Notas</label>
-                                <textarea id="clientNotes" class="form-input" rows="3"
-                                          placeholder="Información adicional sobre el cliente..."></textarea>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn-secondary" onclick="clients.closeModal()">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn-primary" id="clientSubmitBtn">
-                                Guardar
-                            </button>
-                        </div>
-                    </form>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🆕</div>
+                    <div class="stats-card-info">
+                        <div class="stats-card-value">${newThisMonth}</div>
+                        <div class="stats-card-label">Nuevos este mes</div>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-card-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">📅</div>
+                    <div class="stats-card-info">
+                        <div class="stats-card-value">${avgBookings}</div>
+                        <div class="stats-card-label">Media reservas/cliente</div>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">✅</div>
+                    <div class="stats-card-info">
+                        <div class="stats-card-value">${activeLast30}</div>
+                        <div class="stats-card-label">Activos (últimos 30 días)</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Client Detail Modal -->
-            <div id="clientDetailModal" class="modal" style="display: none;">
-                <div class="modal-content" style="max-width: 700px;">
-                    <div class="modal-header">
-                        <h2 style="margin: 0;" id="clientDetailTitle">Detalle del Cliente</h2>
-                        <button class="modal-close" onclick="clients.closeDetailModal()">&times;</button>
-                    </div>
-                    <div class="modal-body" id="clientDetailContent">
-                        <!-- Content loaded dynamically -->
+            <!-- Two columns: Distribution + Top clients -->
+            <div class="stats-two-cols">
+                <!-- Distribution by level -->
+                <div class="stats-section">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem;">Distribución por nivel</h3>
+                    <div class="stats-distribution">
+                        ${Object.entries(this.statusConfig).map(([status, config]) => {
+                            const count = statusCounts[status] || 0;
+                            const pct = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+                            return `
+                                <div class="stats-dist-row">
+                                    <div class="stats-dist-label">
+                                        <span>${config.icon} ${config.label}</span>
+                                        <span style="color: var(--text-secondary);">${count} (${pct}%)</span>
+                                    </div>
+                                    <div class="stats-dist-bar-bg">
+                                        <div class="stats-dist-bar" style="width: ${pct}%; background: ${config.color};"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
-            </div>
 
-            <!-- Change Status Modal -->
-            <div id="changeStatusModal" class="modal" style="display: none;">
-                <div class="modal-content" style="max-width: 400px;">
-                    <div class="modal-header">
-                        <h2 style="margin: 0;">Cambiar Nivel</h2>
-                        <button class="modal-close" onclick="clients.closeStatusModal()">&times;</button>
-                    </div>
-                    <div class="modal-body" id="changeStatusContent">
-                        <!-- Content loaded dynamically -->
-                    </div>
+                <!-- Top 5 clients -->
+                <div class="stats-section">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1.1rem;">Top 5 clientes más fieles</h3>
+                    ${topClients.length > 0 ? `
+                        <table class="table" style="font-size: 0.9rem;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Cliente</th>
+                                    <th style="text-align: center;">Reservas</th>
+                                    <th>Última visita</th>
+                                    <th style="text-align: center;">Nivel</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${topClients.map((c, i) => `
+                                    <tr>
+                                        <td style="font-weight: 700; color: ${i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#b45309' : 'var(--text-secondary)'};">
+                                            ${i + 1}
+                                        </td>
+                                        <td style="font-weight: 600;">${c.name}</td>
+                                        <td style="text-align: center;">
+                                            <span style="background: rgba(59, 130, 246, 0.1); padding: 0.2rem 0.6rem; border-radius: 20px; color: #3b82f6; font-weight: 600;">
+                                                ${c.total_bookings || 0}
+                                            </span>
+                                        </td>
+                                        <td>${c.last_booking_date ? utils.formatDateShort(c.last_booking_date) : 'Nunca'}</td>
+                                        <td style="text-align: center;">${this.getStatusBadge(c.status || 'normal')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    ` : `
+                        <p style="color: var(--text-secondary);">No hay datos suficientes</p>
+                    `}
                 </div>
             </div>
         `;
     },
+
+    // =============================================
+    // TAB 3: RECORDATORIOS
+    // =============================================
+
+    // Get inactive clients (40+ days without visit)
+    getInactiveClients() {
+        const now = new Date();
+        const fortyDaysAgo = new Date(now.getTime() - 40 * 24 * 60 * 60 * 1000);
+
+        return this.allClients
+            .filter(c => {
+                if (!c.last_booking_date) return true; // never visited
+                return new Date(c.last_booking_date) < fortyDaysAgo;
+            })
+            .map(c => {
+                let daysSince = null;
+                if (c.last_booking_date) {
+                    daysSince = Math.floor((now - new Date(c.last_booking_date)) / (1000 * 60 * 60 * 24));
+                }
+                return { ...c, daysSince };
+            })
+            .sort((a, b) => {
+                // Null (never visited) first, then by most days
+                if (a.daysSince === null && b.daysSince === null) return 0;
+                if (a.daysSince === null) return -1;
+                if (b.daysSince === null) return 1;
+                return b.daysSince - a.daysSince;
+            });
+    },
+
+    renderReminders() {
+        const inactiveClients = this.getInactiveClients();
+
+        return `
+            <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary);">Recordatorios</h2>
+
+            <!-- Summary alert -->
+            <div class="reminder-alert ${inactiveClients.length > 0 ? 'warning' : 'success'}">
+                <div class="reminder-alert-icon">
+                    ${inactiveClients.length > 0 ? '🔔' : '✅'}
+                </div>
+                <div>
+                    <div class="reminder-alert-title">
+                        ${inactiveClients.length > 0
+                            ? `${inactiveClients.length} cliente${inactiveClients.length !== 1 ? 's' : ''} lleva${inactiveClients.length === 1 ? '' : 'n'} más de 40 días sin venir`
+                            : 'Todos tus clientes están al día'}
+                    </div>
+                    <div class="reminder-alert-desc">
+                        ${inactiveClients.length > 0
+                            ? 'Considera contactarlos para reactivar su interés'
+                            : 'No hay clientes inactivos en este momento'}
+                    </div>
+                </div>
+            </div>
+
+            ${inactiveClients.length > 0 ? `
+                <!-- Inactive clients table -->
+                <div class="table-container" style="margin-top: 1.5rem;">
+                    <div class="table-header">
+                        <div class="table-title">Clientes inactivos (+40 días)</div>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Última visita</th>
+                                <th style="text-align: center;">Días sin venir</th>
+                                <th style="text-align: center;">Nivel</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${inactiveClients.map(c => {
+                                const daysText = c.daysSince !== null ? c.daysSince : null;
+                                const urgency = c.daysSince === null ? '#ef4444'
+                                    : c.daysSince > 90 ? '#ef4444'
+                                    : c.daysSince > 60 ? '#f97316'
+                                    : '#f59e0b';
+                                return `
+                                    <tr>
+                                        <td style="font-weight: 600;">${c.name}</td>
+                                        <td style="font-size: 0.9rem;">${c.email}</td>
+                                        <td style="font-size: 0.9rem;">${c.phone}</td>
+                                        <td>${c.last_booking_date ? utils.formatDateShort(c.last_booking_date) : 'Nunca'}</td>
+                                        <td style="text-align: center;">
+                                            <span style="background: ${urgency}20; color: ${urgency}; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">
+                                                ${daysText !== null ? daysText + 'd' : 'Sin visitas'}
+                                            </span>
+                                        </td>
+                                        <td style="text-align: center;">${this.getStatusBadge(c.status || 'normal')}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            ` : ''}
+        `;
+    },
+
+    // =============================================
+    // SHARED METHODS (unchanged)
+    // =============================================
 
     // Get status badge HTML
     getStatusBadge(status) {
@@ -307,24 +630,29 @@ const clients = {
         `;
     },
 
-    // Get count by filter type
+    // Get count by filter type (always counts from all clients)
     getCountByFilter(filter) {
         if (filter === 'all') return this.allClients.length;
         return this.allClients.filter(c => (c.status || 'normal') === filter).length;
     },
 
-    // Set filter and reload
-    async setFilter(filter) {
+    // Set filter and re-render (local filtering, no API call)
+    setFilter(filter) {
         this.currentFilter = filter;
-        await this.fetchClients();
-        this.render();
+        const tabContent = document.getElementById('tab-clientes');
+        if (tabContent) {
+            tabContent.innerHTML = this.renderClientsList();
+        }
     },
 
     // Handle search input
     handleSearch(event) {
         if (event.key === 'Enter' || event.type === 'blur') {
             this.searchTerm = event.target.value.trim();
-            this.fetchClients().then(() => this.render());
+            const tabContent = document.getElementById('tab-clientes');
+            if (tabContent) {
+                tabContent.innerHTML = this.renderClientsList();
+            }
         }
     },
 
@@ -671,6 +999,199 @@ clientsStyles.textContent = `
     .status-option:hover {
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* ========== CLIENTS TABS ========== */
+    .clients-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 0;
+        flex-wrap: wrap;
+    }
+
+    .clients-tab {
+        padding: 0.75rem 1.5rem;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin-bottom: -2px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .clients-tab:hover {
+        color: var(--primary-color);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .clients-tab.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+
+    .clients-badge-count {
+        background: #ef4444;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 10px;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .clients-content {
+        animation: fadeIn 0.3s ease;
+    }
+
+    .clients-tab-content {
+        display: none;
+    }
+
+    .clients-tab-content.active {
+        display: block;
+    }
+
+    /* ========== STATS CARDS ========== */
+    .stats-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stats-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stats-card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .stats-card-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+    }
+
+    .stats-card-label {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    /* ========== STATS TWO COLUMNS ========== */
+    .stats-two-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .stats-two-cols {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stats-section {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    /* ========== DISTRIBUTION BARS ========== */
+    .stats-distribution {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .stats-dist-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .stats-dist-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .stats-dist-bar-bg {
+        height: 8px;
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .stats-dist-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+        min-width: 2px;
+    }
+
+    /* ========== REMINDER ALERT ========== */
+    .reminder-alert {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        border-radius: 12px;
+        border: 1px solid;
+    }
+
+    .reminder-alert.warning {
+        background: rgba(245, 158, 11, 0.08);
+        border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .reminder-alert.success {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .reminder-alert-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .reminder-alert-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+    }
+
+    .reminder-alert-desc {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
     }
 `;
 document.head.appendChild(clientsStyles);
