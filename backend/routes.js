@@ -3844,6 +3844,61 @@ router.post('/api/setup/migrate-ai-reports', async (req, res) => {
     }
 });
 
+// ==================== BÚSQUEDA GLOBAL ====================
+
+router.get('/api/search', requireAuth, async (req, res) => {
+    try {
+        const { q } = req.query;
+        const businessId = req.user.businessId;
+
+        if (!q || q.trim().length < 2) {
+            return res.json({ success: true, data: { clients: [], bookings: [], services: [] } });
+        }
+
+        const term = `%${q.trim()}%`;
+
+        // Buscar en paralelo en las 3 tablas
+        const [clients, bookings, services] = await Promise.all([
+            db.query(
+                `SELECT id, name, email, phone, status
+                 FROM customers
+                 WHERE business_id = ? AND (name LIKE ? OR email LIKE ? OR phone LIKE ?)
+                 ORDER BY name ASC LIMIT 5`,
+                [businessId, term, term, term]
+            ),
+            db.query(
+                `SELECT b.id, b.customer_name, b.customer_phone, b.booking_date, b.booking_time, b.status,
+                        s.name as service_name
+                 FROM bookings b
+                 LEFT JOIN services s ON b.service_id = s.id
+                 WHERE b.business_id = ? AND (b.customer_name LIKE ? OR b.customer_phone LIKE ? OR b.notes LIKE ?)
+                 ORDER BY b.booking_date DESC LIMIT 5`,
+                [businessId, term, term, term]
+            ),
+            db.query(
+                `SELECT id, name, duration, price
+                 FROM services
+                 WHERE business_id = ? AND (name LIKE ? OR description LIKE ?)
+                 ORDER BY name ASC LIMIT 5`,
+                [businessId, term, term]
+            )
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                clients: clients || [],
+                bookings: bookings || [],
+                services: services || []
+            }
+        });
+
+    } catch (error) {
+        console.error('Error en búsqueda global:', error);
+        res.status(500).json({ success: false, message: 'Error en la búsqueda' });
+    }
+});
+
 // ==================== CONTEXTO DEL NEGOCIO (para Reportes IA) ====================
 
 // Migración: Añadir columna business_context JSON a businesses

@@ -101,6 +101,14 @@
     <main class="main-content">
         <header class="topbar">
             <div class="topbar-title" id="pageTitle">Dashboard</div>
+            <div class="global-search-wrapper" id="globalSearchWrapper">
+                <div class="global-search-input-wrapper">
+                    <span class="global-search-icon">🔍</span>
+                    <input type="text" id="globalSearchInput" class="global-search-input" placeholder="Buscar clientes, reservas, servicios..." autocomplete="off" />
+                    <span class="global-search-shortcut">Esc</span>
+                </div>
+                <div class="global-search-results" id="globalSearchResults" style="display: none;"></div>
+            </div>
             <div id="businessName" style="color: var(--text-secondary); font-size: 1rem;"></div>
         </header>
 
@@ -133,6 +141,7 @@
     <script src="admin/js/support.js"></script>
     <script src="admin/js/consultancy.js"></script>
     <script src="admin/js/workshops.js"></script>
+    <script src="admin/js/global-search.js"></script>
     <script src="admin/js/app.js"></script>
 
     <!-- Script para menú móvil -->
