@@ -180,7 +180,7 @@ router.post('/api/reports/generate', requireAuth, requireFeature('aiReports'), v
 
         // Verificar que el negocio tenga habilitados los reportes IA
         const businesses = await db.query(
-            'SELECT name, ai_reports_enabled FROM businesses WHERE id = ?',
+            'SELECT name, ai_reports_enabled, business_context FROM businesses WHERE id = ?',
             [businessId]
         );
 
@@ -233,12 +233,19 @@ router.post('/api/reports/generate', requireAuth, requireFeature('aiReports'), v
         if (claudeService.isConfigured()) {
             // Intentar generar reporte real con Claude
             try {
+                // Parsear contexto del negocio si existe
+                let businessContext = business.business_context;
+                if (typeof businessContext === 'string') {
+                    try { businessContext = JSON.parse(businessContext); } catch (e) { businessContext = null; }
+                }
+
                 const claudeResponse = await claudeService.generateBusinessReport({
                     businessName: business.name,
                     month: monthNum,
                     year: yearNum,
                     stats,
-                    feedback
+                    feedback,
+                    businessContext
                 });
 
                 aiReport = claudeResponse.report;

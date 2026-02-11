@@ -3844,6 +3844,149 @@ router.post('/api/setup/migrate-ai-reports', async (req, res) => {
     }
 });
 
+// ==================== CONTEXTO DEL NEGOCIO (para Reportes IA) ====================
+
+// Migración: Añadir columna business_context JSON a businesses
+router.post('/api/debug/run-business-context-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: Contexto del Negocio para Reportes IA');
+
+        // Añadir columna business_context (JSON) a businesses
+        console.log('📝 Añadiendo columna business_context...');
+        try {
+            await db.query(`
+                ALTER TABLE businesses
+                ADD COLUMN business_context JSON DEFAULT NULL
+                COMMENT 'Contexto del negocio proporcionado por el propietario para mejorar reportes IA'
+            `);
+            console.log('✅ Columna business_context añadida');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna business_context ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Migración de contexto del negocio ejecutada correctamente',
+            columns: ['business_context']
+        });
+
+    } catch (error) {
+        console.error('Error en migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
+// GET - Obtener contexto del negocio
+router.get('/api/businesses/:id/business-context', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
+    try {
+        const businessId = req.params.id;
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (parseInt(businessId) !== parseInt(req.user.businessId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes permiso para acceder a este negocio'
+            });
+        }
+
+        const businesses = await db.query(
+            'SELECT business_context FROM businesses WHERE id = ?',
+            [businessId]
+        );
+
+        if (!businesses || businesses.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Negocio no encontrado'
+            });
+        }
+
+        let context = businesses[0].business_context;
+        if (typeof context === 'string') {
+            context = JSON.parse(context);
+        }
+
+        res.json({
+            success: true,
+            data: context || {}
+        });
+
+    } catch (error) {
+        console.error('Error al obtener contexto del negocio:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener contexto del negocio',
+            error: error.message
+        });
+    }
+});
+
+// PATCH - Guardar contexto del negocio
+router.patch('/api/businesses/:id/business-context', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
+    try {
+        const businessId = req.params.id;
+        const context = req.body;
+
+        // Verificar que el usuario tiene acceso a este negocio
+        if (parseInt(businessId) !== parseInt(req.user.businessId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'No tienes permiso para modificar este negocio'
+            });
+        }
+
+        // Validar campos permitidos
+        const allowedFields = ['description', 'differentiators', 'services', 'perception', 'challenges', 'target_audience', 'goals'];
+        const cleanContext = {};
+        for (const field of allowedFields) {
+            if (context[field] !== undefined) {
+                // Limitar cada campo a 2000 caracteres
+                cleanContext[field] = String(context[field] || '').substring(0, 2000);
+            }
+        }
+
+        const result = await db.query(
+            'UPDATE businesses SET business_context = ? WHERE id = ?',
+            [JSON.stringify(cleanContext), businessId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Negocio no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Contexto del negocio guardado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error al guardar contexto del negocio:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al guardar contexto del negocio',
+            error: error.message
+        });
+    }
+});
+
 // ==================== CÓDIGO QR ====================
 
 // Generar código QR para un negocio

@@ -69,7 +69,7 @@ async function generateBusinessReport(data) {
  * Construye el prompt para Claude
  */
 function buildPrompt(data) {
-    const { businessName, month, year, stats, feedback } = data;
+    const { businessName, month, year, stats, feedback, businessContext } = data;
 
     const monthNames = [
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -77,6 +77,27 @@ function buildPrompt(data) {
     ];
 
     const monthName = monthNames[month - 1];
+
+    // Construir sección de contexto del negocio si existe
+    let contextSection = '';
+    if (businessContext && typeof businessContext === 'object') {
+        const contextFields = {
+            description: 'Descripción del negocio',
+            differentiators: 'Diferenciación respecto a la competencia',
+            services: 'Servicios principales',
+            perception: 'Percepción del propietario sobre cómo va el negocio',
+            challenges: 'Problemas y retos actuales',
+            target_audience: 'Público objetivo',
+            goals: 'Objetivos a corto/medio plazo'
+        };
+        const filledFields = Object.entries(contextFields)
+            .filter(([key]) => businessContext[key] && businessContext[key].trim())
+            .map(([key, label]) => `- ${label}: ${businessContext[key].trim()}`);
+
+        if (filledFields.length > 0) {
+            contextSection = `\n## Contexto del Negocio (proporcionado por el propietario):\n${filledFields.join('\n')}\n`;
+        }
+    }
 
     // Construir sección de feedback si existe
     let feedbackSection = '';
@@ -107,7 +128,7 @@ Tu tarea es generar un reporte ejecutivo completo para "${businessName}" corresp
 ${stats.topServices && stats.topServices.length > 0
     ? stats.topServices.map((s, i) => `${i + 1}. ${s.name}: ${s.count} reservas`).join('\n')
     : 'No hay datos suficientes'}
-${feedbackSection}
+${contextSection}${feedbackSection}
 
 # Tu Tarea:
 
@@ -164,6 +185,7 @@ IMPORTANTE:
 - Usa un tono profesional pero cercano
 - Las recomendaciones deben ser accionables e implementables
 - Si los datos son insuficientes, menciónalo claramente
+- Si se proporciona contexto del negocio, úsalo para personalizar profundamente el análisis, las recomendaciones y el plan de acción según la situación real del propietario
 
 Genera el reporte ahora:`;
 }
