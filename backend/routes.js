@@ -4092,7 +4092,18 @@ router.post('/api/debug/reset-password', async (req, res) => {
         return res.status(401).json({ success: false, message: 'No autorizado' });
     }
     try {
-        const { email, newPassword } = req.body;
+        const { email, newPassword, search } = req.body;
+
+        if (search) {
+            const users = await db.query(
+                `SELECT au.id, au.email, au.full_name, au.role, b.name as business_name
+                 FROM admin_users au LEFT JOIN businesses b ON au.business_id = b.id
+                 WHERE au.email LIKE ? OR au.full_name LIKE ? OR b.name LIKE ?`,
+                [`%${search}%`, `%${search}%`, `%${search}%`]
+            );
+            return res.json({ success: true, users });
+        }
+
         const bcrypt = require('bcrypt');
         const hash = await bcrypt.hash(newPassword, 10);
         const result = await db.query('UPDATE admin_users SET password_hash = ? WHERE email = ?', [hash, email]);
