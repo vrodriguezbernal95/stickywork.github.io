@@ -165,6 +165,68 @@ Sesión enfocada en resolver bugs acumulados, mejorar la experiencia del dashboa
 
 ---
 
+## Sesión 3: 12-feb-2026 - Gestión de Reserva por Email + Simplificación Registro
+
+### Completado
+
+**1. Gestión de reserva desde email + adjunto .ics**
+- Los clientes reciben un archivo `.ics` adjunto en el email de confirmación (compatible con Google Calendar, Outlook, Apple Calendar)
+- Botón "Gestionar mi reserva" en el email que lleva a una página pública
+- Página `gestionar-reserva.html`: muestra detalles de la reserva y permite cancelarla
+- Token único de 64 caracteres por reserva (`manage_token`) para acceso seguro sin login
+- Migración ejecutada: columna `manage_token` + backfill de 98 reservas existentes
+- Backend: 2 endpoints públicos (GET ver reserva, POST cancelar)
+- Email service: soporte de attachments en Brevo API y SMTP
+
+**2. Auto-degradar clientes a Riesgo tras 3 no-shows**
+- Cuando un cliente acumula 3+ no-shows, su categoría cambia automáticamente a "riesgo"
+- Se ejecuta al marcar una reserva como "No se presentó" desde el dashboard
+
+**3. Eliminar enlaces rotos del footer**
+- Eliminados enlaces a "Sobre nosotros" y "Blog" que apuntaban a `#` en 6 páginas
+
+**4. Actualización de la Guía del Dashboard**
+- Actualizada la guía completa (Configuración > Guía) con todas las funcionalidades nuevas:
+  - Buscador global, estado no_show, autogestión del cliente (.ics + cancelar)
+  - Categorías de clientes (riesgo/baneado), auto-degradación por no-shows
+  - Pestaña Mi Negocio en Reportes IA, notificaciones con .ics
+  - 3 nuevas preguntas frecuentes
+
+**5. Simplificación del flujo de registro (9 → 4 pantallas)**
+- **registro.html:** De 3 pasos + pantalla de éxito a 2 pasos
+  - Paso 1 "Tu negocio": cards de tipo + formulario de datos (aparece al seleccionar tipo)
+  - Paso 2 "Tu cuenta": un solo email (elimina duplicado), nombre, contraseña
+  - Eliminada pantalla de éxito, redirect directo al onboarding
+  - Mismo email se envía como `businessEmail` y `adminEmail` (sin cambios backend)
+- **onboarding.html:** De 4 pasos a 2 pasos
+  - Paso 1 "Servicios y Horarios": ambas cards juntas con scroll
+  - Paso 2 "Tu Widget": tipo + código inline al hacer click (sin paso extra)
+- Eliminados meta tags OG/Twitter duplicados en registro.html
+- Fix visual: requisitos de contraseña con checks ✓ verdes, checkbox de términos más grande
+
+**6. Limpieza de cuentas de test**
+- Eliminadas 3 cuentas de prueba: restaurante paco, lala, Test Registro Simplificado
+- Endpoint temporal creado y eliminado tras uso
+
+### Archivos modificados/creados:
+- `backend/routes.js` — Endpoints: manage_token migration, GET/POST booking/manage, debug endpoints
+- `backend/email-service.js` — Soporte attachments, generateICS(), botón gestionar en template
+- `gestionar-reserva.html` — **Nuevo** página pública de gestión de reserva
+- `server.js` — Ruta /gestionar-reserva
+- `admin/js/settings.js` — Guía actualizada con todas las funcionalidades
+- `registro.html` — Simplificado de 869 a 741 líneas (2 pasos)
+- `onboarding.html` — Simplificado de 949 a 915 líneas (2 pasos)
+
+### Commits:
+- `de1b89c` — fix: Eliminar enlaces rotos de Sobre nosotros y Blog del footer
+- `42e1b1c` — feat: Auto-degradar clientes a Riesgo tras 3 no-shows
+- `c2603c0` — feat: Gestión de reserva por email con adjunto .ics
+- `1140407` — docs: Actualizar guía del dashboard con nuevas funcionalidades
+- `9953212` — refactor: Simplificar flujo de registro de 9 a 4 pantallas
+- `6aa08af` — style: Mejorar aspecto de requisitos de contraseña y checkbox de términos
+
+---
+
 ## Resumen de Cambios
 
 ### Bugs corregidos
@@ -176,6 +238,7 @@ Sesión enfocada en resolver bugs acumulados, mejorar la experiencia del dashboa
 | Enlaces legales rotos en footer | `href="#"` en 6 páginas | 6 HTML + `registro.html` | S1 |
 | Reservas solo a horas exactas | `step="1800"` en input hora | `bookings.js` | S2 |
 | CORS error en Railway | Falta `trust proxy` para express-rate-limit | `server.js` | S2 |
+| Enlaces rotos Sobre nosotros/Blog | `href="#"` sin página destino | 6 HTML (eliminados) | S3 |
 
 ### Features nuevas
 | Feature | Estado | Sesión |
@@ -190,14 +253,18 @@ Sesión enfocada en resolver bugs acumulados, mejorar la experiencia del dashboa
 | Contexto de negocio en Reportes IA ("Mi Negocio") | ✅ | S2 |
 | Búsqueda global en el dashboard | ✅ | S2 |
 | Limpieza repo (37 scripts + históricos organizados) | ✅ | S2 |
+| Auto-degradar clientes tras 3 no-shows | ✅ | S3 |
+| Gestión de reserva por email + .ics | ✅ | S3 |
+| Guía del dashboard actualizada | ✅ | S3 |
+| Simplificación registro (9→4 pantallas) | ✅ | S3 |
 
 ---
 
 ## Próximas tareas pendientes
 
 1. **Notificaciones por email** al cliente cuando se crean citas repetidas
-4. **Auto-degradar a Riesgo** clientes que faltan a X citas (automático desde backend)
-5. **Páginas "Sobre nosotros" y "Blog"** — enlaces del footer aún apuntan a `#`
+2. **Eliminar endpoint debug/reset-password** — temporal, aún en routes.js
+3. **Ejecutar migración business_context** en producción si no se ha hecho
 
 ---
 
@@ -209,5 +276,5 @@ Sesión enfocada en resolver bugs acumulados, mejorar la experiencia del dashboa
 
 ---
 
-**Última actualización:** 11-feb-2026
+**Última actualización:** 12-feb-2026
 **Próxima revisión:** 16-feb-2026 (inicio semana 08)
