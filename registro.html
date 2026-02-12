@@ -230,19 +230,32 @@
         }
 
         .password-requirements {
-            background: var(--bg-primary);
-            padding: 1rem;
-            border-radius: 8px;
+            list-style: none;
+            padding: 0.75rem 0 0 0;
             margin-top: 0.5rem;
             font-size: 0.85rem;
         }
 
         .password-requirements li {
             color: var(--text-secondary);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.35rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .password-requirements li::before {
+            content: '○';
+            position: absolute;
+            left: 0;
+            color: var(--text-secondary);
         }
 
         .password-requirements li.valid {
+            color: #10b981;
+        }
+
+        .password-requirements li.valid::before {
+            content: '✓';
             color: #10b981;
         }
 
@@ -511,9 +524,9 @@
                     </ul>
 
                     <div class="form-group" style="margin-top: 1.5rem;">
-                        <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer;">
-                            <input type="checkbox" id="accept-terms" style="margin-top: 0.25rem;">
-                            <span style="font-weight: normal; font-size: 0.9rem;">
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" id="accept-terms" style="width: 20px; height: 20px; min-width: 20px; accent-color: var(--primary-color);">
+                            <span style="font-weight: normal; font-size: 0.9rem; color: var(--text-secondary);">
                                 Acepto los <a href="terminos.html" target="_blank" style="color: var(--primary-color);">Términos de Servicio</a>
                                 y la <a href="politica-privacidad.html" target="_blank" style="color: var(--primary-color);">Política de Privacidad</a>
                             </span>
