@@ -375,6 +375,13 @@ const bookings = {
                     ✓✓
                 </button>
             `);
+            actions.push(`
+                <button class="btn-action" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"
+                        onclick="bookings.updateStatus(${booking.id}, 'no_show')"
+                        title="No se presentó">
+                    🚫
+                </button>
+            `);
         }
 
         // Repetir cita (solo si no está cancelada)
@@ -388,8 +395,8 @@ const bookings = {
             `);
         }
 
-        // Reprogramar (cambiar fecha/hora) - solo si no está cancelada ni completada
-        if (booking.status !== 'cancelled' && booking.status !== 'completed') {
+        // Reprogramar (cambiar fecha/hora) - solo si no está cancelada, completada ni no_show
+        if (booking.status !== 'cancelled' && booking.status !== 'completed' && booking.status !== 'no_show') {
             actions.push(`
                 <button class="btn-action btn-reschedule"
                         onclick="bookings.showRescheduleModal(${booking.id})"
@@ -399,8 +406,8 @@ const bookings = {
             `);
         }
 
-        // Cancelar (siempre disponible, excepto si ya está cancelada o completada)
-        if (booking.status !== 'cancelled' && booking.status !== 'completed') {
+        // Cancelar (siempre disponible, excepto si ya está cancelada, completada o no_show)
+        if (booking.status !== 'cancelled' && booking.status !== 'completed' && booking.status !== 'no_show') {
             actions.push(`
                 <button class="btn-action btn-cancel"
                         onclick="bookings.updateStatus(${booking.id}, 'cancelled')"
@@ -474,7 +481,8 @@ const bookings = {
         const statusLabels = {
             'confirmed': 'confirmar',
             'cancelled': 'cancelar',
-            'completed': 'completar'
+            'completed': 'completar',
+            'no_show': 'marcar como no presentado'
         };
 
         const actionLabel = statusLabels[newStatus];
@@ -515,7 +523,7 @@ const bookings = {
                 message: `¿Estás seguro de que quieres ${actionLabel} la reserva #${bookingId}?`,
                 confirmText: `Sí, ${actionLabel}`,
                 cancelText: 'Cancelar',
-                type: newStatus === 'completed' ? 'success' : 'primary'
+                type: newStatus === 'completed' ? 'success' : newStatus === 'no_show' ? 'warning' : 'primary'
             });
 
             if (!confirmed) {

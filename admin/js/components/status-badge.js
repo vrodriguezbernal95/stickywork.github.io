@@ -50,6 +50,12 @@ function createStatusBadge(status, type = 'message') {
                 color: '#3b82f6',
                 label: 'Completada',
                 icon: '✓'
+            },
+            no_show: {
+                bg: 'rgba(139, 92, 246, 0.1)',
+                color: '#8b5cf6',
+                label: 'No se presentó',
+                icon: '🚫'
             }
         },
         support: {
@@ -140,7 +146,8 @@ function getStatusColor(status, type = 'message') {
             pending: '#eab308',
             confirmed: '#22c55e',
             cancelled: '#ef4444',
-            completed: '#3b82f6'
+            completed: '#3b82f6',
+            no_show: '#8b5cf6'
         },
         support: {
             pending: '#eab308',
@@ -171,7 +178,8 @@ function getStatusLabel(status, type = 'message') {
             pending: 'Pendiente',
             confirmed: 'Confirmada',
             cancelled: 'Cancelada',
-            completed: 'Completada'
+            completed: 'Completada',
+            no_show: 'No se presentó'
         },
         support: {
             pending: 'Pendiente',

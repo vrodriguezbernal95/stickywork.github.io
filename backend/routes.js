@@ -2048,7 +2048,7 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
         const { id } = req.params;
         const { status, cancellation_reason } = req.body;
 
-        const validStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+        const validStatuses = ['pending', 'confirmed', 'cancelled', 'completed', 'no_show'];
         if (!validStatuses.includes(status)) {
             return res.status(400).json({
                 success: false,
@@ -2083,6 +2083,44 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
         }
 
         const booking = await db.query('SELECT * FROM bookings WHERE id = ?', [id]);
+
+        // Auto-degradar cliente a "riesgo" si acumula 3+ no_shows
+        if (status === 'no_show' && booking[0]) {
+            try {
+                const b = booking[0];
+                const businessId = b.business_id;
+
+                // Contar no_shows del cliente en este negocio
+                const noShowCount = await db.query(
+                    `SELECT COUNT(*) as total FROM bookings
+                     WHERE business_id = ? AND customer_email = ? AND customer_phone = ? AND status = 'no_show'`,
+                    [businessId, b.customer_email, b.customer_phone]
+                );
+
+                const total = noShowCount[0]?.total || 0;
+
+                if (total >= 3) {
+                    // Buscar cliente en la tabla customers
+                    const customer = await db.query(
+                        `SELECT id, status FROM customers
+                         WHERE business_id = ? AND email = ? AND phone = ?`,
+                        [businessId, b.customer_email, b.customer_phone]
+                    );
+
+                    // Solo degradar si está en "normal" (no tocar VIP, ya baneados, etc.)
+                    if (customer.length > 0 && customer[0].status === 'normal') {
+                        await db.query(
+                            `UPDATE customers SET status = 'riesgo', notes = CONCAT(IFNULL(notes, ''), '\n[Auto] Degradado a Riesgo por ${total} faltas de asistencia (${new Date().toLocaleDateString('es-ES')})') WHERE id = ?`,
+                            [customer[0].id]
+                        );
+                        console.log(`⚠️ Cliente ${b.customer_name} auto-degradado a Riesgo (${total} no-shows)`);
+                    }
+                }
+            } catch (noShowError) {
+                // No fallar la petición principal si la auto-degradación falla
+                console.error('Error en auto-degradación:', noShowError.message);
+            }
+        }
 
         res.json({
             success: true,
