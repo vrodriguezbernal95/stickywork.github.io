@@ -2637,7 +2637,7 @@ const settings = {
                 <div class="guide-accordion" id="guide-content">
 
                     <!-- 1. Dashboard (Inicio) -->
-                    <div class="guide-section" data-keywords="dashboard inicio estadisticas resumen agenda tendencia comparativa reservas recientes">
+                    <div class="guide-section" data-keywords="dashboard inicio estadisticas resumen agenda tendencia comparativa reservas recientes busqueda global buscar">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">📊</span>
                             <h4>Dashboard (Inicio)</h4>
@@ -2645,6 +2645,14 @@ const settings = {
                         </div>
                         <div class="guide-content">
                             <p>Es la pantalla principal que ves al entrar. Te da un resumen completo del estado de tu negocio.</p>
+
+                            <h5>Buscador Global</h5>
+                            <ul>
+                                <li>En la barra superior tienes un <strong>buscador global</strong> que busca en todo el sistema</li>
+                                <li>Escribe el nombre de un cliente, servicio o reserva y aparecerán resultados al instante</li>
+                                <li>Los resultados se agrupan por categoría: Clientes, Reservas y Servicios</li>
+                                <li>Haz click en cualquier resultado para ir directamente a su sección</li>
+                            </ul>
 
                             <h5>Tarjetas de Estadísticas</h5>
                             <p>En la parte superior verás tarjetas con datos clave:</p>
@@ -2685,7 +2693,7 @@ const settings = {
                     </div>
 
                     <!-- 2. Reservas -->
-                    <div class="guide-section" data-keywords="reservas aprobar rechazar confirmar cancelar completar repetir reprogramar filtrar buscar estado pendiente whatsapp crear nueva manual">
+                    <div class="guide-section" data-keywords="reservas aprobar rechazar confirmar cancelar completar repetir reprogramar filtrar buscar estado pendiente whatsapp crear nueva manual no show presentado autoservicio email ics calendario">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">📅</span>
                             <h4>Reservas</h4>
@@ -2712,9 +2720,18 @@ const settings = {
                             <ul>
                                 <li><strong>✓ Confirmar:</strong> Aprueba una reserva pendiente. El cliente recibe notificación si está activada</li>
                                 <li><strong>✔ Completar:</strong> Marca que el servicio se realizó. Activa el envío de feedback (24h después)</li>
+                                <li><strong>🚫 No se presentó:</strong> Marca que el cliente no asistió a la cita. Si un cliente acumula 3 o más no-shows, se degrada automáticamente a categoría "Riesgo"</li>
                                 <li><strong>🔄 Repetir cita:</strong> Crea una copia de la reserva para otra fecha (citas recurrentes)</li>
                                 <li><strong>📅 Reprogramar:</strong> Cambia la fecha y hora de una reserva existente</li>
                                 <li><strong>✗ Cancelar:</strong> Cancela la reserva. Se registra el motivo</li>
+                            </ul>
+
+                            <h5>Autogestión del Cliente</h5>
+                            <ul>
+                                <li>Cuando un cliente hace una reserva, recibe un <strong>email de confirmación</strong> con:</li>
+                                <li>Un <strong>archivo .ics adjunto</strong> para añadir la cita directamente a su calendario (Google Calendar, Outlook, Apple Calendar)</li>
+                                <li>Un botón <strong>"Gestionar mi reserva"</strong> que le permite ver los detalles y cancelar la reserva por su cuenta, sin necesidad de llamar</li>
+                                <li>Las cancelaciones hechas por el cliente aparecen registradas en el dashboard</li>
                             </ul>
 
                             <h5>Filtrar y Buscar</h5>
@@ -2735,7 +2752,7 @@ const settings = {
                     </div>
 
                     <!-- 3. Clientes -->
-                    <div class="guide-section" data-keywords="clientes premium vip normal filtrar buscar sincronizar historial nuevo crear telefono email">
+                    <div class="guide-section" data-keywords="clientes premium vip normal riesgo baneado degradar filtrar buscar sincronizar historial nuevo crear telefono email estadisticas no show">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">👥</span>
                             <h4>Clientes</h4>
@@ -2747,7 +2764,23 @@ const settings = {
                             <h5>Ver Listado de Clientes</h5>
                             <ul>
                                 <li>Tabla con todos los clientes registrados</li>
-                                <li>Muestra: nombre, email, teléfono, tipo (Premium/Normal) y número de reservas</li>
+                                <li>Muestra: nombre, email, teléfono, categoría y número de reservas</li>
+                            </ul>
+
+                            <h5>Categorías de Clientes</h5>
+                            <ul>
+                                <li><strong>Normal:</strong> Clientes estándar sin clasificación especial</li>
+                                <li><strong>Premium:</strong> Clientes VIP o frecuentes que merecen atención especial</li>
+                                <li><strong>Riesgo:</strong> Clientes que han faltado a 3 o más citas (se asigna automáticamente). Puedes cambiar su categoría manualmente si lo deseas</li>
+                                <li><strong>Baneado:</strong> Clientes bloqueados por el negocio</li>
+                            </ul>
+
+                            <h5>Auto-degradación por No-Shows</h5>
+                            <ul>
+                                <li>Si un cliente acumula <strong>3 o más no-shows</strong> (no se presentó), su categoría cambia automáticamente de "Normal" a "Riesgo"</li>
+                                <li>Se registra una nota automática en su ficha con la fecha y motivo</li>
+                                <li>Los clientes Premium no se degradan automáticamente</li>
+                                <li>Siempre puedes cambiar la categoría manualmente desde la ficha del cliente</li>
                             </ul>
 
                             <h5>Filtros</h5>
@@ -2755,6 +2788,7 @@ const settings = {
                                 <li><strong>Todos:</strong> Muestra todos los clientes</li>
                                 <li><strong>Premium:</strong> Solo clientes marcados como premium/VIP</li>
                                 <li><strong>Normal:</strong> Clientes estándar</li>
+                                <li><strong>Riesgo:</strong> Clientes con historial de no-shows</li>
                                 <li><strong>Búsqueda:</strong> Encuentra clientes por nombre, email o teléfono</li>
                             </ul>
 
@@ -2772,11 +2806,11 @@ const settings = {
                                 <li>Opción de marcarlo como Premium/VIP</li>
                             </ul>
 
-                            <h5>Historial de Reservas</h5>
+                            <h5>Ficha del Cliente</h5>
                             <ul>
                                 <li>Click en un cliente para ver su ficha completa</li>
-                                <li>Historial de todas sus reservas pasadas y futuras</li>
-                                <li>Estadísticas del cliente: total de visitas, último servicio, frecuencia</li>
+                                <li>Pestañas: <strong>Historial</strong> (reservas pasadas y futuras), <strong>Estadísticas</strong> (total visitas, tasa cancelación, frecuencia) y <strong>Recordatorios</strong></li>
+                                <li>Puedes cambiar su categoría, añadir notas y ver todo su historial</li>
                             </ul>
                         </div>
                     </div>
@@ -2987,6 +3021,14 @@ const settings = {
                                 <li><strong>Recomendaciones:</strong> Acciones concretas para mejorar</li>
                             </ul>
 
+                            <h5>Mi Negocio (Contexto para la IA)</h5>
+                            <ul>
+                                <li>En la pestaña <strong>"Mi Negocio"</strong> puedes dar contexto a la IA sobre tu negocio</li>
+                                <li>Rellena los campos que quieras: tipo de negocio, cliente ideal, competencia, objetivos, temporadas, equipo y lo que te hace especial</li>
+                                <li>Cuanta más información proporciones, más personalizados y útiles serán los reportes</li>
+                                <li>Solo tienes que rellenarlo una vez, la IA lo usará en todos los reportes futuros</li>
+                            </ul>
+
                             <h5>Histórico de Reportes</h5>
                             <ul>
                                 <li>Todos los reportes generados se guardan en un histórico</li>
@@ -3175,6 +3217,12 @@ const settings = {
                             <h5>📧 Notificaciones</h5>
                             <ul>
                                 <li><strong>Email:</strong> Activa/desactiva emails de confirmación al cliente</li>
+                                <li>El email de confirmación incluye automáticamente:
+                                    <ul>
+                                        <li>Un <strong>archivo .ics adjunto</strong> para añadir la cita al calendario del cliente (Google Calendar, Outlook, Apple Calendar) con alarma 30 minutos antes</li>
+                                        <li>Un botón <strong>"Gestionar mi reserva"</strong> que permite al cliente ver los detalles o cancelar su cita sin necesidad de llamar</li>
+                                    </ul>
+                                </li>
                                 <li><strong>WhatsApp:</strong> Configura tu número, personaliza la plantilla de mensaje
                                     <ul>
                                         <li>Variables: <code>{nombre}</code>, <code>{fecha}</code>, <code>{hora}</code>, <code>{servicio}</code>, <code>{negocio}</code></li>
@@ -3277,6 +3325,15 @@ const settings = {
                             <h5>❓ ¿Cómo exporto mis datos?</h5>
                             <p><strong>Ruta:</strong> Configuración → Avanzado → Exportar Datos</p>
                             <p>Descarga en formato JSON o CSV. Incluye reservas, clientes y servicios.</p>
+
+                            <h5>❓ ¿El cliente puede cancelar su propia reserva?</h5>
+                            <p>Sí. En el email de confirmación hay un botón "Gestionar mi reserva" que permite al cliente ver los detalles y cancelar la cita. La cancelación queda registrada automáticamente en tu dashboard.</p>
+
+                            <h5>❓ ¿El archivo .ics funciona con todos los calendarios?</h5>
+                            <p>Sí. El archivo .ics es un formato estándar compatible con Google Calendar, Outlook, Apple Calendar y la mayoría de aplicaciones de calendario. Incluye una alarma 30 minutos antes de la cita.</p>
+
+                            <h5>❓ ¿Qué pasa si un cliente falta muchas veces?</h5>
+                            <p>Si un cliente acumula 3 o más no-shows, se clasifica automáticamente como "Riesgo". Puedes ver estos clientes en la pestaña de Clientes y cambiar su categoría manualmente si lo deseas.</p>
 
                             <h5>❓ ¿Qué pasa si un cliente no completa la reserva?</h5>
                             <p>Las reservas incompletas (sin enviar) NO se guardan. Solo se registran cuando el cliente hace click en "Confirmar Reserva".</p>
