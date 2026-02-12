@@ -130,6 +130,10 @@ app.get('/contacto', (req, res) => {
     res.sendFile(path.join(__dirname, 'contacto.html'));
 });
 
+app.get('/gestionar-reserva', (req, res) => {
+    res.sendFile(path.join(__dirname, 'gestionar-reserva.html'));
+});
+
 // ==================== MANEJO DE ERRORES ====================
 
 // Ruta no encontrada

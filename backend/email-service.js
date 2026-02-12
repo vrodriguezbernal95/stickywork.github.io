@@ -27,7 +27,7 @@ if (!useBrevoAPI) {
 }
 
 // Enviar email via API HTTP de Brevo
-async function sendEmailViaBrevoAPI(to, subject, htmlContent) {
+async function sendEmailViaBrevoAPI(to, subject, htmlContent, attachments) {
     const apiKey = process.env.BREVO_API_KEY;
     const senderEmail = process.env.EMAIL_FROM?.match(/<(.+)>/)?.[1] || 'noreply@stickywork.com';
     const senderName = process.env.EMAIL_FROM?.match(/^([^<]+)/)?.[1]?.trim() || 'StickyWork';
@@ -41,6 +41,14 @@ async function sendEmailViaBrevoAPI(to, subject, htmlContent) {
         subject: subject,
         htmlContent: htmlContent
     };
+
+    // Añadir adjuntos si existen (formato Brevo: [{content: base64, name: filename}])
+    if (attachments && attachments.length > 0) {
+        body.attachment = attachments.map(att => ({
+            content: Buffer.from(att.content).toString('base64'),
+            name: att.filename
+        }));
+    }
 
     try {
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -178,10 +186,16 @@ const emailTemplates = {
             <p style="margin: 5px 0;">${business.address}</p>
             ` : ''}
 
-            ${business.phone ? `
-            <p style="margin-top: 20px;"><strong>💬 ¿Necesitas hacer cambios?</strong></p>
-            <p>Contacta con nosotros en: ${business.phone}</p>
-            ` : ''}
+            <div style="text-align: center; margin-top: 30px;">
+                <p style="margin-bottom: 15px;"><strong>📋 ¿Necesitas hacer cambios?</strong></p>
+                <a href="https://stickywork.com/gestionar-reserva.html?token=${booking.manage_token}"
+                   style="display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Gestionar mi reserva
+                </a>
+                <p style="margin-top: 12px; font-size: 13px; color: #999;">
+                    Puedes ver los detalles o cancelar tu reserva desde este enlace
+                </p>
+            </div>
         </div>
 
         <div class="footer">
@@ -1243,7 +1257,7 @@ const emailTemplates = {
 async function sendEmail(to, template, data) {
     // Preferir Brevo API HTTP si está configurada
     if (useBrevoAPI) {
-        return await sendEmailViaBrevoAPI(to, template.subject, template.html);
+        return await sendEmailViaBrevoAPI(to, template.subject, template.html, template.attachments);
     }
 
     // Fallback a SMTP
@@ -1260,6 +1274,11 @@ async function sendEmail(to, template, data) {
             html: template.html
         };
 
+        // Añadir adjuntos si existen (formato nodemailer: [{filename, content, contentType}])
+        if (template.attachments && template.attachments.length > 0) {
+            mailOptions.attachments = template.attachments;
+        }
+
         const info = await transporter.sendMail(mailOptions);
         console.log('✓ Email enviado:', info.messageId);
         return { success: true, messageId: info.messageId };
@@ -1269,9 +1288,79 @@ async function sendEmail(to, template, data) {
     }
 }
 
+// Generar archivo .ics para calendario
+function generateICS(booking, business) {
+    const bookingDate = new Date(booking.booking_date);
+    const [hours, minutes] = booking.booking_time.split(':').map(Number);
+
+    // Formato: YYYYMMDDTHHMMSS
+    const year = bookingDate.getFullYear();
+    const month = String(bookingDate.getMonth() + 1).padStart(2, '0');
+    const day = String(bookingDate.getDate()).padStart(2, '0');
+    const hour = String(hours).padStart(2, '0');
+    const min = String(minutes).padStart(2, '0');
+
+    const dtStart = `${year}${month}${day}T${hour}${min}00`;
+
+    // Duración por defecto 1 hora
+    const endHours = hours + 1;
+    const endHour = String(endHours).padStart(2, '0');
+    const dtEnd = `${year}${month}${day}T${endHour}${min}00`;
+
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+
+    const summary = booking.service_name
+        ? `Reserva en ${business.name} - ${booking.service_name}`
+        : `Reserva en ${business.name}`;
+
+    const description = [
+        `Reserva confirmada en ${business.name}`,
+        booking.service_name ? `Servicio: ${booking.service_name}` : '',
+        `Hora: ${booking.booking_time}`,
+        booking.notes ? `Notas: ${booking.notes}` : '',
+        business.phone ? `Contacto: ${business.phone}` : ''
+    ].filter(Boolean).join('\\n');
+
+    const location = business.address || business.name;
+
+    return [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//StickyWork//Booking//ES',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `DTSTART:${dtStart}`,
+        `DTEND:${dtEnd}`,
+        `DTSTAMP:${stamp}`,
+        `UID:booking-${booking.id}@stickywork.com`,
+        `SUMMARY:${summary}`,
+        `DESCRIPTION:${description}`,
+        `LOCATION:${location}`,
+        'STATUS:CONFIRMED',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT30M',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Recordatorio de reserva',
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].join('\r\n');
+}
+
 // Send booking confirmation
 async function sendBookingConfirmation(booking, business) {
     const template = emailTemplates.bookingConfirmation(booking, business);
+
+    // Generar adjunto .ics
+    const icsContent = generateICS(booking, business);
+    template.attachments = [{
+        filename: 'reserva.ics',
+        content: icsContent,
+        contentType: 'text/calendar'
+    }];
+
     return await sendEmail(booking.customer_email, template);
 }
 

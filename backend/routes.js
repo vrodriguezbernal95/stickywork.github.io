@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const authRoutes = require('./routes/auth');
 const setupDemosRoutes = require('./routes/setup-demos');
@@ -1823,14 +1824,15 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             }
         }
 
-        // Crear la reserva
+        // Crear la reserva con manage_token
+        const manageToken = crypto.randomBytes(32).toString('hex');
         const result = await db.query(
             `INSERT INTO bookings
             (business_id, service_id, customer_name, customer_email, customer_phone,
-             booking_date, booking_time, num_people, num_adults, num_children, zone, notes, whatsapp_consent, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+             booking_date, booking_time, num_people, num_adults, num_children, zone, notes, whatsapp_consent, status, manage_token)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
             [businessId, autoAssignedServiceId || null, customerName, customerEmail, customerPhone,
-             bookingDate, bookingTime, numPeople, numAdults, numChildren, zone, notes || null, whatsappConsent]
+             bookingDate, bookingTime, numPeople, numAdults, numChildren, zone, notes || null, whatsappConsent, manageToken]
         );
 
         // Obtener la reserva creada con información del servicio
@@ -1842,6 +1844,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             [result.insertId]
         );
         const bookingData = bookingQuery[0];
+        bookingData.manage_token = manageToken;
 
         // Obtener información del negocio para los emails
         const businessQuery = await db.query(
@@ -4076,6 +4079,190 @@ router.patch('/api/businesses/:id/business-context', requireAuth, requireRole('o
             success: false,
             message: 'Error al guardar contexto del negocio',
             error: error.message
+        });
+    }
+});
+
+// ==================== GESTIÓN DE RESERVA POR CLIENTE ====================
+
+// Migración: Añadir columna manage_token a bookings
+router.post('/api/debug/run-manage-token-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: manage_token en bookings');
+
+        try {
+            await db.query(`
+                ALTER TABLE bookings
+                ADD COLUMN manage_token VARCHAR(255) UNIQUE DEFAULT NULL
+            `);
+            console.log('✅ Columna manage_token añadida');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna manage_token ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        try {
+            await db.query(`
+                CREATE INDEX idx_manage_token ON bookings (manage_token)
+            `);
+            console.log('✅ Índice idx_manage_token creado');
+        } catch (error) {
+            if (error.code === 'ER_DUP_KEYNAME') {
+                console.log('ℹ️  Índice idx_manage_token ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // Generar tokens para reservas existentes que no tengan
+        const existing = await db.query(
+            `SELECT id FROM bookings WHERE manage_token IS NULL`
+        );
+        let updated = 0;
+        for (const booking of existing) {
+            const token = crypto.randomBytes(32).toString('hex');
+            await db.query('UPDATE bookings SET manage_token = ? WHERE id = ?', [token, booking.id]);
+            updated++;
+        }
+        console.log(`✅ ${updated} reservas existentes actualizadas con manage_token`);
+
+        res.json({
+            success: true,
+            message: 'Migración de manage_token ejecutada correctamente',
+            existingUpdated: updated
+        });
+
+    } catch (error) {
+        console.error('Error en migración:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error en migración',
+            error: error.message
+        });
+    }
+});
+
+// GET - Ver detalles de reserva por token (público, sin auth)
+router.get('/api/booking/manage/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const bookings = await db.query(
+            `SELECT b.id, b.customer_name, b.booking_date, b.booking_time, b.status,
+                    b.num_people, b.notes, b.zone,
+                    s.name as service_name,
+                    bus.name as business_name, bus.address as business_address, bus.phone as business_phone
+             FROM bookings b
+             LEFT JOIN services s ON b.service_id = s.id
+             LEFT JOIN businesses bus ON b.business_id = bus.id
+             WHERE b.manage_token = ?`,
+            [token]
+        );
+
+        if (bookings.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reserva no encontrada'
+            });
+        }
+
+        const booking = bookings[0];
+
+        res.json({
+            success: true,
+            data: {
+                customer_name: booking.customer_name,
+                service_name: booking.service_name,
+                booking_date: booking.booking_date,
+                booking_time: booking.booking_time,
+                status: booking.status,
+                num_people: booking.num_people,
+                notes: booking.notes,
+                zone: booking.zone,
+                business_name: booking.business_name,
+                business_address: booking.business_address,
+                business_phone: booking.business_phone
+            }
+        });
+
+    } catch (error) {
+        console.error('Error obteniendo reserva por token:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener la reserva'
+        });
+    }
+});
+
+// POST - Cancelar reserva por token (público, sin auth)
+router.post('/api/booking/manage/:token/cancel', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const bookings = await db.query(
+            `SELECT id, status, business_id, customer_name, customer_email, customer_phone
+             FROM bookings WHERE manage_token = ?`,
+            [token]
+        );
+
+        if (bookings.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Reserva no encontrada'
+            });
+        }
+
+        const booking = bookings[0];
+
+        if (booking.status !== 'pending' && booking.status !== 'confirmed') {
+            return res.status(400).json({
+                success: false,
+                message: `No se puede cancelar una reserva con estado "${booking.status}"`
+            });
+        }
+
+        await db.query(
+            `UPDATE bookings SET status = 'cancelled' WHERE id = ?`,
+            [booking.id]
+        );
+
+        // Registrar nota en el cliente si existe
+        try {
+            const customers = await db.query(
+                'SELECT id FROM customers WHERE business_id = ? AND email = ? AND phone = ?',
+                [booking.business_id, booking.customer_email, booking.customer_phone]
+            );
+            if (customers.length > 0) {
+                const now = new Date().toISOString().split('T')[0];
+                await db.query(
+                    `UPDATE customers SET notes = CONCAT(IFNULL(notes, ''), '\n[${now}] Reserva cancelada por el cliente (autoservicio)') WHERE id = ?`,
+                    [customers[0].id]
+                );
+            }
+        } catch (err) {
+            console.error('Error registrando nota de cancelación:', err.message);
+        }
+
+        res.json({
+            success: true,
+            message: 'Tu reserva ha sido cancelada correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error cancelando reserva por token:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al cancelar la reserva'
         });
     }
 });
