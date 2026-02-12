@@ -4095,7 +4095,7 @@ router.post('/api/debug/reset-password', async (req, res) => {
         const { email, newPassword } = req.body;
         const bcrypt = require('bcrypt');
         const hash = await bcrypt.hash(newPassword, 10);
-        const result = await db.query('UPDATE users SET password_hash = ? WHERE email = ?', [hash, email]);
+        const result = await db.query('UPDATE admin_users SET password_hash = ? WHERE email = ?', [hash, email]);
         res.json({ success: true, message: `Password reseteada para ${email}`, affected: result.affectedRows });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
