@@ -4113,43 +4113,6 @@ router.post('/api/debug/reset-password', async (req, res) => {
     }
 });
 
-// Endpoint temporal para borrar cuentas de test
-router.post('/api/debug/delete-test-accounts', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
-    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-        return res.status(401).json({ success: false, message: 'No autorizado' });
-    }
-    try {
-        const { businessIds } = req.body;
-        if (!businessIds || !Array.isArray(businessIds)) {
-            return res.status(400).json({ success: false, message: 'businessIds requerido (array)' });
-        }
-
-        const results = {};
-        for (const bid of businessIds) {
-            // Buscar info antes de borrar
-            const biz = await db.query('SELECT id, name FROM businesses WHERE id = ?', [bid]);
-            if (biz.length === 0) {
-                results[bid] = 'No encontrado';
-                continue;
-            }
-
-            // Borrar en orden por foreign keys
-            await db.query('DELETE FROM bookings WHERE business_id = ?', [bid]);
-            await db.query('DELETE FROM services WHERE business_id = ?', [bid]);
-            await db.query('DELETE FROM customers WHERE business_id = ?', [bid]);
-            await db.query('DELETE FROM admin_users WHERE business_id = ?', [bid]);
-            await db.query('DELETE FROM businesses WHERE id = ?', [bid]);
-            results[bid] = `Eliminado: ${biz[0].name}`;
-        }
-
-        res.json({ success: true, results });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
 // ==================== GESTIÓN DE RESERVA POR CLIENTE ====================
 
 // Migración: Añadir columna manage_token a bookings
