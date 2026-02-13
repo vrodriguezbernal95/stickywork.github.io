@@ -92,7 +92,14 @@ const superDashboard = {
         const maxCount = Math.max(...businessesByType.map(b => b.count));
 
         const typeLabels = {
-            'spa': 'Spa & Wellness',
+            'salon': 'Peluquería / Salón',
+            'clinic': 'Clínica / Consultorio',
+            'restaurant': 'Restaurante / Bar',
+            'nutrition': 'Centro de Nutrición',
+            'gym': 'Gimnasio',
+            'spa': 'Spa / Bienestar',
+            'lawyer': 'Despacho de Abogados',
+            'other': 'Otro',
             'peluqueria': 'Peluquería',
             'nutricion': 'Nutrición',
             'psicologo': 'Psicología',

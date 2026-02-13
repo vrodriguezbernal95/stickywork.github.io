@@ -1103,10 +1103,11 @@ body::before {
 }
 
 .bar-track {
-    height: 8px;
-    background: var(--bg-primary);
+    height: 20px;
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 10px;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .bar-fill {
@@ -1124,7 +1125,7 @@ body::before {
 /* Vertical Bars Chart */
 .vertical-bars {
     display: flex;
-    align-items: flex-end;
+    align-items: stretch;
     justify-content: space-around;
     gap: 0.5rem;
     height: 250px;
@@ -1139,22 +1140,33 @@ body::before {
     gap: 0.5rem;
 }
 
+.bar-column .bar-value {
+    flex-shrink: 0;
+}
+
+.bar-column .bar-month {
+    flex-shrink: 0;
+}
+
 .bar-vertical {
     width: 100%;
     max-width: 60px;
-    height: 100%;
-    background: var(--bg-primary);
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 8px 8px 0 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    min-height: 0;
 }
 
 .bar-vertical-fill {
     width: 100%;
     border-radius: 8px 8px 0 0;
     transition: height 0.6s ease;
+    min-height: 4px;
 }
 
 .bar-month {
