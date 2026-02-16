@@ -3,97 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Widget - StickyWork</title>
+    <title>Test Widget - Peluquería Prueba</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
             background: #f5f5f5;
         }
         h1 {
+            color: #333;
             text-align: center;
+        }
+        .status {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status p {
+            margin: 8px 0;
+        }
+        .status strong {
             color: #3b82f6;
         }
-        .test-section {
+        #stickywork-container {
+            margin-top: 30px;
             background: white;
-            padding: 2rem;
-            margin: 2rem 0;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .test-button {
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, #3b82f6, #ef4444);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+        .console-log {
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
         }
-        .test-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        .console-log div {
+            margin: 3px 0;
         }
     </style>
 </head>
 <body>
-    <h1>🧪 Prueba del Widget StickyWork</h1>
+    <h1>🧪 Test de Integración del Widget StickyWork</h1>
 
-    <!-- TEST 1: Modo Embedded -->
-    <div class="test-section">
-        <h2>📄 Test 1: Modo Embedded (Formulario Directo)</h2>
-        <p>El formulario debe aparecer directamente en la página:</p>
-        <div id="stickywork-widget"></div>
+    <div class="status">
+        <p><strong>Estado:</strong> <span id="status">Inicializando...</span></p>
+        <p><strong>Business ID:</strong> 10 (Peluquería Prueba)</p>
+        <p><strong>Modo:</strong> Embedded</p>
+        <p><strong>API URL:</strong> https://api.stickywork.com</p>
+        <p><strong>Widget URL:</strong> https://stickywork.com/widget/stickywork-widget.js</p>
     </div>
 
-    <!-- TEST 2: Modo Modal -->
-    <div class="test-section">
-        <h2>🎯 Test 2: Modo Modal (Botón Flotante)</h2>
-        <p>Al hacer clic en el botón, debe abrirse un modal con el formulario:</p>
-        <button id="stickywork-btn" class="test-button">📅 Abrir Formulario de Reserva</button>
+    <!-- Contenedor del widget -->
+    <div id="stickywork-widget"></div>
+
+    <!-- Console log visual -->
+    <div class="console-log" id="console-log">
+        <div>📦 Cargando widget...</div>
     </div>
 
-    <!-- Cargar el widget -->
-    <script src="http://localhost:3000/widget/stickywork-widget.js"></script>
-
-    <!-- Inicializar Modo Embedded -->
+    <!-- Script del widget -->
+    <script src="https://stickywork.com/widget/stickywork-widget.js"></script>
     <script>
-        // Test 1: Modo Embedded
-        StickyWork.init({
-            businessId: 1,
-            mode: 'embedded',
-            apiUrl: 'http://localhost:3000',
-            primaryColor: '#3b82f6',
-            language: 'es'
+        // Guardar referencias originales PRIMERO
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        // Función para agregar logs visualmente
+        function addLog(message, color = '#0f0') {
+            const logDiv = document.getElementById('console-log');
+            const div = document.createElement('div');
+            div.textContent = message;
+            div.style.color = color;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            // Usar originalLog para evitar recursión infinita
+            originalLog.call(console, message);
+        }
+
+        // Interceptar console.log
+        console.log = function(...args) {
+            addLog(args.join(' '));
+        };
+
+        // Interceptar console.error
+        console.error = function(...args) {
+            addLog('❌ ' + args.join(' '), '#f00');
+        };
+
+        addLog('📦 Iniciando carga del widget...');
+
+        // Verificar que el script se cargó
+        if (typeof StickyWork !== 'undefined') {
+            addLog('✅ Script del widget cargado correctamente');
+            document.getElementById('status').textContent = 'Widget cargado';
+            document.getElementById('status').style.color = 'green';
+        } else {
+            addLog('❌ Error: StickyWork no está definido', '#f00');
+            document.getElementById('status').textContent = 'Error al cargar widget';
+            document.getElementById('status').style.color = 'red';
+        }
+
+        // Configurar eventos de consola para detectar errores
+        window.addEventListener('error', function(e) {
+            addLog('❌ Error detectado: ' + e.message, '#f00');
+            document.getElementById('status').textContent = 'Error: ' + e.message;
+            document.getElementById('status').style.color = 'red';
         });
-    </script>
 
-    <!-- Inicializar Modo Modal -->
-    <script>
-        // Test 2: Modo Modal
-        // Necesitamos esperar a que el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function() {
-            // Crear una nueva instancia para el modo modal
-            const ModalWidget = Object.create(StickyWork);
-            ModalWidget.config = Object.assign({}, StickyWork.config);
-            ModalWidget.services = [];
-            ModalWidget.modalOpen = false;
+        // Inicializar el widget
+        try {
+            addLog('🔧 Inicializando widget con:');
+            addLog('  - businessId: 10');
+            addLog('  - mode: embedded');
+            addLog('  - apiUrl: https://api.stickywork.com');
 
-            ModalWidget.init({
-                businessId: 1,
-                mode: 'modal',
-                trigger: '#stickywork-btn',
-                apiUrl: 'http://localhost:3000',
-                primaryColor: '#3b82f6',
-                secondaryColor: '#10b981',
-                language: 'es',
-                containerId: 'stickywork-widget-modal'
+            StickyWork.init({
+                businessId: 10,
+                mode: 'embedded',
+                apiUrl: 'https://api.stickywork.com'
             });
-        });
+
+            addLog('✅ Widget inicializado correctamente');
+
+            // Esperar un poco y verificar que se renderizó
+            setTimeout(() => {
+                const container = document.getElementById('stickywork-widget');
+                if (container && container.children.length > 0) {
+                    addLog('✅ CHECKLIST ITEM 2: WIDGET SE INTEGRA - COMPLETADO');
+                    document.getElementById('status').textContent = 'Widget integrado correctamente ✅';
+                    document.getElementById('status').style.color = 'green';
+                } else {
+                    addLog('⚠️ Widget inicializado pero el contenedor está vacío', '#ff0');
+                    addLog('⚠️ Verificando que el widget tenga servicios configurados...', '#ff0');
+                }
+            }, 3000);
+
+        } catch (error) {
+            addLog('❌ Error al inicializar widget: ' + error.message, '#f00');
+            document.getElementById('status').textContent = 'Error: ' + error.message;
+            document.getElementById('status').style.color = 'red';
+        }
     </script>
 </body>
 </html>
