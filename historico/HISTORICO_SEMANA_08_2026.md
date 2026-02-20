@@ -89,11 +89,45 @@ Implementación de un sistema de tarjeta de sellos digital que permite a los pro
 
 ---
 
+---
+
+## Sesión 2: 20-feb-2026 - Recordatorios automáticos de citas
+
+### Completado
+
+**Contexto:** El sistema de recordatorios existía al 60% — template de email listo, función de envío lista, pero sin automatismo real, sin guardar la preferencia en BD y sin protección contra duplicados.
+
+**1. Nuevo job `backend/jobs/enviar-recordatorios.js`**
+- Busca reservas de mañana con `status IN ('confirmed','pending')` y `reminder_sent = FALSE`
+- Filtra por `booking_settings.reminders_enabled` del negocio (si no está configurado → envía por defecto, backwards compatible)
+- Envía email via `emailService.sendBookingReminder()` ya existente
+- Marca `reminder_sent = TRUE` tras cada envío para evitar duplicados
+- Fix del bug UTC en cálculo de fecha (construcción local en vez de `toISOString()`)
+
+**2. Cron job en `server.js`**
+- Se ejecuta cada día a las 10:00 AM (hora servidor Railway, UTC)
+- Llama a `enviarRecordatoriosCitas(db, emailService)`
+- Sigue el mismo patrón que el job de feedback ya existente
+
+**3. Checkbox "Recordatorios Automáticos" en Settings ahora funciona**
+- Al cargar la pestaña Notificaciones, lee `booking_settings.reminders_enabled` de la BD
+- Al guardar, persiste la preferencia en `booking_settings` via `PUT /api/business/:id/settings`
+- Si el negocio no tenía configuración previa → aparece marcado por defecto
+
+### Archivos modificados/creados:
+- `backend/jobs/enviar-recordatorios.js` — **Nuevo** job de recordatorios
+- `server.js` — import + cron job diario 10:00 AM
+- `admin/js/settings.js` — checkbox guarda/carga preferencia real
+
+### Commits:
+- `2a7db37` — feat: Completar sistema de recordatorios automáticos de citas
+
+---
+
 ## Próximas tareas pendientes
 
-1. **Notificaciones por email** al cliente cuando se crean citas repetidas (pendiente de semana anterior)
-2. **Eliminar endpoint** `debug/reset-password` — temporal, sigue en routes.js
-3. Valorar si añadir **notificación automática** al cliente cuando gana un premio (email/WhatsApp)
+1. **Eliminar endpoint** `debug/reset-password` — temporal, sigue en routes.js
+2. Valorar si añadir **notificación automática** al cliente cuando gana un premio (email/WhatsApp)
 
 ---
 
