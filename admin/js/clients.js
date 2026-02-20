@@ -6,7 +6,10 @@ const clients = {
     businessData: null,
     currentFilter: 'all', // 'all', 'premium', 'normal', 'riesgo', 'baneado'
     searchTerm: '',
-    currentTab: 'clientes', // 'clientes', 'estadisticas', 'recordatorios'
+    currentTab: 'clientes', // 'clientes', 'estadisticas', 'recordatorios', 'promociones'
+    loyaltyConfig: null,
+    loyaltyVouchers: [],
+    loyaltyLoaded: false,
 
     // Status config (colores e iconos)
     statusConfig: {
@@ -105,6 +108,10 @@ const clients = {
                             data-tab="recordatorios" onclick="clients.switchTab('recordatorios')">
                         🔔 Recordatorios ${inactiveCount > 0 ? `<span class="clients-badge-count">${inactiveCount}</span>` : ''}
                     </button>
+                    <button class="clients-tab ${this.currentTab === 'promociones' ? 'active' : ''}"
+                            data-tab="promociones" onclick="clients.switchTab('promociones')">
+                        🎁 Promociones
+                    </button>
                 </div>
 
                 <div class="clients-content">
@@ -116,6 +123,9 @@ const clients = {
                     </div>
                     <div class="clients-tab-content ${this.currentTab === 'recordatorios' ? 'active' : ''}" id="tab-recordatorios">
                         ${this.renderReminders()}
+                    </div>
+                    <div class="clients-tab-content ${this.currentTab === 'promociones' ? 'active' : ''}" id="tab-promociones">
+                        ${this.renderPromotions()}
                     </div>
                 </div>
             </div>
@@ -221,6 +231,10 @@ const clients = {
             content.classList.remove('active');
         });
         document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        if (tabName === 'promociones' && !this.loyaltyLoaded) {
+            this.loadLoyaltyData();
+        }
     },
 
     // =============================================
@@ -1053,6 +1067,256 @@ const clients = {
             console.error('Error deleting client:', error);
             modal.toast({ message: 'Error al eliminar cliente', type: 'error' });
         }
+    },
+
+    // =============================================
+    // TAB 4: PROMOCIONES (Programa de Fidelización)
+    // =============================================
+
+    renderPromotions() {
+        return `
+            <div id="promotions-inner">
+                <div style="text-align: center; padding: 3rem 0; color: var(--text-secondary);">
+                    <div class="loading-spinner-sm"></div>
+                    <p style="margin-top: 1rem;">Cargando programa de fidelización...</p>
+                </div>
+            </div>
+        `;
+    },
+
+    async loadLoyaltyData() {
+        try {
+            const businessId = auth.getBusinessId();
+            const [configRes, vouchersRes] = await Promise.all([
+                api.get(`/api/loyalty/${businessId}/config`),
+                api.get(`/api/loyalty/${businessId}/vouchers`)
+            ]);
+            this.loyaltyConfig = configRes.data || { enabled: false, goal: 10, reward: '', start_date: '', end_date: '' };
+            this.loyaltyVouchers = vouchersRes.data || [];
+            this.loyaltyLoaded = true;
+            this.renderPromotionsContent();
+        } catch (error) {
+            console.error('Error cargando fidelización:', error);
+            const inner = document.getElementById('promotions-inner');
+            if (inner) inner.innerHTML = `<div style="color: var(--danger-color); padding: 2rem; text-align: center;">Error al cargar el programa de fidelización. Recarga la página.</div>`;
+        }
+    },
+
+    renderPromotionsContent() {
+        const inner = document.getElementById('promotions-inner');
+        if (!inner) return;
+
+        const cfg = this.loyaltyConfig || {};
+        const enabled = cfg.enabled || false;
+        const businessId = auth.getBusinessId();
+        const loyaltyUrl = `https://stickywork.com/fidelidad.html?business=${businessId}`;
+        const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(loyaltyUrl)}&size=280&margin=2`;
+
+        const activeVouchers = this.loyaltyVouchers.filter(v => v.status === 'active');
+        const redeemedVouchers = this.loyaltyVouchers.filter(v => v.status === 'redeemed');
+
+        inner.innerHTML = `
+            <!-- Configuración -->
+            <div class="loyalty-section">
+                <div class="loyalty-section-header">
+                    <h3>⚙️ Configuración del programa</h3>
+                    <p class="loyalty-section-desc">Define las condiciones del premio para tus clientes</p>
+                </div>
+
+                <div class="loyalty-toggle-row">
+                    <div>
+                        <strong>Programa activo</strong>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">Los clientes podrán consultar su progreso mediante el QR</p>
+                    </div>
+                    <label class="loyalty-toggle">
+                        <input type="checkbox" id="loyalty-enabled" ${enabled ? 'checked' : ''}>
+                        <span class="loyalty-toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="loyalty-fields" style="${!enabled ? 'opacity: 0.5; pointer-events: none;' : ''}">
+                    <div class="loyalty-field-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Número de reservas para el premio</label>
+                            <input type="number" id="loyalty-goal" class="form-input" min="1" max="100"
+                                   value="${cfg.goal || 10}" placeholder="Ej: 10">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Descripción del premio</label>
+                            <input type="text" id="loyalty-reward" class="form-input"
+                                   value="${cfg.reward || ''}" placeholder="Ej: Café gratis, 10% descuento...">
+                        </div>
+                    </div>
+                    <div class="loyalty-field-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Fecha de inicio</label>
+                            <input type="date" id="loyalty-start" class="form-input" value="${cfg.start_date || ''}">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label class="form-label">Fecha de fin</label>
+                            <input type="date" id="loyalty-end" class="form-input" value="${cfg.end_date || ''}">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn-primary" onclick="clients.saveLoyaltyConfig()">
+                        💾 Guardar configuración
+                    </button>
+                </div>
+            </div>
+
+            <!-- QR -->
+            ${enabled ? `
+            <div class="loyalty-section">
+                <div class="loyalty-section-header">
+                    <h3>📱 Código QR para clientes</h3>
+                    <p class="loyalty-section-desc">Ponlo en tu local para que los clientes escaneen y vean su progreso</p>
+                </div>
+                <div class="loyalty-qr-box">
+                    <img src="${qrUrl}" alt="QR Fidelización" style="width: 200px; height: 200px; border-radius: 12px; border: 2px solid var(--border-color);">
+                    <p style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-secondary);">${loyaltyUrl}</p>
+                    <a href="${qrUrl}&format=png" download="qr-fidelizacion.png" class="btn-secondary" style="margin-top: 0.75rem; display: inline-block; text-decoration: none;">
+                        ⬇️ Descargar QR
+                    </a>
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Vales activos -->
+            ${enabled ? `
+            <div class="loyalty-section">
+                <div class="loyalty-section-header">
+                    <h3>🎁 Vales pendientes de canjear</h3>
+                    <p class="loyalty-section-desc">Clientes que han ganado su premio y están esperando canjearlo</p>
+                </div>
+
+                ${activeVouchers.length === 0 ? `
+                    <div class="loyalty-empty">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🎫</div>
+                        <p>Ningún cliente ha alcanzado el objetivo todavía</p>
+                        <p style="font-size: 0.85rem; margin-top: 0.25rem; color: var(--text-secondary);">
+                            Cuando un cliente complete ${cfg.goal || '?'} reservas, aparecerá aquí
+                        </p>
+                    </div>
+                ` : `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Email</th>
+                                <th>Código</th>
+                                <th>Fecha obtenido</th>
+                                <th style="text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${activeVouchers.map(v => `
+                                <tr>
+                                    <td style="font-weight: 600;">${v.customer_name || '—'}</td>
+                                    <td style="color: var(--text-secondary); font-size: 0.9rem;">${v.customer_email || v.customer_phone || '—'}</td>
+                                    <td><span class="loyalty-code">${v.code}</span></td>
+                                    <td style="color: var(--text-secondary); font-size: 0.9rem;">${new Date(v.earned_at).toLocaleDateString('es-ES')}</td>
+                                    <td style="text-align: center;">
+                                        <button class="btn-loyalty-redeem" onclick="clients.redeemVoucher('${v.code}', '${(v.customer_name || '').replace(/'/g, "\\'")}')">
+                                            ✅ Entregar premio
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `}
+
+                ${redeemedVouchers.length > 0 ? `
+                    <details style="margin-top: 1.5rem;">
+                        <summary style="cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; padding: 0.5rem 0;">
+                            Ver últimos ${redeemedVouchers.length} premios canjeados
+                        </summary>
+                        <table class="table" style="margin-top: 0.75rem;">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Código</th>
+                                    <th>Canjeado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${redeemedVouchers.map(v => `
+                                    <tr>
+                                        <td>${v.customer_name || v.customer_email || '—'}</td>
+                                        <td><span class="loyalty-code" style="opacity: 0.6;">${v.code}</span></td>
+                                        <td style="color: var(--text-secondary); font-size: 0.9rem;">${v.redeemed_at ? new Date(v.redeemed_at).toLocaleDateString('es-ES') : '—'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </details>
+                ` : ''}
+            </div>
+            ` : ''}
+        `;
+
+        // Toggle listener para habilitar/deshabilitar campos
+        const toggle = document.getElementById('loyalty-enabled');
+        if (toggle) {
+            toggle.addEventListener('change', () => {
+                const fields = document.querySelector('.loyalty-fields');
+                if (fields) {
+                    fields.style.opacity = toggle.checked ? '1' : '0.5';
+                    fields.style.pointerEvents = toggle.checked ? '' : 'none';
+                }
+            });
+        }
+    },
+
+    async saveLoyaltyConfig() {
+        const enabled = document.getElementById('loyalty-enabled')?.checked || false;
+        const goal = parseInt(document.getElementById('loyalty-goal')?.value) || 1;
+        const reward = document.getElementById('loyalty-reward')?.value?.trim() || '';
+        const start_date = document.getElementById('loyalty-start')?.value || '';
+        const end_date = document.getElementById('loyalty-end')?.value || '';
+
+        if (enabled) {
+            if (!reward) { modal.toast({ message: 'Escribe la descripción del premio', type: 'error' }); return; }
+            if (!start_date || !end_date) { modal.toast({ message: 'Indica las fechas de inicio y fin', type: 'error' }); return; }
+            if (new Date(end_date) <= new Date(start_date)) { modal.toast({ message: 'La fecha de fin debe ser posterior a la de inicio', type: 'error' }); return; }
+        }
+
+        try {
+            const businessId = auth.getBusinessId();
+            await api.patch(`/api/loyalty/${businessId}/config`, { enabled, goal, reward, start_date, end_date });
+            this.loyaltyConfig = { enabled, goal, reward, start_date, end_date };
+            modal.toast({ message: 'Configuración guardada correctamente', type: 'success' });
+            this.renderPromotionsContent();
+        } catch (error) {
+            console.error('Error guardando loyalty config:', error);
+            modal.toast({ message: error.message || 'Error al guardar la configuración', type: 'error' });
+        }
+    },
+
+    async redeemVoucher(code, customerName) {
+        const confirmed = await modal.confirm({
+            title: '¿Entregar el premio?',
+            message: `Confirma que has entregado el premio a <strong>${customerName || 'este cliente'}</strong>. El vale con código <strong>${code}</strong> quedará marcado como canjeado.`,
+            confirmText: '✅ Sí, entregado',
+            cancelText: 'Cancelar',
+            type: 'success'
+        });
+
+        if (!confirmed) return;
+
+        try {
+            const businessId = auth.getBusinessId();
+            await api.post(`/api/loyalty/${businessId}/redeem/${code}`, {});
+            modal.toast({ message: 'Premio entregado correctamente. El cliente puede empezar un nuevo ciclo.', type: 'success' });
+            // Recargar datos
+            this.loyaltyLoaded = false;
+            await this.loadLoyaltyData();
+        } catch (error) {
+            console.error('Error canjeando vale:', error);
+            modal.toast({ message: error.message || 'Error al canjear el vale', type: 'error' });
+        }
     }
 };
 
@@ -1325,6 +1589,153 @@ clientsStyles.textContent = `
         transform: scale(1.05);
         box-shadow: 0 2px 8px rgba(37, 211, 102, 0.4);
     }
+
+    /* ========== PROMOCIONES / FIDELIZACIÓN ========== */
+    .loyalty-section {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .loyalty-section-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .loyalty-section-header h3 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 4px 0;
+    }
+
+    .loyalty-section-desc {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .loyalty-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        margin-bottom: 1.25rem;
+    }
+
+    .loyalty-toggle {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .loyalty-toggle input { display: none; }
+
+    .loyalty-toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: #d1d5db;
+        border-radius: 26px;
+        transition: 0.3s;
+    }
+
+    .loyalty-toggle-slider:before {
+        content: '';
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.3s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .loyalty-toggle input:checked + .loyalty-toggle-slider {
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+    }
+
+    .loyalty-toggle input:checked + .loyalty-toggle-slider:before {
+        transform: translateX(24px);
+    }
+
+    .loyalty-fields {
+        transition: opacity 0.2s;
+    }
+
+    .loyalty-field-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+        .loyalty-field-row { flex-direction: column; gap: 0; }
+    }
+
+    .loyalty-qr-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem 0;
+    }
+
+    .loyalty-code {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9rem;
+        font-weight: 700;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 4px 10px;
+        letter-spacing: 1px;
+        color: var(--text-primary);
+    }
+
+    .loyalty-empty {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .btn-loyalty-redeem {
+        padding: 0.45rem 0.9rem;
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-loyalty-redeem:hover {
+        transform: scale(1.04);
+        box-shadow: 0 2px 8px rgba(17, 153, 142, 0.4);
+    }
+
+    .loading-spinner-sm {
+        width: 28px;
+        height: 28px;
+        border: 3px solid var(--border-color);
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
 `;
 document.head.appendChild(clientsStyles);
 

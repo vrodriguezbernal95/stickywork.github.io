@@ -134,6 +134,10 @@ app.get('/gestionar-reserva', (req, res) => {
     res.sendFile(path.join(__dirname, 'gestionar-reserva.html'));
 });
 
+app.get('/fidelidad', (req, res) => {
+    res.sendFile(path.join(__dirname, 'fidelidad.html'));
+});
+
 // ==================== MANEJO DE ERRORES ====================
 
 // Ruta no encontrada

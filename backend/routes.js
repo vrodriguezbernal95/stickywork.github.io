@@ -4323,4 +4323,297 @@ router.get('/api/qr/:businessId', async (req, res) => {
     }
 });
 
+// ==================== PROGRAMA DE FIDELIZACIÓN ====================
+
+// Migración: Crear tabla loyalty_vouchers y columna loyalty_config en businesses
+router.post('/api/debug/run-loyalty-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        console.log('🚀 Iniciando migración: Programa de Fidelización');
+
+        // Añadir columna loyalty_config a businesses
+        try {
+            await db.query(`
+                ALTER TABLE businesses
+                ADD COLUMN loyalty_config JSON DEFAULT NULL
+                COMMENT 'Configuración del programa de fidelización del negocio'
+            `);
+            console.log('✅ Columna loyalty_config añadida a businesses');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna loyalty_config ya existe');
+            } else {
+                throw error;
+            }
+        }
+
+        // Crear tabla loyalty_vouchers
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS loyalty_vouchers (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                business_id INT NOT NULL,
+                customer_email VARCHAR(255) NOT NULL,
+                customer_phone VARCHAR(50),
+                customer_name VARCHAR(255),
+                code VARCHAR(20) NOT NULL,
+                status ENUM('active', 'redeemed') DEFAULT 'active',
+                earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                redeemed_at TIMESTAMP NULL,
+                UNIQUE KEY unique_code (code),
+                INDEX idx_business_email (business_id, customer_email),
+                INDEX idx_business_status (business_id, status),
+                FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        `);
+        console.log('✅ Tabla loyalty_vouchers creada');
+
+        res.json({
+            success: true,
+            message: 'Migración de fidelización ejecutada correctamente',
+            tables: ['loyalty_vouchers'],
+            columns: ['businesses.loyalty_config']
+        });
+
+    } catch (error) {
+        console.error('Error en migración de fidelización:', error);
+        res.status(500).json({ success: false, message: 'Error en migración', error: error.message });
+    }
+});
+
+// GET config del programa (privado)
+router.get('/api/loyalty/:businessId/config', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const rows = await db.query('SELECT loyalty_config FROM businesses WHERE id = ?', [businessId]);
+        const config = rows[0]?.loyalty_config || null;
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error obteniendo loyalty config:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener configuración' });
+    }
+});
+
+// PATCH config del programa (privado)
+router.patch('/api/loyalty/:businessId/config', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { enabled, goal, reward, start_date, end_date } = req.body;
+
+        if (enabled && (!goal || goal < 1)) {
+            return res.status(400).json({ success: false, message: 'El número de reservas debe ser al menos 1' });
+        }
+        if (enabled && !reward) {
+            return res.status(400).json({ success: false, message: 'La descripción del premio es obligatoria' });
+        }
+        if (enabled && (!start_date || !end_date)) {
+            return res.status(400).json({ success: false, message: 'Las fechas de inicio y fin son obligatorias' });
+        }
+
+        const config = { enabled: !!enabled, goal: parseInt(goal) || 1, reward: reward || '', start_date: start_date || null, end_date: end_date || null };
+        await db.query('UPDATE businesses SET loyalty_config = ? WHERE id = ?', [JSON.stringify(config), businessId]);
+
+        res.json({ success: true, message: 'Configuración guardada correctamente', data: config });
+    } catch (error) {
+        console.error('Error guardando loyalty config:', error);
+        res.status(500).json({ success: false, message: 'Error al guardar configuración' });
+    }
+});
+
+// GET vales del programa (privado) - lista vales activos y los últimos 20 canjeados
+router.get('/api/loyalty/:businessId/vouchers', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const vouchers = await db.query(`
+            SELECT * FROM loyalty_vouchers
+            WHERE business_id = ?
+            ORDER BY status ASC, earned_at DESC
+            LIMIT 100
+        `, [businessId]);
+        res.json({ success: true, data: vouchers });
+    } catch (error) {
+        console.error('Error obteniendo vouchers:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener vales' });
+    }
+});
+
+// POST canjear vale (privado)
+router.post('/api/loyalty/:businessId/redeem/:code', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId, code } = req.params;
+        const vouchers = await db.query(
+            'SELECT * FROM loyalty_vouchers WHERE business_id = ? AND code = ? AND status = "active"',
+            [businessId, code]
+        );
+        if (vouchers.length === 0) {
+            return res.status(404).json({ success: false, message: 'Vale no encontrado o ya canjeado' });
+        }
+        await db.query(
+            'UPDATE loyalty_vouchers SET status = "redeemed", redeemed_at = NOW() WHERE id = ?',
+            [vouchers[0].id]
+        );
+        res.json({ success: true, message: 'Premio entregado correctamente' });
+    } catch (error) {
+        console.error('Error canjeando vale:', error);
+        res.status(500).json({ success: false, message: 'Error al canjear vale' });
+    }
+});
+
+// GET info pública del programa (sin auth)
+router.get('/api/loyalty/:businessId/public', async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const rows = await db.query('SELECT name, logo_url, loyalty_config FROM businesses WHERE id = ?', [businessId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Negocio no encontrado' });
+        }
+        const business = rows[0];
+        const config = business.loyalty_config;
+        if (!config || !config.enabled) {
+            return res.status(404).json({ success: false, message: 'Este negocio no tiene programa de fidelización activo' });
+        }
+        res.json({
+            success: true,
+            data: {
+                business_name: business.name,
+                logo_url: business.logo_url,
+                goal: config.goal,
+                reward: config.reward,
+                start_date: config.start_date,
+                end_date: config.end_date
+            }
+        });
+    } catch (error) {
+        console.error('Error obteniendo info pública loyalty:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener información' });
+    }
+});
+
+// POST consultar progreso del cliente (sin auth)
+router.post('/api/loyalty/:businessId/check', async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { email, phone } = req.body;
+
+        if (!email && !phone) {
+            return res.status(400).json({ success: false, message: 'Se requiere email o teléfono' });
+        }
+
+        // Obtener config del negocio
+        const rows = await db.query('SELECT name, loyalty_config FROM businesses WHERE id = ?', [businessId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Negocio no encontrado' });
+        }
+        const config = rows[0].loyalty_config;
+        const businessName = rows[0].name;
+
+        if (!config || !config.enabled) {
+            return res.status(404).json({ success: false, message: 'Programa de fidelización no activo' });
+        }
+
+        // Buscar nombre del cliente en bookings
+        const nameRows = await db.query(`
+            SELECT customer_name FROM bookings
+            WHERE business_id = ?
+            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+            ORDER BY created_at DESC LIMIT 1
+        `, [businessId, ...(email ? [email] : []), ...(phone ? [phone] : [])]);
+        const customerName = nameRows[0]?.customer_name || email || phone;
+
+        // 1. Buscar vale activo existente
+        const activeVoucherQuery = `
+            SELECT * FROM loyalty_vouchers
+            WHERE business_id = ? AND status = 'active'
+            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+            ORDER BY earned_at DESC LIMIT 1
+        `;
+        const activeVouchers = await db.query(activeVoucherQuery, [businessId, ...(email ? [email] : []), ...(phone ? [phone] : [])]);
+
+        if (activeVouchers.length > 0) {
+            return res.json({
+                success: true,
+                status: 'voucher',
+                customer_name: customerName,
+                business_name: businessName,
+                voucher: activeVouchers[0],
+                reward: config.reward,
+                goal: config.goal
+            });
+        }
+
+        // 2. Obtener fecha de último canje para contar desde ahí
+        const lastRedeemedQuery = `
+            SELECT redeemed_at FROM loyalty_vouchers
+            WHERE business_id = ? AND status = 'redeemed'
+            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+            ORDER BY redeemed_at DESC LIMIT 1
+        `;
+        const lastRedeemed = await db.query(lastRedeemedQuery, [businessId, ...(email ? [email] : []), ...(phone ? [phone] : [])]);
+        const countFrom = lastRedeemed.length > 0
+            ? lastRedeemed[0].redeemed_at
+            : (config.start_date || '2000-01-01');
+
+        // 3. Contar reservas completadas en el periodo
+        const bookingCountQuery = `
+            SELECT COUNT(*) as cnt FROM bookings
+            WHERE business_id = ?
+            AND status = 'completed'
+            AND booking_date >= ?
+            AND booking_date <= ?
+            AND booking_date > ?
+            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+        `;
+        const endDate = config.end_date || '2099-12-31';
+        const startDate = config.start_date || '2000-01-01';
+        const countRows = await db.query(bookingCountQuery, [
+            businessId, startDate, endDate, countFrom,
+            ...(email ? [email] : []), ...(phone ? [phone] : [])
+        ]);
+        const current = countRows[0].cnt;
+
+        // 4. Si ha alcanzado la meta, generar vale
+        if (current >= config.goal) {
+            const code = 'SW-' + crypto.randomBytes(2).toString('hex').toUpperCase()
+                       + '-' + crypto.randomBytes(2).toString('hex').toUpperCase();
+            await db.query(`
+                INSERT INTO loyalty_vouchers (business_id, customer_email, customer_phone, customer_name, code)
+                VALUES (?, ?, ?, ?, ?)
+            `, [businessId, email || null, phone || null, customerName, code]);
+
+            const newVoucher = { business_id: businessId, customer_email: email, customer_phone: phone, customer_name: customerName, code, status: 'active', earned_at: new Date() };
+            return res.json({
+                success: true,
+                status: 'voucher',
+                customer_name: customerName,
+                business_name: businessName,
+                voucher: newVoucher,
+                reward: config.reward,
+                goal: config.goal
+            });
+        }
+
+        // 5. Mostrar progreso
+        res.json({
+            success: true,
+            status: 'progress',
+            customer_name: customerName,
+            business_name: businessName,
+            current: parseInt(current),
+            goal: config.goal,
+            reward: config.reward,
+            start_date: config.start_date,
+            end_date: config.end_date
+        });
+
+    } catch (error) {
+        console.error('Error en loyalty check:', error);
+        res.status(500).json({ success: false, message: 'Error al consultar progreso' });
+    }
+});
+
 module.exports = router;
