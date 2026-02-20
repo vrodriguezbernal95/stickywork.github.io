@@ -14,6 +14,7 @@ const db = require('./config/database');
 const routes = require('./backend/routes');
 const emailService = require('./backend/email-service');
 const { marcarFeedbacksPendientes } = require('./backend/jobs/enviar-feedback');
+const { enviarRecordatoriosCitas } = require('./backend/jobs/enviar-recordatorios');
 
 // Función para ejecutar migraciones MySQL
 async function runMigrations() {
@@ -232,6 +233,18 @@ async function startServer() {
             });
 
             console.log('⏰ Cron job de feedback configurado (cada hora - solo marca pendientes)\n');
+
+            // Cron job: enviar recordatorios de citas cada día a las 10:00 AM (hora servidor UTC)
+            cron.schedule('0 10 * * *', async () => {
+                console.log('⏰ [Cron] Enviando recordatorios de citas...');
+                try {
+                    await enviarRecordatoriosCitas(db, emailService);
+                } catch (error) {
+                    console.error('❌ [Cron] Error en recordatorios de citas:', error.message);
+                }
+            });
+
+            console.log('⏰ Cron job de recordatorios configurado (cada día a las 10:00 AM)\n');
 
         } catch (error) {
             console.error('⚠️  Error configurando base de datos:', error.message);

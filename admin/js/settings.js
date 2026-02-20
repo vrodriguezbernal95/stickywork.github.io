@@ -1369,7 +1369,8 @@ const settings = {
 
                 <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
                     <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="notify-reminders" checked
+                        <input type="checkbox" id="notify-reminders"
+                               ${(business.booking_settings?.reminders_enabled !== false) ? 'checked' : ''}
                                style="width: 20px; height: 20px; cursor: pointer;">
                         <span>
                             <strong>🔔 Recordatorios Automáticos</strong>
@@ -1785,8 +1786,12 @@ const settings = {
                 whatsapp_template: whatsappTemplate
             });
 
-            // TODO: Save notification preferences when we have the structure
-            // For now, just update the email and WhatsApp
+            // Guardar preferencia de recordatorios automáticos en booking_settings
+            const currentBookingSettings = this.businessData?.booking_settings || {};
+            await api.put(`/api/business/${this.userData.business_id}/settings`, {
+                bookingSettings: { ...currentBookingSettings, reminders_enabled: notifyReminders }
+            });
+            this.businessData.booking_settings = { ...currentBookingSettings, reminders_enabled: notifyReminders };
 
             this.businessData.email = email;
             this.businessData.whatsapp_enabled = whatsappEnabled;
