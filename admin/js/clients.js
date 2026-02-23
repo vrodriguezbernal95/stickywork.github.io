@@ -7,9 +7,11 @@ const clients = {
     currentFilter: 'all', // 'all', 'premium', 'normal', 'riesgo', 'baneado'
     searchTerm: '',
     currentTab: 'clientes', // 'clientes', 'estadisticas', 'recordatorios', 'promociones'
-    reminderSubTab: '24h',  // '24h' or '40dias'
+    reminderSubTab: '24h',  // '24h', '40dias' or 'feedback'
     tomorrowBookings: [],
     tomorrowBookingsLoaded: false,
+    feedbackPending: [],
+    feedbackPendingLoaded: false,
     loyaltyConfig: null,
     loyaltyVouchers: [],
     loyaltyLoaded: false,
@@ -37,7 +39,8 @@ const clients = {
             await Promise.all([
                 this.fetchClients(),
                 this.fetchBusinessData(),
-                this.loadTomorrowBookings()
+                this.loadTomorrowBookings(),
+                this.loadFeedbackPending()
             ]);
             this.render();
         } catch (error) {
@@ -242,8 +245,11 @@ const clients = {
             this.loadLoyaltyData();
         }
 
-        if (tabName === 'recordatorios' && !this.tomorrowBookingsLoaded) {
-            this.loadTomorrowBookings().then(() => {
+        if (tabName === 'recordatorios' && (!this.tomorrowBookingsLoaded || !this.feedbackPendingLoaded)) {
+            Promise.all([
+                !this.tomorrowBookingsLoaded ? this.loadTomorrowBookings() : Promise.resolve(),
+                !this.feedbackPendingLoaded ? this.loadFeedbackPending() : Promise.resolve()
+            ]).then(() => {
                 const tab = document.getElementById('tab-recordatorios');
                 if (tab) tab.innerHTML = this.renderReminders();
             });
@@ -551,6 +557,19 @@ const clients = {
         }
     },
 
+    // Load pending feedback requests
+    async loadFeedbackPending() {
+        try {
+            const result = await api.get(`/api/admin/feedback/pending/${auth.getBusinessId()}`);
+            this.feedbackPending = result.data || [];
+            this.feedbackPendingLoaded = true;
+        } catch (error) {
+            console.error('Error cargando feedbacks pendientes:', error);
+            this.feedbackPending = [];
+            this.feedbackPendingLoaded = true;
+        }
+    },
+
     // Get reminder message settings from booking_settings (with defaults)
     getReminderSettings() {
         const bs = this.businessData?.booking_settings
@@ -561,6 +580,7 @@ const clients = {
         return {
             msg24h: bs.reminder_msg_24h || 'Hola {nombre}!\n\nTe recordamos tu cita de mañana a las {hora} para {servicio} en {nombre_negocio}.\n\n¡Te esperamos!',
             msg40d: bs.reminder_msg_40dias || 'Hola {nombre}!\n\nHace tiempo que no te vemos por {nombre_negocio}. ¡Te echamos de menos!\n\n¿Te gustaría reservar una nueva cita? Estaremos encantados de atenderte.',
+            msgFeedback: bs.reminder_msg_feedback || 'Hola {nombre}!\n\n¿Que tal tu {servicio} en {nombre_negocio}?\n\nTu opinion nos ayuda a mejorar. Solo te tomara 1 minuto:\n{enlace}\n\nGracias!\n{nombre_negocio}',
             remindersEnabled: bs.reminders_enabled !== false
         };
     },
@@ -580,8 +600,8 @@ const clients = {
                     ? JSON.parse(this.businessData.booking_settings)
                     : this.businessData.booking_settings)
                 : {};
-            const key = type === '24h' ? 'reminder_msg_24h' : 'reminder_msg_40dias';
-            bs[key] = msg;
+            const keyMap = { '24h': 'reminder_msg_24h', '40dias': 'reminder_msg_40dias', 'feedback': 'reminder_msg_feedback' };
+            bs[keyMap[type]] = msg;
             await api.put(`/api/business/${auth.getBusinessId()}/settings`, { bookingSettings: bs });
             this.businessData.booking_settings = bs;
             modal.toast({ message: 'Mensaje guardado correctamente', type: 'success' });
@@ -616,6 +636,11 @@ const clients = {
                         onclick="clients.switchReminderSubTab('40dias')">
                     🔄 40 días sin venir
                 </button>
+                <button class="reminder-subtab ${this.reminderSubTab === 'feedback' ? 'active' : ''}"
+                        data-subtab="feedback"
+                        onclick="clients.switchReminderSubTab('feedback')">
+                    ⭐ Feedback post-cita ${this.feedbackPending.length > 0 ? `<span class="clients-badge-count">${this.feedbackPending.length}</span>` : ''}
+                </button>
             </div>
 
             <div class="reminder-subpage ${this.reminderSubTab === '24h' ? 'active' : ''}"
@@ -626,6 +651,11 @@ const clients = {
             <div class="reminder-subpage ${this.reminderSubTab === '40dias' ? 'active' : ''}"
                  data-subpage="40dias">
                 ${this.render40DaysReminders(settings)}
+            </div>
+
+            <div class="reminder-subpage ${this.reminderSubTab === 'feedback' ? 'active' : ''}"
+                 data-subpage="feedback">
+                ${this.renderFeedbackReminders(settings)}
             </div>
         `;
     },
@@ -872,6 +902,143 @@ const clients = {
         }
 
         window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    },
+
+    renderFeedbackReminders(settings) {
+        const whatsappReady = this.businessData?.whatsapp_enabled && this.businessData?.whatsapp_number;
+        const pending = this.feedbackPending;
+
+        return `
+            <!-- Info card -->
+            <div class="reminder-alert success" style="margin-bottom: 1.5rem;">
+                <div class="reminder-alert-icon">⭐</div>
+                <div>
+                    <div class="reminder-alert-title">Solicitud de valoración post-cita</div>
+                    <div class="reminder-alert-desc">
+                        Los clientes que completaron su cita hace ~24h aparecen aquí. Envíales el enlace de encuesta con un solo clic.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensaje predefinido WhatsApp -->
+            <div class="reminder-msg-card">
+                <div class="reminder-msg-header">
+                    <h3>💬 Mensaje de WhatsApp predefinido</h3>
+                    <p>Este mensaje se abrirá al pulsar el botón de envío. Puedes personalizarlo.</p>
+                    <div class="reminder-vars">
+                        Variables:
+                        <span class="reminder-var">{nombre}</span>
+                        <span class="reminder-var">{nombre_negocio}</span>
+                        <span class="reminder-var">{servicio}</span>
+                        <span class="reminder-var">{enlace}</span>
+                    </div>
+                </div>
+                <textarea id="reminder-msg-feedback" class="reminder-msg-textarea" rows="7">${settings.msgFeedback}</textarea>
+                <div style="text-align: right; margin-top: 0.75rem;">
+                    <button class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;"
+                            onclick="clients.saveReminderMessage('feedback')">
+                        Guardar mensaje
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista de pendientes -->
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Pendientes de envío</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${pending.length} cliente${pending.length !== 1 ? 's' : ''}</div>
+                </div>
+                ${pending.length === 0 ? `
+                    <div class="reminder-empty">
+                        <span style="font-size: 2rem;">✅</span>
+                        <p>No hay solicitudes de feedback pendientes</p>
+                    </div>
+                ` : `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Servicio</th>
+                                <th>Fecha cita</th>
+                                <th>Teléfono</th>
+                                ${whatsappReady ? '<th style="text-align: center;">Enviar</th>' : ''}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pending.map(b => `
+                                <tr>
+                                    <td style="font-weight: 600;">${b.customer_name}</td>
+                                    <td>${b.service_name || '—'}</td>
+                                    <td>${b.booking_date ? utils.formatDateShort(b.booking_date) : '—'}</td>
+                                    <td style="font-size: 0.9rem;">${b.customer_phone || '—'}</td>
+                                    ${whatsappReady ? `
+                                        <td style="text-align: center;">
+                                            <button class="btn-whatsapp-reminder"
+                                                    onclick="clients.sendFeedbackWhatsApp(${b.id})"
+                                                    title="Enviar solicitud de valoración por WhatsApp">
+                                                💬 Enviar encuesta
+                                            </button>
+                                        </td>
+                                    ` : ''}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    ${!whatsappReady ? `
+                        <div class="reminder-alert" style="margin-top: 1rem; background: rgba(37, 211, 102, 0.08); border-color: rgba(37, 211, 102, 0.3);">
+                            <div class="reminder-alert-icon">💬</div>
+                            <div>
+                                <div class="reminder-alert-title">Configura WhatsApp para enviar encuestas</div>
+                                <div class="reminder-alert-desc">Activa WhatsApp en <strong>Configuración > Notificaciones</strong> para poder enviar mensajes desde aquí.</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                `}
+            </div>
+        `;
+    },
+
+    // Send feedback request via WhatsApp and mark as sent
+    async sendFeedbackWhatsApp(bookingId) {
+        const booking = this.feedbackPending.find(b => b.id === bookingId);
+        if (!booking) return;
+
+        if (!booking.customer_phone) {
+            modal.toast({ message: 'Esta reserva no tiene número de teléfono', type: 'error' });
+            return;
+        }
+
+        if (!this.businessData?.whatsapp_enabled || !this.businessData?.whatsapp_number) {
+            modal.toast({ message: 'WhatsApp no está configurado. Ve a Configuración > Notificaciones.', type: 'error' });
+            return;
+        }
+
+        const settings = this.getReminderSettings();
+        const businessName = this.businessData.name || 'nuestro negocio';
+        const feedbackUrl = `https://stickywork.com/feedback.html?token=${booking.feedback_token}`;
+        const servicio = booking.service_name || 'tu servicio';
+
+        const message = settings.msgFeedback
+            .replace(/{nombre}/g, booking.customer_name)
+            .replace(/{nombre_negocio}/g, businessName)
+            .replace(/{servicio}/g, servicio)
+            .replace(/{enlace}/g, feedbackUrl);
+
+        let phoneNumber = booking.customer_phone.replace(/\D/g, '');
+        if (phoneNumber.length === 9 && /^[6789]/.test(phoneNumber)) {
+            phoneNumber = '34' + phoneNumber;
+        }
+
+        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+
+        try {
+            await api.post(`/api/admin/feedback/mark-sent/${bookingId}`);
+            this.feedbackPending = this.feedbackPending.filter(b => b.id !== bookingId);
+            const tab = document.getElementById('tab-recordatorios');
+            if (tab) tab.innerHTML = this.renderReminders();
+        } catch (error) {
+            console.error('Error marcando feedback como enviado:', error);
+        }
     },
 
     // Send 40-day reactivation reminder via WhatsApp
