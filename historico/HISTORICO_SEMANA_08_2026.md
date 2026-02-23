@@ -152,7 +152,58 @@ Implementación de un sistema de tarjeta de sellos digital que permite a los pro
 ### Archivos modificados:
 - `admin/js/clients.js` — nuevas variables de estado, `loadTomorrowBookings()`, `getReminderSettings()`, `saveReminderMessage()`, `switchReminderSubTab()`, `render24hReminders()`, `render40DaysReminders()`, y estilos CSS incrustados
 
-### Commits pendientes de hacer
+### Commits:
+- `2a7db37` — feat: Completar sistema de recordatorios automáticos de citas (sesión anterior)
+
+---
+
+## Sesión 4: 23-feb-2026 - Dashboard reestructurado + limpieza del sidebar
+
+### Completado
+
+**1. Tab Recordatorios — 3ª sub-página "Feedback post-cita" (`clients.js`)**
+- Sub-página con lista de clientes cuya cita fue ~24h antes y aún no han recibido la encuesta
+- Mensaje configurable con variable `{enlace}` → URL del feedback
+- Botón WhatsApp por cliente → envía el enlace + marca como enviado + elimina de la lista en tiempo real
+- Keys en `booking_settings`: `reminder_msg_24h`, `reminder_msg_40dias`, `reminder_msg_feedback`
+
+**2. Fix: cursor de texto en áreas no editables (`admin.css`)**
+- `user-select: none` en `body`, re-activado en inputs/textareas/selects/celdas de tabla
+
+**3. Fix: selector de tipo de pregunta en Feedback (`settings.js`)**
+- `updateFeedbackQuestionType` fallaba porque los defaults no estaban sincronizados con el estado
+- Fix: al renderizar, se escriben los defaults en `this.businessData.booking_settings` si no existen
+
+**4. Fix estético: cards de Feedback en settings con tema oscuro (`settings.js`)**
+- Reemplazados todos los colores hardcodeados (`#f8f9fa`, `white`, `#f0f9ff`) por variables CSS
+
+**5. Dashboard reestructurado (`dashboard.js`)**
+- **4 cajas de acción** arriba (en lugar de las 7 de estadísticas):
+  - 📅 Reservas Hoy — modal con lista de citas del día
+  - ⏰ Recordatorio 24h — modal con citas de mañana + botón WhatsApp por cita
+  - ⭐ Feedback post-cita — modal con pendientes + botón WhatsApp (se actualiza al enviar)
+  - ❌ Canceladas (7 días) — modal reutilizando `openCancelledModal()`
+- Cada caja abre un modal al clicar (igual que las estadísticas), no un desplegable
+- **7 cajas de estadísticas** movidas a la parte inferior con título "Estadísticas Generales"
+- `this.todayBookings`, `this.tomorrowBookings`, `this.feedbackPending`, `this.cancelledFuture` cargados en paralelo en `load()`
+
+**6. Limpieza del sidebar (`admin-dashboard.html` + `settings.js`)**
+- Eliminados del sidebar: Widget, Equipo, Consultoría, Facturación
+- Sidebar queda con 8 items: Dashboard / Reservas / Clientes / Servicios / Calendario / Opiniones / Talleres / Configuración
+- **Widget**: ya tenía tab en Configuración; se añadió sección de códigos de integración (3 modos: formulario, botón flotante, QR)
+- **Equipo** y **Consultoría**: nuevos tabs en Configuración que cargan los módulos reales (`_container` pattern)
+- **Facturación**: tab "💳 Plan" ya existía; ahora también carga `billing.js` con datos reales de Stripe
+- Patrón `_container` añadido a `team.js`, `consultancy.js`, `billing.js`
+
+### Archivos modificados:
+- `admin/js/clients.js` — 3ª sub-página feedback, `loadFeedbackPending()`, `sendFeedbackWhatsApp()`, estilos
+- `admin/css/admin.css` — `user-select: none` en body
+- `admin/js/settings.js` — fix tipo pregunta feedback, fix estilos oscuros, tabs Equipo/Consultoría/Facturación, sección de integración en Widget
+- `admin/js/dashboard.js` — 4 cajas de acción, modales, stats al fondo
+- `admin-dashboard.html` — sidebar limpiado (4 links eliminados)
+- `admin/js/team.js` — soporte `_container`
+- `admin/js/consultancy.js` — soporte `_container`
+- `admin/js/billing.js` — soporte `_container`
 
 ---
 
