@@ -26,6 +26,9 @@ const dashboard = {
                 booking.status !== 'cancelled'
             ).sort((a, b) => a.booking_time.localeCompare(b.booking_time));
 
+            // Guardar para uso en modales
+            this.todayBookings = todayBookings;
+
             // Process trend data (last 7 weeks)
             const trendData = this.processTrendData(allBookings);
 
@@ -1486,34 +1489,27 @@ const dashboard = {
         const cancelled = this.cancelledFuture  || [];
 
         const boxes = [
-            { id: 'hoy',       icon: '📅', title: 'Reservas Hoy',      count: todayBookings.length, color: '#3b82f6', content: this.renderActionBoxHoy(todayBookings) },
-            { id: 'manana',    icon: '⏰', title: 'Recordatorio 24h',   count: tomorrow.length,       color: '#8b5cf6', content: this.renderActionBoxManana(tomorrow) },
-            { id: 'feedback',  icon: '⭐', title: 'Feedback post-cita', count: feedback.length,       color: '#f59e0b', content: this.renderActionBoxFeedback(feedback) },
-            { id: 'canceladas',icon: '❌', title: 'Canceladas (7 días)', count: cancelled.length,     color: '#ef4444', content: this.renderActionBoxCanceladas(cancelled) }
+            { id: 'hoy',        icon: '📅', title: 'Reservas Hoy',       count: todayBookings.length, color: '#3b82f6' },
+            { id: 'manana',     icon: '⏰', title: 'Recordatorio 24h',    count: tomorrow.length,      color: '#8b5cf6' },
+            { id: 'feedback',   icon: '⭐', title: 'Feedback post-cita',  count: feedback.length,      color: '#f59e0b' },
+            { id: 'canceladas', icon: '❌', title: 'Canceladas (7 días)', count: cancelled.length,     color: '#ef4444' }
         ];
 
         return `
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
                 ${boxes.map(box => `
-                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        <div onclick="dashboard.toggleActionBox('${box.id}')"
-                             style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem; cursor: pointer; transition: background 0.2s;"
-                             onmouseover="this.style.background='rgba(255,255,255,0.04)'"
-                             onmouseout="this.style.background='transparent'">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 44px; height: 44px; border-radius: 10px; background: ${box.color}20; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
-                                    ${box.icon}
-                                </div>
-                                <div>
-                                    <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${box.title}</div>
-                                    <div id="dash-count-${box.id}" style="font-size: 1.75rem; font-weight: 700; color: ${box.color}; line-height: 1.1;">${box.count}</div>
-                                </div>
+                    <div onclick="dashboard.openActionBoxModal('${box.id}')"
+                         style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;"
+                         onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.18)'; this.style.borderColor='${box.color}50'"
+                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--border-color)'">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                            <div style="width: 44px; height: 44px; border-radius: 10px; background: ${box.color}20; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                                ${box.icon}
                             </div>
-                            <span id="dash-arrow-${box.id}" style="color: var(--text-secondary); font-size: 0.8rem;">▼</span>
+                            <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.3;">${box.title}</div>
                         </div>
-                        <div id="dash-box-${box.id}" style="display: none; border-top: 1px solid var(--border-color); max-height: 320px; overflow-y: auto;">
-                            ${box.content}
-                        </div>
+                        <div id="dash-count-${box.id}" style="font-size: 2.75rem; font-weight: 700; color: ${box.color}; line-height: 1;">${box.count}</div>
+                        <div style="margin-top: 0.6rem; font-size: 0.8rem; color: var(--text-secondary);">Ver detalle →</div>
                     </div>
                 `).join('')}
             </div>
@@ -1601,13 +1597,79 @@ const dashboard = {
         </div>`;
     },
 
-    toggleActionBox(boxId) {
-        const body  = document.getElementById(`dash-box-${boxId}`);
-        const arrow = document.getElementById(`dash-arrow-${boxId}`);
-        if (!body) return;
-        const isOpen = body.style.display !== 'none';
-        body.style.display = isOpen ? 'none' : 'block';
-        if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+    openActionBoxModal(boxId) {
+        // Para canceladas reutilizamos el modal ya existente
+        if (boxId === 'canceladas') {
+            this.openCancelledModal();
+            return;
+        }
+
+        const cfgMap = {
+            hoy:      { title: 'Reservas de Hoy',                    icon: '📅', color: '#3b82f6', empty: 'No hay reservas programadas para hoy',    items: () => this.todayBookings    || [], renderFn: (items) => this.renderActionBoxHoy(items) },
+            manana:   { title: 'Recordatorio 24h — Citas de Mañana', icon: '⏰', color: '#8b5cf6', empty: 'No hay reservas para mañana',              items: () => this.tomorrowBookings || [], renderFn: (items) => this.renderActionBoxManana(items) },
+            feedback: { title: 'Feedback post-cita pendiente',        icon: '⭐', color: '#f59e0b', empty: 'No hay encuestas de feedback pendientes',  items: () => this.feedbackPending  || [], renderFn: (items) => this.renderActionBoxFeedback(items) },
+        };
+
+        const cfg = cfgMap[boxId];
+        if (!cfg) return;
+
+        const items = cfg.items();
+
+        // Overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; animation: fadeIn 0.2s ease;';
+
+        // Modal
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background: var(--bg-secondary); border-radius: 16px; max-width: 800px; width: 90%; max-height: 85vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: slideUp 0.3s ease; display: flex; flex-direction: column;';
+
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = `padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, ${cfg.color}15, ${cfg.color}05); flex-shrink: 0;`;
+        header.innerHTML = `
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                    ${cfg.icon} ${cfg.title}
+                </h2>
+                <p id="action-modal-count" style="margin: 0.4rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                    ${items.length} ${items.length === 1 ? 'elemento' : 'elementos'}
+                </p>
+            </div>
+            <button id="close-action-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); padding: 0.5rem;">✕</button>
+        `;
+
+        // Content
+        const content = document.createElement('div');
+        content.id = 'action-modal-content-' + boxId;
+        content.style.cssText = 'overflow-y: auto; flex: 1;';
+        content.innerHTML = items.length === 0
+            ? `<div style="text-align: center; padding: 3rem; color: var(--text-secondary);"><div style="font-size: 3rem; margin-bottom: 1rem;">${cfg.icon}</div><p style="font-size: 1.1rem; margin: 0;">${cfg.empty}</p></div>`
+            : cfg.renderFn(items);
+
+        // Footer
+        const footer = document.createElement('div');
+        footer.style.cssText = 'padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; flex-shrink: 0;';
+        footer.innerHTML = `
+            <button id="close-action-modal-btn" style="padding: 0.75rem 1.5rem; background: rgba(255,255,255,0.1); color: var(--text-primary); border: none; border-radius: 8px; cursor: pointer; font-weight: 600;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.1)'">Cerrar</button>
+        `;
+
+        modal.appendChild(header);
+        modal.appendChild(content);
+        modal.appendChild(footer);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const closeModal = () => {
+            overlay.style.animation = 'fadeOut 0.2s ease';
+            setTimeout(() => { if (document.body.contains(overlay)) document.body.removeChild(overlay); }, 200);
+        };
+
+        document.getElementById('close-action-modal').addEventListener('click', closeModal);
+        document.getElementById('close-action-modal-btn').addEventListener('click', closeModal);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
     },
 
     sendReminder24hFromDashboard(bookingId) {
@@ -1658,11 +1720,19 @@ const dashboard = {
             await api.fetch(`/api/admin/feedback/mark-sent/${bookingId}`, { method: 'POST' });
             this.feedbackPending = this.feedbackPending.filter(b => b.id !== bookingId);
 
+            // Actualizar badge del card
             const countEl = document.getElementById('dash-count-feedback');
             if (countEl) countEl.textContent = this.feedbackPending.length;
 
-            const bodyEl = document.getElementById('dash-box-feedback');
-            if (bodyEl) bodyEl.innerHTML = this.renderActionBoxFeedback(this.feedbackPending);
+            // Actualizar contenido del modal si está abierto
+            const modalContent = document.getElementById('action-modal-content-feedback');
+            if (modalContent) {
+                modalContent.innerHTML = this.feedbackPending.length === 0
+                    ? '<div style="text-align: center; padding: 3rem; color: var(--text-secondary);"><div style="font-size: 3rem; margin-bottom: 1rem;">⭐</div><p style="font-size: 1.1rem; margin: 0;">No hay encuestas de feedback pendientes</p></div>'
+                    : this.renderActionBoxFeedback(this.feedbackPending);
+                const countModal = document.getElementById('action-modal-count');
+                if (countModal) countModal.textContent = `${this.feedbackPending.length} ${this.feedbackPending.length === 1 ? 'elemento' : 'elementos'}`;
+            }
         } catch (e) {
             console.error('Error al marcar feedback como enviado:', e);
         }
