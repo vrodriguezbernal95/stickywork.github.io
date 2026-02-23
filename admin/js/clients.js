@@ -559,8 +559,8 @@ const clients = {
                 : this.businessData.booking_settings)
             : {};
         return {
-            msg24h: bs.reminder_msg_24h || 'Hola {nombre}! 👋\n\nTe recordamos tu cita de mañana a las {hora} para {servicio} en {nombre_negocio}.\n\n¡Te esperamos!',
-            msg40d: bs.reminder_msg_40dias || 'Hola {nombre}! 👋\n\nHace tiempo que no te vemos por {nombre_negocio}. ¡Te echamos de menos!\n\n¿Te gustaría reservar una nueva cita? Estaremos encantados de atenderte.',
+            msg24h: bs.reminder_msg_24h || 'Hola {nombre}!\n\nTe recordamos tu cita de mañana a las {hora} para {servicio} en {nombre_negocio}.\n\n¡Te esperamos!',
+            msg40d: bs.reminder_msg_40dias || 'Hola {nombre}!\n\nHace tiempo que no te vemos por {nombre_negocio}. ¡Te echamos de menos!\n\n¿Te gustaría reservar una nueva cita? Estaremos encantados de atenderte.',
             remindersEnabled: bs.reminders_enabled !== false
         };
     },
@@ -665,7 +665,7 @@ const clients = {
                         <span class="reminder-var">{servicio}</span>
                     </div>
                 </div>
-                <textarea id="reminder-msg-24h" class="reminder-msg-textarea" rows="4">${settings.msg24h}</textarea>
+                <textarea id="reminder-msg-24h" class="reminder-msg-textarea" rows="7">${settings.msg24h}</textarea>
                 <div style="text-align: right; margin-top: 0.75rem;">
                     <button class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;"
                             onclick="clients.saveReminderMessage('24h')">
@@ -763,7 +763,7 @@ const clients = {
                         <span class="reminder-var">{nombre_negocio}</span>
                     </div>
                 </div>
-                <textarea id="reminder-msg-40dias" class="reminder-msg-textarea" rows="4">${settings.msg40d}</textarea>
+                <textarea id="reminder-msg-40dias" class="reminder-msg-textarea" rows="7">${settings.msg40d}</textarea>
                 <div style="text-align: right; margin-top: 0.75rem;">
                     <button class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;"
                             onclick="clients.saveReminderMessage('40dias')">
