@@ -56,121 +56,30 @@ const dashboard = {
                 businessName: businessData.data.name
             };
 
+            // Store booking_settings for WhatsApp message templates
+            this.bookingSettings = businessData.data.booking_settings
+                ? (typeof businessData.data.booking_settings === 'string'
+                    ? JSON.parse(businessData.data.booking_settings)
+                    : businessData.data.booking_settings)
+                : {};
+
+            // Load action box data in parallel
+            const d2 = new Date();
+            d2.setDate(d2.getDate() + 1);
+            const tomorrowStr = `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, '0')}-${String(d2.getDate()).padStart(2, '0')}`;
+            const [tomorrowRes, feedbackRes, cancelledRes] = await Promise.all([
+                api.get(`/api/bookings/${auth.getBusinessId()}?date=${tomorrowStr}`),
+                api.get(`/api/admin/feedback/pending/${auth.getBusinessId()}`),
+                api.get(`/api/bookings/${auth.getBusinessId()}/cancelled-future`)
+            ]);
+            this.tomorrowBookings = (tomorrowRes.data || []).filter(b => b.status !== 'cancelled');
+            this.feedbackPending  = feedbackRes.data || [];
+            this.cancelledFuture  = cancelledRes.data || [];
+
             // Render dashboard
             contentArea.innerHTML = `
-                <!-- Stats Grid -->
-                <div class="stats-grid">
-                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
-                         onclick="dashboard.openBookingsModal('all')"
-                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">📊</div>
-                        <div class="stat-content">
-                            <div class="stat-value">${stats.totalBookings || 0}</div>
-                            <div class="stat-label">Total Reservas</div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
-                         onclick="dashboard.openBookingsModal('month')"
-                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">📅</div>
-                        <div class="stat-content">
-                            <div class="stat-value">${stats.thisMonth || 0}</div>
-                            <div class="stat-label">Reservas Este Mes</div>
-                            ${monthComparison.change !== 0 ? `
-                                <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                    <span style="
-                                        color: ${monthComparison.change > 0 ? '#22c55e' : '#ef4444'};
-                                        font-weight: 700;
-                                        font-size: 0.9rem;
-                                        display: flex;
-                                        align-items: center;
-                                        gap: 0.25rem;
-                                    ">
-                                        ${monthComparison.change > 0 ? '▲' : '▼'}
-                                        ${Math.abs(monthComparison.percentage)}%
-                                    </span>
-                                    <span style="color: var(--text-tertiary); font-size: 0.8rem;">
-                                        vs mes anterior
-                                    </span>
-                                </div>
-                            ` : monthComparison.lastMonth > 0 ? `
-                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
-                                    ≈ Igual que mes anterior
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
-                         onclick="dashboard.openBookingsModal('pending')"
-                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                        <div class="stat-icon" style="background: rgba(234, 179, 8, 0.1);">⏳</div>
-                        <div class="stat-content">
-                            <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'pending')?.count || 0}</div>
-                            <div class="stat-label">Pendientes</div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
-                         onclick="dashboard.openBookingsModal('confirmed')"
-                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                        <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">✅</div>
-                        <div class="stat-content">
-                            <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'confirmed')?.count || 0}</div>
-                            <div class="stat-label">Confirmadas</div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
-                         onclick="dashboard.openBookingsModal('cancelled')"
-                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1);">❌</div>
-                        <div class="stat-content">
-                            <div class="stat-value">${stats.cancelledFuture || 0}</div>
-                            <div class="stat-label">Canceladas</div>
-                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
-                                (próximos 7 días)
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stat-card" style="transition: transform 0.2s ease;"
-                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1);">💰</div>
-                        <div class="stat-content">
-                            <div class="stat-value">${revenueData.thisMonth.toFixed(0)}€</div>
-                            <div class="stat-label">Ingresos Este Mes</div>
-                            ${revenueData.change !== 0 ? `
-                                <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                    <span style="color: ${revenueData.change > 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 0.9rem;">
-                                        ${revenueData.change > 0 ? '▲' : '▼'} ${Math.abs(revenueData.percentage)}%
-                                    </span>
-                                    <span style="color: var(--text-tertiary); font-size: 0.8rem;">vs mes anterior</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <div class="stat-card" style="transition: transform 0.2s ease;"
-                         onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.15)'"
-                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                        <div class="stat-icon" style="background: rgba(${cancellationRate.rate > 20 ? '239, 68, 68' : cancellationRate.rate > 10 ? '249, 115, 22' : '34, 197, 94'}, 0.1);">📉</div>
-                        <div class="stat-content">
-                            <div class="stat-value" style="color: ${cancellationRate.rate > 20 ? '#ef4444' : cancellationRate.rate > 10 ? '#f97316' : '#22c55e'};">${cancellationRate.rate}%</div>
-                            <div class="stat-label">Tasa Cancelación</div>
-                            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">
-                                ${cancellationRate.cancelled} de ${cancellationRate.total}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- 4 Action Boxes -->
+                ${this.renderActionBoxes(todayBookings)}
 
                 <!-- Today's Agenda Widget -->
                 <div style="margin: 2rem 0;">
@@ -290,6 +199,110 @@ const dashboard = {
                             </tbody>
                         </table>
                     `}
+                </div>
+
+                <!-- Estadísticas Generales (moved to bottom) -->
+                <div style="margin: 2rem 0 0 0;">
+                    <h2 style="margin: 0 0 1.25rem 0; color: var(--text-primary); font-size: 1.3rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 1.5rem;">📊</span>
+                        Estadísticas Generales
+                    </h2>
+                    <div class="stats-grid">
+                        <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                             onclick="dashboard.openBookingsModal('all')"
+                             onmouseover="this.style.transform='translateY(-5px)'"
+                             onmouseout="this.style.transform='translateY(0)'">
+                            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">📊</div>
+                            <div class="stat-content">
+                                <div class="stat-value">${stats.totalBookings || 0}</div>
+                                <div class="stat-label">Total Reservas</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                             onclick="dashboard.openBookingsModal('month')"
+                             onmouseover="this.style.transform='translateY(-5px)'"
+                             onmouseout="this.style.transform='translateY(0)'">
+                            <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">📅</div>
+                            <div class="stat-content">
+                                <div class="stat-value">${stats.thisMonth || 0}</div>
+                                <div class="stat-label">Reservas Este Mes</div>
+                                ${monthComparison.change !== 0 ? `
+                                    <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                        <span style="color: ${monthComparison.change > 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 0.9rem;">
+                                            ${monthComparison.change > 0 ? '▲' : '▼'} ${Math.abs(monthComparison.percentage)}%
+                                        </span>
+                                        <span style="color: var(--text-tertiary); font-size: 0.8rem;">vs mes anterior</span>
+                                    </div>
+                                ` : monthComparison.lastMonth > 0 ? `
+                                    <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">≈ Igual que mes anterior</div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                             onclick="dashboard.openBookingsModal('pending')"
+                             onmouseover="this.style.transform='translateY(-5px)'"
+                             onmouseout="this.style.transform='translateY(0)'">
+                            <div class="stat-icon" style="background: rgba(234, 179, 8, 0.1);">⏳</div>
+                            <div class="stat-content">
+                                <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'pending')?.count || 0}</div>
+                                <div class="stat-label">Pendientes</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                             onclick="dashboard.openBookingsModal('confirmed')"
+                             onmouseover="this.style.transform='translateY(-5px)'"
+                             onmouseout="this.style.transform='translateY(0)'">
+                            <div class="stat-icon" style="background: rgba(34, 197, 94, 0.1);">✅</div>
+                            <div class="stat-content">
+                                <div class="stat-value">${stats.bookingsByStatus.find(s => s.status === 'confirmed')?.count || 0}</div>
+                                <div class="stat-label">Confirmadas</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card" style="cursor: pointer; transition: transform 0.2s ease;"
+                             onclick="dashboard.openBookingsModal('cancelled')"
+                             onmouseover="this.style.transform='translateY(-5px)'"
+                             onmouseout="this.style.transform='translateY(0)'">
+                            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1);">❌</div>
+                            <div class="stat-content">
+                                <div class="stat-value">${stats.cancelledFuture || 0}</div>
+                                <div class="stat-label">Canceladas</div>
+                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">(próximos 7 días)</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card" style="transition: transform 0.2s ease;"
+                             onmouseover="this.style.transform='translateY(-5px)'"
+                             onmouseout="this.style.transform='translateY(0)'">
+                            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1);">💰</div>
+                            <div class="stat-content">
+                                <div class="stat-value">${revenueData.thisMonth.toFixed(0)}€</div>
+                                <div class="stat-label">Ingresos Este Mes</div>
+                                ${revenueData.change !== 0 ? `
+                                    <div style="margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                                        <span style="color: ${revenueData.change > 0 ? '#22c55e' : '#ef4444'}; font-weight: 700; font-size: 0.9rem;">
+                                            ${revenueData.change > 0 ? '▲' : '▼'} ${Math.abs(revenueData.percentage)}%
+                                        </span>
+                                        <span style="color: var(--text-tertiary); font-size: 0.8rem;">vs mes anterior</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="stat-card" style="transition: transform 0.2s ease;"
+                             onmouseover="this.style.transform='translateY(-5px)'"
+                             onmouseout="this.style.transform='translateY(0)'">
+                            <div class="stat-icon" style="background: rgba(${cancellationRate.rate > 20 ? '239, 68, 68' : cancellationRate.rate > 10 ? '249, 115, 22' : '34, 197, 94'}, 0.1);">📉</div>
+                            <div class="stat-content">
+                                <div class="stat-value" style="color: ${cancellationRate.rate > 20 ? '#ef4444' : cancellationRate.rate > 10 ? '#f97316' : '#22c55e'};">${cancellationRate.rate}%</div>
+                                <div class="stat-label">Tasa Cancelación</div>
+                                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-tertiary);">${cancellationRate.cancelled} de ${cancellationRate.total}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -1462,6 +1475,196 @@ const dashboard = {
         } catch (error) {
             console.error('Error sending WhatsApp:', error);
             alert('Error al preparar mensaje de WhatsApp');
+        }
+    },
+
+    // === ACTION BOXES ===
+
+    renderActionBoxes(todayBookings) {
+        const tomorrow  = this.tomorrowBookings || [];
+        const feedback  = this.feedbackPending  || [];
+        const cancelled = this.cancelledFuture  || [];
+
+        const boxes = [
+            { id: 'hoy',       icon: '📅', title: 'Reservas Hoy',      count: todayBookings.length, color: '#3b82f6', content: this.renderActionBoxHoy(todayBookings) },
+            { id: 'manana',    icon: '⏰', title: 'Recordatorio 24h',   count: tomorrow.length,       color: '#8b5cf6', content: this.renderActionBoxManana(tomorrow) },
+            { id: 'feedback',  icon: '⭐', title: 'Feedback post-cita', count: feedback.length,       color: '#f59e0b', content: this.renderActionBoxFeedback(feedback) },
+            { id: 'canceladas',icon: '❌', title: 'Canceladas (7 días)', count: cancelled.length,     color: '#ef4444', content: this.renderActionBoxCanceladas(cancelled) }
+        ];
+
+        return `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+                ${boxes.map(box => `
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div onclick="dashboard.toggleActionBox('${box.id}')"
+                             style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem; cursor: pointer; transition: background 0.2s;"
+                             onmouseover="this.style.background='rgba(255,255,255,0.04)'"
+                             onmouseout="this.style.background='transparent'">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 44px; height: 44px; border-radius: 10px; background: ${box.color}20; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                                    ${box.icon}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${box.title}</div>
+                                    <div id="dash-count-${box.id}" style="font-size: 1.75rem; font-weight: 700; color: ${box.color}; line-height: 1.1;">${box.count}</div>
+                                </div>
+                            </div>
+                            <span id="dash-arrow-${box.id}" style="color: var(--text-secondary); font-size: 0.8rem;">▼</span>
+                        </div>
+                        <div id="dash-box-${box.id}" style="display: none; border-top: 1px solid var(--border-color); max-height: 320px; overflow-y: auto;">
+                            ${box.content}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    },
+
+    renderActionBoxHoy(bookings) {
+        if (bookings.length === 0) {
+            return '<div style="padding: 1.25rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">No hay reservas hoy</div>';
+        }
+        return `<div style="padding: 0.5rem 0.75rem;">
+            ${bookings.map(b => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${b.customer_name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.booking_time.substring(0,5)} · ${b.service_name || 'Sin servicio'}</div>
+                    </div>
+                    <span class="status-badge status-${b.status}" style="font-size: 0.75rem; padding: 0.2rem 0.55rem;">${this.getStatusLabel(b.status)}</span>
+                </div>
+            `).join('')}
+        </div>`;
+    },
+
+    renderActionBoxManana(bookings) {
+        if (bookings.length === 0) {
+            return '<div style="padding: 1.25rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">Sin reservas para mañana</div>';
+        }
+        return `<div style="padding: 0.5rem 0.75rem;">
+            ${bookings.map(b => `
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.customer_name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.booking_time.substring(0,5)} · ${b.service_name || 'Sin servicio'}</div>
+                    </div>
+                    ${b.customer_phone
+                        ? `<button onclick="dashboard.sendReminder24hFromDashboard(${b.id})"
+                                   title="Enviar recordatorio por WhatsApp"
+                                   style="flex-shrink: 0; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">WA</button>`
+                        : `<span style="font-size: 0.75rem; color: var(--text-secondary);">Sin tel.</span>`
+                    }
+                </div>
+            `).join('')}
+        </div>`;
+    },
+
+    renderActionBoxFeedback(pending) {
+        if (pending.length === 0) {
+            return '<div style="padding: 1.25rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">Sin feedback pendiente</div>';
+        }
+        return `<div style="padding: 0.5rem 0.75rem;">
+            ${pending.map(b => `
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.customer_name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.service_name || 'Sin servicio'} · ${new Date(b.booking_date).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}</div>
+                    </div>
+                    ${b.customer_phone
+                        ? `<button onclick="dashboard.sendFeedbackFromDashboard(${b.id})"
+                                   title="Enviar encuesta de feedback por WhatsApp"
+                                   style="flex-shrink: 0; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">WA</button>`
+                        : `<span style="font-size: 0.75rem; color: var(--text-secondary);">Sin tel.</span>`
+                    }
+                </div>
+            `).join('')}
+        </div>`;
+    },
+
+    renderActionBoxCanceladas(cancelled) {
+        if (cancelled.length === 0) {
+            return '<div style="padding: 1.25rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">Sin cancelaciones recientes</div>';
+        }
+        return `<div style="padding: 0.5rem 0.75rem;">
+            ${cancelled.map(b => `
+                <div style="padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${b.customer_name}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        ${new Date(b.booking_date).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} · ${b.service_name || 'Sin servicio'}
+                    </div>
+                    ${b.cancellation_reason
+                        ? `<div style="font-size: 0.78rem; color: var(--text-secondary); font-style: italic; margin-top: 0.2rem;">"${b.cancellation_reason}"</div>`
+                        : ''
+                    }
+                </div>
+            `).join('')}
+        </div>`;
+    },
+
+    toggleActionBox(boxId) {
+        const body  = document.getElementById(`dash-box-${boxId}`);
+        const arrow = document.getElementById(`dash-arrow-${boxId}`);
+        if (!body) return;
+        const isOpen = body.style.display !== 'none';
+        body.style.display = isOpen ? 'none' : 'block';
+        if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+    },
+
+    sendReminder24hFromDashboard(bookingId) {
+        const booking = (this.tomorrowBookings || []).find(b => b.id === bookingId);
+        if (!booking || !booking.customer_phone) return;
+
+        const defaultMsg = 'Hola {nombre},\n\nTe recordamos tu cita de mañana en {nombre_negocio}.\n\nFecha: {fecha}\nHora: {hora}\nServicio: {servicio}\n\n¡Te esperamos!';
+        const template = (this.bookingSettings && this.bookingSettings.reminder_msg_24h) || defaultMsg;
+
+        const bookingDate = new Date(booking.booking_date);
+        const formattedDate = bookingDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        const message = template
+            .replace(/{nombre}/g, booking.customer_name || '')
+            .replace(/{nombre_negocio}/g, this.businessSettings.businessName || '')
+            .replace(/{fecha}/g, formattedDate)
+            .replace(/{hora}/g, booking.booking_time.substring(0, 5))
+            .replace(/{servicio}/g, booking.service_name || 'tu servicio');
+
+        let phone = booking.customer_phone.replace(/\D/g, '');
+        if (phone.length === 9 && /^[6789]/.test(phone)) phone = '34' + phone;
+
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    },
+
+    async sendFeedbackFromDashboard(bookingId) {
+        const booking = (this.feedbackPending || []).find(b => b.id === bookingId);
+        if (!booking || !booking.customer_phone) return;
+
+        const defaultMsg = 'Hola {nombre},\n\n¿Que tal tu {servicio} en {nombre_negocio}?\n\nNos encantaría conocer tu opinión:\n{enlace}\n\n¡Gracias!';
+        const template = (this.bookingSettings && this.bookingSettings.reminder_msg_feedback) || defaultMsg;
+
+        const feedbackUrl = `https://stickywork.com/feedback.html?token=${booking.feedback_token}`;
+
+        const message = template
+            .replace(/{nombre}/g, booking.customer_name || '')
+            .replace(/{nombre_negocio}/g, this.businessSettings.businessName || '')
+            .replace(/{servicio}/g, booking.service_name || 'tu servicio')
+            .replace(/{enlace}/g, feedbackUrl);
+
+        let phone = booking.customer_phone.replace(/\D/g, '');
+        if (phone.length === 9 && /^[6789]/.test(phone)) phone = '34' + phone;
+
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+
+        // Marcar como enviado y actualizar UI
+        try {
+            await api.fetch(`/api/admin/feedback/mark-sent/${bookingId}`, { method: 'POST' });
+            this.feedbackPending = this.feedbackPending.filter(b => b.id !== bookingId);
+
+            const countEl = document.getElementById('dash-count-feedback');
+            if (countEl) countEl.textContent = this.feedbackPending.length;
+
+            const bodyEl = document.getElementById('dash-box-feedback');
+            if (bodyEl) bodyEl.innerHTML = this.renderActionBoxFeedback(this.feedbackPending);
+        } catch (e) {
+            console.error('Error al marcar feedback como enviado:', e);
         }
     }
 };
