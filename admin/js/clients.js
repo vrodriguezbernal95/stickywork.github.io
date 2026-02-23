@@ -7,6 +7,9 @@ const clients = {
     currentFilter: 'all', // 'all', 'premium', 'normal', 'riesgo', 'baneado'
     searchTerm: '',
     currentTab: 'clientes', // 'clientes', 'estadisticas', 'recordatorios', 'promociones'
+    reminderSubTab: '24h',  // '24h' or '40dias'
+    tomorrowBookings: [],
+    tomorrowBookingsLoaded: false,
     loyaltyConfig: null,
     loyaltyVouchers: [],
     loyaltyLoaded: false,
@@ -31,8 +34,11 @@ const clients = {
         `;
 
         try {
-            await this.fetchClients();
-            await this.fetchBusinessData();
+            await Promise.all([
+                this.fetchClients(),
+                this.fetchBusinessData(),
+                this.loadTomorrowBookings()
+            ]);
             this.render();
         } catch (error) {
             console.error('Error loading clients:', error);
@@ -234,6 +240,13 @@ const clients = {
 
         if (tabName === 'promociones' && !this.loyaltyLoaded) {
             this.loadLoyaltyData();
+        }
+
+        if (tabName === 'recordatorios' && !this.tomorrowBookingsLoaded) {
+            this.loadTomorrowBookings().then(() => {
+                const tab = document.getElementById('tab-recordatorios');
+                if (tab) tab.innerHTML = this.renderReminders();
+            });
         }
     },
 
@@ -500,7 +513,7 @@ const clients = {
 
         return this.allClients
             .filter(c => {
-                if (!c.last_booking_date) return true; // never visited
+                if (!c.last_booking_date) return true;
                 return new Date(c.last_booking_date) < fortyDaysAgo;
             })
             .map(c => {
@@ -511,7 +524,6 @@ const clients = {
                 return { ...c, daysSince };
             })
             .sort((a, b) => {
-                // Null (never visited) first, then by most days
                 if (a.daysSince === null && b.daysSince === null) return 0;
                 if (a.daysSince === null) return -1;
                 if (b.daysSince === null) return 1;
@@ -519,18 +531,213 @@ const clients = {
             });
     },
 
+    // Load tomorrow's bookings from API
+    async loadTomorrowBookings() {
+        try {
+            const d = new Date();
+            d.setDate(d.getDate() + 1);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const tomorrow = `${yyyy}-${mm}-${dd}`;
+            const businessId = auth.getBusinessId();
+            const result = await api.get(`/api/bookings/${businessId}?date=${tomorrow}`);
+            this.tomorrowBookings = (result.data || []).filter(b => b.status !== 'cancelled');
+            this.tomorrowBookingsLoaded = true;
+        } catch (error) {
+            console.error('Error cargando reservas de mañana:', error);
+            this.tomorrowBookings = [];
+            this.tomorrowBookingsLoaded = true;
+        }
+    },
+
+    // Get reminder message settings from booking_settings (with defaults)
+    getReminderSettings() {
+        const bs = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+        return {
+            msg24h: bs.reminder_msg_24h || 'Hola {nombre}! 👋\n\nTe recordamos tu cita de mañana a las {hora} para {servicio} en {nombre_negocio}.\n\n¡Te esperamos!',
+            msg40d: bs.reminder_msg_40dias || 'Hola {nombre}! 👋\n\nHace tiempo que no te vemos por {nombre_negocio}. ¡Te echamos de menos!\n\n¿Te gustaría reservar una nueva cita? Estaremos encantados de atenderte.',
+            remindersEnabled: bs.reminders_enabled !== false
+        };
+    },
+
+    // Save a reminder message template to booking_settings
+    async saveReminderMessage(type) {
+        const textarea = document.getElementById(`reminder-msg-${type}`);
+        if (!textarea) return;
+        const msg = textarea.value.trim();
+        if (!msg) {
+            modal.toast({ message: 'El mensaje no puede estar vacío', type: 'error' });
+            return;
+        }
+        try {
+            const bs = this.businessData?.booking_settings
+                ? (typeof this.businessData.booking_settings === 'string'
+                    ? JSON.parse(this.businessData.booking_settings)
+                    : this.businessData.booking_settings)
+                : {};
+            const key = type === '24h' ? 'reminder_msg_24h' : 'reminder_msg_40dias';
+            bs[key] = msg;
+            await api.put(`/api/business/${auth.getBusinessId()}/settings`, { bookingSettings: bs });
+            this.businessData.booking_settings = bs;
+            modal.toast({ message: 'Mensaje guardado correctamente', type: 'success' });
+        } catch (error) {
+            modal.toast({ message: 'Error al guardar el mensaje', type: 'error' });
+        }
+    },
+
+    // Switch between reminder sub-tabs
+    switchReminderSubTab(tab) {
+        this.reminderSubTab = tab;
+        document.querySelectorAll('.reminder-subtab').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.subtab === tab);
+        });
+        document.querySelectorAll('.reminder-subpage').forEach(page => {
+            page.classList.toggle('active', page.dataset.subpage === tab);
+        });
+    },
+
     renderReminders() {
-        const inactiveClients = this.getInactiveClients();
-        const whatsappReady = this.businessData && this.businessData.whatsapp_enabled && this.businessData.whatsapp_number;
+        const settings = this.getReminderSettings();
+        return `
+            <!-- Sub-tab navigation -->
+            <div class="reminder-subtabs">
+                <button class="reminder-subtab ${this.reminderSubTab === '24h' ? 'active' : ''}"
+                        data-subtab="24h"
+                        onclick="clients.switchReminderSubTab('24h')">
+                    🔔 Recordatorio 24h
+                </button>
+                <button class="reminder-subtab ${this.reminderSubTab === '40dias' ? 'active' : ''}"
+                        data-subtab="40dias"
+                        onclick="clients.switchReminderSubTab('40dias')">
+                    🔄 40 días sin venir
+                </button>
+            </div>
+
+            <div class="reminder-subpage ${this.reminderSubTab === '24h' ? 'active' : ''}"
+                 data-subpage="24h">
+                ${this.render24hReminders(settings)}
+            </div>
+
+            <div class="reminder-subpage ${this.reminderSubTab === '40dias' ? 'active' : ''}"
+                 data-subpage="40dias">
+                ${this.render40DaysReminders(settings)}
+            </div>
+        `;
+    },
+
+    render24hReminders(settings) {
+        const whatsappReady = this.businessData?.whatsapp_enabled && this.businessData?.whatsapp_number;
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        const tomorrow = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        const bookings = this.tomorrowBookings;
 
         return `
-            <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary);">Recordatorios</h2>
-
-            <!-- Summary alert -->
-            <div class="reminder-alert ${inactiveClients.length > 0 ? 'warning' : 'success'}">
-                <div class="reminder-alert-icon">
-                    ${inactiveClients.length > 0 ? '🔔' : '✅'}
+            <!-- Email automático info -->
+            <div class="reminder-alert ${settings.remindersEnabled ? 'success' : 'warning'}" style="margin-bottom: 1.5rem;">
+                <div class="reminder-alert-icon">${settings.remindersEnabled ? '✅' : '⏸️'}</div>
+                <div>
+                    <div class="reminder-alert-title">Email automático ${settings.remindersEnabled ? 'activado' : 'desactivado'}</div>
+                    <div class="reminder-alert-desc">
+                        ${settings.remindersEnabled
+                            ? 'Se envía un email automático a cada cliente el día antes de su cita.'
+                            : 'El email automático está desactivado. Puedes activarlo en Configuración > Notificaciones.'}
+                    </div>
                 </div>
+            </div>
+
+            <!-- Mensaje predefinido WhatsApp -->
+            <div class="reminder-msg-card">
+                <div class="reminder-msg-header">
+                    <h3>💬 Mensaje de WhatsApp predefinido</h3>
+                    <p>Este mensaje se abrirá al pulsar el botón de envío. Puedes personalizarlo.</p>
+                    <div class="reminder-vars">
+                        Variables:
+                        <span class="reminder-var">{nombre}</span>
+                        <span class="reminder-var">{nombre_negocio}</span>
+                        <span class="reminder-var">{fecha}</span>
+                        <span class="reminder-var">{hora}</span>
+                        <span class="reminder-var">{servicio}</span>
+                    </div>
+                </div>
+                <textarea id="reminder-msg-24h" class="reminder-msg-textarea" rows="4">${settings.msg24h}</textarea>
+                <div style="text-align: right; margin-top: 0.75rem;">
+                    <button class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;"
+                            onclick="clients.saveReminderMessage('24h')">
+                        Guardar mensaje
+                    </button>
+                </div>
+            </div>
+
+            <!-- Citas de mañana -->
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Citas de mañana — ${tomorrow}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${bookings.length} cita${bookings.length !== 1 ? 's' : ''}</div>
+                </div>
+                ${bookings.length === 0 ? `
+                    <div class="reminder-empty">
+                        <span style="font-size: 2rem;">📅</span>
+                        <p>No hay citas confirmadas para mañana</p>
+                    </div>
+                ` : `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Hora</th>
+                                <th>Servicio</th>
+                                <th>Teléfono</th>
+                                ${whatsappReady ? '<th style="text-align: center;">WhatsApp</th>' : ''}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${bookings.map(b => `
+                                <tr>
+                                    <td style="font-weight: 600;">${b.customer_name}</td>
+                                    <td>${b.booking_time ? b.booking_time.substring(0, 5) : '—'}</td>
+                                    <td>${b.service_name || '—'}</td>
+                                    <td style="font-size: 0.9rem;">${b.customer_phone || '—'}</td>
+                                    ${whatsappReady ? `
+                                        <td style="text-align: center;">
+                                            <button class="btn-whatsapp-reminder"
+                                                    onclick="clients.sendReminder24hWhatsApp(${b.id})"
+                                                    title="Enviar recordatorio por WhatsApp">
+                                                💬 WhatsApp
+                                            </button>
+                                        </td>
+                                    ` : ''}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    ${!whatsappReady ? `
+                        <div class="reminder-alert" style="margin-top: 1rem; background: rgba(37, 211, 102, 0.08); border-color: rgba(37, 211, 102, 0.3);">
+                            <div class="reminder-alert-icon">💬</div>
+                            <div>
+                                <div class="reminder-alert-title">Configura WhatsApp para enviar recordatorios</div>
+                                <div class="reminder-alert-desc">Activa WhatsApp en <strong>Configuración > Notificaciones</strong> para poder enviar mensajes desde aquí.</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                `}
+            </div>
+        `;
+    },
+
+    render40DaysReminders(settings) {
+        const inactiveClients = this.getInactiveClients();
+        const whatsappReady = this.businessData?.whatsapp_enabled && this.businessData?.whatsapp_number;
+
+        return `
+            <!-- Summary alert -->
+            <div class="reminder-alert ${inactiveClients.length > 0 ? 'warning' : 'success'}" style="margin-bottom: 1.5rem;">
+                <div class="reminder-alert-icon">${inactiveClients.length > 0 ? '🔔' : '✅'}</div>
                 <div>
                     <div class="reminder-alert-title">
                         ${inactiveClients.length > 0
@@ -545,24 +752,40 @@ const clients = {
                 </div>
             </div>
 
-            ${!whatsappReady && inactiveClients.length > 0 ? `
-                <div class="reminder-alert" style="margin-top: 1rem; background: rgba(37, 211, 102, 0.08); border-color: rgba(37, 211, 102, 0.3);">
-                    <div class="reminder-alert-icon">💬</div>
-                    <div>
-                        <div class="reminder-alert-title">Configura WhatsApp para contactar clientes</div>
-                        <div class="reminder-alert-desc">
-                            Activa WhatsApp en <strong>Configuración > Notificaciones</strong> para enviar recordatorios directamente desde aquí.
-                        </div>
+            <!-- Mensaje predefinido WhatsApp -->
+            <div class="reminder-msg-card">
+                <div class="reminder-msg-header">
+                    <h3>💬 Mensaje de WhatsApp predefinido</h3>
+                    <p>Este mensaje se abrirá al pulsar el botón de envío. Puedes personalizarlo.</p>
+                    <div class="reminder-vars">
+                        Variables:
+                        <span class="reminder-var">{nombre}</span>
+                        <span class="reminder-var">{nombre_negocio}</span>
                     </div>
                 </div>
-            ` : ''}
+                <textarea id="reminder-msg-40dias" class="reminder-msg-textarea" rows="4">${settings.msg40d}</textarea>
+                <div style="text-align: right; margin-top: 0.75rem;">
+                    <button class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;"
+                            onclick="clients.saveReminderMessage('40dias')">
+                        Guardar mensaje
+                    </button>
+                </div>
+            </div>
 
             ${inactiveClients.length > 0 ? `
-                <!-- Inactive clients table -->
-                <div class="table-container" style="margin-top: 1.5rem;">
+                <div class="table-container">
                     <div class="table-header">
                         <div class="table-title">Clientes inactivos (+40 días)</div>
                     </div>
+                    ${!whatsappReady ? `
+                        <div class="reminder-alert" style="margin-bottom: 1rem; background: rgba(37, 211, 102, 0.08); border-color: rgba(37, 211, 102, 0.3);">
+                            <div class="reminder-alert-icon">💬</div>
+                            <div>
+                                <div class="reminder-alert-title">Configura WhatsApp para contactar clientes</div>
+                                <div class="reminder-alert-desc">Activa WhatsApp en <strong>Configuración > Notificaciones</strong> para enviar recordatorios desde aquí.</div>
+                            </div>
+                        </div>
+                    ` : ''}
                     <table class="table">
                         <thead>
                             <tr>
@@ -613,7 +836,45 @@ const clients = {
         `;
     },
 
-    // Send reminder via WhatsApp (Click-to-Chat)
+    // Send 24h WhatsApp reminder for a specific booking
+    sendReminder24hWhatsApp(bookingId) {
+        const booking = this.tomorrowBookings.find(b => b.id === bookingId);
+        if (!booking) return;
+
+        if (!booking.customer_phone) {
+            modal.toast({ message: 'Esta reserva no tiene número de teléfono', type: 'error' });
+            return;
+        }
+
+        if (!this.businessData?.whatsapp_enabled || !this.businessData?.whatsapp_number) {
+            modal.toast({ message: 'WhatsApp no está configurado. Ve a Configuración > Notificaciones.', type: 'error' });
+            return;
+        }
+
+        const settings = this.getReminderSettings();
+        const businessName = this.businessData.name || 'nuestro negocio';
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        const fecha = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        const hora = booking.booking_time ? booking.booking_time.substring(0, 5) : '';
+        const servicio = booking.service_name || 'tu servicio';
+
+        const message = settings.msg24h
+            .replace(/{nombre}/g, booking.customer_name)
+            .replace(/{nombre_negocio}/g, businessName)
+            .replace(/{fecha}/g, fecha)
+            .replace(/{hora}/g, hora)
+            .replace(/{servicio}/g, servicio);
+
+        let phoneNumber = booking.customer_phone.replace(/\D/g, '');
+        if (phoneNumber.length === 9 && /^[6789]/.test(phoneNumber)) {
+            phoneNumber = '34' + phoneNumber;
+        }
+
+        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+    },
+
+    // Send 40-day reactivation reminder via WhatsApp
     sendReminderWhatsApp(clientId) {
         const client = this.allClients.find(c => c.id === clientId);
         if (!client) return;
@@ -623,27 +884,24 @@ const clients = {
             return;
         }
 
-        if (!this.businessData || !this.businessData.whatsapp_enabled || !this.businessData.whatsapp_number) {
+        if (!this.businessData?.whatsapp_enabled || !this.businessData?.whatsapp_number) {
             modal.toast({ message: 'WhatsApp no está configurado. Ve a Configuración > Notificaciones.', type: 'error' });
             return;
         }
 
+        const settings = this.getReminderSettings();
         const businessName = this.businessData.name || 'nuestro negocio';
 
-        // Build reminder message
-        const message = `Hola ${client.name}!\n\nHace tiempo que no te vemos por ${businessName}. Te echamos de menos!\n\n¿Te gustaría reservar una nueva cita? Estaremos encantados de atenderte.\n\n${businessName}`;
+        const message = settings.msg40d
+            .replace(/{nombre}/g, client.name)
+            .replace(/{nombre_negocio}/g, businessName);
 
-        // Clean phone number
         let phoneNumber = client.phone.replace(/\D/g, '');
-
-        // Add Spain prefix if needed (9 digits starting with 6/7/8/9)
         if (phoneNumber.length === 9 && /^[6789]/.test(phoneNumber)) {
             phoneNumber = '34' + phoneNumber;
         }
 
-        // Open WhatsApp Click-to-Chat
-        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
     },
 
     // =============================================
@@ -1569,6 +1827,107 @@ clientsStyles.textContent = `
         font-size: 0.9rem;
         color: var(--text-secondary);
         margin-top: 0.25rem;
+    }
+
+    /* ========== REMINDER SUB-TABS ========== */
+    .reminder-subtabs {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 0;
+    }
+
+    .reminder-subtab {
+        padding: 0.6rem 1.25rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: color 0.2s, border-color 0.2s;
+        margin-bottom: -2px;
+    }
+
+    .reminder-subtab:hover { color: var(--text-primary); }
+
+    .reminder-subtab.active {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+    }
+
+    .reminder-subpage { display: none; }
+    .reminder-subpage.active { display: block; }
+
+    /* ========== REMINDER MESSAGE CARD ========== */
+    .reminder-msg-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .reminder-msg-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 0.35rem 0;
+    }
+
+    .reminder-msg-header p {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin: 0 0 0.75rem 0;
+    }
+
+    .reminder-vars {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .reminder-var {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.8rem;
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .reminder-msg-textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    .reminder-msg-textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    .reminder-empty {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
     }
 
     /* ========== WHATSAPP REMINDER BUTTON ========== */

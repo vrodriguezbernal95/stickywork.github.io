@@ -124,6 +124,38 @@ Implementación de un sistema de tarjeta de sellos digital que permite a los pro
 
 ---
 
+---
+
+## Sesión 3: 23-feb-2026 - Recordatorios mejorados (2 sub-páginas + mensajes configurables)
+
+### Completado
+
+**Reestructuración del tab "Recordatorios" en `clients.js`:**
+
+- El tab ahora tiene **2 sub-páginas** con navegación por pestañas:
+  1. **🔔 Recordatorio 24h** — lista de citas de mañana + botón WhatsApp individual
+  2. **🔄 40 días sin venir** — lista de clientes inactivos + botón WhatsApp (igual que antes)
+
+- **Mensaje predefinido editable** en cada sub-página (textarea + botón "Guardar mensaje")
+  - Se guarda en `booking_settings.reminder_msg_24h` y `booking_settings.reminder_msg_40dias`
+  - Mensajes por defecto incluidos si el negocio no tiene configurado ninguno
+
+- **Variables disponibles en el mensaje 24h:** `{nombre}`, `{nombre_negocio}`, `{fecha}`, `{hora}`, `{servicio}`
+- **Variables disponibles en el mensaje 40d:** `{nombre}`, `{nombre_negocio}`
+
+- **Nueva función `sendReminder24hWhatsApp(bookingId)`** — abre WhatsApp con el mensaje 24h personalizado para la cita concreta
+- **`sendReminderWhatsApp(clientId)`** ahora usa el mensaje configurable en vez del texto hardcodeado
+
+- Las reservas de mañana se cargan en `load()` en paralelo con clientes y datos del negocio (sin latencia extra)
+- Si se accede al tab sin haber cargado antes, hay fallback en `switchTab('recordatorios')` para cargarlas
+
+### Archivos modificados:
+- `admin/js/clients.js` — nuevas variables de estado, `loadTomorrowBookings()`, `getReminderSettings()`, `saveReminderMessage()`, `switchReminderSubTab()`, `render24hReminders()`, `render40DaysReminders()`, y estilos CSS incrustados
+
+### Commits pendientes de hacer
+
+---
+
 ## Próximas tareas pendientes
 
 1. **Eliminar endpoint** `debug/reset-password` — temporal, sigue en routes.js
@@ -139,5 +171,4 @@ Implementación de un sistema de tarjeta de sellos digital que permite a los pro
 
 ---
 
-**Última actualización:** 20-feb-2026
-**Próxima revisión:** 23-feb-2026 (inicio semana 09)
+**Última actualización:** 23-feb-2026
