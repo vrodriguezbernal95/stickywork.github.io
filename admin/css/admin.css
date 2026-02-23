@@ -43,6 +43,12 @@ body {
     overflow-x: hidden;
     width: 100%;
     box-sizing: border-box;
+    user-select: none;
+}
+
+/* Re-activar selección donde el usuario necesita copiar datos */
+input, textarea, select, .table td, [contenteditable] {
+    user-select: text;
 }
 
 /* Títulos globales con excelente contraste */
