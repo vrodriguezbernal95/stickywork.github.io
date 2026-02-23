@@ -5,11 +5,23 @@ const team = {
     planInfo: null,
     currentPage: 1,
     itemsPerPage: 50,
+    _container: null,
+
+    // Devuelve el contenedor activo (settings tab o contentArea)
+    _getContainer() {
+        if (this._container && document.contains(this._container)) {
+            return this._container;
+        }
+        this._container = null;
+        return document.getElementById('contentArea');
+    },
 
     // Load team data and render
     async load() {
-        const contentArea = document.getElementById('contentArea');
-        document.getElementById('pageTitle').textContent = 'Gestión del Equipo';
+        const contentArea = this._getContainer();
+        if (!this._container) {
+            document.getElementById('pageTitle').textContent = 'Gestión del Equipo';
+        }
 
         contentArea.innerHTML = `
             <div class="loading">
@@ -22,7 +34,7 @@ const team = {
             this.render();
         } catch (error) {
             console.error('Error loading team:', error);
-            contentArea.innerHTML = `
+            this._getContainer().innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">⚠️</div>
                     <p>Error al cargar el equipo</p>
@@ -46,7 +58,7 @@ const team = {
 
     // Render team management UI
     render() {
-        const contentArea = document.getElementById('contentArea');
+        const contentArea = this._getContainer();
         const currentUser = auth.userData;
         const isOwner = currentUser.role === 'owner';
 

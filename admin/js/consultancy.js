@@ -4,10 +4,22 @@
 const consultancy = {
     canRequest: false,
     requests: [],
+    _container: null,
+
+    // Devuelve el contenedor activo (settings tab o contentArea)
+    _getContainer() {
+        if (this._container && document.contains(this._container)) {
+            return this._container;
+        }
+        this._container = null;
+        return document.getElementById('contentArea');
+    },
 
     async load() {
-        const contentArea = document.getElementById('contentArea');
-        document.getElementById('pageTitle').textContent = 'Consultoría Premium';
+        const contentArea = this._getContainer();
+        if (!this._container) {
+            document.getElementById('pageTitle').textContent = 'Consultoría Premium';
+        }
 
         contentArea.innerHTML = `
             <div class="loading">
@@ -29,7 +41,7 @@ const consultancy = {
             this.render(eligibilityRes);
         } catch (error) {
             console.error('Error loading consultancy:', error);
-            contentArea.innerHTML = `
+            this._getContainer().innerHTML = `
                 <div class="alert alert-error">
                     Error al cargar información de consultoría. Por favor, recarga la página.
                 </div>
@@ -38,7 +50,7 @@ const consultancy = {
     },
 
     render(eligibility) {
-        const contentArea = document.getElementById('contentArea');
+        const contentArea = this._getContainer();
 
         contentArea.innerHTML = `
             <div class="consultancy-container">

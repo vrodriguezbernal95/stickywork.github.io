@@ -113,6 +113,12 @@ const settings = {
                     <button class="settings-tab" data-tab="guide" onclick="settings.switchTab('guide')">
                         📚 Guía
                     </button>
+                    <button class="settings-tab" data-tab="team" onclick="settings.switchTab('team')">
+                        👥 Equipo
+                    </button>
+                    <button class="settings-tab" data-tab="consultancy" onclick="settings.switchTab('consultancy')">
+                        💼 Consultoría
+                    </button>
                 </div>
 
                 <!-- Tab Content -->
@@ -155,6 +161,12 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-guide">
                         ${this.renderGuideTab()}
+                    </div>
+                    <div class="settings-tab-content" id="tab-team">
+                        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando equipo...</div>
+                    </div>
+                    <div class="settings-tab-content" id="tab-consultancy">
+                        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando consultoría...</div>
                     </div>
                 </div>
             </div>
@@ -891,6 +903,16 @@ const settings = {
         // Initialize zone toggles when opening zones tab
         if (tabName === 'zones') {
             setTimeout(() => this.initializeZoneToggles(), 100);
+        }
+
+        // Cargar módulos externos en su tab de settings
+        if (tabName === 'team' && window.team) {
+            team._container = document.getElementById('tab-team');
+            team.load();
+        }
+        if (tabName === 'consultancy' && window.consultancy) {
+            consultancy._container = document.getElementById('tab-consultancy');
+            consultancy.load();
         }
     },
 
