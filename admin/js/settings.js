@@ -4437,21 +4437,20 @@ const settings = {
 
                 <div id="feedback-questions-container" style="margin-top: 2rem;">
                     ${feedbackSettings.questions.map((q, index) => `
-                        <div class="feedback-question-card" data-index="${index}" style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 2px solid #e5e7eb;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <h4 style="margin: 0; color: var(--primary-color);">Pregunta ${index + 1}</h4>
+                        <div class="feedback-question-card" data-index="${index}" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem; border: 1px solid var(--border-color);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                                <h4 style="margin: 0; color: var(--primary-light); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Pregunta ${index + 1}</h4>
                                 ${index > 0 ? `
                                     <button onclick="settings.removeFeedbackQuestion(${index})"
-                                            class="btn btn-secondary"
-                                            style="padding: 0.25rem 0.75rem; background: #ef4444; color: white; font-size: 0.9rem;">
-                                        ✕
+                                            style="padding: 0.25rem 0.7rem; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
+                                        ✕ Eliminar
                                     </button>
                                 ` : ''}
                             </div>
 
                             <div class="form-group">
-                                <label>Tipo de pregunta</label>
-                                <select class="feedback-question-type" data-index="${index}" onchange="settings.updateFeedbackQuestionType(${index})">
+                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Tipo de pregunta</label>
+                                <select class="feedback-question-type form-input" data-index="${index}" onchange="settings.updateFeedbackQuestionType(${index})">
                                     <option value="rating" ${q.type === 'rating' ? 'selected' : ''}>⭐ Rating (1-5 estrellas)</option>
                                     <option value="multiple_choice" ${q.type === 'multiple_choice' ? 'selected' : ''}>✅ Opción múltiple</option>
                                     <option value="text" ${q.type === 'text' ? 'selected' : ''}>📝 Texto corto</option>
@@ -4459,9 +4458,9 @@ const settings = {
                             </div>
 
                             <div class="form-group">
-                                <label>Pregunta</label>
+                                <label style="color: var(--text-secondary); font-size: 0.85rem;">Texto de la pregunta</label>
                                 <input type="text"
-                                       class="feedback-question-text"
+                                       class="feedback-question-text form-input"
                                        data-index="${index}"
                                        value="${q.question}"
                                        placeholder="Escribe tu pregunta aquí">
@@ -4469,40 +4468,39 @@ const settings = {
 
                             ${q.type === 'multiple_choice' ? `
                                 <div class="form-group feedback-options-container" data-index="${index}">
-                                    <label>Opciones (una por línea)</label>
+                                    <label style="color: var(--text-secondary); font-size: 0.85rem;">Opciones de respuesta</label>
                                     ${(q.options || []).map((option, optIndex) => `
                                         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                                             <input type="text"
-                                                   class="feedback-option-input"
+                                                   class="feedback-option-input form-input"
                                                    data-question="${index}"
                                                    data-option="${optIndex}"
                                                    value="${option}"
                                                    placeholder="Opción ${optIndex + 1}"
                                                    style="flex: 1;">
                                             <button onclick="settings.removeFeedbackOption(${index}, ${optIndex})"
-                                                    style="padding: 0.25rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                                    style="padding: 0.25rem 0.7rem; background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;">
                                                 ✕
                                             </button>
                                         </div>
                                     `).join('')}
                                     <button onclick="settings.addFeedbackOption(${index})"
-                                            class="btn btn-secondary"
-                                            style="padding: 0.5rem 1rem; margin-top: 0.5rem;">
-                                        ➕ Agregar opción
+                                            style="padding: 0.5rem 1rem; margin-top: 0.25rem; background: rgba(77,83,255,0.1); color: var(--primary-light); border: 1px dashed var(--primary-color); border-radius: 8px; cursor: pointer; font-size: 0.9rem;">
+                                        + Agregar opción
                                     </button>
                                 </div>
                             ` : ''}
 
-                            <div class="form-group" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; border: 1px dashed var(--border-color);">
+                            <div style="background: var(--bg-tertiary); padding: 0.9rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
                                 <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; margin: 0;">
                                     <input type="checkbox"
                                            class="feedback-question-required"
                                            data-index="${index}"
                                            ${q.required ? 'checked' : ''}
-                                           style="width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                                           style="width: 18px; height: 18px; margin-top: 2px; cursor: pointer; flex-shrink: 0;">
                                     <span>
-                                        <strong style="color: var(--text-primary);">Respuesta obligatoria</strong>
-                                        <p class="hint" style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Si marcas esta casilla, el cliente deberá responder esta pregunta para poder enviar el formulario</p>
+                                        <strong style="color: var(--text-primary); font-size: 0.9rem;">Respuesta obligatoria</strong>
+                                        <p style="margin: 0.2rem 0 0 0; font-size: 0.82rem; color: var(--text-secondary);">El cliente deberá responder esta pregunta para poder enviar el formulario</p>
                                     </span>
                                 </label>
                             </div>
@@ -4511,18 +4509,17 @@ const settings = {
 
                     ${feedbackSettings.questions.length < 3 ? `
                         <button onclick="settings.addFeedbackQuestion()"
-                                class="btn btn-secondary"
-                                style="width: 100%; padding: 1rem; border: 2px dashed #cbd5e1; background: white; color: var(--primary-color);">
-                            ➕ Agregar pregunta (${feedbackSettings.questions.length}/3)
+                                style="width: 100%; padding: 1rem; border: 2px dashed var(--border-color); background: transparent; color: var(--primary-light); border-radius: 12px; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;">
+                            + Agregar pregunta (${feedbackSettings.questions.length}/3)
                         </button>
                     ` : ''}
                 </div>
 
-                <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-top: 2rem; border-radius: 8px;">
-                    <p style="margin: 0 0 0.5rem 0; color: #1e40af; font-weight: 600;">
-                        📋 Pregunta genérica (siempre incluida):
+                <div style="background: rgba(77,83,255,0.08); border-left: 3px solid var(--primary-color); padding: 1rem 1.25rem; margin-top: 2rem; border-radius: 8px;">
+                    <p style="margin: 0 0 0.4rem 0; color: var(--text-primary); font-weight: 600; font-size: 0.9rem;">
+                        Pregunta genérica (siempre incluida):
                     </p>
-                    <p style="margin: 0; color: #1e40af;">
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.88rem;">
                         "¿Hay algo más que quieras compartir con nosotros? Valoramos tu opinión y nos ayuda a seguir mejorando."
                     </p>
                 </div>
