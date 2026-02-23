@@ -1547,7 +1547,7 @@ const dashboard = {
                     ${b.customer_phone
                         ? `<button onclick="dashboard.sendReminder24hFromDashboard(${b.id})"
                                    title="Enviar recordatorio por WhatsApp"
-                                   style="flex-shrink: 0; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">WA</button>`
+                                   style="flex-shrink: 0; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">WhatsApp</button>`
                         : `<span style="font-size: 0.75rem; color: var(--text-secondary);">Sin tel.</span>`
                     }
                 </div>
@@ -1569,7 +1569,7 @@ const dashboard = {
                     ${b.customer_phone
                         ? `<button onclick="dashboard.sendFeedbackFromDashboard(${b.id})"
                                    title="Enviar encuesta de feedback por WhatsApp"
-                                   style="flex-shrink: 0; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">WA</button>`
+                                   style="flex-shrink: 0; background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 0.3rem 0.65rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">WhatsApp</button>`
                         : `<span style="font-size: 0.75rem; color: var(--text-secondary);">Sin tel.</span>`
                     }
                 </div>
