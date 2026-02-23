@@ -4410,6 +4410,13 @@ const settings = {
             ]
         };
 
+        // Si los valores eran los por defecto, sincronizarlos con el estado para que
+        // los métodos de edición (updateFeedbackQuestionType, etc.) los encuentren
+        if (!bookingSettings.feedbackSettings) {
+            bookingSettings.feedbackSettings = feedbackSettings;
+            this.businessData.booking_settings = bookingSettings;
+        }
+
         return `
             <div class="settings-section">
                 <div class="settings-section-header">
