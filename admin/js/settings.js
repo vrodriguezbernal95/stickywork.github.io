@@ -1053,6 +1053,10 @@ const settings = {
     // Render Widget Customization Tab
     renderWidgetTab() {
         const business = this.businessData;
+        const businessId = auth.getBusinessId();
+        const apiUrl = api.baseURL;
+        // Resetear el tipo seleccionado al abrir el tab
+        if (window.widget) widget.selectedType = 'embedded';
         // Verificar si widget_settings es un string antes de parsear
         const widgetSettings = business.widget_settings
             ? (typeof business.widget_settings === 'string'
@@ -1077,6 +1081,86 @@ const settings = {
         const buttonStyle = customization.buttonStyle || 'solid';
 
         return `
+            <style>
+                .widget-type-btn {
+                    padding: 0.65rem 1.25rem;
+                    border: 2px solid var(--border-color);
+                    background: var(--bg-secondary);
+                    color: var(--text-primary);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 0.95rem;
+                    transition: all 0.2s ease;
+                }
+                .widget-type-btn:hover { border-color: var(--primary-color); }
+                .widget-type-btn.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+                .widget-code-box {
+                    background: #1e293b;
+                    color: #e0e0e0;
+                    padding: 1.5rem;
+                    border-radius: 10px;
+                    font-family: 'Courier New', monospace;
+                    font-size: 0.85rem;
+                    overflow-x: auto;
+                    position: relative;
+                    line-height: 1.6;
+                    white-space: pre-wrap;
+                    word-break: break-all;
+                }
+                .copy-btn {
+                    position: absolute;
+                    top: 1rem;
+                    right: 1rem;
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    padding: 0.4rem 0.9rem;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.85rem;
+                }
+                .guide-step {
+                    padding: 1rem;
+                    background: var(--bg-primary);
+                    border-radius: 8px;
+                    margin-bottom: 0.75rem;
+                    border-left: 4px solid var(--primary-color);
+                }
+                .guide-step h4 { margin: 0 0 0.4rem 0; color: var(--text-primary); font-size: 0.95rem; }
+                .guide-step p  { margin: 0; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; }
+            </style>
+
+            <!-- Integración Section -->
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>🔗 Integrar en tu web</h3>
+                    <p>Elige el modo, copia el código y pégalo en tu página web</p>
+                </div>
+
+                <!-- Selector de modo -->
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="widget-type-btn active" data-type="embedded" onclick="widget.selectType('embedded')">
+                        📋 Formulario Embebido
+                    </button>
+                    <button class="widget-type-btn" data-type="floating" onclick="widget.selectType('floating')">
+                        💬 Botón Flotante
+                    </button>
+                    <button class="widget-type-btn" data-type="qr" onclick="widget.selectType('qr')">
+                        📱 Código QR
+                    </button>
+                </div>
+
+                <!-- Código generado -->
+                <div id="widgetCodeContainer">
+                    ${window.widget ? widget.renderWidgetCode(businessId, apiUrl) : ''}
+                </div>
+
+                <!-- Guía de pasos -->
+                <div id="widgetGuide" style="margin-top: 1.5rem;">
+                    ${window.widget ? widget.renderGuide() : ''}
+                </div>
+            </div>
+
             <!-- Colors Section -->
             <div class="settings-section">
                 <div class="settings-section-header">
