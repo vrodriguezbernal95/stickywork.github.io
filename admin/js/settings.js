@@ -914,6 +914,10 @@ const settings = {
             consultancy._container = document.getElementById('tab-consultancy');
             consultancy.load();
         }
+        if (tabName === 'billing' && window.billing) {
+            billing._container = document.getElementById('tab-billing');
+            billing.load();
+        }
     },
 
     // Get role name in Spanish

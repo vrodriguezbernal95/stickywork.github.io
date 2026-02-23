@@ -3,6 +3,13 @@
 const billing = {
     subscriptionData: null,
     paymentHistory: [],
+    _container: null,
+
+    _getContainer() {
+        if (this._container && document.contains(this._container)) return this._container;
+        this._container = null;
+        return document.getElementById('contentArea');
+    },
 
     // Detalles de planes
     plans: {
@@ -33,8 +40,8 @@ const billing = {
 
     // Cargar sección de facturación
     async load() {
-        const contentArea = document.getElementById('contentArea');
-        document.getElementById('pageTitle').textContent = 'Facturación';
+        const contentArea = this._getContainer();
+        if (!this._container) document.getElementById('pageTitle').textContent = 'Facturación';
 
         contentArea.innerHTML = `
             <div class="loading">
@@ -74,7 +81,7 @@ const billing = {
 
     // Renderizar página de facturación
     render() {
-        const contentArea = document.getElementById('contentArea');
+        const contentArea = this._getContainer();
         const sub = this.subscriptionData;
         const currentPlan = sub?.plan || 'free';
         const isOwner = auth.userData?.role === 'owner';
