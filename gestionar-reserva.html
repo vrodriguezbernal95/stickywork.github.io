@@ -303,6 +303,115 @@
             cursor: pointer;
             font-size: 15px;
         }
+
+        .btn-reschedule {
+            display: inline-block;
+            padding: 14px 35px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-reschedule:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-reschedule:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .slots-section {
+            margin-top: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .slots-section h4 {
+            color: #7c3aed;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .slots-section p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .slots-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .slot-btn {
+            padding: 8px 16px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            color: #374151;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .slot-btn:hover {
+            border-color: #8b5cf6;
+            color: #7c3aed;
+        }
+
+        .slot-btn.selected {
+            border-color: #8b5cf6;
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .slots-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .btn-slot-confirm {
+            padding: 10px 20px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-slot-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-slot-cancel {
+            padding: 10px 20px;
+            background: #e5e7eb;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -378,6 +487,13 @@
             const statusInfo = getStatusInfo(bookingData.status);
             const canCancel = bookingData.status === 'pending' || bookingData.status === 'confirmed';
 
+            // Comprobar margen de 30 min para mostrar el botón de cambio de hora
+            const dateOnly = (bookingData.booking_date || '').substring(0, 10);
+            const timeOnly = (bookingData.booking_time || '').substring(0, 5);
+            const bookingDateTime = new Date(`${dateOnly}T${timeOnly}:00`);
+            const minutesUntil = (bookingDateTime - new Date()) / (1000 * 60);
+            const canReschedule = canCancel && minutesUntil >= 30;
+
             content.innerHTML = `
                 <div class="booking-info">
                     <h3>${bookingData.business_name}</h3>
@@ -441,6 +557,27 @@
 
                 ${canCancel ? `
                 <div class="cancel-section">
+                    ${canReschedule ? `
+                    <p>¿Necesitas cambiar la hora? Elige otro horario disponible:</p>
+                    <button class="btn-reschedule" onclick="toggleSlotPicker()">
+                        🕐 Cambiar hora
+                    </button>
+                    <div id="slots-section" class="slots-section" style="display:none;">
+                        <h4>Selecciona una nueva hora</h4>
+                        <p>Horarios disponibles para el mismo día:</p>
+                        <div id="slots-loading" style="color:#666; font-size:14px;">Cargando horarios...</div>
+                        <div id="slots-grid" class="slots-grid" style="display:none;"></div>
+                        <div class="slots-actions" style="display:none;" id="slots-actions">
+                            <button class="btn-slot-confirm" id="btn-slot-confirm" onclick="confirmReschedule()" disabled>
+                                Confirmar cambio
+                            </button>
+                            <button class="btn-slot-cancel" onclick="toggleSlotPicker()">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                    <hr style="border:none; border-top:1px solid #e5e7eb; margin: 20px 0;">
+                    ` : ''}
                     <p>Si no puedes asistir, puedes cancelar tu reserva:</p>
                     <button class="btn-cancel" onclick="confirmCancel()">
                         ❌ Cancelar mi reserva
@@ -519,6 +656,102 @@
             } catch (error) {
                 console.error('Error cancelling booking:', error);
                 showError('Error de conexion. Por favor, intentalo de nuevo.');
+            }
+        }
+
+        let selectedSlot = null;
+        let slotPickerOpen = false;
+
+        async function toggleSlotPicker() {
+            const section = document.getElementById('slots-section');
+            if (!section) return;
+
+            slotPickerOpen = !slotPickerOpen;
+            section.style.display = slotPickerOpen ? 'block' : 'none';
+
+            if (slotPickerOpen) {
+                selectedSlot = null;
+                document.getElementById('slots-loading').style.display = 'block';
+                document.getElementById('slots-grid').style.display = 'none';
+                document.getElementById('slots-actions').style.display = 'none';
+
+                try {
+                    const response = await fetch(`${API_URL}/api/booking/manage/${token}/available-slots`);
+                    const data = await response.json();
+
+                    document.getElementById('slots-loading').style.display = 'none';
+
+                    if (!data.success) {
+                        document.getElementById('slots-grid').style.display = 'block';
+                        document.getElementById('slots-grid').innerHTML = `<p style="color:#dc2626;">${data.message}</p>`;
+                        return;
+                    }
+
+                    if (data.availableSlots.length === 0) {
+                        document.getElementById('slots-grid').style.display = 'block';
+                        document.getElementById('slots-grid').innerHTML = '<p style="color:#666;">No hay otros horarios disponibles para este día.</p>';
+                        return;
+                    }
+
+                    const grid = document.getElementById('slots-grid');
+                    grid.innerHTML = data.availableSlots.map(slot => `
+                        <button class="slot-btn" onclick="selectSlot('${slot}')" id="slot-${slot.replace(':','-')}">
+                            ${slot}
+                        </button>
+                    `).join('');
+                    grid.style.display = 'flex';
+                    document.getElementById('slots-actions').style.display = 'flex';
+
+                } catch (error) {
+                    document.getElementById('slots-loading').style.display = 'none';
+                    document.getElementById('slots-grid').style.display = 'block';
+                    document.getElementById('slots-grid').innerHTML = '<p style="color:#dc2626;">Error al cargar los horarios. Inténtalo de nuevo.</p>';
+                }
+            }
+        }
+
+        function selectSlot(slot) {
+            selectedSlot = slot;
+            document.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('selected'));
+            const btn = document.getElementById('slot-' + slot.replace(':', '-'));
+            if (btn) btn.classList.add('selected');
+            document.getElementById('btn-slot-confirm').disabled = false;
+        }
+
+        async function confirmReschedule() {
+            if (!selectedSlot) return;
+
+            const confirmBtn = document.getElementById('btn-slot-confirm');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Cambiando...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/booking/manage/${token}/reschedule`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newTime: selectedSlot })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('manage-content').innerHTML = `
+                        <div class="success-message">
+                            <div class="success-icon">✅</div>
+                            <h2>¡Hora cambiada!</h2>
+                            <p>Tu reserva ha sido actualizada al horario de las <strong>${selectedSlot}</strong>.</p>
+                            <p style="margin-top:10px; color:#888; font-size:14px;">Recibirás confirmación por email.</p>
+                        </div>
+                    `;
+                } else {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Confirmar cambio';
+                    alert(data.message || 'Error al cambiar la hora. Inténtalo de nuevo.');
+                }
+            } catch (error) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Confirmar cambio';
+                alert('Error de conexión. Por favor, inténtalo de nuevo.');
             }
         }
 

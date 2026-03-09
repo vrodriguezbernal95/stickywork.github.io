@@ -4297,6 +4297,199 @@ router.post('/api/booking/manage/:token/cancel', async (req, res) => {
     }
 });
 
+// Helper: genera slots de tiempo a partir de booking_settings para una fecha concreta
+function generateTimeSlotsForDate(bookingSettings, dateStr) {
+    const scheduleType = bookingSettings.scheduleType || 'continuous';
+    const slotDuration = parseInt(bookingSettings.slotDuration) || 30;
+    const slots = [];
+
+    // Día de la semana (0=Dom, 1=Lun, ..., 6=Sab)
+    const dateObj = new Date(dateStr + 'T12:00:00');
+    const dayOfWeek = dateObj.getDay();
+
+    if (scheduleType === 'multiple' && bookingSettings.shifts && bookingSettings.shifts.length > 0) {
+        bookingSettings.shifts.forEach(shift => {
+            if (!shift.enabled) return;
+            if (shift.activeDays && !shift.activeDays.includes(dayOfWeek)) return;
+            const [startH, startM] = (shift.start || '09:00').split(':').map(Number);
+            const [endH, endM] = (shift.end || '14:00').split(':').map(Number);
+            let current = startH * 60 + (startM || 0);
+            const end = endH * 60 + (endM || 0);
+            while (current < end) {
+                slots.push(`${String(Math.floor(current/60)).padStart(2,'0')}:${String(current%60).padStart(2,'0')}`);
+                current += slotDuration;
+            }
+        });
+    } else {
+        const [startH, startM] = (bookingSettings.workHoursStart || '09:00').split(':').map(Number);
+        const [endH, endM] = (bookingSettings.workHoursEnd || '20:00').split(':').map(Number);
+        let current = startH * 60 + (startM || 0);
+        const end = endH * 60 + (endM || 0);
+        while (current < end) {
+            slots.push(`${String(Math.floor(current/60)).padStart(2,'0')}:${String(current%60).padStart(2,'0')}`);
+            current += slotDuration;
+        }
+    }
+    return [...new Set(slots)].sort();
+}
+
+// GET - Horarios disponibles para cambiar la hora (público, sin auth)
+router.get('/api/booking/manage/:token/available-slots', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const bookings = await db.query(
+            `SELECT b.id, b.business_id, b.booking_date, b.booking_time, b.status
+             FROM bookings b WHERE b.manage_token = ?`,
+            [token]
+        );
+
+        if (bookings.length === 0) {
+            return res.status(404).json({ success: false, message: 'Reserva no encontrada' });
+        }
+
+        const booking = bookings[0];
+
+        if (booking.status !== 'pending' && booking.status !== 'confirmed') {
+            return res.status(400).json({ success: false, message: 'Esta reserva no se puede modificar' });
+        }
+
+        // Fecha de la reserva (evitar bug UTC)
+        const bd = booking.booking_date instanceof Date ? booking.booking_date : new Date(booking.booking_date);
+        const bookingDateStr = `${bd.getFullYear()}-${String(bd.getMonth()+1).padStart(2,'0')}-${String(bd.getDate()).padStart(2,'0')}`;
+        const bookingTimeStr = booking.booking_time.substring(0, 5); // HH:MM
+
+        // Comprobar margen de 30 min antes de la reserva actual
+        const now = new Date();
+        const bookingDateTime = new Date(`${bookingDateStr}T${bookingTimeStr}:00`);
+        const minutesUntilBooking = (bookingDateTime - now) / (1000 * 60);
+
+        if (minutesUntilBooking < 30) {
+            return res.status(400).json({
+                success: false,
+                message: 'No se puede modificar la hora con menos de 30 minutos de antelación'
+            });
+        }
+
+        // Configuración del negocio
+        const [business] = await db.query(
+            'SELECT booking_settings FROM businesses WHERE id = ?',
+            [booking.business_id]
+        );
+        const bookingSettings = business?.booking_settings
+            ? (typeof business.booking_settings === 'string' ? JSON.parse(business.booking_settings) : business.booking_settings)
+            : {};
+        const businessCapacity = bookingSettings.businessCapacity || 1;
+
+        // Generar todos los slots del horario del negocio para esa fecha
+        const allSlots = generateTimeSlotsForDate(bookingSettings, bookingDateStr);
+
+        // Reservas ocupadas ese día (excluyendo la reserva actual)
+        const existingBookings = await db.query(
+            `SELECT booking_time, COUNT(*) as count
+             FROM bookings
+             WHERE business_id = ? AND booking_date = ? AND status != 'cancelled' AND id != ?
+             GROUP BY booking_time`,
+            [booking.business_id, bookingDateStr, booking.id]
+        );
+        const occupiedMap = {};
+        existingBookings.forEach(b => { occupiedMap[b.booking_time.substring(0, 5)] = parseInt(b.count); });
+
+        // Fecha de hoy para comparar si es hoy
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        const isToday = bookingDateStr === todayStr;
+        const nowPlus30 = new Date(now.getTime() + 30 * 60 * 1000);
+
+        const availableSlots = allSlots.filter(slot => {
+            if (slot === bookingTimeStr) return false; // misma hora actual
+            if ((occupiedMap[slot] || 0) >= businessCapacity) return false; // sin capacidad
+            if (isToday) {
+                const slotDT = new Date(`${bookingDateStr}T${slot}:00`);
+                if (slotDT < nowPlus30) return false; // ya pasó o muy pronto
+            }
+            return true;
+        });
+
+        res.json({ success: true, currentTime: bookingTimeStr, bookingDate: bookingDateStr, availableSlots });
+
+    } catch (error) {
+        console.error('Error obteniendo slots disponibles:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener horarios disponibles' });
+    }
+});
+
+// POST - Cambiar hora de reserva por token (público, sin auth)
+router.post('/api/booking/manage/:token/reschedule', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { newTime } = req.body;
+
+        if (!newTime || !/^\d{2}:\d{2}$/.test(newTime)) {
+            return res.status(400).json({ success: false, message: 'Hora inválida' });
+        }
+
+        const bookings = await db.query(
+            `SELECT b.id, b.business_id, b.booking_date, b.booking_time, b.status
+             FROM bookings b WHERE b.manage_token = ?`,
+            [token]
+        );
+
+        if (bookings.length === 0) {
+            return res.status(404).json({ success: false, message: 'Reserva no encontrada' });
+        }
+
+        const booking = bookings[0];
+
+        if (booking.status !== 'pending' && booking.status !== 'confirmed') {
+            return res.status(400).json({ success: false, message: 'Esta reserva no se puede modificar' });
+        }
+
+        // Margen de 30 min respecto a la hora ACTUAL de la reserva
+        const bd = booking.booking_date instanceof Date ? booking.booking_date : new Date(booking.booking_date);
+        const bookingDateStr = `${bd.getFullYear()}-${String(bd.getMonth()+1).padStart(2,'0')}-${String(bd.getDate()).padStart(2,'0')}`;
+        const bookingTimeStr = booking.booking_time.substring(0, 5);
+        const now = new Date();
+        const bookingDateTime = new Date(`${bookingDateStr}T${bookingTimeStr}:00`);
+        const minutesUntilBooking = (bookingDateTime - now) / (1000 * 60);
+
+        if (minutesUntilBooking < 30) {
+            return res.status(400).json({
+                success: false,
+                message: 'No se puede modificar la hora con menos de 30 minutos de antelación'
+            });
+        }
+
+        if (newTime === bookingTimeStr) {
+            return res.status(400).json({ success: false, message: 'La hora seleccionada es la misma que la actual' });
+        }
+
+        // Comprobar disponibilidad del nuevo slot
+        const [business] = await db.query('SELECT booking_settings FROM businesses WHERE id = ?', [booking.business_id]);
+        const bookingSettings = business?.booking_settings
+            ? (typeof business.booking_settings === 'string' ? JSON.parse(business.booking_settings) : business.booking_settings)
+            : {};
+        const businessCapacity = bookingSettings.businessCapacity || 1;
+
+        const [existing] = await db.query(
+            `SELECT COUNT(*) as count FROM bookings
+             WHERE business_id = ? AND booking_date = ? AND booking_time LIKE ? AND status != 'cancelled' AND id != ?`,
+            [booking.business_id, bookingDateStr, newTime + '%', booking.id]
+        );
+
+        if (parseInt(existing.count) >= businessCapacity) {
+            return res.status(400).json({ success: false, message: 'El horario seleccionado ya no está disponible' });
+        }
+
+        await db.query('UPDATE bookings SET booking_time = ? WHERE id = ?', [newTime + ':00', booking.id]);
+
+        res.json({ success: true, message: 'Hora cambiada correctamente', newTime });
+
+    } catch (error) {
+        console.error('Error cambiando hora de reserva:', error);
+        res.status(500).json({ success: false, message: 'Error al cambiar la hora' });
+    }
+});
+
 // ==================== CÓDIGO QR ====================
 
 // Generar código QR para un negocio
