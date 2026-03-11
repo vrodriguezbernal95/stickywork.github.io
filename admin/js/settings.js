@@ -1994,6 +1994,26 @@ const settings = {
 
             if (bookingMode === 'tables') {
                 currentSettings.zoneCapacities = zoneCapacities;
+
+                // Leer configuración de mesas por zona si está definida
+                const rawZones = this.businessData.booking_settings?.restaurantZones || [];
+                const zoneTableConfig = {};
+                rawZones.forEach(zone => {
+                    const zoneName = typeof zone === 'string' ? zone : zone.name;
+                    const toggle = document.getElementById(`zone-tables-toggle-${zoneName}`);
+                    if (toggle && toggle.checked) {
+                        const countInputs = document.querySelectorAll(`.table-type-count[data-zone="${zoneName}"]`);
+                        const capInputs = document.querySelectorAll(`.table-type-capacity[data-zone="${zoneName}"]`);
+                        const tables = [];
+                        countInputs.forEach((countEl, i) => {
+                            const count = parseInt(countEl.value);
+                            const cap = parseInt(capInputs[i]?.value);
+                            if (count > 0 && cap > 0) tables.push({ count, capacity: cap });
+                        });
+                        if (tables.length > 0) zoneTableConfig[zoneName] = tables;
+                    }
+                });
+                currentSettings.zoneTableConfig = Object.keys(zoneTableConfig).length > 0 ? zoneTableConfig : null;
             }
 
             if (maxPerBooking !== null) {
@@ -3702,6 +3722,63 @@ const settings = {
     },
 
     // Toggle children settings visibility
+    // --- Helpers para configuración de mesas por zona ---
+    toggleZoneTables(zoneName, enabled) {
+        const configDiv = document.getElementById(`zone-tables-config-${zoneName}`);
+        const capacityInput = document.getElementById(`zone-capacity-${zoneName}`);
+        if (configDiv) configDiv.style.display = enabled ? 'block' : 'none';
+        if (capacityInput) {
+            if (enabled) {
+                capacityInput.setAttribute('readonly', '');
+                capacityInput.style.background = 'var(--bg-secondary)';
+                capacityInput.style.cursor = 'default';
+                this.recalcZoneCapacity(zoneName);
+            } else {
+                capacityInput.removeAttribute('readonly');
+                capacityInput.style.background = '';
+                capacityInput.style.cursor = '';
+            }
+        }
+    },
+
+    addTableTypeRow(zoneName) {
+        const container = document.getElementById(`zone-table-rows-${zoneName}`);
+        if (!container) return;
+        const row = document.createElement('div');
+        row.className = 'table-type-row';
+        row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;';
+        row.innerHTML = `
+            <input type="number" class="table-type-count" data-zone="${zoneName}"
+                   min="1" max="50" placeholder="2" style="width:60px;"
+                   oninput="settings.recalcZoneCapacity('${zoneName}')">
+            <span style="color:var(--text-secondary);font-size:0.9rem;">mesas de</span>
+            <input type="number" class="table-type-capacity" data-zone="${zoneName}"
+                   min="1" max="50" placeholder="4" style="width:60px;"
+                   oninput="settings.recalcZoneCapacity('${zoneName}')">
+            <span style="color:var(--text-secondary);font-size:0.9rem;">personas</span>
+            <button type="button" onclick="settings.removeTableTypeRow(this,'${zoneName}')"
+                    style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:0 4px;">✕</button>
+        `;
+        container.appendChild(row);
+    },
+
+    removeTableTypeRow(btn, zoneName) {
+        btn.closest('.table-type-row').remove();
+        this.recalcZoneCapacity(zoneName);
+    },
+
+    recalcZoneCapacity(zoneName) {
+        const countInputs = document.querySelectorAll(`.table-type-count[data-zone="${zoneName}"]`);
+        const capInputs = document.querySelectorAll(`.table-type-capacity[data-zone="${zoneName}"]`);
+        let total = 0;
+        countInputs.forEach((countEl, i) => {
+            total += (parseInt(countEl.value) || 0) * (parseInt(capInputs[i]?.value) || 0);
+        });
+        const capacityInput = document.getElementById(`zone-capacity-${zoneName}`);
+        if (capacityInput) capacityInput.value = total > 0 ? total : '';
+    },
+    // --- Fin helpers mesas ---
+
     toggleChildrenSettings(enabled) {
         const detailsDiv = document.getElementById('children-settings-details');
         if (detailsDiv) {
@@ -4001,19 +4078,64 @@ const settings = {
             const zoneCapacities = bookingSettings.zoneCapacities || {};
             const maxPerBooking = bookingSettings.maxPerBooking || 10;
 
+            const zoneTableConfig = bookingSettings.zoneTableConfig || {};
+
             const zoneFields = zones.map(zone => {
-                // Soportar tanto formato antiguo (string) como nuevo (objeto)
                 const zoneName = typeof zone === 'string' ? zone : zone.name;
                 const capacity = zoneCapacities[zoneName] || 20;
+                const tableConf = zoneTableConfig[zoneName];
+                const hasTables = tableConf && tableConf.length > 0;
+
+                const tableRows = (hasTables ? tableConf : [{ count: '', capacity: '' }]).map(t => `
+                    <div class="table-type-row" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                        <input type="number" class="table-type-count" data-zone="${zoneName}"
+                               min="1" max="50" value="${t.count}" placeholder="2" style="width:60px;"
+                               oninput="settings.recalcZoneCapacity('${zoneName}')">
+                        <span style="color:var(--text-secondary);font-size:0.9rem;">mesas de</span>
+                        <input type="number" class="table-type-capacity" data-zone="${zoneName}"
+                               min="1" max="50" value="${t.capacity}" placeholder="4" style="width:60px;"
+                               oninput="settings.recalcZoneCapacity('${zoneName}')">
+                        <span style="color:var(--text-secondary);font-size:0.9rem;">personas</span>
+                        <button type="button" onclick="settings.removeTableTypeRow(this,'${zoneName}')"
+                                style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:0 4px;">✕</button>
+                    </div>
+                `).join('');
+
                 return `
-                    <div class="form-group">
-                        <label>Capacidad ${zoneName}</label>
-                        <input type="number" class="zone-capacity-input"
-                               data-zone="${zoneName}"
-                               min="1" max="1000"
-                               value="${capacity}"
-                               placeholder="20">
-                        <p class="hint">Número máximo de comensales en ${zoneName} por turno</p>
+                    <div class="form-group" style="padding:1rem;border:1px solid var(--border-color);border-radius:8px;margin-bottom:1rem;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+                            <strong>${zoneName}</strong>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label style="font-size:0.85rem;color:var(--text-secondary);">Capacidad total</label>
+                                <input type="number" class="zone-capacity-input"
+                                       id="zone-capacity-${zoneName}"
+                                       data-zone="${zoneName}"
+                                       min="1" max="1000"
+                                       value="${capacity}"
+                                       placeholder="20"
+                                       ${hasTables ? 'readonly style="background:var(--bg-secondary);cursor:default;"' : ''}>
+                            </div>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-bottom:0.75rem;">
+                            <input type="checkbox" id="zone-tables-toggle-${zoneName}"
+                                   onchange="settings.toggleZoneTables('${zoneName}',this.checked)"
+                                   ${hasTables ? 'checked' : ''}>
+                            <span style="font-size:0.9rem;">Definir tipos de mesas (opcional)</span>
+                        </label>
+                        <div id="zone-tables-config-${zoneName}" style="display:${hasTables ? 'block' : 'none'};background:var(--bg-secondary);padding:0.75rem;border-radius:6px;">
+                            <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 0.75rem 0;">
+                                La capacidad total se calcula automáticamente según las mesas
+                            </p>
+                            <div id="zone-table-rows-${zoneName}">
+                                ${tableRows}
+                            </div>
+                            <button type="button" onclick="settings.addTableTypeRow('${zoneName}')"
+                                    class="btn-secondary" style="margin-top:0.5rem;font-size:0.85rem;padding:0.3rem 0.75rem;">
+                                + Añadir tipo de mesa
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');

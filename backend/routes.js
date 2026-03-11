@@ -1321,26 +1321,36 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
         // Verificar si hay capacidad por zonas configurada
         const zoneCapacities = bookingSettings.zoneCapacities;
         const hasZoneCapacities = zoneCapacities && Object.keys(zoneCapacities).length > 0;
+        const zoneTableConfig = bookingSettings.zoneTableConfig || {};
+
+        // Helper: dado config de mesas y lista de num_people de reservas existentes,
+        // devuelve array de capacidades de mesas libres
+        function getFreeTables(tableConf, existingPeople) {
+            const tables = [];
+            tableConf.forEach(g => { for (let i = 0; i < g.count; i++) tables.push(g.capacity); });
+            tables.sort((a, b) => a - b);
+            const occupied = new Array(tables.length).fill(false);
+            [...existingPeople].sort((a, b) => b - a).forEach(p => {
+                const idx = tables.findIndex((cap, i) => !occupied[i] && cap >= p);
+                if (idx !== -1) occupied[idx] = true;
+            });
+            return tables.filter((_, i) => !occupied[i]);
+        }
 
         // Calcular disponibilidad por slot
         const availability = {};
 
         if (bookingMode === 'tables' && hasZoneCapacities) {
-            // MODO TABLES CON ZONAS: Sumar num_people por slot y zona
-            // Redondear al par superior (3 personas ocupan mesa de 4)
+            // MODO TABLES CON ZONAS: agrupar reservas por slot y zona
             bookings.forEach(booking => {
-                const time = booking.booking_time.substring(0, 5); // "HH:MM"
+                const time = booking.booking_time.substring(0, 5);
                 const zone = booking.zone || 'Sin zona';
                 const numPeople = booking.num_people || 1;
-                const occupiedSeats = numPeople + (numPeople % 2); // Redondeo al par superior
-
-                if (!availability[time]) {
-                    availability[time] = {};
-                }
-                if (!availability[time][zone]) {
-                    availability[time][zone] = { occupied: 0 };
-                }
-                availability[time][zone].occupied += occupiedSeats;
+                if (!availability[time]) availability[time] = {};
+                if (!availability[time][zone]) availability[time][zone] = { people: [], occupied: 0 };
+                availability[time][zone].people.push(numPeople);
+                // Mantener occupied para modo sin mesas (redondeo par)
+                availability[time][zone].occupied += numPeople + (numPeople % 2);
             });
         } else if (bookingMode === 'tables') {
             // MODO TABLES SIN ZONAS: Sumar num_people por slot
@@ -1386,16 +1396,29 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
                 // Calcular disponibilidad de cada zona
                 Object.keys(zoneCapacities).forEach(zoneName => {
                     const capacity = zoneCapacities[zoneName];
-                    const occupied = availability[time][zoneName]?.occupied || 0;
-                    const available = Math.max(0, capacity - occupied);
-                    const percentage = Math.round((occupied / capacity) * 100);
+                    const tableConf = zoneTableConfig[zoneName];
+                    const zoneData = availability[time][zoneName];
 
-                    slots[time].zones[zoneName] = {
-                        total: capacity,
-                        occupied,
-                        available,
-                        percentage
-                    };
+                    let total, occupied, available, percentage;
+
+                    if (tableConf && tableConf.length > 0) {
+                        // MODO MESAS: calcular mesas libres
+                        const existingPeople = zoneData?.people || [];
+                        const allTables = tableConf.reduce((acc, g) => acc + g.count, 0);
+                        const freeTables = getFreeTables(tableConf, existingPeople);
+                        total = allTables;
+                        occupied = allTables - freeTables.length;
+                        available = freeTables.length;
+                        percentage = Math.round((occupied / total) * 100);
+                    } else {
+                        // MODO CAPACIDAD: redondeo par (comportamiento anterior)
+                        occupied = zoneData?.occupied || 0;
+                        available = Math.max(0, capacity - occupied);
+                        total = capacity;
+                        percentage = Math.round((occupied / capacity) * 100);
+                    }
+
+                    slots[time].zones[zoneName] = { total, occupied, available, percentage };
                 });
             });
         } else {
@@ -1752,67 +1775,73 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             // Si hay zoneCapacities configuradas y viene una zona, validar por zona
             const zoneCapacities = bookingSettings.zoneCapacities;
             const hasZoneCapacities = zoneCapacities && Object.keys(zoneCapacities).length > 0;
+            const bookingZoneTableConfig = bookingSettings.zoneTableConfig || {};
+            const zoneTableConf = zone ? bookingZoneTableConfig[zone] : null;
+            const useTableMode = zoneTableConf && zoneTableConf.length > 0;
 
-            let capacityToCheck, queryParams, queryWhere;
-
-            if (hasZoneCapacities && zone) {
-                // Validar capacidad de zona específica
-                capacityToCheck = zoneCapacities[zone];
-
-                if (!capacityToCheck) {
-                    return res.status(400).json({
-                        success: false,
-                        message: `La zona "${zone}" no está configurada`
-                    });
-                }
-
-                // Contar solo reservas de esa zona
-                queryWhere = `WHERE business_id = ? AND booking_date = ? AND booking_time = ?
-                             AND zone = ? AND status != 'cancelled'`;
-                queryParams = [businessId, bookingDate, bookingTime, zone];
-            } else {
-                // Sin zonas configuradas o sin zona seleccionada, usar capacidad general
-                capacityToCheck = businessCapacity;
-                queryWhere = `WHERE business_id = ? AND booking_date = ? AND booking_time = ?
-                             AND status != 'cancelled'`;
-                queryParams = [businessId, bookingDate, bookingTime];
+            if (hasZoneCapacities && zone && !zoneCapacities[zone]) {
+                return res.status(400).json({ success: false, message: `La zona "${zone}" no está configurada` });
             }
 
-            // Para restaurantes: redondear al par superior (3 personas ocupan mesa de 4)
-            // La fórmula num_people + (num_people % 2) suma 1 si es impar, 0 si es par
-            const sumQuery = await db.query(
-                `SELECT COALESCE(SUM(num_people + (num_people % 2)), 0) as total_people FROM bookings ${queryWhere}`,
-                queryParams
-            );
+            const zoneText = zone ? ` en ${zone}` : '';
+            const requestedPeople = parseInt(numPeople) || 1;
 
-            const currentPeople = parseInt(sumQuery[0].total_people) || 0;
-            const rawRequestedPeople = parseInt(numPeople) || 1;
-            // Redondear al par superior: 1→2, 2→2, 3→4, 4→4, 5→6, etc.
-            const requestedPeople = rawRequestedPeople + (rawRequestedPeople % 2);
+            if (useTableMode) {
+                // MODO MESAS: verificar si hay mesa disponible para el grupo
+                const existingBookingsInZone = await db.query(
+                    `SELECT num_people FROM bookings
+                     WHERE business_id = ? AND booking_date = ? AND booking_time = ? AND zone = ? AND status != 'cancelled'`,
+                    [businessId, bookingDate, bookingTime, zone]
+                );
+                const existingPeople = existingBookingsInZone.map(b => b.num_people || 1);
 
-            console.log('🔍 [DEBUG CAPACITY] zone:', zone || 'sin zona');
-            console.log('🔍 [DEBUG CAPACITY] hasZoneCapacities:', hasZoneCapacities);
-            console.log('🔍 [DEBUG CAPACITY] capacityToCheck:', capacityToCheck, typeof capacityToCheck);
-            console.log('🔍 [DEBUG CAPACITY] currentPeople:', currentPeople, typeof currentPeople);
-            console.log('🔍 [DEBUG CAPACITY] requestedPeople:', requestedPeople, typeof requestedPeople);
-            console.log('🔍 [DEBUG CAPACITY] Suma:', currentPeople + requestedPeople);
-            console.log('🔍 [DEBUG CAPACITY] Validación:', (currentPeople + requestedPeople), '>', capacityToCheck, '=', (currentPeople + requestedPeople > capacityToCheck));
+                // Helper inline (mismo algoritmo que en el endpoint de disponibilidad)
+                const tables = [];
+                zoneTableConf.forEach(g => { for (let i = 0; i < g.count; i++) tables.push(g.capacity); });
+                tables.sort((a, b) => a - b);
+                const occ = new Array(tables.length).fill(false);
+                [...existingPeople].sort((a, b) => b - a).forEach(p => {
+                    const idx = tables.findIndex((cap, i) => !occ[i] && cap >= p);
+                    if (idx !== -1) occ[idx] = true;
+                });
+                const freeTables = tables.filter((_, i) => !occ[i]);
+                const fittingTable = freeTables.find(cap => cap >= requestedPeople);
 
-            if (currentPeople + requestedPeople > capacityToCheck) {
-                const available = capacityToCheck - currentPeople;
-                const zoneText = zone ? ` en ${zone}` : '';
+                if (!fittingTable) {
+                    const hasAnyFree = freeTables.length > 0;
+                    const friendlyMessage = hasAnyFree
+                        ? `😔 No hay mesa disponible para ${requestedPeople} personas${zoneText} en este horario. La mesa más grande libre tiene ${Math.max(...freeTables)} personas.`
+                        : `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario?`;
+                    return res.status(409).json({ success: false, message: friendlyMessage });
+                }
+            } else {
+                // MODO CAPACIDAD: redondeo al par superior (comportamiento anterior)
+                let capacityToCheck, queryParams, queryWhere;
 
-                let friendlyMessage;
-                if (available === 0) {
-                    friendlyMessage = `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario? ¡Seguro encontramos hueco para ti!`;
+                if (hasZoneCapacities && zone) {
+                    capacityToCheck = zoneCapacities[zone];
+                    queryWhere = `WHERE business_id = ? AND booking_date = ? AND booking_time = ? AND zone = ? AND status != 'cancelled'`;
+                    queryParams = [businessId, bookingDate, bookingTime, zone];
                 } else {
-                    friendlyMessage = `😔 Solo quedan ${available} plazas${zoneText}, pero necesitas ${requestedPeople}. ¿Probamos con menos personas o con otro horario?`;
+                    capacityToCheck = businessCapacity;
+                    queryWhere = `WHERE business_id = ? AND booking_date = ? AND booking_time = ? AND status != 'cancelled'`;
+                    queryParams = [businessId, bookingDate, bookingTime];
                 }
 
-                return res.status(409).json({
-                    success: false,
-                    message: friendlyMessage
-                });
+                const sumQuery = await db.query(
+                    `SELECT COALESCE(SUM(num_people + (num_people % 2)), 0) as total_people FROM bookings ${queryWhere}`,
+                    queryParams
+                );
+                const currentPeople = parseInt(sumQuery[0].total_people) || 0;
+                const roundedRequested = requestedPeople + (requestedPeople % 2);
+
+                if (currentPeople + roundedRequested > capacityToCheck) {
+                    const available = capacityToCheck - currentPeople;
+                    const friendlyMessage = available === 0
+                        ? `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario? ¡Seguro encontramos hueco para ti!`
+                        : `😔 Solo quedan ${available} plazas${zoneText}, pero necesitas ${roundedRequested}. ¿Probamos con menos personas o con otro horario?`;
+                    return res.status(409).json({ success: false, message: friendlyMessage });
+                }
             }
 
         } else {
