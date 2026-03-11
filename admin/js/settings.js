@@ -1549,9 +1549,12 @@ const settings = {
                 <div id="whatsapp-settings-fields" style="display: ${business.whatsapp_enabled ? 'block' : 'none'};">
                     <div class="form-group">
                         <label>Número de WhatsApp</label>
-                        <input type="text" id="whatsapp-number" value="${business.whatsapp_number || ''}"
-                               placeholder="34612345678">
-                        <p class="hint">Formato internacional sin el símbolo + (ejemplo: 34612345678 para España)</p>
+                        <div style="display: flex; align-items: center; gap: 0; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
+                            <span style="padding: 0.5rem 0.75rem; background: var(--bg-secondary); color: var(--text-secondary); font-size: 0.95rem; white-space: nowrap; border-right: 1px solid var(--border-color);">+34</span>
+                            <input type="text" id="whatsapp-number" value="${business.whatsapp_number ? business.whatsapp_number.replace(/^34/, '') : ''}"
+                                   placeholder="612345678" style="border: none; border-radius: 0; flex: 1; margin: 0;">
+                        </div>
+                        <p class="hint">Introduce solo tu número sin el prefijo de país (9 dígitos)</p>
                     </div>
 
                     <div class="form-group">
@@ -1889,10 +1892,11 @@ const settings = {
                 website: this.businessData.website
             });
 
-            // Save WhatsApp settings
+            // Save WhatsApp settings — añadir prefijo 34 automáticamente
+            const cleanNumber = whatsappNumber.replace(/\s/g, '').replace(/^\+?34/, '');
             await api.patch(`/api/businesses/${this.userData.business_id}/whatsapp-settings`, {
                 whatsapp_enabled: whatsappEnabled,
-                whatsapp_number: whatsappNumber.replace(/\s/g, ''),
+                whatsapp_number: '34' + cleanNumber,
                 whatsapp_template: whatsappTemplate
             });
 
