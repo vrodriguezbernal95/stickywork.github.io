@@ -3732,11 +3732,13 @@ const settings = {
                 capacityInput.setAttribute('readonly', '');
                 capacityInput.style.background = 'var(--bg-secondary)';
                 capacityInput.style.cursor = 'default';
+                capacityInput.style.borderColor = 'var(--border-color)';
                 this.recalcZoneCapacity(zoneName);
             } else {
                 capacityInput.removeAttribute('readonly');
-                capacityInput.style.background = '';
+                capacityInput.style.background = 'var(--bg-primary)';
                 capacityInput.style.cursor = '';
+                capacityInput.style.borderColor = 'var(--border-color)';
             }
         }
     },
@@ -4102,39 +4104,42 @@ const settings = {
                 `).join('');
 
                 return `
-                    <div class="form-group" style="padding:1rem;border:1px solid var(--border-color);border-radius:8px;margin-bottom:1rem;">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-                            <strong>${zoneName}</strong>
-                        </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:0.75rem;">
+                    <div style="padding:1rem 1.25rem;border:1px solid var(--border-color);border-radius:10px;margin-bottom:1rem;background:var(--bg-primary);">
+                        <p style="font-weight:700;font-size:1rem;margin:0 0 1rem 0;color:var(--text-primary);">${zoneName}</p>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
                             <div>
-                                <label style="font-size:0.85rem;color:var(--text-secondary);">Capacidad total</label>
+                                <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 0.4rem 0;">Capacidad total</p>
                                 <input type="number" class="zone-capacity-input"
                                        id="zone-capacity-${zoneName}"
                                        data-zone="${zoneName}"
                                        min="1" max="1000"
                                        value="${capacity}"
                                        placeholder="20"
-                                       ${hasTables ? 'readonly style="background:var(--bg-secondary);cursor:default;"' : ''}>
+                                       style="width:100%;padding:0.6rem 0.75rem;border:2px solid var(--border-color);border-radius:8px;background:${hasTables ? 'var(--bg-secondary)' : 'var(--bg-primary)'};color:var(--text-primary);font-size:0.95rem;"
+                                       ${hasTables ? 'readonly' : ''}>
                             </div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-bottom:0.75rem;"
+
+                        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;cursor:pointer;"
                              onclick="document.getElementById('zone-tables-toggle-${zoneName}').click()">
                             <input type="checkbox" id="zone-tables-toggle-${zoneName}"
                                    onchange="settings.toggleZoneTables('${zoneName}',this.checked)"
                                    onclick="event.stopPropagation()"
+                                   style="width:16px;height:16px;flex-shrink:0;cursor:pointer;accent-color:var(--primary-color);"
                                    ${hasTables ? 'checked' : ''}>
-                            <span style="font-size:0.9rem;cursor:pointer;">Definir tipos de mesas (opcional)</span>
+                            <span style="font-size:0.9rem;color:var(--text-primary);cursor:pointer;">Definir tipos de mesas (opcional)</span>
                         </div>
-                        <div id="zone-tables-config-${zoneName}" style="display:${hasTables ? 'block' : 'none'};background:var(--bg-secondary);padding:0.75rem;border-radius:6px;">
+
+                        <div id="zone-tables-config-${zoneName}" style="display:${hasTables ? 'block' : 'none'};background:var(--bg-secondary);padding:0.85rem 1rem;border-radius:8px;border:1px solid var(--border-color);">
                             <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 0.75rem 0;">
-                                La capacidad total se calcula automáticamente según las mesas
+                                La capacidad total se calculará automáticamente
                             </p>
                             <div id="zone-table-rows-${zoneName}">
                                 ${tableRows}
                             </div>
                             <button type="button" onclick="settings.addTableTypeRow('${zoneName}')"
-                                    class="btn-secondary" style="margin-top:0.5rem;font-size:0.85rem;padding:0.3rem 0.75rem;">
+                                    style="margin-top:0.5rem;padding:0.35rem 0.85rem;font-size:0.85rem;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-primary);color:var(--text-primary);cursor:pointer;">
                                 + Añadir tipo de mesa
                             </button>
                         </div>
