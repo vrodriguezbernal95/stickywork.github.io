@@ -2014,6 +2014,9 @@ const settings = {
                     }
                 });
                 currentSettings.zoneTableConfig = Object.keys(zoneTableConfig).length > 0 ? zoneTableConfig : null;
+
+                const allowCombiningEl = document.getElementById('allow-table-combining');
+                if (allowCombiningEl) currentSettings.allowTableCombining = allowCombiningEl.checked;
             }
 
             if (maxPerBooking !== null) {
@@ -4081,6 +4084,7 @@ const settings = {
             const maxPerBooking = bookingSettings.maxPerBooking || 10;
 
             const zoneTableConfig = bookingSettings.zoneTableConfig || {};
+            const allowTableCombining = bookingSettings.allowTableCombining !== false; // true por defecto
 
             const zoneFields = zones.map(zone => {
                 const zoneName = typeof zone === 'string' ? zone : zone.name;
@@ -4166,6 +4170,20 @@ const settings = {
                     </div>
 
                     ${zoneFields}
+
+                    <div style="padding:1rem 1.25rem;border:1px solid var(--border-color);border-radius:10px;margin-bottom:1rem;background:var(--bg-primary);">
+                        <div style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;"
+                             onclick="document.getElementById('allow-table-combining').click()">
+                            <input type="checkbox" id="allow-table-combining"
+                                   onclick="event.stopPropagation()"
+                                   style="width:16px;height:16px;flex-shrink:0;cursor:pointer;accent-color:var(--primary-color);"
+                                   ${allowTableCombining ? 'checked' : ''}>
+                            <div>
+                                <p style="margin:0;font-weight:600;font-size:0.95rem;color:var(--text-primary);">Permitir combinar mesas</p>
+                                <p style="margin:0.2rem 0 0 0;font-size:0.82rem;color:var(--text-secondary);">Si está desactivado, cada reserva debe caber en una sola mesa</p>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label>Máximo de comensales por reserva</label>

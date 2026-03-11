@@ -1793,6 +1793,7 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
             const bookingZoneTableConfig = bookingSettings.zoneTableConfig || {};
             const zoneTableConf = zone ? bookingZoneTableConfig[zone] : null;
             const useTableMode = zoneTableConf && zoneTableConf.length > 0;
+            const allowTableCombining = bookingSettings.allowTableCombining !== false; // true por defecto
 
             if (hasZoneCapacities && zone && !zoneCapacities[zone]) {
                 return res.status(400).json({ success: false, message: `La zona "${zone}" no está configurada` });
@@ -1810,15 +1811,23 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 );
                 const existingPeople = existingBookingsInZone.map(b => b.num_people || 1);
 
-                // Usar el mismo helper que el endpoint de disponibilidad (con combinación de mesas)
+                // Verificar disponibilidad de mesas
                 const freeTables = getFreeTables(zoneTableConf, existingPeople);
-                const canSeat = canSeatWithTables(freeTables, requestedPeople);
+                const canSeat = allowTableCombining
+                    ? canSeatWithTables(freeTables, requestedPeople)
+                    : freeTables.some(cap => cap >= requestedPeople);
 
                 if (!canSeat) {
                     const totalFreeCapacity = freeTables.reduce((sum, cap) => sum + cap, 0);
-                    const friendlyMessage = freeTables.length === 0
-                        ? `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario?`
-                        : `😔 Solo quedan ${totalFreeCapacity} plazas libres${zoneText} combinando todas las mesas disponibles, pero necesitas ${requestedPeople}. ¿Probamos con otro horario?`;
+                    let friendlyMessage;
+                    if (freeTables.length === 0) {
+                        friendlyMessage = `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario?`;
+                    } else if (!allowTableCombining) {
+                        const maxSingleTable = Math.max(...freeTables);
+                        friendlyMessage = `😔 No hay ninguna mesa disponible para ${requestedPeople} personas${zoneText}. La mesa más grande libre tiene ${maxSingleTable} plazas.`;
+                    } else {
+                        friendlyMessage = `😔 Solo quedan ${totalFreeCapacity} plazas libres${zoneText} combinando todas las mesas, pero necesitas ${requestedPeople}. ¿Probamos con otro horario?`;
+                    }
                     return res.status(409).json({ success: false, message: friendlyMessage });
                 }
             } else {
