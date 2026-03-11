@@ -1274,6 +1274,35 @@ router.get('/api/services/:businessId', async (req, res) => {
     }
 });
 
+// --- Helpers para modo mesas (compartidos entre endpoints) ---
+// Simula la ocupación de mesas por reservas existentes y devuelve capacidades de mesas libres
+function getFreeTables(tableConf, existingPeople) {
+    const tables = [];
+    tableConf.forEach(g => { for (let i = 0; i < g.count; i++) tables.push({ cap: g.capacity, free: true }); });
+    tables.sort((a, b) => b.cap - a.cap); // mayor a menor
+    [...existingPeople].sort((a, b) => b - a).forEach(partySize => {
+        let remaining = partySize;
+        for (const t of tables) {
+            if (!t.free || remaining <= 0) continue;
+            t.free = false;
+            remaining -= t.cap;
+        }
+    });
+    return tables.filter(t => t.free).map(t => t.cap);
+}
+
+// Comprueba si un grupo puede ser sentado combinando las mesas libres disponibles
+function canSeatWithTables(freeTables, partySize) {
+    const sorted = [...freeTables].sort((a, b) => b - a);
+    let total = 0;
+    for (const cap of sorted) {
+        total += cap;
+        if (total >= partySize) return true;
+    }
+    return false;
+}
+// --- Fin helpers mesas ---
+
 // Obtener disponibilidad de slots para una fecha
 router.get('/api/availability/:businessId/:date', async (req, res) => {
     try {
@@ -1322,20 +1351,6 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
         const zoneCapacities = bookingSettings.zoneCapacities;
         const hasZoneCapacities = zoneCapacities && Object.keys(zoneCapacities).length > 0;
         const zoneTableConfig = bookingSettings.zoneTableConfig || {};
-
-        // Helper: dado config de mesas y lista de num_people de reservas existentes,
-        // devuelve array de capacidades de mesas libres
-        function getFreeTables(tableConf, existingPeople) {
-            const tables = [];
-            tableConf.forEach(g => { for (let i = 0; i < g.count; i++) tables.push(g.capacity); });
-            tables.sort((a, b) => a - b);
-            const occupied = new Array(tables.length).fill(false);
-            [...existingPeople].sort((a, b) => b - a).forEach(p => {
-                const idx = tables.findIndex((cap, i) => !occupied[i] && cap >= p);
-                if (idx !== -1) occupied[idx] = true;
-            });
-            return tables.filter((_, i) => !occupied[i]);
-        }
 
         // Calcular disponibilidad por slot
         const availability = {};
@@ -1795,23 +1810,15 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 );
                 const existingPeople = existingBookingsInZone.map(b => b.num_people || 1);
 
-                // Helper inline (mismo algoritmo que en el endpoint de disponibilidad)
-                const tables = [];
-                zoneTableConf.forEach(g => { for (let i = 0; i < g.count; i++) tables.push(g.capacity); });
-                tables.sort((a, b) => a - b);
-                const occ = new Array(tables.length).fill(false);
-                [...existingPeople].sort((a, b) => b - a).forEach(p => {
-                    const idx = tables.findIndex((cap, i) => !occ[i] && cap >= p);
-                    if (idx !== -1) occ[idx] = true;
-                });
-                const freeTables = tables.filter((_, i) => !occ[i]);
-                const fittingTable = freeTables.find(cap => cap >= requestedPeople);
+                // Usar el mismo helper que el endpoint de disponibilidad (con combinación de mesas)
+                const freeTables = getFreeTables(zoneTableConf, existingPeople);
+                const canSeat = canSeatWithTables(freeTables, requestedPeople);
 
-                if (!fittingTable) {
-                    const hasAnyFree = freeTables.length > 0;
-                    const friendlyMessage = hasAnyFree
-                        ? `😔 No hay mesa disponible para ${requestedPeople} personas${zoneText} en este horario. La mesa más grande libre tiene ${Math.max(...freeTables)} personas.`
-                        : `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario?`;
+                if (!canSeat) {
+                    const totalFreeCapacity = freeTables.reduce((sum, cap) => sum + cap, 0);
+                    const friendlyMessage = freeTables.length === 0
+                        ? `😔 ¡Vaya! Este horario está completo${zoneText}. ¿Qué tal si pruebas con otro horario?`
+                        : `😔 Solo quedan ${totalFreeCapacity} plazas libres${zoneText} combinando todas las mesas disponibles, pero necesitas ${requestedPeople}. ¿Probamos con otro horario?`;
                     return res.status(409).json({ success: false, message: friendlyMessage });
                 }
             } else {
