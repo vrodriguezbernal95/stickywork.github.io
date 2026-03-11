@@ -4118,12 +4118,14 @@ const settings = {
                                        ${hasTables ? 'readonly style="background:var(--bg-secondary);cursor:default;"' : ''}>
                             </div>
                         </div>
-                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-bottom:0.75rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;margin-bottom:0.75rem;"
+                             onclick="document.getElementById('zone-tables-toggle-${zoneName}').click()">
                             <input type="checkbox" id="zone-tables-toggle-${zoneName}"
                                    onchange="settings.toggleZoneTables('${zoneName}',this.checked)"
+                                   onclick="event.stopPropagation()"
                                    ${hasTables ? 'checked' : ''}>
-                            <span style="font-size:0.9rem;">Definir tipos de mesas (opcional)</span>
-                        </label>
+                            <span style="font-size:0.9rem;cursor:pointer;">Definir tipos de mesas (opcional)</span>
+                        </div>
                         <div id="zone-tables-config-${zoneName}" style="display:${hasTables ? 'block' : 'none'};background:var(--bg-secondary);padding:0.75rem;border-radius:6px;">
                             <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 0.75rem 0;">
                                 La capacidad total se calcula automáticamente según las mesas
