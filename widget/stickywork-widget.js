@@ -2457,8 +2457,12 @@
 
     window.StickyWork.decrementAdults = function() {
         const minAdults = config.childrenSettings?.minAdults || 1;
-        if (adultsCount > minAdults) {
-            adultsCount--;
+        const maxChildrenPerAdult = config.childrenSettings?.maxChildrenPerAdult;
+        const newAdults = adultsCount - 1;
+        if (newAdults >= minAdults) {
+            // No permitir reducir adultos si dejaría más niños de los permitidos
+            if (maxChildrenPerAdult && childrenCount > newAdults * maxChildrenPerAdult) return;
+            adultsCount = newAdults;
             updateAdultsCountDisplay();
         }
     };
@@ -2480,10 +2484,12 @@
     window.StickyWork.incrementChildren = function() {
         const maxPerBooking = config.maxPerBooking || 50;
         const maxChildren = config.childrenSettings?.maxChildren;
+        const maxChildrenPerAdult = config.childrenSettings?.maxChildrenPerAdult;
         const canAddMore = adultsCount + childrenCount < maxPerBooking;
         const withinChildLimit = maxChildren === null || maxChildren === undefined || childrenCount < maxChildren;
+        const withinRatio = !maxChildrenPerAdult || childrenCount < adultsCount * maxChildrenPerAdult;
 
-        if (canAddMore && withinChildLimit) {
+        if (canAddMore && withinChildLimit && withinRatio) {
             childrenCount++;
             updateChildrenCountDisplay();
         }
@@ -2498,7 +2504,11 @@
 
     window.StickyWork.updateChildrenCount = function(value) {
         const numValue = parseInt(value);
+        const maxChildren = config.childrenSettings?.maxChildren;
+        const maxChildrenPerAdult = config.childrenSettings?.maxChildrenPerAdult;
         if (!isNaN(numValue) && numValue >= 0 && numValue <= 50) {
+            if (maxChildren !== null && maxChildren !== undefined && numValue > maxChildren) return;
+            if (maxChildrenPerAdult && numValue > adultsCount * maxChildrenPerAdult) return;
             childrenCount = numValue;
         }
     };

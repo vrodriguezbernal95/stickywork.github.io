@@ -1602,6 +1602,16 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                     });
                 }
             }
+
+            // Validar ratio máximo de niños por adulto
+            if (childrenSettings.maxChildrenPerAdult !== null && childrenSettings.maxChildrenPerAdult !== undefined) {
+                if (numChildren > numAdults * childrenSettings.maxChildrenPerAdult) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Máximo ${childrenSettings.maxChildrenPerAdult} niño${childrenSettings.maxChildrenPerAdult > 1 ? 's' : ''} por adulto`
+                    });
+                }
+            }
         }
 
         // Validar día laboral
