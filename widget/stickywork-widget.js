@@ -611,6 +611,12 @@
                 border-radius: 8px;
                 background: ${colors.bgPrimary};
                 padding: 0.25rem;
+                cursor: default;
+                caret-color: transparent;
+            }
+            .stickywork-people-count:focus {
+                outline: none;
+                border-color: ${colors.border};
             }
             .stickywork-people-count::-webkit-inner-spin-button,
             .stickywork-people-count::-webkit-outer-spin-button {
@@ -1225,9 +1231,8 @@
                     <div class="stickywork-people-selector">
                         <button type="button" class="stickywork-people-btn" id="stickywork-adults-decrement">-</button>
                         <input type="number" class="stickywork-people-count" id="stickywork-adults-count"
-                               name="num_adults"
-                               value="${minAdults}" min="${minAdults}" max="50"
-                               oninput="StickyWork.updateAdultsCount(this.value)">
+                               name="num_adults" readonly
+                               value="${minAdults}" min="${minAdults}" max="50">
                         <button type="button" class="stickywork-people-btn" id="stickywork-adults-increment">+</button>
                     </div>
                 </div>
@@ -1236,9 +1241,8 @@
                     <div class="stickywork-people-selector">
                         <button type="button" class="stickywork-people-btn" id="stickywork-children-decrement">-</button>
                         <input type="number" class="stickywork-people-count" id="stickywork-children-count"
-                               name="num_children"
-                               value="0" min="0" max="50"
-                               oninput="StickyWork.updateChildrenCount(this.value)">
+                               name="num_children" readonly
+                               value="0" min="0" max="50">
                         <button type="button" class="stickywork-people-btn" id="stickywork-children-increment">+</button>
                     </div>
                 </div>
@@ -1301,9 +1305,8 @@
                     <div class="stickywork-people-selector">
                         <button type="button" class="stickywork-people-btn" id="stickywork-adults-decrement">-</button>
                         <input type="number" class="stickywork-people-count" id="stickywork-adults-count"
-                               name="num_adults"
-                               value="${minAdults}" min="${minAdults}" max="50"
-                               oninput="StickyWork.updateAdultsCount(this.value)">
+                               name="num_adults" readonly
+                               value="${minAdults}" min="${minAdults}" max="50">
                         <button type="button" class="stickywork-people-btn" id="stickywork-adults-increment">+</button>
                     </div>
                 </div>
@@ -1312,9 +1315,8 @@
                     <div class="stickywork-people-selector">
                         <button type="button" class="stickywork-people-btn" id="stickywork-children-decrement">-</button>
                         <input type="number" class="stickywork-people-count" id="stickywork-children-count"
-                               name="num_children"
-                               value="0" min="0" max="50"
-                               oninput="StickyWork.updateChildrenCount(this.value)">
+                               name="num_children" readonly
+                               value="0" min="0" max="50">
                         <button type="button" class="stickywork-people-btn" id="stickywork-children-increment">+</button>
                     </div>
                 </div>
