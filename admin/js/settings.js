@@ -2006,6 +2006,7 @@ const settings = {
                 const maxChildAge = document.getElementById('max-child-age');
                 const minAdults = document.getElementById('min-adults');
                 const maxChildren = document.getElementById('max-children');
+                const maxChildrenPerAdult = document.getElementById('max-children-per-adult');
                 const customMessage = document.getElementById('children-custom-message');
 
                 currentSettings.childrenSettings = {
@@ -2013,6 +2014,7 @@ const settings = {
                     maxChildAge: maxChildAge ? parseInt(maxChildAge.value) || 12 : 12,
                     minAdults: minAdults ? parseInt(minAdults.value) || 1 : 1,
                     maxChildren: maxChildren && maxChildren.value !== '' ? parseInt(maxChildren.value) : null,
+                    maxChildrenPerAdult: maxChildrenPerAdult && maxChildrenPerAdult.value !== '' ? parseInt(maxChildrenPerAdult.value) : null,
                     customMessage: customMessage ? customMessage.value.trim() : ''
                 };
             }
@@ -4023,6 +4025,8 @@ const settings = {
             const minAdults = childrenSettings.minAdults || 1;
             const maxChildren = childrenSettings.maxChildren !== null && childrenSettings.maxChildren !== undefined
                 ? childrenSettings.maxChildren : '';
+            const maxChildrenPerAdult = childrenSettings.maxChildrenPerAdult !== null && childrenSettings.maxChildrenPerAdult !== undefined
+                ? childrenSettings.maxChildrenPerAdult : '';
             const customMessage = childrenSettings.customMessage || '';
 
             return `
@@ -4087,13 +4091,23 @@ const settings = {
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label>Máximo de niños por reserva (opcional)</label>
-                                <input type="number" id="max-children"
-                                       min="0" max="50"
-                                       value="${maxChildren}"
-                                       placeholder="Sin límite">
-                                <p class="hint">Dejar vacío para no limitar</p>
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="form-group">
+                                    <label>Máximo de niños por reserva (opcional)</label>
+                                    <input type="number" id="max-children"
+                                           min="0" max="50"
+                                           value="${maxChildren}"
+                                           placeholder="Sin límite">
+                                    <p class="hint">Dejar vacío para no limitar</p>
+                                </div>
+                                <div class="form-group">
+                                    <label>Máximo de niños por adulto (opcional)</label>
+                                    <input type="number" id="max-children-per-adult"
+                                           min="1" max="20"
+                                           value="${maxChildrenPerAdult}"
+                                           placeholder="Sin límite">
+                                    <p class="hint">Ej: 2 → con 1 adulto máx 2 niños, con 2 adultos máx 4</p>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -4126,6 +4140,8 @@ const settings = {
         const minAdultsServices = childrenSettingsServices.minAdults || 1;
         const maxChildrenServices = childrenSettingsServices.maxChildren !== null && childrenSettingsServices.maxChildren !== undefined
             ? childrenSettingsServices.maxChildren : '';
+        const maxChildrenPerAdultServices = childrenSettingsServices.maxChildrenPerAdult !== null && childrenSettingsServices.maxChildrenPerAdult !== undefined
+            ? childrenSettingsServices.maxChildrenPerAdult : '';
         const customMessageServices = childrenSettingsServices.customMessage || '';
 
         return `
@@ -4185,13 +4201,23 @@ const settings = {
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label>Máximo de niños por reserva (opcional)</label>
-                            <input type="number" id="max-children"
-                                   min="0" max="50"
-                                   value="${maxChildrenServices}"
-                                   placeholder="Sin límite">
-                            <p class="hint">Dejar vacío para no limitar</p>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Máximo de niños por reserva (opcional)</label>
+                                <input type="number" id="max-children"
+                                       min="0" max="50"
+                                       value="${maxChildrenServices}"
+                                       placeholder="Sin límite">
+                                <p class="hint">Dejar vacío para no limitar</p>
+                            </div>
+                            <div class="form-group">
+                                <label>Máximo de niños por adulto (opcional)</label>
+                                <input type="number" id="max-children-per-adult"
+                                       min="1" max="20"
+                                       value="${maxChildrenPerAdultServices}"
+                                       placeholder="Sin límite">
+                                <p class="hint">Ej: 2 → con 1 adulto máx 2 niños, con 2 adultos máx 4</p>
+                            </div>
                         </div>
 
                         <div class="form-group">
