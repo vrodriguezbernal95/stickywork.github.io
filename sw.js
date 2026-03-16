@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stickywork-v1';
+const CACHE_NAME = 'stickywork-v2';
 
 // Archivos del dashboard que se cachean para acceso offline
 const ASSETS_TO_CACHE = [
