@@ -214,20 +214,18 @@ const bookings = {
 
         // Pagination controls HTML
         const paginationControls = `
-            <div class="pagination-controls" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 1rem;">
-                <button class="btn-secondary"
+            <div class="pagination-controls">
+                <button class="btn-secondary pagination-btn"
                         onclick="bookings.prevPage()"
                         ${this.currentPage === 1 ? 'disabled' : ''}
                         style="opacity: ${this.currentPage === 1 ? '0.5' : '1'}; cursor: ${this.currentPage === 1 ? 'not-allowed' : 'pointer'};">
                     ← Anterior
                 </button>
-                <div style="color: var(--text-primary); font-weight: 500;">
-                    Página ${this.currentPage} de ${totalPages}
-                    <span style="color: var(--text-secondary); font-weight: normal; margin-left: 0.5rem;">
-                        (Mostrando ${startIndex + 1}-${Math.min(endIndex, bookingsList.length)} de ${bookingsList.length})
-                    </span>
+                <div class="pagination-info">
+                    <span>Página ${this.currentPage} de ${totalPages}</span>
+                    <span class="pagination-detail">${startIndex + 1}-${Math.min(endIndex, bookingsList.length)} de ${bookingsList.length}</span>
                 </div>
-                <button class="btn-secondary"
+                <button class="btn-secondary pagination-btn"
                         onclick="bookings.nextPage()"
                         ${this.currentPage === totalPages ? 'disabled' : ''}
                         style="opacity: ${this.currentPage === totalPages ? '0.5' : '1'}; cursor: ${this.currentPage === totalPages ? 'not-allowed' : 'pointer'};">
@@ -1368,6 +1366,34 @@ style.textContent = `
         justify-content: space-between;
         align-items: center;
         gap: 1rem;
+    }
+
+    .pagination-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        gap: 0.75rem;
+    }
+
+    .pagination-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    .pagination-detail {
+        color: var(--text-secondary);
+        font-weight: normal;
+        font-size: 0.8rem;
     }
 
     /* Evitar salto de línea en celdas clave de la tabla */
