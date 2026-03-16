@@ -5136,7 +5136,8 @@ Te esperamos!
         } else if (noResultsMsg) {
             noResultsMsg.style.display = 'none';
         }
-    }
+    },
+
     // ── Editor de plano de mesas ──────────────────────────────────────────
     openFloorEditor() {
         const bookingSettings = this.businessData?.booking_settings
