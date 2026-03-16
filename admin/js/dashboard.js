@@ -1491,8 +1491,11 @@ const dashboard = {
         const tomorrow  = this.tomorrowBookings || [];
         const feedback  = this.feedbackPending  || [];
         const cancelled = this.cancelledFuture  || [];
-        const hasFloorPlan = this.bookingSettings && this.bookingSettings.zoneTableConfig &&
-                             Object.keys(this.bookingSettings.zoneTableConfig).length > 0;
+        const hasFloorPlan = this.bookingSettings && (
+            (this.bookingSettings.zoneTableConfig && Object.keys(this.bookingSettings.zoneTableConfig).length > 0) ||
+            (this.bookingSettings.zoneCapacities && Object.keys(this.bookingSettings.zoneCapacities).length > 0) ||
+            (this.bookingSettings.restaurantZones && this.bookingSettings.restaurantZones.length > 0)
+        );
 
         const boxes = [
             { id: 'hoy',        icon: '📅', title: 'Reservas Hoy',       count: todayBookings.length, color: '#3b82f6' },

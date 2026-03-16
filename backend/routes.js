@@ -4574,8 +4574,17 @@ router.get('/api/admin/floor-plan/:businessId', requireAuth, requireBusinessAcce
             : {};
 
         const zoneTableConfig = bookingSettings.zoneTableConfig || {};
+        const zoneCapacities = bookingSettings.zoneCapacities || {};
+        const restaurantZones = bookingSettings.restaurantZones || [];
 
-        if (Object.keys(zoneTableConfig).length === 0) {
+        // Construir lista de zonas: desde zoneTableConfig, zoneCapacities o restaurantZones
+        const allZoneNames = Object.keys(zoneTableConfig).length > 0
+            ? Object.keys(zoneTableConfig)
+            : Object.keys(zoneCapacities).length > 0
+                ? Object.keys(zoneCapacities)
+                : restaurantZones.map(z => typeof z === 'string' ? z : z.name);
+
+        if (allZoneNames.length === 0) {
             return res.json({ success: true, hasFloorPlan: false });
         }
 
@@ -4596,16 +4605,28 @@ router.get('/api/admin/floor-plan/:businessId', requireAuth, requireBusinessAcce
 
         const timeSlots = [...new Set(bookings.map(b => b.booking_time.substring(0, 5)))].sort();
 
-        const zones = Object.entries(zoneTableConfig).map(([zoneName, tableConf]) => {
-            // Crear mesas individuales ordenadas por capacidad desc (igual que el algoritmo)
+        const zones = allZoneNames.map(zoneName => {
+            const tableConf = zoneTableConfig[zoneName];
+            const capacity = zoneCapacities[zoneName] || 10;
+
+            // Si hay tipos de mesa definidos, crear mesas individuales
+            // Si no, crear mesas genéricas basadas en la capacidad de la zona
             let idx = 0;
             const tables = [];
-            tableConf.forEach(group => {
-                for (let i = 0; i < group.count; i++) {
-                    tables.push({ id: idx++, capacity: group.capacity, booking: null, status: 'free' });
+            if (tableConf && tableConf.length > 0) {
+                tableConf.forEach(group => {
+                    for (let i = 0; i < group.count; i++) {
+                        tables.push({ id: idx++, capacity: group.capacity, booking: null, status: 'free' });
+                    }
+                });
+                tables.sort((a, b) => b.capacity - a.capacity);
+            } else {
+                // Sin tipos definidos: representar la zona como bloques de capacidad 2
+                const numTables = Math.ceil(capacity / 2);
+                for (let i = 0; i < numTables; i++) {
+                    tables.push({ id: idx++, capacity: 2, booking: null, status: 'free' });
                 }
-            });
-            tables.sort((a, b) => b.capacity - a.capacity);
+            }
 
             // Filtrar reservas por zona y hora
             const zoneBookings = bookings.filter(b => {
