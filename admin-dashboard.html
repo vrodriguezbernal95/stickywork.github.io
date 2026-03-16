@@ -146,12 +146,14 @@
             function toggleSidebar() {
                 sidebar.classList.toggle('active');
                 sidebarOverlay.classList.toggle('active');
+                if (mobileMenuToggle) mobileMenuToggle.style.display = sidebar.classList.contains('active') ? 'none' : '';
             }
 
             // Cerrar sidebar
             function closeSidebar() {
                 sidebar.classList.remove('active');
                 sidebarOverlay.classList.remove('active');
+                if (mobileMenuToggle) mobileMenuToggle.style.display = '';
             }
 
             // Event listeners
