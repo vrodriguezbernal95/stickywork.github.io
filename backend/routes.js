@@ -4577,14 +4577,23 @@ router.get('/api/admin/floor-plan/:businessId', requireAuth, requireBusinessAcce
         const zoneCapacities = bookingSettings.zoneCapacities || {};
         const restaurantZones = bookingSettings.restaurantZones || [];
 
-        // Construir lista de zonas: desde zoneTableConfig, zoneCapacities o restaurantZones
-        const allZoneNames = Object.keys(zoneTableConfig).length > 0
-            ? Object.keys(zoneTableConfig)
-            : Object.keys(zoneCapacities).length > 0
-                ? Object.keys(zoneCapacities)
-                : restaurantZones.map(z => typeof z === 'string' ? z : z.name);
+        // Zonas habilitadas según restaurantZones (filtra las deshabilitadas)
+        const enabledZoneNames = restaurantZones.length > 0
+            ? restaurantZones.filter(z => z.enabled !== false).map(z => typeof z === 'string' ? z : z.name)
+            : null;
 
-        if (allZoneNames.length === 0) {
+        // Construir lista de zonas: desde restaurantZones (respetando nombres y enabled),
+        // luego zoneTableConfig o zoneCapacities como fallback
+        let allZoneNames;
+        if (restaurantZones.length > 0) {
+            allZoneNames = enabledZoneNames;
+        } else if (Object.keys(zoneTableConfig).length > 0) {
+            allZoneNames = Object.keys(zoneTableConfig);
+        } else {
+            allZoneNames = Object.keys(zoneCapacities);
+        }
+
+        if (!allZoneNames || allZoneNames.length === 0) {
             return res.json({ success: true, hasFloorPlan: false });
         }
 

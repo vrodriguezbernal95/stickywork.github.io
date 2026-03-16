@@ -5151,11 +5151,19 @@ Te esperamos!
         const restaurantZones = bookingSettings.restaurantZones || [];
         const savedPositions  = bookingSettings.zoneTablePositions || {};
 
-        const zoneNames = Object.keys(zoneTableConfig).length > 0
-            ? Object.keys(zoneTableConfig)
-            : Object.keys(zoneCapacities).length > 0
-                ? Object.keys(zoneCapacities)
-                : restaurantZones.map(z => typeof z === 'string' ? z : z.name);
+        // Zonas habilitadas según restaurantZones (filtra las deshabilitadas)
+        const enabledZoneNames = restaurantZones.length > 0
+            ? restaurantZones.filter(z => z.enabled !== false).map(z => typeof z === 'string' ? z : z.name)
+            : null;
+
+        let zoneNames;
+        if (restaurantZones.length > 0) {
+            zoneNames = enabledZoneNames;
+        } else if (Object.keys(zoneTableConfig).length > 0) {
+            zoneNames = Object.keys(zoneTableConfig);
+        } else {
+            zoneNames = Object.keys(zoneCapacities);
+        }
 
         if (zoneNames.length === 0) {
             alert('Primero configura las zonas en Capacidad.');
