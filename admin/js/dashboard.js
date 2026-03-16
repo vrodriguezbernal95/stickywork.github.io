@@ -1491,18 +1491,21 @@ const dashboard = {
         const tomorrow  = this.tomorrowBookings || [];
         const feedback  = this.feedbackPending  || [];
         const cancelled = this.cancelledFuture  || [];
+        const hasFloorPlan = this.bookingSettings && this.bookingSettings.zoneTableConfig &&
+                             Object.keys(this.bookingSettings.zoneTableConfig).length > 0;
 
         const boxes = [
             { id: 'hoy',        icon: '📅', title: 'Reservas Hoy',       count: todayBookings.length, color: '#3b82f6' },
             { id: 'manana',     icon: '⏰', title: 'Recordatorio 24h',    count: tomorrow.length,      color: '#8b5cf6' },
             { id: 'feedback',   icon: '⭐', title: 'Feedback post-cita',  count: feedback.length,      color: '#f59e0b' },
-            { id: 'canceladas', icon: '❌', title: 'Canceladas (7 días)', count: cancelled.length,     color: '#ef4444' }
+            { id: 'canceladas', icon: '❌', title: 'Canceladas (7 días)', count: cancelled.length,     color: '#ef4444' },
+            ...(hasFloorPlan ? [{ id: 'plano', icon: '🪑', title: 'Plano de Mesas', count: null, color: '#10b981' }] : [])
         ];
 
         return `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
                 ${boxes.map(box => `
-                    <div onclick="dashboard.openActionBoxModal('${box.id}')"
+                    <div onclick="${box.id === 'plano' ? 'dashboard.openFloorPlan()' : `dashboard.openActionBoxModal('${box.id}')`}"
                          style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;"
                          onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.18)'; this.style.borderColor='${box.color}50'"
                          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--border-color)'">
@@ -1512,7 +1515,10 @@ const dashboard = {
                             </div>
                             <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.3;">${box.title}</div>
                         </div>
-                        <div id="dash-count-${box.id}" style="font-size: 2.75rem; font-weight: 700; color: ${box.color}; line-height: 1;">${box.count}</div>
+                        ${box.count !== null
+                            ? `<div id="dash-count-${box.id}" style="font-size: 2.75rem; font-weight: 700; color: ${box.color}; line-height: 1;">${box.count}</div>`
+                            : `<div style="font-size: 1.1rem; font-weight: 700; color: ${box.color}; line-height: 1;">Ver ahora</div>`
+                        }
                         <div style="margin-top: 0.6rem; font-size: 0.8rem; color: var(--text-secondary);">Ver detalle →</div>
                     </div>
                 `).join('')}
@@ -1674,6 +1680,193 @@ const dashboard = {
         document.getElementById('close-action-modal').addEventListener('click', closeModal);
         document.getElementById('close-action-modal-btn').addEventListener('click', closeModal);
         overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+    },
+
+    // ── Plano visual de mesas ──────────────────────────────────────────────
+    async openFloorPlan(date, time) {
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        const selectedDate = date || todayStr;
+
+        // Overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:10000;animation:fadeIn 0.2s ease;padding:1rem;box-sizing:border-box;';
+
+        // Modal
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background:var(--bg-secondary);border-radius:16px;width:100%;max-width:900px;max-height:90vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:slideUp 0.3s ease;display:flex;flex-direction:column;';
+
+        // Header
+        modal.innerHTML = `
+            <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;background:rgba(16,185,129,0.08);">
+                <div style="display:flex;align-items:center;gap:0.75rem;">
+                    <span style="font-size:1.5rem;">🪑</span>
+                    <div>
+                        <h2 style="margin:0;font-size:1.3rem;color:var(--text-primary);">Plano de Mesas</h2>
+                        <input type="date" id="floorplan-date" value="${selectedDate}"
+                               style="margin-top:0.3rem;background:var(--bg-tertiary);border:1px solid var(--border-color);color:var(--text-primary);border-radius:6px;padding:0.25rem 0.5rem;font-size:0.85rem;cursor:pointer;"
+                               onchange="dashboard.openFloorPlan(this.value)">
+                    </div>
+                </div>
+                <button id="close-floorplan-modal" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-secondary);padding:0.5rem;">✕</button>
+            </div>
+            <div id="floorplan-body" style="overflow-y:auto;flex:1;padding:1.5rem;">
+                <div style="text-align:center;padding:3rem;color:var(--text-secondary);">Cargando plano...</div>
+            </div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const closeModal = () => {
+            overlay.style.animation = 'fadeOut 0.2s ease';
+            setTimeout(() => { if (document.body.contains(overlay)) document.body.removeChild(overlay); }, 200);
+        };
+
+        modal.querySelector('#close-floorplan-modal').addEventListener('click', closeModal);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+        // Cargar datos
+        try {
+            const timeParam = time ? `&time=${time}` : '';
+            const data = await api.get(`/api/admin/floor-plan/${auth.getBusinessId()}?date=${selectedDate}${timeParam}`);
+            modal.querySelector('#floorplan-body').innerHTML = this.renderFloorPlanContent(data, selectedDate, time);
+        } catch (err) {
+            modal.querySelector('#floorplan-body').innerHTML = '<div style="text-align:center;padding:3rem;color:#ef4444;">Error al cargar el plano</div>';
+        }
+    },
+
+    renderFloorPlanContent(data, selectedDate, selectedTime) {
+        if (!data.hasFloorPlan) {
+            return `<div style="text-align:center;padding:3rem;color:var(--text-secondary);">
+                <div style="font-size:3rem;margin-bottom:1rem;">🪑</div>
+                <p style="font-size:1.1rem;margin:0;">No tienes mesas configuradas.</p>
+                <p style="font-size:0.9rem;margin-top:0.5rem;">Ve a <strong>Configuración → Capacidad</strong> y define los tipos de mesas por zona.</p>
+            </div>`;
+        }
+
+        const timeSlots = data.timeSlots || [];
+
+        // Selector de hora
+        const timeBar = timeSlots.length > 0 ? `
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem;align-items:center;">
+                <span style="font-size:0.85rem;color:var(--text-secondary);font-weight:600;">Hora:</span>
+                <button onclick="dashboard.openFloorPlan(document.getElementById('floorplan-date').value, null)"
+                        style="padding:0.3rem 0.75rem;border-radius:20px;border:1px solid var(--border-color);font-size:0.8rem;cursor:pointer;font-weight:600;
+                               background:${!selectedTime ? 'var(--primary-color)' : 'var(--bg-tertiary)'};
+                               color:${!selectedTime ? 'white' : 'var(--text-secondary)'};">Todas</button>
+                ${timeSlots.map(t => `
+                    <button onclick="dashboard.openFloorPlan(document.getElementById('floorplan-date').value, '${t}')"
+                            style="padding:0.3rem 0.75rem;border-radius:20px;border:1px solid var(--border-color);font-size:0.8rem;cursor:pointer;font-weight:600;
+                                   background:${selectedTime === t ? 'var(--primary-color)' : 'var(--bg-tertiary)'};
+                                   color:${selectedTime === t ? 'white' : 'var(--text-secondary)'};">${t}</button>
+                `).join('')}
+            </div>
+        ` : `<p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem;">Sin reservas para este día.</p>`;
+
+        // Leyenda
+        const legend = `
+            <div style="display:flex;gap:1.25rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--text-secondary);">
+                    <div style="width:14px;height:14px;border-radius:3px;background:#10b981;"></div> Libre
+                </div>
+                <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--text-secondary);">
+                    <div style="width:14px;height:14px;border-radius:3px;background:#ef4444;"></div> Ocupada
+                </div>
+            </div>
+        `;
+
+        // Zonas
+        const zonesHtml = data.zones.map(zone => `
+            <div style="margin-bottom:1.75rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+                    <h3 style="margin:0;font-size:1rem;color:var(--text-primary);">📍 ${zone.name}</h3>
+                    <span style="font-size:0.8rem;color:var(--text-secondary);">${zone.occupiedTables}/${zone.totalTables} ocupadas</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:0.75rem;">
+                    ${zone.tables.map(table => {
+                        const isOccupied = table.status === 'occupied';
+                        const bg = isOccupied ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.12)';
+                        const border = isOccupied ? '#ef4444' : '#10b981';
+                        const textColor = isOccupied ? '#ef4444' : '#10b981';
+                        const clickHandler = isOccupied
+                            ? `onclick="dashboard.showTablePopup(this, ${JSON.stringify(JSON.stringify(table.booking)).slice(1,-1).replace(/"/g,'&quot;')})"`
+                            : '';
+                        return `
+                            <div ${clickHandler}
+                                 title="${isOccupied ? `${table.booking.customer_name} · ${table.booking.people} pers.` : 'Libre'}"
+                                 style="width:72px;height:72px;border-radius:10px;border:2px solid ${border};background:${bg};
+                                        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+                                        ${isOccupied ? 'cursor:pointer;' : ''}transition:transform 0.15s;"
+                                 ${isOccupied ? 'onmouseover="this.style.transform=\'scale(1.08)\'" onmouseout="this.style.transform=\'scale(1)\'"' : ''}>
+                                <span style="font-size:1.3rem;">🪑</span>
+                                <span style="font-size:0.7rem;font-weight:700;color:${textColor};">${table.capacity} p.</span>
+                                ${isOccupied ? `<span style="font-size:0.6rem;color:${textColor};">${table.booking.time}</span>` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        return timeBar + legend + zonesHtml;
+    },
+
+    showTablePopup(el, bookingJson) {
+        // Eliminar popup anterior si existe
+        const existing = document.getElementById('table-popup');
+        if (existing) { existing.remove(); return; }
+
+        let booking;
+        try { booking = JSON.parse(bookingJson); } catch(e) { return; }
+
+        const popup = document.createElement('div');
+        popup.id = 'table-popup';
+
+        const rect = el.getBoundingClientRect();
+        const popupLeft = Math.min(rect.left, window.innerWidth - 240);
+        const popupTop = rect.bottom + 8 + window.scrollY;
+
+        popup.style.cssText = `position:fixed;top:${rect.bottom+8}px;left:${Math.min(rect.left, window.innerWidth-240)}px;
+            background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:10px;
+            padding:1rem;min-width:200px;z-index:20000;box-shadow:0 8px 24px rgba(0,0,0,0.4);
+            animation:fadeIn 0.15s ease;`;
+
+        const phone = booking.customer_phone ? booking.customer_phone.replace(/\D/g,'') : '';
+        const waPhone = phone.length === 9 && /^[6789]/.test(phone) ? '34' + phone : phone;
+
+        popup.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+                <strong style="color:var(--text-primary);font-size:0.95rem;">${booking.customer_name}</strong>
+                <button onclick="document.getElementById('table-popup').remove()"
+                        style="background:none;border:none;color:var(--text-secondary);font-size:1rem;cursor:pointer;padding:0;margin-left:0.5rem;">✕</button>
+            </div>
+            <div style="font-size:0.82rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:0.3rem;">
+                <span>🕐 ${booking.time}</span>
+                <span>👥 ${booking.people} personas</span>
+                ${booking.service_name ? `<span>💼 ${booking.service_name}</span>` : ''}
+            </div>
+            ${waPhone ? `
+                <a href="https://wa.me/${waPhone}" target="_blank"
+                   style="display:flex;align-items:center;justify-content:center;gap:0.4rem;margin-top:0.75rem;
+                          background:#25d366;color:white;border-radius:7px;padding:0.4rem 0.75rem;
+                          text-decoration:none;font-size:0.82rem;font-weight:600;">
+                    WhatsApp
+                </a>
+            ` : ''}
+        `;
+
+        document.body.appendChild(popup);
+
+        // Cerrar al hacer click fuera
+        setTimeout(() => {
+            document.addEventListener('click', function handler(e) {
+                if (!popup.contains(e.target) && e.target !== el) {
+                    popup.remove();
+                    document.removeEventListener('click', handler);
+                }
+            });
+        }, 100);
     },
 
     sendReminder24hFromDashboard(bookingId) {

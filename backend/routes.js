@@ -4561,6 +4561,96 @@ router.post('/api/booking/manage/:token/reschedule', async (req, res) => {
     }
 });
 
+// ==================== PLANO VISUAL DE MESAS ====================
+
+router.get('/api/admin/floor-plan/:businessId', requireAuth, requireBusinessAccess, async (req, res) => {
+    try {
+        const { businessId } = req.params;
+        const { date, time } = req.query;
+
+        const [business] = await db.query('SELECT booking_settings FROM businesses WHERE id = ?', [businessId]);
+        const bookingSettings = business?.booking_settings
+            ? (typeof business.booking_settings === 'string' ? JSON.parse(business.booking_settings) : business.booking_settings)
+            : {};
+
+        const zoneTableConfig = bookingSettings.zoneTableConfig || {};
+
+        if (Object.keys(zoneTableConfig).length === 0) {
+            return res.json({ success: true, hasFloorPlan: false });
+        }
+
+        const now = new Date();
+        const queryDate = date || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        const filterTime = time || null;
+
+        // Reservas del día (sin canceladas)
+        const bookings = await db.query(
+            `SELECT b.id, b.customer_name, b.customer_phone, b.booking_time,
+                    b.num_people, b.num_adults, b.num_children, b.zone, b.status,
+                    s.name as service_name
+             FROM bookings b LEFT JOIN services s ON b.service_id = s.id
+             WHERE b.business_id = ? AND b.booking_date = ? AND b.status != 'cancelled'
+             ORDER BY b.booking_time ASC`,
+            [businessId, queryDate]
+        );
+
+        const timeSlots = [...new Set(bookings.map(b => b.booking_time.substring(0, 5)))].sort();
+
+        const zones = Object.entries(zoneTableConfig).map(([zoneName, tableConf]) => {
+            // Crear mesas individuales ordenadas por capacidad desc (igual que el algoritmo)
+            let idx = 0;
+            const tables = [];
+            tableConf.forEach(group => {
+                for (let i = 0; i < group.count; i++) {
+                    tables.push({ id: idx++, capacity: group.capacity, booking: null, status: 'free' });
+                }
+            });
+            tables.sort((a, b) => b.capacity - a.capacity);
+
+            // Filtrar reservas por zona y hora
+            const zoneBookings = bookings.filter(b => {
+                const matchZone = !b.zone || b.zone === zoneName;
+                const matchTime = !filterTime || b.booking_time.substring(0, 5) === filterTime;
+                return matchZone && matchTime;
+            });
+
+            // Asignación greedy: mismo algoritmo que disponibilidad
+            zoneBookings.forEach(booking => {
+                let remaining = booking.num_people || 1;
+                for (const table of tables) {
+                    if (table.booking !== null || remaining <= 0) continue;
+                    table.booking = {
+                        id: booking.id,
+                        customer_name: booking.customer_name,
+                        customer_phone: booking.customer_phone,
+                        time: booking.booking_time.substring(0, 5),
+                        people: booking.num_people,
+                        num_adults: booking.num_adults,
+                        num_children: booking.num_children,
+                        status: booking.status,
+                        service_name: booking.service_name
+                    };
+                    table.status = 'occupied';
+                    remaining -= table.capacity;
+                }
+            });
+
+            return {
+                name: zoneName,
+                tables,
+                totalTables: tables.length,
+                occupiedTables: tables.filter(t => t.status === 'occupied').length
+            };
+        });
+
+        res.json({ success: true, hasFloorPlan: true, date: queryDate, time: filterTime, timeSlots, zones });
+
+    } catch (error) {
+        console.error('Error fetching floor plan:', error);
+        res.status(500).json({ success: false, message: 'Error al cargar el plano' });
+    }
+});
+
 // ==================== CÓDIGO QR ====================
 
 // Generar código QR para un negocio
