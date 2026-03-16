@@ -62,7 +62,7 @@ const bookings = {
 
         contentArea.innerHTML = `
             <!-- Nueva Reserva Button -->
-            <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div class="bookings-page-header">
                 <h2 style="margin: 0; color: var(--text-primary);">Gestión de Reservas</h2>
                 <button class="btn-primary" onclick="bookings.showCreateModal()">
                     ➕ Nueva Reserva
@@ -1362,6 +1362,23 @@ style.textContent = `
         border-bottom-color: var(--primary-color);
     }
 
+    .bookings-page-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    /* Evitar salto de línea en celdas clave de la tabla */
+    .table td:nth-child(2),
+    .table td:nth-child(3),
+    .table td:nth-child(4),
+    .table td:nth-child(5),
+    .table td:nth-child(6) {
+        white-space: nowrap;
+    }
+
     @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
@@ -1370,6 +1387,18 @@ style.textContent = `
         .modal-content {
             width: 95%;
             max-height: 95vh;
+        }
+
+        .bookings-page-header {
+            flex-wrap: wrap;
+        }
+
+        .bookings-page-header h2 {
+            font-size: 1.25rem;
+        }
+
+        .bookings-page-header .btn-primary {
+            flex-shrink: 0;
         }
     }
 `;

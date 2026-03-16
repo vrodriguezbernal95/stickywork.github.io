@@ -520,7 +520,7 @@ const dashboard = {
         const isEqual = comparison.change === 0;
 
         return `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+            <div class="month-comparison-grid">
                 <!-- Months Comparison Bars -->
                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <!-- This Month -->
@@ -653,6 +653,8 @@ const dashboard = {
 
         return `
             <div style="padding: 1rem;">
+                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <div style="min-width: 380px;">
                 <!-- Chart Bars -->
                 <div style="display: flex; align-items: stretch; justify-content: space-between; gap: 0.5rem; height: 220px; padding-top: 35px; margin-bottom: 1rem; overflow: visible;">
                     ${trendData.map((week, index) => {
@@ -748,6 +750,8 @@ const dashboard = {
                         </div>
                     </div>
                 </div>
+                </div><!-- /min-width -->
+                </div><!-- /overflow-x -->
             </div>
         `;
     },
@@ -1738,6 +1742,27 @@ const dashboard = {
         }
     }
 };
+
+// Dashboard responsive styles
+(function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .month-comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        @media (max-width: 640px) {
+            .month-comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+})();
 
 // Export
 window.dashboard = dashboard;
