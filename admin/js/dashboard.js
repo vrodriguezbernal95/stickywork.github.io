@@ -1769,7 +1769,7 @@ const dashboard = {
 
         // Leyenda
         const legend = `
-            <div style="display:flex;gap:1.25rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+            <div style="display:flex;gap:1.25rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;">
                 <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:var(--text-secondary);">
                     <div style="width:14px;height:14px;border-radius:3px;background:#10b981;"></div> Libre
                 </div>
@@ -1779,38 +1779,70 @@ const dashboard = {
             </div>
         `;
 
+        const positions       = data.zoneTablePositions || {};
+        const TABLE_SIZE      = 64;
+        const CANVAS_W        = 480;
+        const CANVAS_H        = 300;
+        const COLS            = 6;
+
         // Zonas
-        const zonesHtml = data.zones.map(zone => `
-            <div style="margin-bottom:1.75rem;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
-                    <h3 style="margin:0;font-size:1rem;color:var(--text-primary);">📍 ${zone.name}</h3>
-                    <span style="font-size:0.8rem;color:var(--text-secondary);">${zone.occupiedTables}/${zone.totalTables} ocupadas</span>
-                </div>
-                <div style="display:flex;flex-wrap:wrap;gap:0.75rem;">
-                    ${zone.tables.map(table => {
-                        const isOccupied = table.status === 'occupied';
-                        const bg = isOccupied ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.12)';
-                        const border = isOccupied ? '#ef4444' : '#10b981';
-                        const textColor = isOccupied ? '#ef4444' : '#10b981';
-                        const clickHandler = isOccupied
-                            ? `onclick="dashboard.showTablePopup(this, ${JSON.stringify(JSON.stringify(table.booking)).slice(1,-1).replace(/"/g,'&quot;')})"`
-                            : '';
-                        return `
-                            <div ${clickHandler}
-                                 title="${isOccupied ? `${table.booking.customer_name} · ${table.booking.people} pers.` : 'Libre'}"
-                                 style="width:72px;height:72px;border-radius:10px;border:2px solid ${border};background:${bg};
+        const zonesHtml = data.zones.map(zone => {
+            const zonePosMap  = {};
+            (positions[zone.name] || []).forEach(p => { zonePosMap[p.id] = p; });
+            const hasPositions = Object.keys(zonePosMap).length > 0;
+
+            const tablesHtml = zone.tables.map((table, i) => {
+                const isOccupied  = table.status === 'occupied';
+                const bg          = isOccupied ? 'rgba(239,68,68,0.18)' : 'rgba(16,185,129,0.14)';
+                const border      = isOccupied ? '#ef4444' : '#10b981';
+                const textColor   = isOccupied ? '#ef4444' : '#10b981';
+                const bookingData = isOccupied ? JSON.stringify(table.booking).replace(/"/g, '&quot;') : '';
+                const clickAttr   = isOccupied ? `onclick="dashboard.showTablePopup(this, '${bookingData}')"` : '';
+                const title       = isOccupied ? `${table.booking.customer_name} · ${table.booking.people} pers.` : 'Libre';
+
+                if (hasPositions) {
+                    const pos  = zonePosMap[table.id] || { x: (i % COLS) * (TABLE_SIZE + 10) + 10, y: Math.floor(i / COLS) * (TABLE_SIZE + 10) + 10 };
+                    return `<div ${clickAttr} title="${title}"
+                                 style="position:absolute;left:${pos.x}px;top:${pos.y}px;
+                                        width:${TABLE_SIZE}px;height:${TABLE_SIZE}px;
+                                        border-radius:10px;border:2px solid ${border};background:${bg};
                                         display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
                                         ${isOccupied ? 'cursor:pointer;' : ''}transition:transform 0.15s;"
-                                 ${isOccupied ? 'onmouseover="this.style.transform=\'scale(1.08)\'" onmouseout="this.style.transform=\'scale(1)\'"' : ''}>
-                                <span style="font-size:1.3rem;">🪑</span>
-                                <span style="font-size:0.7rem;font-weight:700;color:${textColor};">${table.capacity} p.</span>
+                                 ${isOccupied ? 'onmouseover="this.style.transform=\'scale(1.06)\'" onmouseout="this.style.transform=\'scale(1)\'"' : ''}>
+                                <span style="font-size:1.2rem;">🪑</span>
+                                <span style="font-size:0.7rem;font-weight:700;color:${textColor};">${table.capacity}p</span>
                                 ${isOccupied ? `<span style="font-size:0.6rem;color:${textColor};">${table.booking.time}</span>` : ''}
-                            </div>
-                        `;
-                    }).join('')}
+                            </div>`;
+                } else {
+                    return `<div ${clickAttr} title="${title}"
+                                 style="width:${TABLE_SIZE}px;height:${TABLE_SIZE}px;flex-shrink:0;
+                                        border-radius:10px;border:2px solid ${border};background:${bg};
+                                        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+                                        ${isOccupied ? 'cursor:pointer;' : ''}transition:transform 0.15s;"
+                                 ${isOccupied ? 'onmouseover="this.style.transform=\'scale(1.06)\'" onmouseout="this.style.transform=\'scale(1)\'"' : ''}>
+                                <span style="font-size:1.2rem;">🪑</span>
+                                <span style="font-size:0.7rem;font-weight:700;color:${textColor};">${table.capacity}p</span>
+                                ${isOccupied ? `<span style="font-size:0.6rem;color:${textColor};">${table.booking.time}</span>` : ''}
+                            </div>`;
+                }
+            }).join('');
+
+            return `
+                <div style="margin-bottom:1.75rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
+                        <h3 style="margin:0;font-size:1rem;color:var(--text-primary);">📍 ${zone.name}</h3>
+                        <span style="font-size:0.8rem;color:var(--text-secondary);">${zone.occupiedTables}/${zone.totalTables} ocupadas</span>
+                    </div>
+                    ${hasPositions
+                        ? `<div style="position:relative;width:${CANVAS_W}px;height:${CANVAS_H}px;max-width:100%;
+                                       background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">
+                               ${tablesHtml}
+                           </div>`
+                        : `<div style="display:flex;flex-wrap:wrap;gap:0.75rem;">${tablesHtml}</div>`
+                    }
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         return timeBar + legend + zonesHtml;
     },

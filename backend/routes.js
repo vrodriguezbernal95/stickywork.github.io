@@ -4664,7 +4664,8 @@ router.get('/api/admin/floor-plan/:businessId', requireAuth, requireBusinessAcce
             };
         });
 
-        res.json({ success: true, hasFloorPlan: true, date: queryDate, time: filterTime, timeSlots, zones });
+        const zoneTablePositions = bookingSettings.zoneTablePositions || {};
+        res.json({ success: true, hasFloorPlan: true, date: queryDate, time: filterTime, timeSlots, zones, zoneTablePositions });
 
     } catch (error) {
         console.error('Error fetching floor plan:', error);

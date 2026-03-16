@@ -4164,9 +4164,15 @@ const settings = {
 
             return `
                 <div class="settings-section">
-                    <div class="settings-section-header">
-                        <h3>👥 Gestión de Capacidad por Zona</h3>
-                        <p>Configura la capacidad de cada zona de tu restaurante</p>
+                    <div class="settings-section-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.75rem;">
+                        <div>
+                            <h3>👥 Gestión de Capacidad por Zona</h3>
+                            <p>Configura la capacidad de cada zona de tu restaurante</p>
+                        </div>
+                        <button type="button" onclick="settings.openFloorEditor()"
+                                style="padding:0.5rem 1rem;background:var(--primary-color);color:white;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.4rem;white-space:nowrap;">
+                            🗺️ Editar Plano
+                        </button>
                     </div>
 
                     ${zoneFields}
@@ -5131,6 +5137,222 @@ Te esperamos!
             noResultsMsg.style.display = 'none';
         }
     }
+    // ── Editor de plano de mesas ──────────────────────────────────────────
+    openFloorEditor() {
+        const bookingSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : this.businessData.booking_settings)
+            : {};
+
+        const zoneTableConfig = bookingSettings.zoneTableConfig || {};
+        const zoneCapacities  = bookingSettings.zoneCapacities  || {};
+        const restaurantZones = bookingSettings.restaurantZones || [];
+        const savedPositions  = bookingSettings.zoneTablePositions || {};
+
+        const zoneNames = Object.keys(zoneTableConfig).length > 0
+            ? Object.keys(zoneTableConfig)
+            : Object.keys(zoneCapacities).length > 0
+                ? Object.keys(zoneCapacities)
+                : restaurantZones.map(z => typeof z === 'string' ? z : z.name);
+
+        if (zoneNames.length === 0) {
+            alert('Primero configura las zonas en Capacidad.');
+            return;
+        }
+
+        // Construir mesas individuales por zona
+        const zoneTablesMap = {};
+        zoneNames.forEach(zoneName => {
+            const tableConf = zoneTableConfig[zoneName];
+            const capacity  = zoneCapacities[zoneName] || 10;
+            const tables    = [];
+            let idx = 0;
+            if (tableConf && tableConf.length > 0) {
+                tableConf.forEach(g => {
+                    for (let i = 0; i < g.count; i++) tables.push({ id: idx++, capacity: g.capacity });
+                });
+                tables.sort((a, b) => b.capacity - a.capacity);
+            } else {
+                for (let i = 0; i < Math.ceil(capacity / 2); i++) tables.push({ id: idx++, capacity: 2 });
+            }
+            zoneTablesMap[zoneName] = tables;
+        });
+
+        // Overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:20000;display:flex;flex-direction:column;';
+
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = 'background:var(--bg-secondary);padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color);flex-shrink:0;';
+        header.innerHTML = `
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <span style="font-size:1.5rem;">🗺️</span>
+                <div>
+                    <h2 style="margin:0;font-size:1.2rem;color:var(--text-primary);">Editor de Plano</h2>
+                    <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">Arrastra las mesas para posicionarlas</p>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.75rem;align-items:center;">
+                <button id="floorEditorSave" style="padding:0.5rem 1.25rem;background:var(--primary-color);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.9rem;">Guardar</button>
+                <button id="floorEditorClose" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-secondary);">✕</button>
+            </div>
+        `;
+
+        // Canvas area
+        const body = document.createElement('div');
+        body.style.cssText = 'flex:1;overflow:auto;padding:1.5rem;display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start;';
+
+        const ZONE_W = 480;
+        const ZONE_H = 320;
+        const TABLE_SIZE = 60;
+        const COLS = 6;
+
+        zoneNames.forEach(zoneName => {
+            const tables = zoneTablesMap[zoneName];
+            const positions = savedPositions[zoneName] || [];
+
+            const zoneWrap = document.createElement('div');
+            zoneWrap.style.cssText = 'display:flex;flex-direction:column;gap:0.5rem;';
+
+            const zoneLabel = document.createElement('div');
+            zoneLabel.style.cssText = 'font-weight:700;font-size:1rem;color:var(--text-primary);';
+            zoneLabel.textContent = '📍 ' + zoneName;
+
+            const canvas = document.createElement('div');
+            canvas.dataset.zone = zoneName;
+            canvas.className = 'floor-editor-canvas';
+            canvas.style.cssText = `position:relative;width:${ZONE_W}px;height:${ZONE_H}px;background:var(--bg-tertiary);border:2px solid var(--border-color);border-radius:12px;overflow:hidden;`;
+
+            tables.forEach((table, i) => {
+                const savedPos = positions.find(p => p.id === table.id);
+                const col = i % COLS;
+                const row = Math.floor(i / COLS);
+                const defaultX = 16 + col * (TABLE_SIZE + 12);
+                const defaultY = 16 + row * (TABLE_SIZE + 12);
+                const x = savedPos ? savedPos.x : defaultX;
+                const y = savedPos ? savedPos.y : defaultY;
+
+                const tableEl = document.createElement('div');
+                tableEl.dataset.tableId = table.id;
+                tableEl.dataset.zone = zoneName;
+                tableEl.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${TABLE_SIZE}px;height:${TABLE_SIZE}px;
+                    background:rgba(77,83,255,0.15);border:2px solid var(--primary-color);border-radius:8px;
+                    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+                    cursor:grab;user-select:none;font-size:0.75rem;font-weight:700;color:var(--primary-color);`;
+                tableEl.innerHTML = `<span style="font-size:1.1rem;">🪑</span><span>${table.capacity}p</span>`;
+
+                this._makeTableDraggable(tableEl, canvas, ZONE_W, ZONE_H, TABLE_SIZE);
+                canvas.appendChild(tableEl);
+            });
+
+            zoneWrap.appendChild(zoneLabel);
+            zoneWrap.appendChild(canvas);
+            body.appendChild(zoneWrap);
+        });
+
+        overlay.appendChild(header);
+        overlay.appendChild(body);
+        document.body.appendChild(overlay);
+
+        const closeEditor = () => document.body.removeChild(overlay);
+
+        document.getElementById('floorEditorClose').addEventListener('click', closeEditor);
+        document.getElementById('floorEditorSave').addEventListener('click', () => {
+            this._saveFloorPositions(overlay, zoneTablesMap, closeEditor);
+        });
+    },
+
+    _makeTableDraggable(tableEl, canvasEl, canvasW, canvasH, tableSize) {
+        const onStart = (clientX, clientY) => {
+            const rect  = canvasEl.getBoundingClientRect();
+            const startX = clientX - rect.left - tableEl.offsetLeft;
+            const startY = clientY - rect.top  - tableEl.offsetTop;
+            tableEl.style.cursor = 'grabbing';
+            tableEl.style.zIndex = 10;
+
+            const onMove = (cx, cy) => {
+                let x = cx - rect.left - startX;
+                let y = cy - rect.top  - startY;
+                x = Math.max(0, Math.min(x, canvasW - tableSize));
+                y = Math.max(0, Math.min(y, canvasH - tableSize));
+                tableEl.style.left = x + 'px';
+                tableEl.style.top  = y + 'px';
+            };
+
+            const onMouseMove = e => onMove(e.clientX, e.clientY);
+            const onTouchMove = e => { e.preventDefault(); onMove(e.touches[0].clientX, e.touches[0].clientY); };
+
+            const onEnd = () => {
+                tableEl.style.cursor = 'grab';
+                tableEl.style.zIndex = '';
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup',   onEnd);
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend',  onEnd);
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup',   onEnd);
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend',  onEnd);
+        };
+
+        tableEl.addEventListener('mousedown',  e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
+        tableEl.addEventListener('touchstart', e => { e.preventDefault(); onStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+    },
+
+    async _saveFloorPositions(overlay, zoneTablesMap, closeEditor) {
+        const positions = {};
+        const canvases  = overlay.querySelectorAll('.floor-editor-canvas');
+
+        canvases.forEach(canvas => {
+            const zoneName = canvas.dataset.zone;
+            positions[zoneName] = [];
+            canvas.querySelectorAll('[data-table-id]').forEach(el => {
+                positions[zoneName].push({
+                    id: parseInt(el.dataset.tableId),
+                    x:  parseInt(el.style.left),
+                    y:  parseInt(el.style.top)
+                });
+            });
+        });
+
+        const businessId = this.businessData?.id;
+        const currentSettings = this.businessData?.booking_settings
+            ? (typeof this.businessData.booking_settings === 'string'
+                ? JSON.parse(this.businessData.booking_settings)
+                : { ...this.businessData.booking_settings })
+            : {};
+
+        currentSettings.zoneTablePositions = positions;
+
+        try {
+            const btn = overlay.querySelector('#floorEditorSave');
+            btn.textContent = 'Guardando...';
+            btn.disabled = true;
+
+            await api.put(`/api/business/${businessId}`, {
+                name:             this.businessData.name,
+                email:            this.businessData.email,
+                phone:            this.businessData.phone,
+                address:          this.businessData.address,
+                website:          this.businessData.website,
+                booking_settings: currentSettings
+            });
+
+            this.businessData.booking_settings = currentSettings;
+            closeEditor();
+            alert('✅ Plano guardado correctamente');
+        } catch (err) {
+            console.error('Error guardando plano:', err);
+            alert('❌ Error al guardar el plano');
+            const btn = overlay.querySelector('#floorEditorSave');
+            if (btn) { btn.textContent = 'Guardar'; btn.disabled = false; }
+        }
+    },
+
 };
 
 // Export to window
