@@ -1,20 +1,30 @@
 {
-  "name": "StickyWork",
+  "name": "StickyWork Admin",
   "short_name": "StickyWork",
-  "description": "Sistema de Reservas Online para Tu Negocio",
-  "start_url": "/",
+  "description": "Panel de gestión de reservas StickyWork",
+  "start_url": "/admin-dashboard.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0F16A3",
+  "orientation": "portrait",
+  "background_color": "#0a0e2e",
+  "theme_color": "#4D53FF",
+  "lang": "es",
   "icons": [
     {
       "src": "/images/favicon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/images/favicon-512x512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png"
     }
   ]

@@ -37,6 +37,7 @@ body {
     margin: 0;
     display: flex;
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height para móviles */
     background: var(--bg-primary);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: var(--text-primary);
@@ -44,6 +45,9 @@ body {
     width: 100%;
     box-sizing: border-box;
     user-select: none;
+    /* Safe area para iPhone con notch/Dynamic Island */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Re-activar selección donde el usuario necesita copiar datos */
