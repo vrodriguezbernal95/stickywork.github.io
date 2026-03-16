@@ -426,7 +426,8 @@ const bookings = {
         if (existing) existing.remove();
 
         const badge = this.getCustomerBadge(booking.customer_status);
-        const waPhone = booking.customer_phone ? booking.customer_phone.replace(/\D/g, '') : '';
+        let waPhone = booking.customer_phone ? booking.customer_phone.replace(/\D/g, '') : '';
+        if (waPhone.length === 9 && /^[6789]/.test(waPhone)) waPhone = '34' + waPhone;
 
         const popup = document.createElement('div');
         popup.id = 'clientContactPopup';
