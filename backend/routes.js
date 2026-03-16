@@ -4138,35 +4138,6 @@ router.patch('/api/businesses/:id/business-context', requireAuth, requireRole('o
     }
 });
 
-// ==================== DEBUG: RESET PASSWORD ====================
-
-router.post('/api/debug/reset-password', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
-    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-        return res.status(401).json({ success: false, message: 'No autorizado' });
-    }
-    try {
-        const { email, newPassword, search } = req.body;
-
-        if (search) {
-            const users = await db.query(
-                `SELECT au.id, au.email, au.full_name, au.role, b.name as business_name
-                 FROM admin_users au LEFT JOIN businesses b ON au.business_id = b.id
-                 WHERE au.email LIKE ? OR au.full_name LIKE ? OR b.name LIKE ?`,
-                [`%${search}%`, `%${search}%`, `%${search}%`]
-            );
-            return res.json({ success: true, users });
-        }
-
-        const bcrypt = require('bcrypt');
-        const hash = await bcrypt.hash(newPassword, 10);
-        const result = await db.query('UPDATE admin_users SET password_hash = ? WHERE email = ?', [hash, email]);
-        res.json({ success: true, message: `Password reseteada para ${email}`, affected: result.affectedRows });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
 
 // ==================== GESTIÓN DE RESERVA POR CLIENTE ====================
 
@@ -4536,6 +4507,51 @@ router.post('/api/booking/manage/:token/reschedule', async (req, res) => {
         }
 
         await db.query('UPDATE bookings SET booking_time = ? WHERE id = ?', [newTime + ':00', booking.id]);
+
+        // Email de confirmación al cliente (asíncrono, no bloqueante)
+        try {
+            const [fullBooking] = await db.query(
+                `SELECT b.*, s.name as service_name
+                 FROM bookings b LEFT JOIN services s ON b.service_id = s.id
+                 WHERE b.id = ?`,
+                [booking.id]
+            );
+            const [business] = await db.query('SELECT * FROM businesses WHERE id = ?', [booking.business_id]);
+
+            if (fullBooking && fullBooking.customer_email && business) {
+                const bd2 = fullBooking.booking_date instanceof Date ? fullBooking.booking_date : new Date(fullBooking.booking_date);
+                const dateStr = bd2.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const businessName = business.name || 'StickyWork';
+
+                emailService.sendEmail(fullBooking.customer_email, {
+                    subject: `✅ Hora cambiada - Tu reserva en ${businessName}`,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; padding: 20px;">
+                            <div style="background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <h2 style="color: #4D53FF; margin-top: 0;">Tu reserva ha sido modificada</h2>
+                                <p style="color: #374151;">Hola <strong>${fullBooking.customer_name}</strong>,</p>
+                                <p style="color: #374151;">Tu reserva ha sido actualizada correctamente con la nueva hora.</p>
+
+                                <div style="background: #f0f4ff; border-left: 4px solid #4D53FF; border-radius: 8px; padding: 16px; margin: 24px 0;">
+                                    <p style="margin: 0 0 8px; color: #374151;"><strong>📅 Fecha:</strong> ${dateStr}</p>
+                                    <p style="margin: 0 0 8px; color: #374151;"><strong>🕐 Nueva hora:</strong> ${newTime}</p>
+                                    ${fullBooking.service_name ? `<p style="margin: 0 0 8px; color: #374151;"><strong>💼 Servicio:</strong> ${fullBooking.service_name}</p>` : ''}
+                                    <p style="margin: 0; color: #374151;"><strong>📍 Negocio:</strong> ${businessName}</p>
+                                </div>
+
+                                <p style="color: #6b7280; font-size: 0.9rem;">Si necesitas volver a cambiar la hora o cancelar tu reserva, puedes hacerlo desde el enlace que recibiste en tu email de confirmación original.</p>
+
+                                <p style="color: #9ca3af; font-size: 0.8rem; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
+                                    Este email ha sido enviado automáticamente por StickyWork.
+                                </p>
+                            </div>
+                        </div>
+                    `
+                }).catch(err => console.error('✗ Error enviando email de cambio de hora:', err.message));
+            }
+        } catch (emailErr) {
+            console.error('✗ Error preparando email de cambio de hora:', emailErr.message);
+        }
 
         res.json({ success: true, message: 'Hora cambiada correctamente', newTime });
 
