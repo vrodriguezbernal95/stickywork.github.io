@@ -1175,4 +1175,94 @@ router.patch('/consultancy/:id/cancel', requireSuperAdmin, async (req, res) => {
     }
 });
 
+// ==================== LEADS (NUEVOS CLIENTES POTENCIALES) ====================
+
+// Migración: crear tabla leads
+router.post('/leads/migrate', requireSuperAdmin, async (req, res) => {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS leads (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                business_name VARCHAR(255) NOT NULL,
+                contact_phone VARCHAR(50),
+                website VARCHAR(500),
+                status ENUM('pending', 'valid', 'invalid') DEFAULT 'pending',
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
+        res.json({ success: true, message: 'Tabla leads creada correctamente' });
+    } catch (error) {
+        console.error('Error en migración leads:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Listar leads
+router.get('/leads', requireSuperAdmin, async (req, res) => {
+    try {
+        const leads = await db.query('SELECT * FROM leads ORDER BY created_at DESC');
+        res.json({ success: true, data: leads });
+    } catch (error) {
+        console.error('Error listando leads:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener leads' });
+    }
+});
+
+// Crear lead
+router.post('/leads', requireSuperAdmin, async (req, res) => {
+    try {
+        const { business_name, contact_phone, website, notes } = req.body;
+        if (!business_name) return res.status(400).json({ success: false, message: 'Nombre requerido' });
+
+        const result = await db.query(
+            'INSERT INTO leads (business_name, contact_phone, website, notes) VALUES (?, ?, ?, ?)',
+            [business_name, contact_phone || null, website || null, notes || null]
+        );
+        const [lead] = await db.query('SELECT * FROM leads WHERE id = ?', [result.insertId]);
+        res.json({ success: true, data: lead });
+    } catch (error) {
+        console.error('Error creando lead:', error);
+        res.status(500).json({ success: false, message: 'Error al crear lead' });
+    }
+});
+
+// Actualizar lead
+router.patch('/leads/:id', requireSuperAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { business_name, contact_phone, website, status, notes } = req.body;
+
+        const fields = [];
+        const values = [];
+        if (business_name !== undefined) { fields.push('business_name = ?'); values.push(business_name); }
+        if (contact_phone !== undefined) { fields.push('contact_phone = ?'); values.push(contact_phone); }
+        if (website !== undefined)       { fields.push('website = ?');       values.push(website); }
+        if (status !== undefined)        { fields.push('status = ?');        values.push(status); }
+        if (notes !== undefined)         { fields.push('notes = ?');         values.push(notes); }
+
+        if (fields.length === 0) return res.status(400).json({ success: false, message: 'Nada que actualizar' });
+
+        values.push(id);
+        await db.query(`UPDATE leads SET ${fields.join(', ')} WHERE id = ?`, values);
+        const [lead] = await db.query('SELECT * FROM leads WHERE id = ?', [id]);
+        res.json({ success: true, data: lead });
+    } catch (error) {
+        console.error('Error actualizando lead:', error);
+        res.status(500).json({ success: false, message: 'Error al actualizar lead' });
+    }
+});
+
+// Borrar lead
+router.delete('/leads/:id', requireSuperAdmin, async (req, res) => {
+    try {
+        await db.query('DELETE FROM leads WHERE id = ?', [req.params.id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error borrando lead:', error);
+        res.status(500).json({ success: false, message: 'Error al borrar lead' });
+    }
+});
+
 module.exports = router;
