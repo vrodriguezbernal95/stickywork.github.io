@@ -43,23 +43,28 @@ He visto que {{nombre}} no tiene sistema de reservas online y me gustaría conta
 
             <!-- Modal plantilla WA -->
             <div id="leadTemplateModal" class="modal" style="display:none;">
-                <div class="modal-content" style="max-width:520px;">
-                    <div class="modal-header">
-                        <h3>💬 Plantilla de mensaje WhatsApp</h3>
+                <div class="modal-content" style="max-width:580px;width:95%;">
+                    <div class="modal-header" style="border-bottom:1px solid var(--border-color);padding-bottom:1rem;">
+                        <div style="display:flex;align-items:center;gap:0.6rem;">
+                            <span style="font-size:1.4rem;">💬</span>
+                            <div>
+                                <h3 style="margin:0;font-size:1.05rem;">Plantilla de mensaje WhatsApp</h3>
+                                <p style="margin:0.1rem 0 0;font-size:0.78rem;color:var(--text-secondary);">Se enviará automáticamente al pulsar el botón de contacto</p>
+                            </div>
+                        </div>
                         <button class="modal-close" onclick="superLeads.closeTemplateModal()">✕</button>
                     </div>
-                    <div class="modal-body">
-                        <p style="margin:0 0 0.75rem;font-size:0.85rem;color:var(--text-secondary);">
-                            Usa <code style="background:var(--bg-secondary);padding:0.1rem 0.3rem;border-radius:4px;">{{nombre}}</code> para insertar el nombre del negocio automáticamente.
-                        </p>
-                        <textarea id="waTemplateText" class="form-control" rows="8"
-                            style="resize:vertical;font-family:inherit;line-height:1.5;"></textarea>
-                        <p style="margin:0.6rem 0 0;font-size:0.78rem;color:var(--text-secondary);">
-                            La plantilla se guarda en este navegador.
+                    <div class="modal-body" style="padding:1.25rem;">
+                        <div class="wa-template-hint">
+                            Usa <code>{{nombre}}</code> para insertar el nombre del negocio
+                        </div>
+                        <textarea id="waTemplateText" class="wa-template-textarea"></textarea>
+                        <p style="margin:0.5rem 0 0;font-size:0.75rem;color:var(--text-secondary);display:flex;align-items:center;gap:0.3rem;">
+                            <span>💾</span> La plantilla se guarda localmente en este navegador
                         </p>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn-secondary" onclick="superLeads.resetTemplate()">Restaurar por defecto</button>
+                    <div class="modal-footer" style="border-top:1px solid var(--border-color);padding-top:1rem;">
+                        <button class="btn-secondary" onclick="superLeads.resetTemplate()">↺ Restaurar por defecto</button>
                         <button class="btn-primary" onclick="superLeads.saveTemplate()">Guardar plantilla</button>
                     </div>
                 </div>
@@ -407,6 +412,45 @@ He visto que {{nombre}} no tiene sistema de reservas online y me gustaría conta
         }
         .btn-icon:hover { background: var(--bg-secondary); }
         .btn-icon-danger:hover { background: #ef444422; border-color: #ef4444; }
+
+        /* Modal plantilla WA */
+        .wa-template-hint {
+            background: #25d36615;
+            border: 1px solid #25d36640;
+            border-radius: 8px;
+            padding: 0.6rem 0.9rem;
+            font-size: 0.83rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.9rem;
+        }
+        .wa-template-hint code {
+            background: #25d36625;
+            color: #25d366;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .wa-template-textarea {
+            width: 100%;
+            min-height: 200px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.9rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            resize: vertical;
+            box-sizing: border-box;
+            transition: border-color 0.15s;
+        }
+        .wa-template-textarea:focus {
+            outline: none;
+            border-color: #25d366;
+            box-shadow: 0 0 0 3px #25d36615;
+        }
     `;
     document.head.appendChild(style);
 })();
