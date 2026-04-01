@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (navToggle) {
         navToggle.addEventListener('click', function() {
             navMenu.classList.toggle('active');
+            navToggle.classList.toggle('open');
         });
     }
 
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             navMenu.classList.remove('active');
+            if (navToggle) navToggle.classList.remove('open');
         });
     });
 
