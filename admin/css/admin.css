@@ -706,25 +706,22 @@ body::before {
 /* Botón hamburguesa para móvil */
 .mobile-menu-toggle {
     display: none;
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 1001;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.08);
     color: white;
-    border: none;
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 1.5rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
 }
 
 .mobile-menu-toggle:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    background: rgba(255,255,255,0.15);
 }
 
 /* Overlay para cerrar sidebar en móvil */
@@ -746,11 +743,9 @@ body::before {
 
 /* Responsive */
 @media (max-width: 768px) {
-    /* Mostrar botón hamburguesa */
+    /* Mostrar botón hamburguesa dentro del topbar */
     .mobile-menu-toggle {
         display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     /* Sidebar como overlay en móvil */
@@ -780,10 +775,16 @@ body::before {
 
     /* Topbar más compacto */
     .topbar {
-        padding: 1rem 1rem 1rem 4rem; /* Espacio para botón hamburguesa */
-        flex-direction: column;
-        align-items: flex-start;
+        padding: 0.75rem 1rem;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 0.5rem;
+    }
+
+    .topbar-title {
+        flex: 1;
+        min-width: 0;
     }
 
     .topbar-title {
@@ -794,6 +795,8 @@ body::before {
         margin: 0;
         max-width: 100%;
         width: 100%;
+        order: 3;
+        flex-basis: 100%;
     }
 
     /* Content area más compacto */
@@ -873,7 +876,7 @@ body::before {
 /* Mejoras adicionales para móviles pequeños */
 @media (max-width: 480px) {
     .topbar {
-        padding: 0.75rem 0.75rem 0.75rem 3.5rem;
+        padding: 0.6rem 0.75rem;
     }
 
     .topbar-title {
@@ -909,14 +912,6 @@ body::before {
 
     .stat-label {
         font-size: 0.85rem;
-    }
-
-    .mobile-menu-toggle {
-        width: 40px;
-        height: 40px;
-        font-size: 1.25rem;
-        top: 0.75rem;
-        left: 0.75rem;
     }
 
     /* Dashboard grid */
