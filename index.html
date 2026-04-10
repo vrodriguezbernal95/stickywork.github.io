@@ -69,6 +69,9 @@
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
 
+    <!-- Google Fonts: Poppins + Open Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -191,10 +194,41 @@
         <!-- Hero Section -->
         <section class="hero" aria-labelledby="hero-title">
             <div class="hero-content" itemscope itemtype="https://schema.org/Service">
-                <h1 id="hero-title" itemprop="name">Tu Negocio con Cita Previa, Simplificado</h1>
-                <p itemprop="description">Reservas, clientes, WhatsApp, feedback y reportes IA. Todo lo que necesitas para gestionar tu negocio en un solo lugar.</p>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;" role="group" aria-label="Acciones principales">
-                    <button onclick="scrollToSection('features-title')" class="btn btn-primary" style="cursor: pointer;" aria-label="Conocer más sobre StickyWork">Quiero saber más</button>
+                <!-- Badge -->
+                <div class="hero-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    14 días gratis · Sin tarjeta de crédito
+                </div>
+
+                <h1 id="hero-title" itemprop="name">Tu negocio con cita previa,<br><span class="hero-highlight">sin complicaciones</span></h1>
+                <p itemprop="description">Reservas online, gestión de clientes, recordatorios por WhatsApp y reportes IA. Todo en un solo lugar, listo en 5 minutos.</p>
+
+                <div class="hero-actions" role="group" aria-label="Acciones principales">
+                    <a href="registro.html" class="btn btn-primary btn-hero" aria-label="Empezar prueba gratuita">
+                        Empezar Gratis
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </a>
+                    <a href="demo.html" class="btn btn-hero-secondary" aria-label="Ver demostración">
+                        Ver demo en vivo
+                    </a>
+                </div>
+
+                <!-- Stats de confianza -->
+                <div class="hero-stats" aria-label="Estadísticas">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">+500</span>
+                        <span class="hero-stat-label">negocios activos</span>
+                    </div>
+                    <div class="hero-stat-divider" aria-hidden="true"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">+12k</span>
+                        <span class="hero-stat-label">reservas al mes</span>
+                    </div>
+                    <div class="hero-stat-divider" aria-hidden="true"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">4.9★</span>
+                        <span class="hero-stat-label">valoración media</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -207,37 +241,49 @@
 
                 <div class="features-grid" role="list">
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
-                        <div class="feature-icon" aria-hidden="true">📅</div>
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
                         <h3 itemprop="name">Reservas y Agenda</h3>
                         <p itemprop="description">Tus clientes reservan online 24/7. Calendario inteligente con disponibilidad en tiempo real, servicios, horarios y zonas.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
-                        <div class="feature-icon" aria-hidden="true">👥</div>
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
                         <h3 itemprop="name">Gestión de Clientes</h3>
                         <p itemprop="description">Base de datos completa con historial de visitas, notas y preferencias. Conoce a tus clientes y fideliza mejor.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
-                        <div class="feature-icon" aria-hidden="true">💬</div>
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
                         <h3 itemprop="name">WhatsApp Integrado</h3>
                         <p itemprop="description">Confirmaciones y recordatorios por WhatsApp con un clic. Reduce cancelaciones y mejora la comunicación con tus clientes.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
-                        <div class="feature-icon" aria-hidden="true">⭐</div>
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
                         <h3 itemprop="name">Feedback y Opiniones</h3>
                         <p itemprop="description">Encuestas automáticas tras cada visita. Recoge opiniones, mejora tu servicio y construye tu reputación online.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
-                        <div class="feature-icon" aria-hidden="true">🤖</div>
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                        </div>
                         <h3 itemprop="name">Reportes con IA</h3>
                         <p itemprop="description">Informes inteligentes que analizan tu negocio y te dan recomendaciones accionables para crecer y optimizar.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
-                        <div class="feature-icon" aria-hidden="true">🚀</div>
+                        <div class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        </div>
                         <h3 itemprop="name">Listo en 5 Minutos</h3>
                         <p itemprop="description">Integra el widget en tu web o comparte tu enlace directo. Sin conocimientos técnicos, sin desarrollo. Empieza hoy mismo.</p>
                     </article>
