@@ -355,13 +355,25 @@ body::after {
     line-height: 1.15;
     letter-spacing: -0.5px;
     animation: fadeInUp 0.7s ease-out;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.25);
+    color: #ffffff;
 }
 
 .hero-highlight {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffffff;
+    position: relative;
+    display: inline-block;
+}
+
+.hero-highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.55);
+    border-radius: 2px;
 }
 
 .hero p {
