@@ -137,6 +137,7 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
             businessWebsite,
             // Datos del admin
             adminName,
+            adminPhone,
             adminEmail,
             adminPassword
         } = req.body;
@@ -285,9 +286,9 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
 
         // Crear usuario administrador
         const userResult = await db.query(
-            `INSERT INTO admin_users (business_id, email, password_hash, full_name, role)
-             VALUES (?, ?, ?, ?, 'owner')`,
-            [businessId, adminEmail, passwordHash, adminName]
+            `INSERT INTO admin_users (business_id, email, password_hash, full_name, phone, role)
+             VALUES (?, ?, ?, ?, ?, 'owner')`,
+            [businessId, adminEmail, passwordHash, adminName, adminPhone || null]
         );
 
         const userId = userResult.insertId;

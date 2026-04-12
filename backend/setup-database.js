@@ -263,6 +263,7 @@ async function setupDatabase() {
                 email VARCHAR(255) NOT NULL UNIQUE,
                 password_hash VARCHAR(255) NOT NULL,
                 full_name VARCHAR(255) NOT NULL,
+                phone VARCHAR(50) DEFAULT NULL,
                 role ENUM('owner', 'admin', 'staff') DEFAULT 'admin',
                 is_active BOOLEAN DEFAULT TRUE,
                 last_login TIMESTAMP NULL,

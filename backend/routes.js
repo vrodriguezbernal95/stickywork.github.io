@@ -5001,4 +5001,36 @@ router.post('/api/loyalty/:businessId/check', async (req, res) => {
     }
 });
 
+// ==================== MIGRACIÓN: PHONE EN ADMIN_USERS ====================
+router.post('/api/debug/run-admin-phone-migration', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+
+    if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+        return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
+
+    try {
+        try {
+            await db.query(`
+                ALTER TABLE admin_users
+                ADD COLUMN phone VARCHAR(50) DEFAULT NULL
+                COMMENT 'Teléfono móvil del administrador'
+            `);
+            console.log('✅ Columna phone añadida a admin_users');
+        } catch (error) {
+            if (error.code === 'ER_DUP_FIELDNAME') {
+                console.log('ℹ️  Columna phone ya existe en admin_users');
+            } else {
+                throw error;
+            }
+        }
+
+        res.json({ success: true, message: 'Migración completada: phone en admin_users' });
+    } catch (error) {
+        console.error('Error en migración admin-phone:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
