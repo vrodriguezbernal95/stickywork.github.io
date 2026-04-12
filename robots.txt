@@ -21,9 +21,16 @@ Disallow: /onboarding.html
 Disallow: /forgot-password.html
 Disallow: /reset-password.html
 Disallow: /booking.html
+Disallow: /reservar.html
+Disallow: /feedback.html
+Disallow: /fidelidad.html
+Disallow: /gestionar-reserva.html
+Disallow: /privacidad.html
 
 # Bloquear archivos de test
 Disallow: /test-*.html
+Disallow: /widget-test.html
+Disallow: /widget/
 
 # Bloquear directorios técnicos
 Disallow: /backend/
