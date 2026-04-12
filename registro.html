@@ -511,9 +511,14 @@
                             <input type="text" id="admin-name" placeholder="Juan Pérez" required autocomplete="name">
                         </div>
                         <div class="form-group">
-                            <label for="admin-email">Tu email *</label>
-                            <input type="email" id="admin-email" placeholder="tu@email.com" required autocomplete="email">
+                            <label for="admin-phone">Teléfono móvil *</label>
+                            <input type="tel" id="admin-phone" placeholder="+34 600 000 000" required autocomplete="tel">
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="admin-email">Tu email *</label>
+                        <input type="email" id="admin-email" placeholder="tu@email.com" required autocomplete="email">
                     </div>
 
                     <div class="form-group">
@@ -588,6 +593,7 @@
             businessType: null,
             businessName: '',
             adminName: '',
+            adminPhone: '',
             adminEmail: '',
             adminPassword: ''
         };
@@ -684,17 +690,20 @@
         // Registrar
         document.getElementById('btn-register').addEventListener('click', async function() {
             const name = document.getElementById('admin-name').value.trim();
+            const phone = document.getElementById('admin-phone').value.trim();
             const email = document.getElementById('admin-email').value.trim();
             const password = document.getElementById('admin-password').value;
             const acceptTerms = document.getElementById('accept-terms').checked;
 
             if (!name) { showError('Introduce tu nombre'); return; }
+            if (!phone) { showError('Introduce tu teléfono móvil'); return; }
             if (!email || !email.includes('@')) { showError('Introduce un email válido'); return; }
             if (password.length < 8) { showError('La contraseña debe tener al menos 8 caracteres'); return; }
             if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) { showError('La contraseña debe contener letras y números'); return; }
             if (!acceptTerms) { showError('Debes aceptar los términos y condiciones'); return; }
 
             formData.adminName = name;
+            formData.adminPhone = phone;
             formData.adminEmail = email;
             formData.adminPassword = password;
 
@@ -711,6 +720,7 @@
                         businessName: formData.businessName,
                         businessEmail: formData.adminEmail,
                         adminName: formData.adminName,
+                        adminPhone: formData.adminPhone,
                         adminEmail: formData.adminEmail,
                         adminPassword: formData.adminPassword
                     })
