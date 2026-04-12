@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QNNFJWC6PV"></script>
+    <!-- Google tag (gtag.js) - carga diferida -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-QNNFJWC6PV');
+      window.addEventListener('load', function() {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-QNNFJWC6PV';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-QNNFJWC6PV');
+      });
     </script>
     <!-- Microsoft Clarity -->
     <script type="text/javascript">
@@ -19,43 +23,39 @@
     })(window, document, "clarity", "script", "us5furlqob");
     </script>
 
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Cuenta - StickyWork</title>
     <meta name="description" content="Crea tu cuenta gratis en StickyWork. 14 días sin tarjeta de crédito. Gestiona reservas, clientes y WhatsApp desde un solo lugar. Para peluquerías, restaurantes, clínicas y más.">
     <meta name="keywords" content="registro StickyWork, crear cuenta reservas, sign up sistema reservas, registrarse booking online, cuenta gratis gestión citas, alta StickyWork">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-    <meta name="googlebot" content="index, follow">
-    <link rel="stylesheet" href="css/styles.css">
-
-    <!-- Canonical URL -->
     <link rel="canonical" href="https://stickywork.com/registro.html">
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://stickywork.com/registro.html">
-    <meta property="og:site_name" content="StickyWork">
     <meta property="og:title" content="Crear Cuenta - StickyWork">
-    <meta property="og:description" content="Crea tu cuenta gratuita en StickyWork y empieza a gestionar las reservas de tu negocio en minutos. 14 días de prueba gratis.">
+    <meta property="og:description" content="Crea tu cuenta gratuita en StickyWork. 14 días de prueba gratis, sin tarjeta de crédito.">
     <meta property="og:image" content="https://stickywork.com/images/og-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="StickyWork - Sistema de Reservas Online">
     <meta property="og:locale" content="es_ES">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://stickywork.com/registro.html">
-    <meta name="twitter:title" content="Crear Cuenta - StickyWork">
-    <meta name="twitter:description" content="Crea tu cuenta gratuita en StickyWork y empieza a gestionar las reservas de tu negocio en minutos. 14 días de prueba gratis.">
-    <meta name="twitter:image" content="https://stickywork.com/images/twitter-card.jpg">
-    <meta name="twitter:image:alt" content="StickyWork Dashboard">
-    <meta name="twitter:creator" content="@stickywork">
-    <meta name="twitter:site" content="@stickywork">
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0F16A3">
+
+    <!-- Google Fonts async -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"></noscript>
+
+    <link rel="stylesheet" href="css/styles.css">
+
     <style>
         .register-container {
-            max-width: 800px;
+            max-width: 680px;
             margin: 2rem auto;
             padding: 2rem;
         }
@@ -72,7 +72,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.25rem;
             border-radius: 50px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -85,6 +85,7 @@
             background: var(--primary-color);
             border-color: var(--primary-color);
             color: white;
+            font-weight: 600;
         }
 
         .step.completed {
@@ -93,14 +94,11 @@
             color: white;
         }
 
-        @media (max-width: 600px) {
-            .step-indicator {
-                gap: 0.25rem;
-            }
-            .step {
-                padding: 0.4rem 0.75rem;
-                font-size: 0.7rem;
-            }
+        .step-connector {
+            width: 32px;
+            height: 2px;
+            background: var(--border-color);
+            border-radius: 2px;
         }
 
         .register-step {
@@ -113,7 +111,7 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -133,8 +131,8 @@
         .business-type-card {
             background: var(--bg-secondary);
             border: 2px solid var(--border-color);
-            border-radius: 10px;
-            padding: 1rem 0.75rem;
+            border-radius: 12px;
+            padding: 1.1rem 0.75rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -143,43 +141,52 @@
             align-items: center;
             justify-content: center;
             min-height: 100px;
+            gap: 0.4rem;
         }
 
         .business-type-card:hover {
             border-color: var(--primary-color);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(77, 83, 255, 0.12);
         }
 
         .business-type-card.selected {
             border-color: var(--primary-color);
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(77, 83, 255, 0.07);
         }
 
-        .business-type-card .icon {
-            font-size: 1.75rem;
-            margin-bottom: 0.35rem;
-            line-height: 1;
+        .business-type-card .biz-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary-color), #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin: 0 auto 0.25rem;
+            transition: transform 0.2s ease;
+        }
+
+        .business-type-card:hover .biz-icon,
+        .business-type-card.selected .biz-icon {
+            transform: scale(1.1);
         }
 
         .business-type-card h3 {
-            font-size: 0.8rem;
-            margin: 0 0 0.15rem 0;
-            color: var(--text-primary);
-            line-height: 1.2;
-        }
-
-        .business-type-card p {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+            font-size: 0.78rem;
             margin: 0;
-            line-height: 1.2;
+            color: var(--text-primary);
+            line-height: 1.3;
+            font-weight: 600;
         }
 
         .register-form {
             background: var(--bg-secondary);
-            border-radius: 15px;
-            padding: 2rem;
+            border-radius: 16px;
+            padding: 1.75rem;
             margin-top: 1rem;
+            border: 1px solid var(--border-color);
         }
 
         .form-row {
@@ -189,9 +196,8 @@
         }
 
         @media (max-width: 600px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
+            .form-row { grid-template-columns: 1fr; }
+            .register-container { padding: 1rem; }
         }
 
         .form-group {
@@ -201,84 +207,121 @@
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.9rem;
             color: var(--text-primary);
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1rem;
             border: 2px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 1rem;
             background: var(--bg-primary);
             color: var(--text-primary);
-            transition: border-color 0.3s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-sizing: border-box;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(77, 83, 255, 0.1);
         }
 
-        .form-group .hint {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
+        .password-wrapper {
+            position: relative;
         }
+
+        .password-wrapper input {
+            padding-right: 3rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-toggle:hover { color: var(--text-primary); }
 
         .password-requirements {
             list-style: none;
-            padding: 0.75rem 0 0 0;
-            margin-top: 0.5rem;
-            font-size: 0.85rem;
+            padding: 0.6rem 0 0 0;
+            margin: 0;
+            font-size: 0.82rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .password-requirements li {
             color: var(--text-secondary);
-            margin-bottom: 0.35rem;
-            padding-left: 1.5rem;
-            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
         }
 
         .password-requirements li::before {
             content: '○';
-            position: absolute;
-            left: 0;
-            color: var(--text-secondary);
+            font-size: 0.7rem;
         }
 
-        .password-requirements li.valid {
-            color: #10b981;
-        }
-
-        .password-requirements li.valid::before {
-            content: '✓';
-            color: #10b981;
-        }
+        .password-requirements li.valid { color: #10b981; }
+        .password-requirements li.valid::before { content: '✓'; }
 
         .btn-group {
             display: flex;
             gap: 1rem;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .btn-back {
             background: var(--bg-secondary);
             color: var(--text-primary);
             border: 2px solid var(--border-color);
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
         }
 
-        .btn-back:hover {
-            border-color: var(--primary-color);
+        .btn-back:hover { border-color: var(--primary-color); }
+
+        .trust-signals {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
         }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .trust-item svg { color: #10b981; flex-shrink: 0; }
 
         .trial-banner {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(77, 83, 255, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 12px;
             padding: 1rem 1.5rem;
             margin-bottom: 2rem;
             display: flex;
@@ -286,86 +329,52 @@
             gap: 1rem;
         }
 
-        .trial-banner .icon {
-            font-size: 2rem;
-        }
-
-        .trial-banner .text h4 {
-            margin: 0 0 0.25rem 0;
-            color: #10b981;
-        }
-
-        .trial-banner .text p {
-            margin: 0;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .divider {
+        .trial-banner .trial-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
             display: flex;
             align-items: center;
-            margin: 1.5rem 0;
-            color: var(--text-secondary);
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
         }
 
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-color);
-        }
+        .trial-banner h4 { margin: 0 0 0.2rem 0; color: #10b981; font-size: 0.95rem; }
+        .trial-banner p { margin: 0; color: var(--text-secondary); font-size: 0.85rem; }
 
-        .divider span {
-            padding: 0 1rem;
+        .error-message {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 0.9rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none;
             font-size: 0.9rem;
         }
 
         .login-link {
             text-align: center;
-            margin-top: 1.5rem;
+            margin-top: 1.25rem;
             color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
         .login-link a {
             color: var(--primary-color);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
         }
 
-        .login-link a:hover {
-            text-decoration: underline;
-        }
+        .login-link a:hover { text-decoration: underline; }
 
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #ef4444;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+        .business-name-field {
             display: none;
+            animation: fadeIn 0.25s ease;
         }
-
-
     </style>
-
-    <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/images/favicon-512x512.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
-
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="/manifest.json">
-
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#0F16A3">
-    <meta name="msapplication-TileColor" content="#0F16A3">
-    <meta name="msapplication-TileImage" content="/images/favicon-512x512.png">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navegación -->
@@ -379,192 +388,205 @@
                 <li><a href="casos-exito.html" class="nav-link">Casos de éxito</a></li>
                 <li><a href="demo.html" class="nav-link">Demo</a></li>
                 <li><a href="admin-login.html" class="nav-link" style="color: var(--primary-color);">Iniciar Sesión</a></li>
-                <li><button id="theme-toggle" class="theme-toggle-nav" aria-label="Cambiar a modo oscuro" role="menuitem"><span class="theme-icon">🌙</span></button></li>
+                <li><button id="theme-toggle" class="theme-toggle-nav" aria-label="Cambiar tema"><span class="theme-icon">🌙</span></button></li>
             </ul>
         </div>
     </nav>
 
-    <!-- Contenido Principal -->
     <main>
         <div class="register-container">
-            <!-- Indicador de pasos -->
-            <h2 style="text-align: center; margin-bottom: 1rem; font-size: 1.25rem;">Crea tu cuenta en 2 pasos</h2>
-            <div class="step-indicator">
-                <div class="step active" data-step="1">Tu negocio</div>
-                <div class="step" data-step="2">Tu cuenta</div>
-            </div>
 
-            <!-- Banner de prueba gratuita -->
-            <div class="trial-banner">
-                <div class="icon">🎁</div>
-                <div class="text">
-                    <h4>14 días de prueba gratuita</h4>
-                    <p>Sin tarjeta de crédito. Cancela cuando quieras.</p>
+            <!-- Título -->
+            <h1 style="text-align: center; margin-bottom: 0.5rem; font-size: 1.6rem;">Empieza gratis hoy</h1>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">Sin tarjeta de crédito. Configúrate en menos de 2 minutos.</p>
+
+            <!-- Indicador de pasos -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Tu negocio
+                </div>
+                <div class="step-connector"></div>
+                <div class="step" data-step="2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Tu cuenta
                 </div>
             </div>
 
-            <!-- Mensaje de error -->
+            <!-- Banner prueba gratuita -->
+            <div class="trial-banner">
+                <div class="trial-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                </div>
+                <div>
+                    <h4>14 días de prueba gratuita</h4>
+                    <p>Sin tarjeta de crédito · Cancela cuando quieras · Soporte incluido</p>
+                </div>
+            </div>
+
+            <!-- Error -->
             <div class="error-message" id="error-message"></div>
 
-            <!-- Paso 1: Tu negocio (tipo + datos) -->
+            <!-- PASO 1: Tipo de negocio + nombre -->
             <div class="register-step active" id="step-1">
-                <h2 style="text-align: center; margin-bottom: 0.5rem;">Cuéntanos sobre tu negocio</h2>
-                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                    Selecciona tu tipo de actividad y completa los datos básicos.
-                </p>
+                <h2 style="text-align: center; margin-bottom: 0.4rem; font-size: 1.2rem;">¿Qué tipo de negocio tienes?</h2>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.9rem;">Selecciona para personalizar tu experiencia</p>
 
-                <div class="business-types-grid" id="business-types-grid">
+                <div class="business-types-grid">
                     <div class="business-type-card" data-type="salon">
-                        <div class="icon">💇</div>
+                        <div class="biz-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><path d="M9.5 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/><path d="M14.5 7.5l5 5-5 5"/><path d="M4 7c0 0 0 10 5.5 10S15 12 15 12"/></svg>
+                        </div>
                         <h3>Peluquería / Salón</h3>
-                        <p>Cortes, tintes, tratamientos</p>
                     </div>
                     <div class="business-type-card" data-type="clinic">
-                        <div class="icon">🏥</div>
+                        <div class="biz-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </div>
                         <h3>Clínica / Consultorio</h3>
-                        <p>Consultas médicas</p>
                     </div>
                     <div class="business-type-card" data-type="restaurant">
-                        <div class="icon">🍽️</div>
+                        <div class="biz-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                        </div>
                         <h3>Restaurante / Bar</h3>
-                        <p>Reservas de mesas</p>
                     </div>
                     <div class="business-type-card" data-type="nutrition">
-                        <div class="icon">🥗</div>
+                        <div class="biz-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
                         <h3>Centro de Nutrición</h3>
-                        <p>Consultas nutricionales</p>
                     </div>
                     <div class="business-type-card" data-type="gym">
-                        <div class="icon">💪</div>
-                        <h3>Gimnasio</h3>
-                        <p>Clases y entrenamientos</p>
+                        <div class="biz-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M6 8H5a4 4 0 0 0 0 8h1"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="8" y1="8" x2="8" y2="16"/><line x1="16" y1="8" x2="16" y2="16"/></svg>
+                        </div>
+                        <h3>Gimnasio / Fitness</h3>
                     </div>
                     <div class="business-type-card" data-type="spa">
-                        <div class="icon">🧖</div>
+                        <div class="biz-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                        </div>
                         <h3>Spa / Bienestar</h3>
-                        <p>Masajes, tratamientos</p>
                     </div>
                     <div class="business-type-card" data-type="lawyer">
-                        <div class="icon">⚖️</div>
-                        <h3>Despacho de Abogados</h3>
-                        <p>Consultas legales</p>
+                        <div class="biz-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                        </div>
+                        <h3>Despacho / Consultoría</h3>
                     </div>
                     <div class="business-type-card" data-type="other">
-                        <div class="icon">🎯</div>
-                        <h3>Otro</h3>
-                        <p>Configúralo a tu medida</p>
+                        <div class="biz-icon" style="background: linear-gradient(135deg, #6b7280, #374151);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        </div>
+                        <h3>Otro tipo de negocio</h3>
                     </div>
                 </div>
 
-                <div class="register-form" id="business-details-form" style="display: none;">
-                    <div class="form-group">
-                        <label for="business-name">Nombre del negocio *</label>
-                        <input type="text" id="business-name" placeholder="Ej: Peluquería Moderna" required>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="business-phone">Teléfono (opcional)</label>
-                            <input type="tel" id="business-phone" placeholder="+34 600 000 000">
-                        </div>
-                        <div class="form-group">
-                            <label for="business-address">Dirección (opcional)</label>
-                            <input type="text" id="business-address" placeholder="Calle, número, ciudad">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="business-website">Página web (opcional)</label>
-                        <input type="url" id="business-website" placeholder="https://www.tunegocio.com">
-                        <p class="hint">Si no tienes página web, no te preocupes. Te facilitamos un enlace directo para que puedas compartirlo con tus clientes y empezar a recibir reservas.</p>
+                <!-- Nombre del negocio (aparece al seleccionar tipo) -->
+                <div class="register-form business-name-field" id="business-name-field">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="business-name">¿Cómo se llama tu negocio? *</label>
+                        <input type="text" id="business-name" placeholder="Ej: Peluquería Moderna, Clínica Salud..." required autocomplete="organization">
                     </div>
                 </div>
 
-                <div class="btn-group" style="justify-content: center;">
-                    <button class="btn btn-primary" id="btn-step-1" disabled>
+                <div class="btn-group" style="justify-content: center; margin-top: 1.5rem;">
+                    <button class="btn btn-primary" id="btn-step-1" disabled style="padding: 0.85rem 2.5rem; font-size: 1rem;">
                         Continuar
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" style="margin-left: 0.4rem;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                     </button>
                 </div>
             </div>
 
-            <!-- Paso 2: Tu cuenta -->
+            <!-- PASO 2: Datos de cuenta -->
             <div class="register-step" id="step-2">
-                <h2 style="text-align: center; margin-bottom: 0.5rem;">Crea tu cuenta</h2>
-                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
-                    Con estos datos accederás al panel y recibirás las notificaciones.
-                </p>
+                <h2 style="text-align: center; margin-bottom: 0.4rem; font-size: 1.2rem;">Crea tu acceso</h2>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.9rem;">Con estos datos entrarás al panel de gestión</p>
 
                 <div class="register-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="admin-name">Tu nombre completo *</label>
-                            <input type="text" id="admin-name" placeholder="Juan Pérez" required>
+                            <label for="admin-name">Tu nombre *</label>
+                            <input type="text" id="admin-name" placeholder="Juan Pérez" required autocomplete="name">
                         </div>
                         <div class="form-group">
                             <label for="admin-email">Tu email *</label>
-                            <input type="email" id="admin-email" placeholder="tu@email.com" required>
-                            <p class="hint">Para iniciar sesión y recibir notificaciones de reservas</p>
+                            <input type="email" id="admin-email" placeholder="tu@email.com" required autocomplete="email">
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="admin-password">Contraseña *</label>
-                            <input type="password" id="admin-password" placeholder="Mínimo 8 caracteres" required>
+                    <div class="form-group">
+                        <label for="admin-password">Contraseña *</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="admin-password" placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+                            <button type="button" class="password-toggle" id="password-toggle" aria-label="Mostrar contraseña">
+                                <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label for="admin-password-confirm">Confirmar contraseña *</label>
-                            <input type="password" id="admin-password-confirm" placeholder="Repite la contraseña" required>
-                        </div>
+                        <ul class="password-requirements" id="password-requirements">
+                            <li id="req-length">8 caracteres</li>
+                            <li id="req-letter">Una letra</li>
+                            <li id="req-number">Un número</li>
+                        </ul>
                     </div>
 
-                    <ul class="password-requirements" id="password-requirements">
-                        <li id="req-length">Mínimo 8 caracteres</li>
-                        <li id="req-letter">Al menos una letra</li>
-                        <li id="req-number">Al menos un número</li>
-                    </ul>
-
-                    <div class="form-group" style="margin-top: 1.5rem;">
-                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
-                            <input type="checkbox" id="accept-terms" style="width: 20px; height: 20px; min-width: 20px; accent-color: var(--primary-color);">
-                            <span style="font-weight: normal; font-size: 0.9rem; color: var(--text-secondary);">
-                                Acepto los <a href="terminos.html" target="_blank" style="color: var(--primary-color);">Términos de Servicio</a>
-                                y la <a href="politica-privacidad.html" target="_blank" style="color: var(--primary-color);">Política de Privacidad</a>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; font-weight: normal;">
+                            <input type="checkbox" id="accept-terms" style="width: 18px; height: 18px; min-width: 18px; margin-top: 2px; accent-color: var(--primary-color);">
+                            <span style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.4;">
+                                Acepto los <a href="terminos.html" target="_blank" style="color: var(--primary-color); font-weight: 600;">Términos de Servicio</a>
+                                y la <a href="politica-privacidad.html" target="_blank" style="color: var(--primary-color); font-weight: 600;">Política de Privacidad</a>
                             </span>
                         </label>
                     </div>
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-back" id="btn-back-2">Atrás</button>
-                    <button class="btn btn-primary" id="btn-register" style="flex: 1;">
-                        Crear cuenta y empezar
+                    <button class="btn-back" id="btn-back-2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" style="margin-right: 0.3rem;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                        Atrás
                     </button>
+                    <button class="btn btn-primary" id="btn-register" style="flex: 1; font-size: 1rem; padding: 0.85rem;">
+                        Crear cuenta y empezar gratis
+                    </button>
+                </div>
+
+                <!-- Señales de confianza -->
+                <div class="trust-signals">
+                    <div class="trust-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+                        Sin tarjeta de crédito
+                    </div>
+                    <div class="trust-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+                        14 días gratis
+                    </div>
+                    <div class="trust-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+                        Cancela cuando quieras
+                    </div>
                 </div>
 
                 <div class="login-link">
                     ¿Ya tienes cuenta? <a href="admin-login.html">Inicia sesión</a>
                 </div>
             </div>
+
         </div>
     </main>
 
-    <!-- Footer simplificado -->
     <footer class="footer" style="margin-top: 3rem;">
         <div class="footer-bottom">
             <p>&copy; 2026 StickyWork. Todos los derechos reservados.</p>
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="js/main.js" defer></script>
     <script>
-        // Estado del formulario
         const formData = {
             businessType: null,
             businessName: '',
-            businessPhone: '',
-            businessAddress: '',
-            businessWebsite: '',
             adminName: '',
             adminEmail: '',
             adminPassword: ''
@@ -572,27 +594,36 @@
 
         let currentStep = 1;
 
-        // Detectar API URL
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:3000'
             : 'https://api.stickywork.com';
 
-        // Selección de tipo de negocio — muestra formulario de datos al seleccionar
+        // Selección de tipo de negocio
         document.querySelectorAll('.business-type-card').forEach(card => {
             card.addEventListener('click', function() {
                 document.querySelectorAll('.business-type-card').forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
                 formData.businessType = this.dataset.type;
-                document.getElementById('btn-step-1').disabled = false;
 
-                // Mostrar formulario de datos del negocio
-                const detailsForm = document.getElementById('business-details-form');
-                if (detailsForm.style.display === 'none') {
-                    detailsForm.style.display = 'block';
-                    detailsForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
+                // Mostrar campo de nombre
+                const nameField = document.getElementById('business-name-field');
+                nameField.style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('business-name').focus();
+                }, 50);
+
+                // Habilitar botón si ya hay nombre
+                updateStep1Button();
             });
         });
+
+        document.getElementById('business-name').addEventListener('input', updateStep1Button);
+
+        function updateStep1Button() {
+            const hasType = formData.businessType !== null;
+            const hasName = document.getElementById('business-name').value.trim().length > 0;
+            document.getElementById('btn-step-1').disabled = !(hasType && hasName);
+        }
 
         // Navegación entre pasos
         function goToStep(step) {
@@ -603,10 +634,10 @@
                 if (stepNum < step) s.classList.add('completed');
                 if (stepNum === step) s.classList.add('active');
             });
-
             document.getElementById(`step-${step}`).classList.add('active');
             currentStep = step;
             hideError();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function showError(message) {
@@ -620,101 +651,65 @@
             document.getElementById('error-message').style.display = 'none';
         }
 
-        // Validación de contraseña
-        document.getElementById('admin-password').addEventListener('input', function() {
-            const password = this.value;
-            const reqLength = document.getElementById('req-length');
-            const reqLetter = document.getElementById('req-letter');
-            const reqNumber = document.getElementById('req-number');
-
-            reqLength.classList.toggle('valid', password.length >= 8);
-            reqLetter.classList.toggle('valid', /[a-zA-Z]/.test(password));
-            reqNumber.classList.toggle('valid', /[0-9]/.test(password));
+        // Mostrar/ocultar contraseña
+        document.getElementById('password-toggle').addEventListener('click', function() {
+            const input = document.getElementById('admin-password');
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            document.getElementById('eye-icon').innerHTML = isPassword
+                ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+                : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
         });
 
-        // Botón paso 1 -> 2: valida tipo + nombre del negocio
+        // Validación de contraseña en tiempo real
+        document.getElementById('admin-password').addEventListener('input', function() {
+            const p = this.value;
+            document.getElementById('req-length').classList.toggle('valid', p.length >= 8);
+            document.getElementById('req-letter').classList.toggle('valid', /[a-zA-Z]/.test(p));
+            document.getElementById('req-number').classList.toggle('valid', /[0-9]/.test(p));
+        });
+
+        // Paso 1 → 2
         document.getElementById('btn-step-1').addEventListener('click', function() {
-            if (!formData.businessType) {
-                showError('Por favor, selecciona un tipo de negocio');
-                return;
-            }
-
             const name = document.getElementById('business-name').value.trim();
-            if (!name) {
-                showError('Por favor, introduce el nombre de tu negocio');
-                return;
-            }
-
+            if (!formData.businessType) { showError('Selecciona el tipo de negocio'); return; }
+            if (!name) { showError('Introduce el nombre de tu negocio'); return; }
             formData.businessName = name;
-            formData.businessPhone = document.getElementById('business-phone').value.trim();
-            formData.businessAddress = document.getElementById('business-address').value.trim();
-            formData.businessWebsite = document.getElementById('business-website').value.trim();
-
             goToStep(2);
         });
 
-        // Botón atrás paso 2
+        // Atrás
         document.getElementById('btn-back-2').addEventListener('click', () => goToStep(1));
 
-        // Botón registrar
+        // Registrar
         document.getElementById('btn-register').addEventListener('click', async function() {
             const name = document.getElementById('admin-name').value.trim();
             const email = document.getElementById('admin-email').value.trim();
             const password = document.getElementById('admin-password').value;
-            const passwordConfirm = document.getElementById('admin-password-confirm').value;
             const acceptTerms = document.getElementById('accept-terms').checked;
 
-            // Validaciones
-            if (!name) {
-                showError('Por favor, introduce tu nombre');
-                return;
-            }
-            if (!email || !email.includes('@')) {
-                showError('Por favor, introduce un email válido');
-                return;
-            }
-            if (password.length < 8) {
-                showError('La contraseña debe tener al menos 8 caracteres');
-                return;
-            }
-            if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-                showError('La contraseña debe contener letras y números');
-                return;
-            }
-            if (password !== passwordConfirm) {
-                showError('Las contraseñas no coinciden');
-                return;
-            }
-            if (!acceptTerms) {
-                showError('Debes aceptar los términos y condiciones');
-                return;
-            }
+            if (!name) { showError('Introduce tu nombre'); return; }
+            if (!email || !email.includes('@')) { showError('Introduce un email válido'); return; }
+            if (password.length < 8) { showError('La contraseña debe tener al menos 8 caracteres'); return; }
+            if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) { showError('La contraseña debe contener letras y números'); return; }
+            if (!acceptTerms) { showError('Debes aceptar los términos y condiciones'); return; }
 
             formData.adminName = name;
             formData.adminEmail = email;
             formData.adminPassword = password;
 
-            // Enviar registro
             const btn = this;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = 'Creando cuenta...';
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="animation: spin 1s linear infinite; margin-right: 0.5rem;"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg> Creando tu cuenta...';
             btn.disabled = true;
 
             try {
                 const response = await fetch(`${API_URL}/api/auth/register-business`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        // Datos del negocio
                         businessType: formData.businessType,
                         businessName: formData.businessName,
-                        businessEmail: formData.adminEmail, // Mismo email para negocio y admin
-                        businessPhone: formData.businessPhone,
-                        businessAddress: formData.businessAddress,
-                        businessWebsite: formData.businessWebsite,
-                        // Datos del admin
+                        businessEmail: formData.adminEmail,
                         adminName: formData.adminName,
                         adminEmail: formData.adminEmail,
                         adminPassword: formData.adminPassword
@@ -724,31 +719,26 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Guardar token y datos
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('userData', JSON.stringify(data.user));
                     localStorage.setItem('businessData', JSON.stringify(data.business));
-
-                    // Ir directamente al onboarding
                     window.location.href = 'onboarding.html';
                 } else {
                     showError(data.error || 'Error al crear la cuenta. Inténtalo de nuevo.');
-                    btn.innerHTML = originalText;
+                    btn.innerHTML = 'Crear cuenta y empezar gratis';
                     btn.disabled = false;
                 }
             } catch (error) {
-                console.error('Error:', error);
                 showError('Error de conexión. Por favor, inténtalo de nuevo.');
-                btn.innerHTML = originalText;
+                btn.innerHTML = 'Crear cuenta y empezar gratis';
                 btn.disabled = false;
             }
         });
     </script>
-    <!-- Dark Mode Toggle Script -->
-    <script src="js/dark-mode.js"></script>
-    <!-- Loading Spinner System -->
-    <script src="js/loading-spinner.js"></script>
-    <!-- Scroll to Top Button -->
-    <script src="js/scroll-to-top.js"></script>
+    <style>
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+    <script src="js/dark-mode.js" defer></script>
+    <script src="js/scroll-to-top.js" defer></script>
 </body>
 </html>
