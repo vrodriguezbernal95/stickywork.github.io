@@ -6,14 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-QNNFJWC6PV"></script>
+    <!-- Google tag (gtag.js) - carga diferida para no bloquear render -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-QNNFJWC6PV');
+      window.addEventListener('load', function() {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-QNNFJWC6PV';
+        document.head.appendChild(s);
+        gtag('js', new Date());
+        gtag('config', 'G-QNNFJWC6PV');
+      });
     </script>
     <!-- Microsoft Clarity -->
     <script type="text/javascript">
