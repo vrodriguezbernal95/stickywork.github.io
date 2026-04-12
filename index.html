@@ -69,8 +69,9 @@
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
 
-    <!-- Google Fonts: Poppins + Open Sans -->
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Poppins + Open Sans (carga async para no bloquear render) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"></noscript>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -420,8 +421,8 @@
         Contáctanos
     </button>
 
-    <script src="js/main.js"></script>
-    <script src="js/cookie-consent.js"></script>
+    <script src="js/main.js" defer></script>
+    <script src="js/cookie-consent.js" defer></script>
 
     <!-- Script del widget modal de contacto -->
     <script>
@@ -670,8 +671,8 @@
     </script>
 
     <!-- Dark Mode Toggle Script -->
-    <script src="js/dark-mode.js"></script>
+    <script src="js/dark-mode.js" defer></script>
     <!-- Scroll to Top Button -->
-    <script src="js/scroll-to-top.js"></script>
+    <script src="js/scroll-to-top.js" defer></script>
 </body>
 </html>
