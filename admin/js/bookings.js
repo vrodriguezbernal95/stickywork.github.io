@@ -154,6 +154,12 @@ const bookings = {
                             </div>
 
                             <div class="form-group">
+                                <label for="numPeople" class="form-label">Número de personas *</label>
+                                <input type="number" id="numPeople" class="form-input" required
+                                       min="1" max="99" value="1" placeholder="1">
+                            </div>
+
+                            <div class="form-group">
                                 <label for="notes" class="form-label">Notas (opcional)</label>
                                 <textarea id="notes" class="form-input" rows="3"
                                           placeholder="Información adicional sobre la reserva..."></textarea>
@@ -529,6 +535,7 @@ const bookings = {
         const serviceId = document.getElementById('serviceId').value || null;
         const bookingDate = document.getElementById('bookingDate').value;
         const bookingTime = document.getElementById('bookingTime').value + ':00'; // Add seconds
+        const numPeople = parseInt(document.getElementById('numPeople').value) || 1;
         const notes = document.getElementById('notes').value;
 
         try {
@@ -540,6 +547,7 @@ const bookings = {
                 customerPhone,
                 bookingDate,
                 bookingTime,
+                numPeople,
                 notes: notes || null
             });
 
