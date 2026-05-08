@@ -101,7 +101,7 @@ const bookings = {
         const colW = 80; // px per hour column
         const totalW = hourRange.length * colW;
         const laneH = 52; // px per lane
-        const blockW = Math.max(colW * 0.85, 60);
+        const blockW = 120; // fixed width - wider than one col to fit text
 
         const rows = zones.map(zone => {
             const zoneBookings = dateBookings.filter(b => (b.zone || 'Sin zona') === zone);
@@ -156,7 +156,7 @@ const bookings = {
                     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
                     z-index: 1;
                 " onclick="bookings.showClientPopup(${b.id})" title="${b.customer_name} — ${utils.formatTime(b.booking_time)}">
-                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name} · ${utils.formatTime(b.booking_time)} · ${people}p</span>
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name} · ${people}p</span>
                 </div>`;
             }).join('');
 
