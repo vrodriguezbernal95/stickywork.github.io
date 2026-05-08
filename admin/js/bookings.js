@@ -100,48 +100,68 @@ const bookings = {
 
         const colW = 80; // px per hour column
         const totalW = hourRange.length * colW;
+        const laneH = 52; // px per lane
+        const blockW = Math.max(colW * 0.85, 60);
 
         const rows = zones.map(zone => {
             const zoneBookings = dateBookings.filter(b => (b.zone || 'Sin zona') === zone);
 
-            const blocks = zoneBookings.map(b => {
+            // Sort by time for lane assignment
+            const sorted = [...zoneBookings].sort((a, b) => {
+                return (a.booking_time || '12:00').localeCompare(b.booking_time || '12:00');
+            });
+
+            // Assign swim-lanes: each booking gets the first lane where it doesn't overlap
+            const laneEnds = [];
+            const laneIdxs = sorted.map(b => {
                 const bHour = parseInt((b.booking_time || '12:00').substring(0, 2));
                 const bMin  = parseInt((b.booking_time || '12:00').substring(3, 5));
-                const offsetMins = (bHour - minHour) * 60 + bMin;
-                const left = (offsetMins / 60) * colW;
-                const width = Math.max(colW * 0.85, 60);
+                const bLeft = ((bHour - minHour) * 60 + bMin) / 60 * colW;
+                const bRight = bLeft + blockW;
+                let lane = laneEnds.findIndex(end => end <= bLeft + 2);
+                if (lane === -1) lane = laneEnds.length;
+                laneEnds[lane] = bRight;
+                return lane;
+            });
+
+            const numLanes = Math.max(1, laneEnds.length);
+            const rowH = numLanes * laneH;
+
+            const blocks = sorted.map((b, idx) => {
+                const bHour = parseInt((b.booking_time || '12:00').substring(0, 2));
+                const bMin  = parseInt((b.booking_time || '12:00').substring(3, 5));
+                const left = ((bHour - minHour) * 60 + bMin) / 60 * colW;
                 const color = statusColors[b.status] || { bg: '#6366f1', text: '#fff' };
                 const people = b.num_adults != null ? (b.num_adults + (b.num_children || 0)) : (b.num_people || 1);
                 const name = (b.customer_name || '').split(' ')[0];
+                const top = laneIdxs[idx] * laneH + 6;
+                const height = laneH - 12;
 
                 return `<div style="
                     position: absolute;
                     left: ${left + 4}px;
-                    top: 6px; bottom: 6px;
-                    width: ${width - 8}px;
+                    top: ${top}px;
+                    height: ${height}px;
+                    width: ${blockW - 8}px;
                     background: ${color.bg};
                     color: ${color.text};
                     border-radius: 8px;
-                    padding: 0.3rem 0.5rem;
+                    padding: 0 0.5rem;
                     font-size: 0.78rem;
                     font-weight: 600;
                     overflow: hidden;
                     cursor: pointer;
                     display: flex;
-                    flex-direction: column;
-                    justify-content: center;
+                    align-items: center;
                     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
                     z-index: 1;
                 " onclick="bookings.showClientPopup(${b.id})" title="${b.customer_name} — ${utils.formatTime(b.booking_time)}">
-                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span>
-                    <span style="opacity: 0.85; font-weight: 400; font-size: 0.72rem;">
-                        ${utils.formatTime(b.booking_time)} · ${people}p
-                    </span>
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name} · ${utils.formatTime(b.booking_time)} · ${people}p</span>
                 </div>`;
             }).join('');
 
             return `
-                <div style="display: flex; border-bottom: 1px solid var(--border-color); min-height: 64px;">
+                <div style="display: flex; border-bottom: 1px solid var(--border-color); height: ${rowH}px;">
                     <!-- Zone label -->
                     <div style="
                         width: 100px; min-width: 100px;
