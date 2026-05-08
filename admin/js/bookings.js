@@ -6,6 +6,8 @@ const bookings = {
     currentPage: 1, // Current page number
     itemsPerPage: 50, // Items per page
     currentFilter: 'all', // Customer level filter
+    currentView: 'list', // 'list' | 'timeline'
+    timelineDate: null, // Date selected in timeline view
 
     // Load all bookings
     async load() {
@@ -55,27 +57,203 @@ const bookings = {
         this.render();
     },
 
+    // Toggle between list and timeline view
+    setView(view) {
+        this.currentView = view;
+        if (view === 'timeline' && !this.timelineDate) {
+            const now = new Date();
+            this.timelineDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        }
+        this.render();
+    },
+
+    // Change timeline date
+    setTimelineDate(date) {
+        this.timelineDate = date;
+        this.render();
+    },
+
+    // Render timeline/grid view
+    renderTimeline() {
+        const dateBookings = this.allBookings.filter(b => {
+            const bDate = b.booking_date ? b.booking_date.substring(0, 10) : '';
+            return bDate === this.timelineDate && b.status !== 'cancelled';
+        });
+
+        // Get all zones
+        const zones = [...new Set(dateBookings.map(b => b.zone).filter(Boolean))];
+        if (zones.length === 0) zones.push('Sin zona');
+
+        // Determine hour range
+        const hours = dateBookings.map(b => parseInt((b.booking_time || '12:00').substring(0, 2)));
+        const minHour = hours.length > 0 ? Math.max(0, Math.min(...hours) - 1) : 9;
+        const maxHour = hours.length > 0 ? Math.min(23, Math.max(...hours) + 2) : 22;
+        const hourRange = [];
+        for (let h = minHour; h <= maxHour; h++) hourRange.push(h);
+
+        const statusColors = {
+            confirmed: { bg: '#6366f1', text: '#fff' },
+            pending:   { bg: '#f59e0b', text: '#fff' },
+            completed: { bg: '#10b981', text: '#fff' },
+            no_show:   { bg: '#6b7280', text: '#fff' }
+        };
+
+        const colW = 80; // px per hour column
+        const totalW = hourRange.length * colW;
+
+        const rows = zones.map(zone => {
+            const zoneBookings = dateBookings.filter(b => (b.zone || 'Sin zona') === zone);
+
+            const blocks = zoneBookings.map(b => {
+                const bHour = parseInt((b.booking_time || '12:00').substring(0, 2));
+                const bMin  = parseInt((b.booking_time || '12:00').substring(3, 5));
+                const offsetMins = (bHour - minHour) * 60 + bMin;
+                const left = (offsetMins / 60) * colW;
+                const width = Math.max(colW * 0.85, 60);
+                const color = statusColors[b.status] || { bg: '#6366f1', text: '#fff' };
+                const people = b.num_adults != null ? (b.num_adults + (b.num_children || 0)) : (b.num_people || 1);
+                const name = (b.customer_name || '').split(' ')[0];
+
+                return `<div style="
+                    position: absolute;
+                    left: ${left + 4}px;
+                    top: 6px; bottom: 6px;
+                    width: ${width - 8}px;
+                    background: ${color.bg};
+                    color: ${color.text};
+                    border-radius: 8px;
+                    padding: 0.3rem 0.5rem;
+                    font-size: 0.78rem;
+                    font-weight: 600;
+                    overflow: hidden;
+                    cursor: pointer;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                    z-index: 1;
+                " onclick="bookings.showClientPopup(${b.id})" title="${b.customer_name} — ${utils.formatTime(b.booking_time)}">
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span>
+                    <span style="opacity: 0.85; font-weight: 400; font-size: 0.72rem;">
+                        ${utils.formatTime(b.booking_time)} · ${people}p
+                    </span>
+                </div>`;
+            }).join('');
+
+            return `
+                <div style="display: flex; border-bottom: 1px solid var(--border-color); min-height: 64px;">
+                    <!-- Zone label -->
+                    <div style="
+                        width: 100px; min-width: 100px;
+                        padding: 0.5rem 0.75rem;
+                        font-size: 0.82rem; font-weight: 600;
+                        color: var(--text-primary);
+                        background: var(--bg-secondary);
+                        border-right: 2px solid var(--border-color);
+                        display: flex; align-items: center;
+                    ">${zone}</div>
+                    <!-- Time slots -->
+                    <div style="position: relative; flex: 1; min-width: ${totalW}px;">
+                        <!-- Hour grid lines -->
+                        ${hourRange.map((h, i) => `
+                            <div style="position: absolute; left: ${i * colW}px; top: 0; bottom: 0; width: 1px; background: var(--border-color); opacity: 0.5;"></div>
+                        `).join('')}
+                        ${blocks}
+                    </div>
+                </div>`;
+        }).join('');
+
+        const headerCols = hourRange.map((h, i) => `
+            <div style="width: ${colW}px; min-width: ${colW}px; padding: 0.4rem 0; text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); border-right: 1px solid var(--border-color);">
+                ${String(h).padStart(2,'0')}:00
+            </div>
+        `).join('');
+
+        const todayStr = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
+
+        return `
+            <div style="background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 1.5rem;">
+                <!-- Date picker + legend -->
+                <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color: var(--text-secondary);"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <input type="date" value="${this.timelineDate}" onchange="bookings.setTimelineDate(this.value)"
+                            style="border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 0.9rem; cursor: pointer;">
+                    </div>
+                    <button onclick="bookings.setTimelineDate('${todayStr}')" style="
+                        padding: 0.35rem 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;
+                        background: var(--bg-primary); color: var(--text-secondary); cursor: pointer; font-size: 0.82rem;">
+                        Hoy
+                    </button>
+                    <div style="margin-left: auto; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.78rem;color:var(--text-secondary)"><span style="width:10px;height:10px;border-radius:3px;background:#6366f1;display:inline-block;"></span>Confirmada</span>
+                        <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.78rem;color:var(--text-secondary)"><span style="width:10px;height:10px;border-radius:3px;background:#f59e0b;display:inline-block;"></span>Pendiente</span>
+                        <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.78rem;color:var(--text-secondary)"><span style="width:10px;height:10px;border-radius:3px;background:#10b981;display:inline-block;"></span>Completada</span>
+                    </div>
+                </div>
+
+                <!-- Grid -->
+                <div style="overflow-x: auto;">
+                    <!-- Header horas -->
+                    <div style="display: flex; border-bottom: 2px solid var(--border-color); background: var(--bg-primary); position: sticky; top: 0; z-index: 2;">
+                        <div style="width: 100px; min-width: 100px; border-right: 2px solid var(--border-color);"></div>
+                        <div style="display: flex;">${headerCols}</div>
+                    </div>
+                    <!-- Rows -->
+                    ${dateBookings.length === 0 && zones[0] === 'Sin zona' ? `
+                        <div style="padding: 3rem; text-align: center; color: var(--text-secondary);">
+                            No hay reservas para este día
+                        </div>
+                    ` : rows}
+                </div>
+            </div>
+        `;
+    },
+
     // Render bookings table with pagination
     render() {
         const contentArea = document.getElementById('contentArea');
         const bookingsList = this.getFilteredBookings();
 
         contentArea.innerHTML = `
-            <!-- Nueva Reserva Button -->
+            <!-- Header -->
             <div class="bookings-page-header">
                 <h2 style="margin: 0; color: var(--text-primary);">Gestión de Reservas</h2>
-                <button class="btn-primary" onclick="bookings.showCreateModal()">
-                    ➕ Nueva Reserva
-                </button>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <!-- Toggle vista -->
+                    <div style="display: flex; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+                        <button onclick="bookings.setView('list')" style="
+                            padding: 0.5rem 0.9rem; border: none; cursor: pointer; font-size: 0.85rem;
+                            background: ${this.currentView === 'list' ? 'var(--primary-color)' : 'var(--bg-secondary)'};
+                            color: ${this.currentView === 'list' ? 'white' : 'var(--text-secondary)'};
+                            display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                            Lista
+                        </button>
+                        <button onclick="bookings.setView('timeline')" style="
+                            padding: 0.5rem 0.9rem; border: none; cursor: pointer; font-size: 0.85rem;
+                            background: ${this.currentView === 'timeline' ? 'var(--primary-color)' : 'var(--bg-secondary)'};
+                            color: ${this.currentView === 'timeline' ? 'white' : 'var(--text-secondary)'};
+                            display: flex; align-items: center; gap: 0.4rem; transition: all 0.2s; border-left: 1px solid var(--border-color);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            Cuadrícula
+                        </button>
+                    </div>
+                    <button class="btn-primary" onclick="bookings.showCreateModal()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nueva Reserva
+                    </button>
+                </div>
             </div>
 
+            ${this.currentView === 'timeline' ? this.renderTimeline() : `
             <!-- Filtros por nivel de cliente -->
             <div class="booking-filters" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                 ${this.renderFilterButton('all', 'Todos', this.allBookings.length)}
-                ${this.renderFilterButton('premium', '⭐ VIP', this.allBookings.filter(b => b.customer_status === 'premium').length)}
-                ${this.renderFilterButton('normal', '👤 Normal', this.allBookings.filter(b => !b.customer_status || b.customer_status === 'normal').length)}
-                ${this.renderFilterButton('riesgo', '⚠️ Riesgo', this.allBookings.filter(b => b.customer_status === 'riesgo').length)}
-                ${this.renderFilterButton('baneado', '🚫 Baneado', this.allBookings.filter(b => b.customer_status === 'baneado').length)}
+                ${this.renderFilterButton('premium', 'VIP', this.allBookings.filter(b => b.customer_status === 'premium').length)}
+                ${this.renderFilterButton('normal', 'Normal', this.allBookings.filter(b => !b.customer_status || b.customer_status === 'normal').length)}
+                ${this.renderFilterButton('riesgo', 'Riesgo', this.allBookings.filter(b => b.customer_status === 'riesgo').length)}
+                ${this.renderFilterButton('baneado', 'Baneado', this.allBookings.filter(b => b.customer_status === 'baneado').length)}
             </div>
 
             <div class="table-container">
@@ -93,6 +271,7 @@ const bookings = {
                     </div>
                 ` : this.renderPaginatedTable(bookingsList)}
             </div>
+            `}
 
             <!-- Create Booking Modal -->
             <div id="createBookingModal" class="modal" style="display: none;">
