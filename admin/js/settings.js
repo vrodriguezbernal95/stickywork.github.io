@@ -4265,11 +4265,11 @@ const settings = {
 
                             <div class="form-group">
                                 <label>Mensaje personalizado (opcional)</label>
-                                <input type="text" id="children-custom-message"
-                                       value="${customMessage}"
-                                       placeholder="Ej: Niños de 0 a 12 años"
-                                       maxlength="100">
-                                <p class="hint">Se mostrará junto al selector de niños en el widget</p>
+                                <textarea id="children-custom-message"
+                                          placeholder="Ej: Niños de 0 a 12 años"
+                                          maxlength="300"
+                                          rows="3">${customMessage}</textarea>
+                                <p class="hint">Se mostrará junto al selector de niños en el widget (máx. 300 caracteres)</p>
                             </div>
                         </div>
                     </div>
@@ -4375,11 +4375,11 @@ const settings = {
 
                         <div class="form-group">
                             <label>Mensaje personalizado (opcional)</label>
-                            <input type="text" id="children-custom-message"
-                                   value="${customMessageServices}"
-                                   placeholder="Ej: Niños de 0 a 12 años"
-                                   maxlength="100">
-                            <p class="hint">Se mostrará junto al selector de niños en el widget</p>
+                            <textarea id="children-custom-message"
+                                      placeholder="Ej: Niños de 0 a 12 años"
+                                      maxlength="300"
+                                      rows="3">${customMessageServices}</textarea>
+                            <p class="hint">Se mostrará junto al selector de niños en el widget (máx. 300 caracteres)</p>
                         </div>
                     </div>
                 </div>
