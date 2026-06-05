@@ -73,6 +73,15 @@ const bookings = {
         this.render();
     },
 
+    // Navigate timeline by ±1 day
+    changeTimelineDay(offset) {
+        const [y, m, d] = this.timelineDate.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        dt.setDate(dt.getDate() + offset);
+        this.timelineDate = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+        this.render();
+    },
+
     // Render timeline/grid view
     renderTimeline() {
         const dateBookings = this.allBookings.filter(b => {
@@ -195,10 +204,24 @@ const bookings = {
             <div style="background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 1.5rem;">
                 <!-- Date picker + legend -->
                 <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color: var(--text-secondary);"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        <input type="date" value="${this.timelineDate}" onchange="bookings.setTimelineDate(this.value)"
-                            style="border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 0.9rem; cursor: pointer;">
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        <button onclick="bookings.changeTimelineDay(-1)" style="
+                            width: 30px; height: 30px; border: 1px solid var(--border-color); border-radius: 8px;
+                            background: var(--bg-primary); color: var(--text-primary); cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+                        </button>
+                        <div style="display: flex; align-items: center; gap: 0.4rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color: var(--text-secondary);"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <input type="date" value="${this.timelineDate}" onchange="bookings.setTimelineDate(this.value)"
+                                style="border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 0.9rem; cursor: pointer;">
+                        </div>
+                        <button onclick="bookings.changeTimelineDay(1)" style="
+                            width: 30px; height: 30px; border: 1px solid var(--border-color); border-radius: 8px;
+                            background: var(--bg-primary); color: var(--text-primary); cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
                     </div>
                     <button onclick="bookings.setTimelineDate('${todayStr}')" style="
                         padding: 0.35rem 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;
