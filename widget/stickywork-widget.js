@@ -2100,6 +2100,32 @@
         await Promise.all(availabilityPromises);
     }
 
+    // Calcular cuántos slots hay configurados para una fecha concreta
+    function getConfiguredSlotCountForDate(dateStr) {
+        const scheduleType = businessConfig?.scheduleType || 'continuous';
+        const slotDuration = businessConfig?.slotDuration || 30;
+        const dateObj = new Date(dateStr + 'T00:00:00');
+        const dayOfWeek = dateObj.getDay() || 7; // 1=Lun … 7=Dom
+        let count = 0;
+
+        if (scheduleType === 'multiple' && businessConfig?.shifts) {
+            businessConfig.shifts.forEach(shift => {
+                if (!shift.enabled) return;
+                if (!shift.days || !shift.days.includes(dayOfWeek)) return;
+                const [sh, sm] = (shift.startTime || '09:00').split(':').map(Number);
+                const [eh, em] = (shift.endTime   || '18:00').split(':').map(Number);
+                count += Math.floor(((eh * 60 + em) - (sh * 60 + sm)) / slotDuration);
+            });
+        } else {
+            const start = businessConfig?.workHoursStart || '09:00';
+            const end   = businessConfig?.workHoursEnd   || '18:00';
+            const [sh, sm] = start.split(':').map(Number);
+            const [eh, em] = end.split(':').map(Number);
+            count = Math.floor(((eh * 60 + em) - (sh * 60 + sm)) / slotDuration);
+        }
+        return count;
+    }
+
     // Verificar si un día tiene disponibilidad
     async function checkDayAvailability(dateStr) {
         try {
@@ -2107,16 +2133,20 @@
             const data = await response.json();
 
             if (data.success && data.slots) {
-                // Verificar si TODOS los slots están llenos
-                const allSlotsFull = Object.keys(data.slots).length > 0 &&
-                    Object.values(data.slots).every(slot => {
-                        // Si tiene zonas, verificar que TODAS estén llenas
-                        if (slot.zones) {
-                            return Object.values(slot.zones).every(zone => zone.percentage >= 100);
-                        }
-                        // Si no tiene zonas, verificar el porcentaje general
-                        return slot.percentage >= 100;
-                    });
+                // Contar slots llenos en la respuesta
+                const fullSlotsInResponse = Object.values(data.slots).filter(slot => {
+                    if (slot.zones) {
+                        return Object.values(slot.zones).every(zone => zone.percentage >= 100);
+                    }
+                    return slot.percentage >= 100;
+                }).length;
+
+                // Solo marcar el día como lleno si TODOS los slots configurados están llenos.
+                // La API solo devuelve slots con reservas, por lo que hay que comparar
+                // contra el total de slots del horario — si hay slots sin reservas no aparecen
+                // y significa que están disponibles.
+                const totalConfigured = getConfiguredSlotCountForDate(dateStr);
+                const allSlotsFull = totalConfigured > 0 && fullSlotsInResponse >= totalConfigured;
 
                 if (allSlotsFull) {
                     calendarNoAvailabilityDays.add(dateStr);
