@@ -2111,7 +2111,8 @@
         if (scheduleType === 'multiple' && businessConfig?.shifts) {
             businessConfig.shifts.forEach(shift => {
                 if (!shift.enabled) return;
-                if (!shift.days || !shift.days.includes(dayOfWeek)) return;
+                const activeDays = shift.activeDays || [1, 2, 3, 4, 5, 6, 7];
+                if (!activeDays.includes(dayOfWeek)) return;
                 const [sh, sm] = (shift.startTime || '09:00').split(':').map(Number);
                 const [eh, em] = (shift.endTime   || '18:00').split(':').map(Number);
                 count += Math.floor(((eh * 60 + em) - (sh * 60 + sm)) / slotDuration);
