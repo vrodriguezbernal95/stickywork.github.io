@@ -2142,12 +2142,10 @@
                     return slot.percentage >= 100;
                 }).length;
 
-                // Solo marcar el día como lleno si TODOS los slots configurados están llenos.
-                // La API solo devuelve slots con reservas, por lo que hay que comparar
-                // contra el total de slots del horario — si hay slots sin reservas no aparecen
-                // y significa que están disponibles.
                 const totalConfigured = getConfiguredSlotCountForDate(dateStr);
                 const allSlotsFull = totalConfigured > 0 && fullSlotsInResponse >= totalConfigured;
+
+                console.log(`🗓️ [SW avail] ${dateStr}: slots_api=${Object.keys(data.slots).length}, llenos=${fullSlotsInResponse}, configurados=${totalConfigured}, allFull=${allSlotsFull}`, data.slots);
 
                 if (allSlotsFull) {
                     calendarNoAvailabilityDays.add(dateStr);
