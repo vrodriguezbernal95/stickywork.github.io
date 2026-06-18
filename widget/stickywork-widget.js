@@ -2145,8 +2145,6 @@
                 const totalConfigured = getConfiguredSlotCountForDate(dateStr);
                 const allSlotsFull = totalConfigured > 0 && fullSlotsInResponse >= totalConfigured;
 
-                console.log(`🗓️ [SW avail] ${dateStr}: slots_api=${Object.keys(data.slots).length}, llenos=${fullSlotsInResponse}, configurados=${totalConfigured}, allFull=${allSlotsFull}`, data.slots);
-
                 if (allSlotsFull) {
                     calendarNoAvailabilityDays.add(dateStr);
                 }
