@@ -1209,8 +1209,10 @@ const bookings = {
     },
 
     // Show reschedule modal
-    showRescheduleModal(bookingId) {
-        const booking = this.allBookings.find(b => b.id === bookingId);
+    // Se usa desde Reservas y desde el Calendario: allBookings = lista donde buscar la cita y conflictos,
+    // onDone(nuevaFecha) = qué recargar después de guardar
+    showRescheduleModal(bookingId, allBookings = this.allBookings, onDone = () => this.load()) {
+        const booking = allBookings.find(b => b.id === bookingId);
         if (!booking) return;
 
         // Create modal
@@ -1261,6 +1263,15 @@ const bookings = {
                         <input type="time" id="rescheduleTime" value="${currentTime}"
                                style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; background: rgba(0, 0, 0, 0.2); color: var(--text-primary); font-size: 1rem; box-sizing: border-box;">
                     </div>
+
+                    <div id="rescheduleConflict" style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; font-size: 0.9rem;"></div>
+
+                    ${booking.customer_email ? `
+                    <label style="display: flex; align-items: center; gap: 0.6rem; margin-top: 1.25rem; cursor: pointer; color: var(--text-primary);">
+                        <input type="checkbox" id="rescheduleNotify" checked style="width: 18px; height: 18px; cursor: pointer;">
+                        Avisar al cliente por email
+                    </label>
+                    ` : ''}
                 </div>
 
                 <div style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 0.75rem; justify-content: flex-end;">
@@ -1284,38 +1295,67 @@ const bookings = {
             if (e.target === overlay) cleanup();
         });
 
+        // Aviso (no bloquea) si ya hay otra cita a esa fecha y hora
+        const checkConflict = () => {
+            const date = document.getElementById('rescheduleDate').value;
+            const time = document.getElementById('rescheduleTime').value;
+            const others = allBookings.filter(b =>
+                b.id !== bookingId &&
+                b.status !== 'cancelled' &&
+                b.booking_date.startsWith(date) &&
+                b.booking_time.substring(0, 5) === time
+            );
+            const box = document.getElementById('rescheduleConflict');
+            if (others.length > 0) {
+                box.innerHTML = `⚠️ Ya hay ${others.length} cita${others.length > 1 ? 's' : ''} a esa hora (${others.map(b => b.customer_name).join(', ')}). Puedes guardar igualmente.`;
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        };
+        document.getElementById('rescheduleDate').addEventListener('change', checkConflict);
+        document.getElementById('rescheduleTime').addEventListener('change', checkConflict);
+
         document.getElementById('rescheduleConfirmBtn').addEventListener('click', async () => {
             const newDate = document.getElementById('rescheduleDate').value;
             const newTime = document.getElementById('rescheduleTime').value;
+            const notifyCustomer = document.getElementById('rescheduleNotify')?.checked || false;
+
+            if (!newDate || !newTime) {
+                modal.toast({ message: 'Indica fecha y hora', type: 'error' });
+                return;
+            }
 
             document.getElementById('rescheduleConfirmBtn').disabled = true;
             document.getElementById('rescheduleConfirmBtn').textContent = 'Guardando...';
 
-            await this.rescheduleBooking(bookingId, newDate, newTime + ':00');
+            const ok = await this.rescheduleBooking(bookingId, newDate, newTime + ':00', notifyCustomer);
             cleanup();
+            if (ok) onDone(newDate);
         });
     },
 
     // Reschedule booking API call
-    async rescheduleBooking(bookingId, newDate, newTime) {
+    async rescheduleBooking(bookingId, newDate, newTime, notifyCustomer = false) {
         try {
             await api.patch(`/api/booking/${bookingId}/reschedule`, {
                 booking_date: newDate,
-                booking_time: newTime
+                booking_time: newTime,
+                notify_customer: notifyCustomer
             });
 
             modal.toast({
-                message: 'Cita reprogramada correctamente',
+                message: notifyCustomer ? 'Cita reprogramada y cliente avisado' : 'Cita reprogramada correctamente',
                 type: 'success'
             });
-
-            this.load(); // Reload bookings
+            return true;
         } catch (error) {
             console.error('Error rescheduling booking:', error);
             modal.toast({
                 message: `Error al reprogramar: ${error.message}`,
                 type: 'error'
             });
+            return false;
         }
     }
 };

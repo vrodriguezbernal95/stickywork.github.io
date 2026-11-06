@@ -100,11 +100,43 @@ async function verifyEmailService() {
     }
 }
 
+// Textos del email de reserva al cliente según su estado
+const BOOKING_EMAIL_VARIANTS = {
+    confirmed: {
+        icon: '✅',
+        subject: 'Reserva Confirmada',
+        title: '¡Reserva Confirmada!',
+        intro: 'Tu reserva ha sido confirmada. A continuación encontrarás los detalles:'
+    },
+    pending: {
+        icon: '⏳',
+        subject: 'Solicitud de Reserva Recibida',
+        title: 'Solicitud Recibida',
+        intro: 'Hemos recibido tu solicitud de cita. El negocio la revisará y te enviaremos otro email cuando sea aceptada.'
+    },
+    rescheduled: {
+        icon: '📅',
+        subject: 'Cita Modificada',
+        title: 'Tu cita ha cambiado',
+        intro: 'Tu cita ha sido modificada. Estos son los nuevos datos:'
+    },
+    rejected: {
+        icon: '❌',
+        subject: 'Cita No Disponible',
+        title: 'Tu cita no ha podido confirmarse',
+        intro: 'Lo sentimos, la cita que solicitaste no ha podido ser aceptada o ha sido cancelada por el negocio.'
+    }
+};
+
 // Email templates
 const emailTemplates = {
     // Booking confirmation email to customer
-    bookingConfirmation: (booking, business) => ({
-        subject: `✅ Confirmación de Reserva - ${business.name}`,
+    // variant: 'confirmed' (por defecto), 'pending' (pendiente de que el negocio la acepte) o 'rejected'
+    bookingConfirmation: (booking, business, variant = 'confirmed') => {
+        const v = BOOKING_EMAIL_VARIANTS[variant] || BOOKING_EMAIL_VARIANTS.confirmed;
+        const rebookUrl = business.website || `https://stickywork.com/reservar?n=${business.slug}`;
+        return {
+        subject: `${v.icon} ${v.subject} - ${business.name}`,
         html: `
 <!DOCTYPE html>
 <html>
@@ -131,16 +163,28 @@ const emailTemplates = {
 <body>
     <div class="container">
         <div class="header">
-            <div class="icon">✅</div>
-            <h1>¡Reserva Confirmada!</h1>
+            <div class="icon">${v.icon}</div>
+            <h1>${v.title}</h1>
         </div>
 
         <div class="content">
             <p>Hola <strong>${booking.customer_name}</strong>,</p>
-            <p>Tu reserva ha sido confirmada exitosamente. A continuación encontrarás los detalles:</p>
+            <p>${v.intro}</p>
+
+            ${variant === 'pending' ? `
+            <div style="background: #fff7ed; border-left: 4px solid #f59e0b; padding: 15px 20px; margin: 20px 0; border-radius: 8px;">
+                <strong>⚠️ Importante:</strong> tu cita aún no está confirmada. Por favor, no acudas hasta recibir el email de confirmación de ${business.name}.
+            </div>
+            ` : ''}
+
+            ${variant === 'rejected' && booking.cancellation_reason ? `
+            <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px 20px; margin: 20px 0; border-radius: 8px;">
+                <strong>Motivo:</strong> ${booking.cancellation_reason}
+            </div>
+            ` : ''}
 
             <div class="booking-details">
-                <h2>Detalles de tu Reserva</h2>
+                <h2>${variant === 'rejected' ? 'Cita solicitada' : 'Detalles de tu Reserva'}</h2>
 
                 <div class="detail-row">
                     <span class="detail-label">📍 Negocio:</span>
@@ -186,6 +230,15 @@ const emailTemplates = {
             <p style="margin: 5px 0;">${business.address}</p>
             ` : ''}
 
+            ${variant === 'rejected' ? `
+            <div style="text-align: center; margin-top: 30px;">
+                <p style="margin-bottom: 15px;"><strong>📅 ¿Quieres elegir otro día u hora?</strong></p>
+                <a href="${rebookUrl}"
+                   style="display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Reservar de nuevo
+                </a>
+            </div>
+            ` : `
             <div style="text-align: center; margin-top: 30px;">
                 <p style="margin-bottom: 15px;"><strong>📋 ¿Necesitas hacer cambios?</strong></p>
                 <a href="https://stickywork.com/gestionar-reserva.html?token=${booking.manage_token}"
@@ -195,6 +248,7 @@ const emailTemplates = {
                 <p style="margin-top: 12px; font-size: 13px; color: #999;">
                     Puedes ver los detalles o cancelar tu reserva desde este enlace
                 </p>
+            `}
             </div>
         </div>
 
@@ -208,7 +262,8 @@ const emailTemplates = {
 </body>
 </html>
         `
-    }),
+        };
+    },
 
     // Booking reminder (24 hours before)
     bookingReminder: (booking, business) => ({
@@ -1350,16 +1405,19 @@ function generateICS(booking, business) {
 }
 
 // Send booking confirmation
-async function sendBookingConfirmation(booking, business) {
-    const template = emailTemplates.bookingConfirmation(booking, business);
+// variant: 'confirmed' | 'pending' | 'rescheduled' | 'rejected'
+async function sendBookingConfirmation(booking, business, variant = 'confirmed') {
+    const template = emailTemplates.bookingConfirmation(booking, business, variant);
 
-    // Generar adjunto .ics
-    const icsContent = generateICS(booking, business);
-    template.attachments = [{
-        filename: 'reserva.ics',
-        content: icsContent,
-        contentType: 'text/calendar'
-    }];
+    // Adjunto .ics solo cuando la cita tiene fecha en firme
+    if (variant === 'confirmed' || variant === 'rescheduled') {
+        const icsContent = generateICS(booking, business);
+        template.attachments = [{
+            filename: 'reserva.ics',
+            content: icsContent,
+            contentType: 'text/calendar'
+        }];
+    }
 
     return await sendEmail(booking.customer_email, template);
 }

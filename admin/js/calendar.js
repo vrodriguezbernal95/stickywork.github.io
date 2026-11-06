@@ -372,6 +372,14 @@ const calendar = {
                                         </div>
                                     ` : ''}
                                 </div>
+
+                                ${['cancelled', 'completed', 'no_show'].includes(booking.status) ? '' : `
+                                    <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+                                        <button class="btn-small" onclick="calendar.reschedule(${booking.id})" style="padding: 0.5rem 1rem;">
+                                            📅 Cambiar fecha/hora
+                                        </button>
+                                    </div>
+                                `}
                             </div>
                         `).join('')}
                     </div>
@@ -456,6 +464,17 @@ const calendar = {
         this.currentDate = date;
         this.currentView = 'day';
         this.render();
+    },
+
+    // Cambiar fecha/hora de una cita (reutiliza el modal del módulo de Reservas)
+    reschedule(bookingId) {
+        bookings.showRescheduleModal(bookingId, this.bookings, (newDate) => {
+            // Ir al día al que se ha movido la cita (fecha construida a mano, sin toISOString)
+            const [y, m, d] = newDate.split('-').map(Number);
+            this.currentDate = new Date(y, m - 1, d);
+            this.currentView = 'day';
+            this.load();
+        });
     }
 };
 

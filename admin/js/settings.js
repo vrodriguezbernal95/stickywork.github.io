@@ -1479,6 +1479,18 @@ const settings = {
 
                 <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
                     <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="require-confirmation"
+                               ${business.booking_settings?.requireConfirmation === true ? 'checked' : ''}
+                               style="width: 20px; height: 20px; cursor: pointer;">
+                        <span>
+                            <strong>🤝 Confirmar cada reserva manualmente</strong>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">El cliente recibe "solicitud pendiente" al reservar, y otro email cuando confirmes o canceles la cita desde Reservas</p>
+                        </span>
+                    </label>
+                </div>
+
+                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
+                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
                         <input type="checkbox" id="notify-reminders"
                                ${(business.booking_settings?.reminders_enabled !== false) ? 'checked' : ''}
                                style="width: 20px; height: 20px; cursor: pointer;">
@@ -1859,6 +1871,7 @@ const settings = {
         const notifyCancelled = document.getElementById('notify-cancelled').checked;
         const notifyModified = document.getElementById('notify-modified').checked;
         const notifyReminders = document.getElementById('notify-reminders').checked;
+        const requireConfirmation = document.getElementById('require-confirmation').checked;
         const notifyDailySummary = document.getElementById('notify-daily-summary').checked;
 
         // WhatsApp settings
@@ -1903,9 +1916,9 @@ const settings = {
             // Guardar preferencia de recordatorios automáticos en booking_settings
             const currentBookingSettings = this.businessData?.booking_settings || {};
             await api.put(`/api/business/${this.userData.business_id}/settings`, {
-                bookingSettings: { ...currentBookingSettings, reminders_enabled: notifyReminders }
+                bookingSettings: { ...currentBookingSettings, reminders_enabled: notifyReminders, requireConfirmation }
             });
-            this.businessData.booking_settings = { ...currentBookingSettings, reminders_enabled: notifyReminders };
+            this.businessData.booking_settings = { ...currentBookingSettings, reminders_enabled: notifyReminders, requireConfirmation };
 
             this.businessData.email = email;
             this.businessData.whatsapp_enabled = whatsappEnabled;

@@ -1027,6 +1027,33 @@ router.delete('/api/customers/:businessId/:customerId', requireAuth, requireBusi
     }
 });
 
+// ¿El negocio acepta cada reserva a mano? (Configuración > Notificaciones)
+function requiresManualConfirmation(business) {
+    let settings = business?.booking_settings || {};
+    if (typeof settings === 'string') {
+        try { settings = JSON.parse(settings); } catch (e) { settings = {}; }
+    }
+    return settings.requireConfirmation === true;
+}
+
+// Email al cliente cuando el negocio confirma o cancela su cita
+async function notifyCustomerStatusChange(booking, status) {
+    if (!booking.customer_email) return;
+
+    const businessRows = await db.query('SELECT * FROM businesses WHERE id = ?', [booking.business_id]);
+    const business = businessRows[0];
+    if (!business || !requiresManualConfirmation(business)) return;
+
+    const serviceRows = booking.service_id
+        ? await db.query('SELECT name FROM services WHERE id = ?', [booking.service_id])
+        : [];
+    const bookingData = { ...booking, service_name: serviceRows[0]?.name || null };
+
+    const variant = status === 'confirmed' ? 'confirmed' : 'rejected';
+    await emailService.sendBookingConfirmation(bookingData, business, variant);
+    console.log(`✓ Email "${variant}" enviado al cliente de la reserva ${booking.id}`);
+}
+
 /**
  * POST /api/customers/:businessId/sync
  * Sincronizar clientes desde reservas existentes
@@ -1910,8 +1937,9 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
 
         // Enviar emails de confirmación (asíncrono, no bloqueante)
         if (businessData) {
-            // Email de confirmación al cliente
-            emailService.sendBookingConfirmation(bookingData, businessData)
+            // Email al cliente: "pendiente" si el negocio confirma manualmente, si no "confirmada"
+            const emailVariant = requiresManualConfirmation(businessData) ? 'pending' : 'confirmed';
+            emailService.sendBookingConfirmation(bookingData, businessData, emailVariant)
                 .then(() => console.log('✓ Email de confirmación enviado al cliente'))
                 .catch(err => console.error('✗ Error enviando email al cliente:', err.message));
 
@@ -2114,6 +2142,9 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
             });
         }
 
+        const previous = await db.query('SELECT status FROM bookings WHERE id = ?', [id]);
+        const previousStatus = previous[0]?.status;
+
         // Si se está cancelando, guardar información de cancelación incluyendo quién canceló
         if (status === 'cancelled') {
             // Obtener nombre del usuario que cancela
@@ -2141,6 +2172,12 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
         }
 
         const booking = await db.query('SELECT * FROM bookings WHERE id = ?', [id]);
+
+        // Avisar al cliente si el negocio acepta o rechaza la cita (solo negocios con confirmación manual)
+        if (booking[0] && status !== previousStatus && (status === 'confirmed' || status === 'cancelled')) {
+            notifyCustomerStatusChange(booking[0], status)
+                .catch(err => console.error('✗ Error enviando email de cambio de estado:', err.message));
+        }
 
         // Auto-degradar cliente a "riesgo" si acumula 3+ no_shows
         if (status === 'no_show' && booking[0]) {
@@ -2331,7 +2368,7 @@ router.post('/api/booking/:id/repeat', requireAuth, async (req, res) => {
 router.patch('/api/booking/:id/reschedule', requireAuth, async (req, res) => {
     try {
         const { id } = req.params;
-        const { booking_date, booking_time } = req.body;
+        const { booking_date, booking_time, notify_customer } = req.body;
 
         if (!booking_date && !booking_time) {
             return res.status(400).json({
@@ -2376,6 +2413,9 @@ router.patch('/api/booking/:id/reschedule', requireAuth, async (req, res) => {
             params.push(booking_time);
         }
 
+        // Nueva fecha/hora → el recordatorio de 24h debe volver a enviarse
+        updates.push('reminder_sent = FALSE');
+
         params.push(id);
 
         await db.query(
@@ -2385,9 +2425,20 @@ router.patch('/api/booking/:id/reschedule', requireAuth, async (req, res) => {
 
         // Obtener reserva actualizada
         const updatedBooking = await db.query(
-            'SELECT * FROM bookings WHERE id = ?',
+            `SELECT b.*, s.name as service_name
+             FROM bookings b
+             LEFT JOIN services s ON b.service_id = s.id
+             WHERE b.id = ?`,
             [id]
         );
+
+        // Avisar al cliente del cambio (opcional, desde el panel)
+        if (notify_customer && updatedBooking[0]?.customer_email) {
+            db.query('SELECT * FROM businesses WHERE id = ?', [original.business_id])
+                .then(rows => rows[0] && emailService.sendBookingConfirmation(updatedBooking[0], rows[0], 'rescheduled'))
+                .then(() => console.log(`✓ Email "rescheduled" enviado al cliente de la reserva ${id}`))
+                .catch(err => console.error('✗ Error enviando email de cita modificada:', err.message));
+        }
 
         res.json({
             success: true,
