@@ -4,6 +4,77 @@ const dashboard = {
     businessSettings: {}, // Store business settings including WhatsApp config
 
     // Load dashboard with stats and recent bookings
+    // Reservas futuras que el negocio aún no ha aceptado (solo si usa la confirmación manual)
+    renderPendingConfirmations(allBookings, today) {
+        if (this.bookingSettings?.requireConfirmation !== true) return '';
+
+        const pending = allBookings
+            .filter(b => b.status === 'pending' && b.booking_date.substring(0, 10) >= today)
+            .sort((a, b) => (a.booking_date.substring(0, 10) + a.booking_time).localeCompare(b.booking_date.substring(0, 10) + b.booking_time));
+
+        if (pending.length === 0) return '';
+
+        const formatDate = (dateStr) => {
+            // Fecha construida a mano (sin toISOString) para evitar el desfase de zona horaria
+            const [y, m, d] = dateStr.substring(0, 10).split('-').map(Number);
+            return new Date(y, m - 1, d).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+        };
+        const shown = pending.slice(0, 8);
+
+        return `
+            <div class="pending-confirm">
+                <div class="pending-confirm-header">
+                    <h3>⏳ Pendientes de confirmar <span class="pending-confirm-count">${pending.length}</span></h3>
+                    <p>Estos clientes esperan tu respuesta. Al confirmar o rechazar, les llega un email.</p>
+                </div>
+                ${shown.map(b => `
+                    <div class="pending-confirm-row">
+                        <div class="pending-confirm-when">
+                            <strong>${formatDate(b.booking_date)}</strong>
+                            <span>${b.booking_time.substring(0, 5)}</span>
+                        </div>
+                        <div class="pending-confirm-who">
+                            <strong>${b.customer_name}</strong>
+                            <span>${b.service_name || ''}${b.customer_phone ? ` · ${b.customer_phone}` : ''}</span>
+                        </div>
+                        <div class="pending-confirm-actions">
+                            <button class="pending-btn-ok" onclick="dashboard.confirmPending(${b.id})">✓ Confirmar</button>
+                            <button class="pending-btn-no" onclick="dashboard.rejectPending(${b.id})">✕ Rechazar</button>
+                        </div>
+                    </div>
+                `).join('')}
+                ${pending.length > shown.length ? `
+                    <div class="pending-confirm-more">
+                        y ${pending.length - shown.length} más · <a href="#" onclick="app.navigateTo('bookings'); return false;">Ver todas en Reservas</a>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    },
+
+    async confirmPending(bookingId) {
+        try {
+            await api.patch(`/api/booking/${bookingId}`, { status: 'confirmed' });
+            modal.toast({ message: 'Reserva confirmada. El cliente recibirá un email.', type: 'success' });
+            this.load();
+        } catch (error) {
+            modal.toast({ message: `Error al confirmar: ${error.message}`, type: 'error' });
+        }
+    },
+
+    async rejectPending(bookingId) {
+        // Misma ventana que en Reservas, con el motivo opcional que verá el cliente
+        const result = await bookings.showCancelModal(bookingId);
+        if (!result) return;
+        try {
+            await api.patch(`/api/booking/${bookingId}`, { status: 'cancelled', cancellation_reason: result.reason });
+            modal.toast({ message: 'Reserva rechazada. El cliente recibirá un email.', type: 'success' });
+            this.load();
+        } catch (error) {
+            modal.toast({ message: `Error al rechazar: ${error.message}`, type: 'error' });
+        }
+    },
+
     // Aviso cuando el plan tiene límite de reservas y se está acercando o lo ha alcanzado
     renderPlanUsageBanner(planInfo) {
         const limit = planInfo?.limits?.maxBookingsPerMonth;
@@ -105,6 +176,9 @@ const dashboard = {
             contentArea.innerHTML = `
                 <!-- Aviso de límite de reservas del plan -->
                 ${this.renderPlanUsageBanner(this.planInfo)}
+
+                <!-- Reservas pendientes de confirmar (solo negocios con confirmación manual) -->
+                ${this.renderPendingConfirmations(allBookings, today)}
 
                 <!-- 4 Action Boxes -->
                 ${this.renderActionBoxes(todayBookings)}
@@ -2038,6 +2112,26 @@ window.dashboard = dashboard;
             border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
         }
         .plan-usage-text { color: var(--text-primary); line-height: 1.5; flex: 1; min-width: 220px; }
+        .pending-confirm {
+            background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: 4px solid #f59e0b;
+            border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
+        }
+        .pending-confirm-header h3 { margin: 0; font-size: 1.15rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; }
+        .pending-confirm-header p { margin: 0.35rem 0 0.75rem; color: var(--text-secondary); font-size: 0.9rem; }
+        .pending-confirm-count { background: #f59e0b; color: #fff; border-radius: 999px; padding: 0.1rem 0.6rem; font-size: 0.85rem; }
+        .pending-confirm-row {
+            display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+            padding: 0.75rem 0; border-top: 1px solid var(--border-color);
+        }
+        .pending-confirm-when { display: flex; flex-direction: column; min-width: 90px; color: var(--text-primary); }
+        .pending-confirm-when span, .pending-confirm-who span { color: var(--text-secondary); font-size: 0.85rem; }
+        .pending-confirm-who { display: flex; flex-direction: column; flex: 1; min-width: 160px; color: var(--text-primary); }
+        .pending-confirm-actions { display: flex; gap: 0.5rem; }
+        .pending-confirm-actions button { border: none; border-radius: 8px; padding: 0.5rem 0.9rem; font-weight: 600; cursor: pointer; }
+        .pending-btn-ok { background: #22c55e; color: #fff; }
+        .pending-btn-no { background: transparent; color: #ef4444; border: 1px solid #ef4444 !important; }
+        .pending-confirm-more { padding-top: 0.75rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.9rem; }
+        .pending-confirm-more a { color: var(--primary-color); }
         .plan-usage-btn {
             background: var(--primary-color); color: #fff; border: none; border-radius: 8px;
             padding: 0.6rem 1.2rem; font-weight: 600; cursor: pointer; white-space: nowrap;

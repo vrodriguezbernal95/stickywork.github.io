@@ -45,12 +45,12 @@
             titleWorkshop: 'Reserva tu Taller',
             name: 'Nombre completo',
             email: 'Email',
-            phone: 'Telefono',
+            phone: 'Teléfono',
             service: 'Servicio',
             selectService: 'Selecciona un servicio',
             professional: 'Profesional',
             selectProfessional: 'Cualquier profesional',
-            numPeople: 'Numero de personas',
+            numPeople: 'Número de personas',
             zone: 'Zona preferida',
             selectZone: 'Sin preferencia',
             class: 'Clase',
@@ -67,25 +67,27 @@
             time: 'Hora',
             selectTime: 'Selecciona una hora',
             notes: 'Notas adicionales',
-            notesPlaceholder: 'Alguna peticion especial...',
+            notesPlaceholder: '¿Alguna petición especial?',
             whatsappConsent: 'Quiero recibir confirmación de mi reserva por WhatsApp (opcional)',
             whatsappPrivacyNote: 'Al marcar esta casilla, consientes que te contactemos vía WhatsApp.',
             privacyPolicy: 'Política de privacidad',
             submit: 'Reservar',
-            success: 'Reserva Confirmada!',
-            successMessage: 'Recibiras un email de confirmacion en breve',
-            newBooking: 'Nueva Reserva',
-            demoNote: 'Demo - En produccion se guardara en tu base de datos',
+            success: '¡Reserva confirmada!',
+            successMessage: 'Recibirás un email de confirmación en breve',
+            successPending: '¡Solicitud enviada!',
+            successPendingMessage: 'Tu cita aún no está confirmada. Te enviaremos un email cuando el negocio la acepte. Por favor, no acudas hasta recibirlo.',
+            newBooking: 'Nueva reserva',
+            demoNote: 'Demo: en producción se guardará en tu base de datos',
             loading: 'Cargando...',
-            error: 'Error al cargar. Intentalo de nuevo.',
+            error: 'Error al cargar. Inténtalo de nuevo.',
             people: 'personas',
             person: 'persona',
             minutes: 'min',
             spots: 'plazas',
             free: 'Gratis',
             adults: 'Adultos',
-            children: 'Ninos',
-            childrenAge: 'anos'
+            children: 'Niños',
+            childrenAge: 'años'
         },
         en: {
             title: 'Book Your Appointment',
@@ -123,6 +125,8 @@
             submit: 'Book Now',
             success: 'Booking Confirmed!',
             successMessage: 'You will receive a confirmation email shortly',
+            successPending: 'Request sent!',
+            successPendingMessage: 'Your appointment is not confirmed yet. We will email you once the business accepts it. Please do not come until you receive it.',
             newBooking: 'New Booking',
             demoNote: 'Demo - In production it will save to your database',
             loading: 'Loading...',
@@ -1794,13 +1798,16 @@
             `;
         }
 
+        // El negocio confirma cada reserva a mano: la cita queda pendiente (no aplica a talleres)
+        const pendingConfirmation = config.requireConfirmation === true && !isWorkshopBooking;
+
         return `
             <div class="stickywork-widget">
                 <div class="stickywork-success">
-                    <div class="stickywork-success-icon">✓</div>
-                    <h3 class="stickywork-success-title">${t.success}</h3>
+                    <div class="stickywork-success-icon">${pendingConfirmation ? '⏳' : '✓'}</div>
+                    <h3 class="stickywork-success-title">${pendingConfirmation ? t.successPending : t.success}</h3>
                     <div class="stickywork-success-details">${details}</div>
-                    <p class="stickywork-success-message">${t.successMessage}</p>
+                    <p class="stickywork-success-message">${pendingConfirmation ? t.successPendingMessage : t.successMessage}</p>
                     <button onclick="StickyWork.reset()" class="stickywork-button">${t.newBooking}</button>
                 </div>
             </div>

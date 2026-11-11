@@ -3206,7 +3206,9 @@ router.get('/api/widget/:businessId', async (req, res) => {
             restaurantZones, // Zonas configurables desde dashboard (Terraza, Interior, etc.)
             classes,
             // Configuración de diferenciación adultos/niños (para restaurantes principalmente)
-            childrenSettings: bookingSettings.childrenSettings || null
+            childrenSettings: bookingSettings.childrenSettings || null,
+            // El negocio confirma cada reserva a mano → el widget muestra "Solicitud enviada"
+            requireConfirmation: bookingSettings.requireConfirmation === true
         });
     } catch (error) {
         console.error('Error obteniendo config del widget:', error);

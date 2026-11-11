@@ -15,6 +15,7 @@ const routes = require('./backend/routes');
 const emailService = require('./backend/email-service');
 const { marcarFeedbacksPendientes } = require('./backend/jobs/enviar-feedback');
 const { enviarRecordatoriosCitas } = require('./backend/jobs/enviar-recordatorios');
+const { completarCitasPasadas } = require('./backend/jobs/completar-citas');
 
 // Función para ejecutar migraciones MySQL
 async function runMigrations() {
@@ -221,6 +222,8 @@ async function startServer() {
             // Configurar cron job para marcar feedbacks pendientes
             // Ejecutar cada hora
             cron.schedule('0 * * * *', async () => {
+                // Primero completar las citas que ya pasaron, para que el job de feedback las encuentre
+                await completarCitasPasadas(db);
                 console.log('⏰ [Cron] Ejecutando job de marcado de feedbacks pendientes...');
                 try {
                     await marcarFeedbacksPendientes(db);
