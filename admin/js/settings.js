@@ -879,6 +879,9 @@ const settings = {
     switchTab(tabName) {
         this.currentTab = tabName;
 
+        // Checklist de primeros pasos: abrir Horarios cuenta como "revisar horario"
+        if (tabName === 'schedule' && window.dashboard) dashboard.markOnboarding('scheduleReviewed');
+
         // Update tab buttons
         document.querySelectorAll('.settings-tab').forEach(tab => {
             tab.classList.remove('active');

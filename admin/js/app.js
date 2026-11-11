@@ -57,6 +57,9 @@ const app = {
     async navigateTo(section) {
         const contentArea = document.getElementById('contentArea');
 
+        // Checklist de primeros pasos: abrir Servicios cuenta como "revisar servicios"
+        if (section === 'services' && window.dashboard) dashboard.markOnboarding('servicesReviewed');
+
         // Marcar en el menú la sección activa (también cuando se navega desde código, no solo con clic)
         const menuLink = document.querySelector(`.sidebar-link[data-section="${section}"]`);
         if (menuLink) {

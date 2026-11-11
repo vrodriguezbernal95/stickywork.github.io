@@ -3385,6 +3385,91 @@ router.get('/api/business/:id/plan', requireAuth, async (req, res) => {
 });
 
 /**
+ * Checklist de inicio del dashboard
+ * GET   /api/business/:id/onboarding  → estado de los 5 pasos
+ * PATCH /api/business/:id/onboarding  → { flag } marca un paso manual o "dismissed" (ocultar)
+ * Las marcas se guardan en booking_settings.onboarding (sin columna nueva).
+ */
+const ONBOARDING_FLAGS = ['servicesReviewed', 'scheduleReviewed', 'linkShared', 'dismissed'];
+
+router.get('/api/business/:id/onboarding', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (req.user.businessId != id) {
+            return res.status(403).json({ success: false, message: 'No tienes acceso a este negocio' });
+        }
+        const rows = await db.query(
+            `SELECT b.slug, b.booking_settings, b.widget_customization,
+                    (SELECT COUNT(*) FROM bookings WHERE business_id = b.id) AS total_bookings
+             FROM businesses b WHERE b.id = ?`,
+            [id]
+        );
+        if (rows.length === 0) return res.status(404).json({ success: false, message: 'Negocio no encontrado' });
+
+        const b = rows[0];
+        let settings = b.booking_settings || {};
+        if (typeof settings === 'string') { try { settings = JSON.parse(settings); } catch (e) { settings = {}; } }
+        const flags = settings.onboarding || {};
+        let customization = b.widget_customization;
+        if (typeof customization === 'string') { try { customization = JSON.parse(customization); } catch (e) { customization = null; } }
+        const totalBookings = Number(b.total_bookings) || 0;
+
+        const steps = {
+            services: !!flags.servicesReviewed,
+            schedule: !!flags.scheduleReviewed,
+            widget: !!(customization && Object.keys(customization).length > 0),
+            link: !!flags.linkShared,
+            firstBooking: totalBookings > 0
+        };
+        const done = Object.values(steps).filter(Boolean).length;
+
+        res.json({
+            success: true,
+            data: {
+                steps,
+                done,
+                total: Object.keys(steps).length,
+                flags,
+                slug: b.slug,
+                // Solo para negocios que están empezando: no molestar a quien ya trabaja con StickyWork
+                show: !flags.dismissed && done < Object.keys(steps).length && totalBookings < 5
+            }
+        });
+    } catch (error) {
+        console.error('Error obteniendo onboarding:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener el progreso' });
+    }
+});
+
+router.patch('/api/business/:id/onboarding', requireAuth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { flag } = req.body;
+        if (req.user.businessId != id) {
+            return res.status(403).json({ success: false, message: 'No tienes acceso a este negocio' });
+        }
+        if (!ONBOARDING_FLAGS.includes(flag)) {
+            return res.status(400).json({ success: false, message: 'Paso no válido' });
+        }
+        // JSON_SET en el servidor: no pisa el resto de booking_settings
+        await db.query(
+            `UPDATE businesses
+             SET booking_settings = JSON_SET(
+                 COALESCE(booking_settings, JSON_OBJECT()),
+                 '$.onboarding',
+                 JSON_SET(COALESCE(JSON_EXTRACT(booking_settings, '$.onboarding'), JSON_OBJECT()), CONCAT('$.', ?), true)
+             )
+             WHERE id = ?`,
+            [flag, id]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error guardando onboarding:', error);
+        res.status(500).json({ success: false, message: 'Error al guardar el progreso' });
+    }
+});
+
+/**
  * PUT /api/business/:id
  * Actualizar información básica del negocio (requiere owner o admin)
  */
@@ -3413,7 +3498,8 @@ router.put('/api/business/:id', requireAuth, requireRole('owner', 'admin'), asyn
         if (booking_settings !== undefined) {
             await db.query(
                 `UPDATE businesses
-                 SET name = ?, email = ?, phone = ?, address = ?, website = ?, booking_settings = ?
+                 SET name = ?, email = ?, phone = ?, address = ?, website = ?,
+                     booking_settings = JSON_SET(CAST(? AS JSON), '$.onboarding', COALESCE(JSON_EXTRACT(booking_settings, '$.onboarding'), JSON_OBJECT()))
                  WHERE id = ?`,
                 [name, email, phone || null, address || null, website || null,
                  JSON.stringify(booking_settings), id]
@@ -3608,7 +3694,8 @@ router.put('/api/business/:businessId/settings', requireAuth, requireRole('owner
                 }
             }
 
-            updates.push('booking_settings = ?');
+            // Conservar el progreso del checklist de inicio (lo gestiona su propio endpoint)
+            updates.push(`booking_settings = JSON_SET(CAST(? AS JSON), '$.onboarding', COALESCE(JSON_EXTRACT(booking_settings, '$.onboarding'), JSON_OBJECT()))`);
             params.push(JSON.stringify(bookingSettings));
             console.log('📝 JSON a guardar:', JSON.stringify(bookingSettings));
         }

@@ -4,6 +4,91 @@ const dashboard = {
     businessSettings: {}, // Store business settings including WhatsApp config
 
     // Load dashboard with stats and recent bookings
+    // ===== Checklist de primeros pasos =====
+    publicBookingUrl(slug) {
+        return `https://stickywork.com/reservar?n=${slug}`;
+    },
+
+    renderOnboardingChecklist(ob) {
+        if (!ob || !ob.show) return '';
+        const pct = Math.round((ob.done / ob.total) * 100);
+        const url = this.publicBookingUrl(ob.slug);
+
+        const step = (done, title, desc, action) => `
+            <div class="onb-step ${done ? 'done' : ''}">
+                <div class="onb-check">${done ? '✓' : ''}</div>
+                <div class="onb-text">
+                    <strong>${title}</strong>
+                    <span>${desc}</span>
+                </div>
+                <div class="onb-action">${done ? '' : action}</div>
+            </div>
+        `;
+
+        return `
+            <div class="onb-card">
+                <div class="onb-header">
+                    <div>
+                        <h3>🚀 Primeros pasos</h3>
+                        <p>Completa estos pasos para empezar a recibir reservas online.</p>
+                    </div>
+                    <button class="onb-dismiss" onclick="dashboard.dismissOnboarding()" title="Ocultar">Ocultar</button>
+                </div>
+                <div class="onb-progress">
+                    <div class="onb-progress-bar"><div style="width: ${pct}%;"></div></div>
+                    <span>${ob.done} de ${ob.total}</span>
+                </div>
+                ${step(ob.steps.services, 'Revisa tus servicios y precios',
+                    'Te hemos creado unos servicios de ejemplo: ajusta nombres, duración y precio.',
+                    `<button class="onb-btn" onclick="app.navigateTo('services')">Ir a Servicios</button>`)}
+                ${step(ob.steps.schedule, 'Revisa tu horario',
+                    'Indica qué días y horas pueden reservar tus clientes.',
+                    `<button class="onb-btn" onclick="dashboard.openSettingsTab('schedule')">Ir a Horarios</button>`)}
+                ${step(ob.steps.widget, 'Personaliza tu widget',
+                    'Pon los colores de tu negocio para que el formulario de reserva sea tuyo.',
+                    `<button class="onb-btn" onclick="dashboard.openSettingsTab('widget')">Personalizar</button>`)}
+                ${step(ob.steps.link, 'Comparte tu enlace de reservas',
+                    `Ponlo en Instagram, Google o WhatsApp: <span class="onb-url">${url}</span>`,
+                    `<button class="onb-btn" onclick="dashboard.copyBookingLink()">Copiar enlace</button>`)}
+                ${step(ob.steps.firstBooking, 'Recibe tu primera reserva',
+                    'Se marcará sola cuando un cliente reserve.',
+                    '')}
+            </div>
+        `;
+    },
+
+    // Marca un paso del checklist (solo si el checklist está activo y el paso no estaba hecho)
+    markOnboarding(flag) {
+        const ob = this.onboarding;
+        if (!ob || !ob.show || ob.flags?.[flag]) return;
+        ob.flags = { ...(ob.flags || {}), [flag]: true };
+        api.patch(`/api/business/${auth.getBusinessId()}/onboarding`, { flag }).catch(() => {});
+    },
+
+    async openSettingsTab(tab) {
+        await app.navigateTo('settings');
+        if (window.settings) settings.switchTab(tab);
+    },
+
+    async copyBookingLink() {
+        const url = this.publicBookingUrl(this.onboarding?.slug);
+        try {
+            await navigator.clipboard.writeText(url);
+            modal.toast({ message: 'Enlace copiado. ¡Compártelo con tus clientes!', type: 'success' });
+        } catch (e) {
+            window.prompt('Copia tu enlace de reservas:', url);
+        }
+        this.markOnboarding('linkShared');
+        this.load();
+    },
+
+    async dismissOnboarding() {
+        try {
+            await api.patch(`/api/business/${auth.getBusinessId()}/onboarding`, { flag: 'dismissed' });
+        } catch (e) {}
+        this.load();
+    },
+
     // Reservas futuras que el negocio aún no ha aceptado (solo si usa la confirmación manual)
     renderPendingConfirmations(allBookings, today) {
         if (this.bookingSettings?.requireConfirmation !== true) return '';
@@ -161,19 +246,24 @@ const dashboard = {
             const d2 = new Date();
             d2.setDate(d2.getDate() + 1);
             const tomorrowStr = `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, '0')}-${String(d2.getDate()).padStart(2, '0')}`;
-            const [tomorrowRes, feedbackRes, cancelledRes, planRes] = await Promise.all([
+            const [tomorrowRes, feedbackRes, cancelledRes, planRes, onboardingRes] = await Promise.all([
                 api.get(`/api/bookings/${auth.getBusinessId()}?date=${tomorrowStr}`),
                 api.get(`/api/admin/feedback/pending/${auth.getBusinessId()}`),
                 api.get(`/api/bookings/${auth.getBusinessId()}/cancelled-future`),
-                api.get(`/api/business/${auth.getBusinessId()}/plan`).catch(() => null)
+                api.get(`/api/business/${auth.getBusinessId()}/plan`).catch(() => null),
+                api.get(`/api/business/${auth.getBusinessId()}/onboarding`).catch(() => null)
             ]);
             this.planInfo = planRes?.data || null;
+            this.onboarding = onboardingRes?.data || null;
             this.tomorrowBookings = (tomorrowRes.data || []).filter(b => b.status !== 'cancelled');
             this.feedbackPending  = feedbackRes.data || [];
             this.cancelledFuture  = cancelledRes.data || [];
 
             // Render dashboard
             contentArea.innerHTML = `
+                <!-- Checklist de primeros pasos (solo negocios que empiezan) -->
+                ${this.renderOnboardingChecklist(this.onboarding)}
+
                 <!-- Aviso de límite de reservas del plan -->
                 ${this.renderPlanUsageBanner(this.planInfo)}
 
@@ -2112,6 +2202,28 @@ window.dashboard = dashboard;
             border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
         }
         .plan-usage-text { color: var(--text-primary); line-height: 1.5; flex: 1; min-width: 220px; }
+        .onb-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color);
+            border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
+        }
+        .onb-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+        .onb-header h3 { margin: 0; font-size: 1.15rem; color: var(--text-primary); }
+        .onb-header p { margin: 0.35rem 0 0; color: var(--text-secondary); font-size: 0.9rem; }
+        .onb-dismiss { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem; text-decoration: underline; }
+        .onb-progress { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0 0.5rem; color: var(--text-secondary); font-size: 0.85rem; }
+        .onb-progress-bar { flex: 1; height: 8px; background: var(--border-color); border-radius: 999px; overflow: hidden; }
+        .onb-progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--primary-color), #22c55e); border-radius: 999px; transition: width 0.4s ease; }
+        .onb-step { display: flex; align-items: center; gap: 0.9rem; padding: 0.75rem 0; border-top: 1px solid var(--border-color); flex-wrap: wrap; }
+        .onb-check {
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.8rem; color: #fff;
+        }
+        .onb-step.done .onb-check { background: #22c55e; border-color: #22c55e; }
+        .onb-step.done .onb-text strong { text-decoration: line-through; opacity: 0.6; }
+        .onb-text { display: flex; flex-direction: column; flex: 1; min-width: 200px; color: var(--text-primary); }
+        .onb-text span { color: var(--text-secondary); font-size: 0.85rem; overflow-wrap: anywhere; }
+        .onb-url { color: var(--primary-color); font-weight: 600; }
+        .onb-btn { background: var(--primary-color); color: #fff; border: none; border-radius: 8px; padding: 0.5rem 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .pending-confirm {
             background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: 4px solid #f59e0b;
             border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
