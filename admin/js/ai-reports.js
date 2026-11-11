@@ -4,9 +4,41 @@ const aiReports = {
     currentTab: 'reportes',
     businessContext: {},
 
+    // Pantalla para planes sin reportes IA
+    renderLocked() {
+        document.getElementById('contentArea').innerHTML = `
+            <div style="max-width: 640px; margin: 2rem auto; text-align: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 2.5rem 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🤖</div>
+                <h2 style="margin: 0 0 0.75rem; color: var(--text-primary);">Reportes con inteligencia artificial</h2>
+                <p style="color: var(--text-secondary); line-height: 1.7; margin: 0 0 1.5rem;">
+                    Cada mes, la IA analiza tus reservas, cancelaciones y las opiniones de tus clientes,
+                    y te explica en lenguaje sencillo cómo va tu negocio y qué puedes mejorar.
+                </p>
+                <div style="text-align: left; display: inline-block; color: var(--text-primary); line-height: 2; margin-bottom: 1.5rem;">
+                    ✅ Resumen del mes: reservas, cancelaciones y servicios más pedidos<br>
+                    ✅ Lo que dicen tus clientes en las encuestas<br>
+                    ✅ Puntos fuertes y aspectos a mejorar<br>
+                    ✅ Recomendaciones y un plan de acción concreto
+                </div>
+                <p style="color: var(--text-secondary); margin: 0 0 1.5rem;">
+                    Incluido en el plan <strong>Profesional</strong> (1 reporte al mes) y en el <strong>Premium</strong> (2 a la semana).
+                </p>
+                <button onclick="app.navigateTo('billing')" style="background: var(--primary-color); color: #fff; border: none; border-radius: 10px; padding: 0.8rem 1.6rem; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                    Ver planes
+                </button>
+            </div>
+        `;
+    },
+
     async load() {
         // Update page title
         document.getElementById('pageTitle').textContent = 'Reportes IA';
+
+        // Plan sin reportes IA: explicar qué son y qué plan los incluye
+        if (!(auth.businessData && auth.businessData.ai_reports_enabled)) {
+            this.renderLocked();
+            return;
+        }
 
         // Render layout with tabs
         const contentArea = document.getElementById('contentArea');

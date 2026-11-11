@@ -1446,7 +1446,8 @@ const settings = {
 
                 <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
                     <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="notify-new-booking" checked
+                        <input type="checkbox" id="notify-new-booking"
+                               ${business.booking_settings?.notifications?.newBooking !== false ? 'checked' : ''}
                                style="width: 20px; height: 20px; cursor: pointer;">
                         <span>
                             <strong>📅 Nueva Reserva</strong>
@@ -1457,22 +1458,24 @@ const settings = {
 
                 <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
                     <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="notify-cancelled" checked
+                        <input type="checkbox" id="notify-cancelled"
+                               ${business.booking_settings?.notifications?.cancelled !== false ? 'checked' : ''}
                                style="width: 20px; height: 20px; cursor: pointer;">
                         <span>
                             <strong>❌ Reserva Cancelada</strong>
-                            <p class="hint" style="margin: 0.25rem 0 0 0;">Notificación cuando un cliente cancele su reserva</p>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Email cuando un cliente cancele su cita desde el enlace de su email</p>
                         </span>
                     </label>
                 </div>
 
                 <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
                     <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="notify-modified" checked
+                        <input type="checkbox" id="notify-modified"
+                               ${business.booking_settings?.notifications?.modified !== false ? 'checked' : ''}
                                style="width: 20px; height: 20px; cursor: pointer;">
                         <span>
                             <strong>✏️ Reserva Modificada</strong>
-                            <p class="hint" style="margin: 0.25rem 0 0 0;">Aviso cuando un cliente modifique los detalles de su reserva</p>
+                            <p class="hint" style="margin: 0.25rem 0 0 0;">Email cuando un cliente cambie la hora de su cita desde el enlace de su email</p>
                         </span>
                     </label>
                 </div>
@@ -1497,17 +1500,6 @@ const settings = {
                         <span>
                             <strong>🔔 Recordatorios Automáticos</strong>
                             <p class="hint" style="margin: 0.25rem 0 0 0;">Envía recordatorios a tus clientes 24 horas antes de su cita</p>
-                        </span>
-                    </label>
-                </div>
-
-                <div class="form-group" style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.75rem;">
-                    <label style="display: flex; align-items: center; gap: 1rem; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="notify-daily-summary"
-                               style="width: 20px; height: 20px; cursor: pointer;">
-                        <span>
-                            <strong>📊 Resumen Diario</strong>
-                            <p class="hint" style="margin: 0.25rem 0 0 0;">Recibe un resumen de todas las reservas del día cada mañana</p>
                         </span>
                     </label>
                 </div>
@@ -1870,9 +1862,10 @@ const settings = {
         const notifyNewBooking = document.getElementById('notify-new-booking').checked;
         const notifyCancelled = document.getElementById('notify-cancelled').checked;
         const notifyModified = document.getElementById('notify-modified').checked;
+        // Avisos por email al negocio (los lee el backend antes de enviar)
+        const notifications = { newBooking: notifyNewBooking, cancelled: notifyCancelled, modified: notifyModified };
         const notifyReminders = document.getElementById('notify-reminders').checked;
         const requireConfirmation = document.getElementById('require-confirmation').checked;
-        const notifyDailySummary = document.getElementById('notify-daily-summary').checked;
 
         // WhatsApp settings
         const whatsappEnabled = document.getElementById('whatsapp-enabled').checked;
@@ -1916,9 +1909,9 @@ const settings = {
             // Guardar preferencia de recordatorios automáticos en booking_settings
             const currentBookingSettings = this.businessData?.booking_settings || {};
             await api.put(`/api/business/${this.userData.business_id}/settings`, {
-                bookingSettings: { ...currentBookingSettings, reminders_enabled: notifyReminders, requireConfirmation }
+                bookingSettings: { ...currentBookingSettings, reminders_enabled: notifyReminders, requireConfirmation, notifications }
             });
-            this.businessData.booking_settings = { ...currentBookingSettings, reminders_enabled: notifyReminders, requireConfirmation };
+            this.businessData.booking_settings = { ...currentBookingSettings, reminders_enabled: notifyReminders, requireConfirmation, notifications };
 
             this.businessData.email = email;
             this.businessData.whatsapp_enabled = whatsappEnabled;

@@ -14,8 +14,13 @@ const app = {
         this.setupNavigation();
         this.setupLogout();
 
-        // Load initial view (dashboard)
-        this.navigateTo('dashboard');
+        // Load initial view (dashboard, o la sección pedida por una redirección, p. ej. admin/opiniones.html)
+        let initialSection = 'dashboard';
+        try {
+            initialSection = sessionStorage.getItem('openSection') || 'dashboard';
+            sessionStorage.removeItem('openSection');
+        } catch (e) {}
+        this.navigateTo(initialSection);
     },
 
     // Setup sidebar navigation
@@ -51,6 +56,13 @@ const app = {
     // Navigate to a specific section
     async navigateTo(section) {
         const contentArea = document.getElementById('contentArea');
+
+        // Marcar en el menú la sección activa (también cuando se navega desde código, no solo con clic)
+        const menuLink = document.querySelector(`.sidebar-link[data-section="${section}"]`);
+        if (menuLink) {
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            menuLink.classList.add('active');
+        }
 
         switch(section) {
             case 'dashboard':
@@ -108,6 +120,14 @@ const app = {
             case 'settings':
                 if (window.settings) {
                     await settings.load();
+                } else {
+                    this.showUnderConstruction();
+                }
+                break;
+
+            case 'opiniones':
+                if (window.opiniones) {
+                    await opiniones.load();
                 } else {
                     this.showUnderConstruction();
                 }

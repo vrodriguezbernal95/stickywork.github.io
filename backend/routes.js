@@ -1044,6 +1044,59 @@ router.delete('/api/customers/:businessId/:customerId', requireAuth, requireBusi
     }
 });
 
+// ¿El negocio quiere recibir este aviso? (Configuración > Notificaciones). Por defecto, sí.
+// key: 'newBooking' | 'cancelled' | 'modified'
+function businessNotificationEnabled(business, key) {
+    let settings = business?.booking_settings || {};
+    if (typeof settings === 'string') {
+        try { settings = JSON.parse(settings); } catch (e) { settings = {}; }
+    }
+    return settings.notifications?.[key] !== false;
+}
+
+// Email al negocio cuando un cliente cancela o cambia su cita desde el enlace "Gestionar mi reserva"
+async function notifyBusinessOfCustomerChange(bookingId, kind) {
+    const rows = await db.query(
+        `SELECT b.*, s.name AS service_name FROM bookings b
+         LEFT JOIN services s ON s.id = b.service_id WHERE b.id = ?`,
+        [bookingId]
+    );
+    const booking = rows[0];
+    if (!booking) return;
+    const businessRows = await db.query('SELECT * FROM businesses WHERE id = ?', [booking.business_id]);
+    const business = businessRows[0];
+    if (!business?.email || !businessNotificationEnabled(business, kind)) return;
+
+    const d = booking.booking_date instanceof Date ? booking.booking_date : new Date(booking.booking_date);
+    const dateStr = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    const timeStr = String(booking.booking_time).substring(0, 5);
+    const cancelled = kind === 'cancelled';
+
+    await emailService.sendEmail(business.email, {
+        subject: cancelled
+            ? `❌ Cita cancelada: ${booking.customer_name} (${dateStr}, ${timeStr})`
+            : `✏️ Cita modificada: ${booking.customer_name} (ahora ${dateStr}, ${timeStr})`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; padding: 20px;">
+                <div style="background: #ffffff; border-radius: 12px; padding: 28px; border-left: 4px solid ${cancelled ? '#ef4444' : '#4D53FF'};">
+                    <h2 style="margin-top: 0; color: #111827;">${cancelled ? 'Un cliente ha cancelado su cita' : 'Un cliente ha cambiado la hora de su cita'}</h2>
+                    <p style="color: #374151; margin: 6px 0;"><strong>Cliente:</strong> ${booking.customer_name}</p>
+                    ${booking.service_name ? `<p style="color: #374151; margin: 6px 0;"><strong>Servicio:</strong> ${booking.service_name}</p>` : ''}
+                    <p style="color: #374151; margin: 6px 0;"><strong>${cancelled ? 'Cita cancelada' : 'Nueva fecha'}:</strong> ${dateStr} a las ${timeStr}</p>
+                    ${booking.customer_phone ? `<p style="color: #374151; margin: 6px 0;"><strong>Teléfono:</strong> ${booking.customer_phone}</p>` : ''}
+                    <p style="color: #6b7280; font-size: 0.9rem; margin-top: 20px;">
+                        ${cancelled ? 'Ese hueco vuelve a estar disponible para otras reservas.' : 'Ya aparece con la nueva hora en tu calendario.'}
+                    </p>
+                    <p style="color: #9ca3af; font-size: 0.8rem; margin-top: 24px; border-top: 1px solid #e5e7eb; padding-top: 12px;">
+                        Puedes desactivar estos avisos en Configuración → Notificaciones.
+                    </p>
+                </div>
+            </div>
+        `
+    });
+    console.log(`✓ Aviso "${kind}" enviado al negocio ${business.id} (reserva ${bookingId})`);
+}
+
 // ¿El negocio acepta cada reserva a mano? (Configuración > Notificaciones)
 function requiresManualConfirmation(business) {
     let settings = business?.booking_settings || {};
@@ -1960,10 +2013,12 @@ router.post('/api/bookings', createBookingLimiter, async (req, res) => {
                 .then(() => console.log('✓ Email de confirmación enviado al cliente'))
                 .catch(err => console.error('✗ Error enviando email al cliente:', err.message));
 
-            // Email de notificación al administrador
-            emailService.sendAdminNotification(bookingData, businessData)
-                .then(() => console.log('✓ Email de notificación enviado al admin'))
-                .catch(err => console.error('✗ Error enviando email al admin:', err.message));
+            // Email de notificación al negocio (si no lo ha desactivado en Configuración > Notificaciones)
+            if (businessNotificationEnabled(businessData, 'newBooking')) {
+                emailService.sendAdminNotification(bookingData, businessData)
+                    .then(() => console.log('✓ Email de notificación enviado al admin'))
+                    .catch(err => console.error('✗ Error enviando email al admin:', err.message));
+            }
         }
 
         // Auto-detectar/crear cliente (asíncrono, no bloqueante)
@@ -4215,9 +4270,13 @@ router.post('/api/booking/manage/:token/cancel', async (req, res) => {
         }
 
         await db.query(
-            `UPDATE bookings SET status = 'cancelled' WHERE id = ?`,
+            `UPDATE bookings SET status = 'cancelled', cancellation_date = NOW(), viewed_by_admin = FALSE WHERE id = ?`,
             [booking.id]
         );
+
+        // Avisar al negocio (no bloqueante)
+        notifyBusinessOfCustomerChange(booking.id, 'cancelled')
+            .catch(err => console.error('✗ Error avisando al negocio de la cancelación:', err.message));
 
         // Registrar nota en el cliente si existe
         try {
@@ -4433,7 +4492,11 @@ router.post('/api/booking/manage/:token/reschedule', async (req, res) => {
             return res.status(400).json({ success: false, message: 'El horario seleccionado ya no está disponible' });
         }
 
-        await db.query('UPDATE bookings SET booking_time = ? WHERE id = ?', [newTime + ':00', booking.id]);
+        await db.query('UPDATE bookings SET booking_time = ?, reminder_sent = FALSE WHERE id = ?', [newTime + ':00', booking.id]);
+
+        // Avisar al negocio (no bloqueante)
+        notifyBusinessOfCustomerChange(booking.id, 'modified')
+            .catch(err => console.error('✗ Error avisando al negocio del cambio de hora:', err.message));
 
         // Email de confirmación al cliente (asíncrono, no bloqueante)
         try {

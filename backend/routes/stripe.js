@@ -283,10 +283,11 @@ async function handleCheckoutComplete(session) {
         UPDATE businesses
         SET plan = ?,
             plan_limits = ?,
+            ai_reports_enabled = ?,
             subscription_status = 'trialing',
             trial_ends_at = DATE_ADD(NOW(), INTERVAL 7 DAY)
         WHERE id = ?
-    `, [planName, JSON.stringify(getPlanLimits(planName)), businessId]);
+    `, [planName, JSON.stringify(getPlanLimits(planName)), getPlanLimits(planName).features.aiReports ? 1 : 0, businessId]);
 
     // Enviar email de bienvenida
     const businessData = await db.query(`
@@ -356,9 +357,10 @@ async function handleSubscriptionUpdate(subscription) {
             UPDATE businesses
             SET subscription_status = ?,
                 plan = ?,
-                plan_limits = ?
+                plan_limits = ?,
+                ai_reports_enabled = ?
             WHERE id = ?
-        `, [status, planName, JSON.stringify(getPlanLimits(planName)), businessId]);
+        `, [status, planName, JSON.stringify(getPlanLimits(planName)), getPlanLimits(planName).features.aiReports ? 1 : 0, businessId]);
     } else {
         // Sin plan en los metadatos: solo actualizar el estado, sin tocar plan ni límites
         await db.query('UPDATE businesses SET subscription_status = ? WHERE id = ?', [status, businessId]);
@@ -389,6 +391,7 @@ async function handleSubscriptionCanceled(subscription) {
         UPDATE businesses
         SET plan = 'free',
             plan_limits = ?,
+            ai_reports_enabled = 0,
             subscription_status = 'canceled'
         WHERE id = ?
     `, [JSON.stringify(getPlanLimits('free')), businessId]);

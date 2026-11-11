@@ -92,16 +92,28 @@ const auth = {
         return this.userData;
     },
 
-    // Show/hide AI Reports menu based on business settings
+    // Reportes IA: visible para todos menos staff; con candado si el plan no los incluye
+    // (así el negocio sabe que existen; al entrar se explica qué plan los incluye)
     updateAiReportsMenu() {
         const aiReportsLink = document.getElementById('aiReportsLink');
+        if (!aiReportsLink) return;
 
-        if (aiReportsLink) {
-            if (this.businessData && this.businessData.ai_reports_enabled) {
-                aiReportsLink.style.display = 'flex';
-            } else {
-                aiReportsLink.style.display = 'none';
-            }
+        if (this.userData && this.userData.role === 'staff') {
+            aiReportsLink.style.display = 'none';
+            return;
+        }
+        aiReportsLink.style.display = 'flex';
+
+        const enabled = !!(this.businessData && this.businessData.ai_reports_enabled);
+        let lock = aiReportsLink.querySelector('.sidebar-lock');
+        if (!enabled && !lock) {
+            lock = document.createElement('span');
+            lock.className = 'sidebar-lock';
+            lock.textContent = '🔒';
+            lock.style.cssText = 'margin-left: auto; font-size: 0.8rem; opacity: 0.8;';
+            aiReportsLink.appendChild(lock);
+        } else if (enabled && lock) {
+            lock.remove();
         }
     },
 
