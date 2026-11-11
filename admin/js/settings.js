@@ -1,7 +1,7 @@
 // Settings Module
 
 const settings = {
-    currentTab: 'profile',
+    currentTab: 'business',
     userData: null,
     businessData: null,
 
@@ -71,65 +71,60 @@ const settings = {
 
         contentArea.innerHTML = `
             <div class="settings-container">
-                <!-- Tabs -->
+                <!-- Tabs agrupadas por tema -->
                 <div class="settings-tabs">
-                    <button class="settings-tab active" data-tab="profile" onclick="settings.switchTab('profile')">
-                        👤 Perfil
-                    </button>
-                    <button class="settings-tab" data-tab="security" onclick="settings.switchTab('security')">
-                        🔐 Seguridad
-                    </button>
-                    <button class="settings-tab" data-tab="business" onclick="settings.switchTab('business')">
-                        🏢 Negocio
-                    </button>
-                    <button class="settings-tab" data-tab="widget" onclick="settings.switchTab('widget')">
-                        🎨 Widget
-                    </button>
-                    <button class="settings-tab" data-tab="notifications" onclick="settings.switchTab('notifications')">
-                        📧 Notificaciones
-                    </button>
-                    <button class="settings-tab" data-tab="schedule" onclick="settings.switchTab('schedule')">
-                        ⏰ Horarios
-                    </button>
-                    <button class="settings-tab" data-tab="capacity" onclick="settings.switchTab('capacity')">
-                        👥 Capacidad
-                    </button>
-                    <button class="settings-tab" data-tab="zones" onclick="settings.switchTab('zones')"
-                            style="display: ${this.businessData?.type_key === 'restaurant' ? 'block' : 'none'};">
-                        🏢 Zonas
-                    </button>
-                    <button class="settings-tab" data-tab="feedback" onclick="settings.switchTab('feedback')">
-                        ⭐ Feedback
-                    </button>
-                    <button class="settings-tab" data-tab="publicpage" onclick="settings.switchTab('publicpage')">
-                        🌐 Mi Página
-                    </button>
-                    <button class="settings-tab" data-tab="billing" onclick="settings.switchTab('billing')">
-                        💳 Plan
-                    </button>
-                    <button class="settings-tab" data-tab="advanced" onclick="settings.switchTab('advanced')">
-                        ⚙️ Avanzado
-                    </button>
-                    <button class="settings-tab" data-tab="guide" onclick="settings.switchTab('guide')">
-                        📚 Guía
-                    </button>
-                    <button class="settings-tab" data-tab="team" onclick="settings.switchTab('team')">
-                        👥 Equipo
-                    </button>
-                    <button class="settings-tab" data-tab="consultancy" onclick="settings.switchTab('consultancy')">
-                        💼 Consultoría
-                    </button>
+                    <div class="settings-tab-group">
+                        <div class="settings-tab-group-label">Mi negocio</div>
+                        <div class="settings-tab-group-items">
+                            <button class="settings-tab active" data-tab="business" onclick="settings.switchTab('business')">🏢 Datos</button>
+                            <button class="settings-tab" data-tab="schedule" onclick="settings.switchTab('schedule')">⏰ Horarios</button>
+                            <button class="settings-tab" data-tab="capacity" onclick="settings.switchTab('capacity')">👥 Capacidad</button>
+                            <button class="settings-tab" data-tab="zones" onclick="settings.switchTab('zones')"
+                                    style="display: ${this.businessData?.type_key === 'restaurant' ? 'inline-block' : 'none'};">🪑 Zonas</button>
+                        </div>
+                    </div>
+                    <div class="settings-tab-group">
+                        <div class="settings-tab-group-label">Reservas y avisos</div>
+                        <div class="settings-tab-group-items">
+                            <button class="settings-tab" data-tab="notifications" onclick="settings.switchTab('notifications')">📧 Notificaciones</button>
+                            <button class="settings-tab" data-tab="feedback" onclick="settings.switchTab('feedback')">⭐ Encuestas</button>
+                        </div>
+                    </div>
+                    <div class="settings-tab-group">
+                        <div class="settings-tab-group-label">Dónde te reservan</div>
+                        <div class="settings-tab-group-items">
+                            <button class="settings-tab" data-tab="widget" onclick="settings.switchTab('widget')">🎨 Widget</button>
+                            <button class="settings-tab" data-tab="publicpage" onclick="settings.switchTab('publicpage')">🌐 Mi página</button>
+                        </div>
+                    </div>
+                    <div class="settings-tab-group">
+                        <div class="settings-tab-group-label">Cuenta</div>
+                        <div class="settings-tab-group-items">
+                            <button class="settings-tab" data-tab="profile" onclick="settings.switchTab('profile')">👤 Perfil</button>
+                            <button class="settings-tab" data-tab="security" onclick="settings.switchTab('security')">🔐 Seguridad</button>
+                            <button class="settings-tab" data-tab="team" onclick="settings.switchTab('team')">👥 Equipo</button>
+                            <button class="settings-tab" data-tab="billing" onclick="settings.switchTab('billing')">💳 Plan</button>
+                            <button class="settings-tab" data-tab="consultancy" onclick="settings.switchTab('consultancy')">💼 Consultoría</button>
+                            <button class="settings-tab" data-tab="advanced" onclick="settings.switchTab('advanced')">⚙️ Avanzado</button>
+                        </div>
+                    </div>
+                    <div class="settings-tab-group">
+                        <div class="settings-tab-group-label">Ayuda</div>
+                        <div class="settings-tab-group-items">
+                            <button class="settings-tab" data-tab="guide" onclick="settings.switchTab('guide')">📚 Guía</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tab Content -->
                 <div class="settings-content">
-                    <div class="settings-tab-content active" id="tab-profile">
+                    <div class="settings-tab-content" id="tab-profile">
                         ${this.renderProfileTab()}
                     </div>
                     <div class="settings-tab-content" id="tab-security">
                         ${this.renderSecurityTab()}
                     </div>
-                    <div class="settings-tab-content" id="tab-business">
+                    <div class="settings-tab-content active" id="tab-business">
                         ${this.renderBusinessTab()}
                     </div>
                     <div class="settings-tab-content" id="tab-widget">
@@ -178,15 +173,36 @@ const settings = {
 
                 .settings-tabs {
                     display: flex;
-                    gap: 0.5rem;
+                    gap: 1.25rem 2rem;
                     margin-bottom: 2rem;
                     border-bottom: 2px solid var(--border-color);
                     padding-bottom: 0;
                     flex-wrap: wrap;
                 }
 
+                .settings-tab-group {
+                    min-width: 0;
+                    max-width: 100%;
+                }
+
+                .settings-tab-group-label {
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                    letter-spacing: 0.06em;
+                    text-transform: uppercase;
+                    color: var(--text-secondary);
+                    opacity: 0.8;
+                    padding: 0 0.25rem 0.35rem;
+                }
+
+                .settings-tab-group-items {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.25rem;
+                }
+
                 .settings-tab {
-                    padding: 0.75rem 1.5rem;
+                    padding: 0.6rem 0.9rem;
                     background: transparent;
                     border: none;
                     border-bottom: 3px solid transparent;
