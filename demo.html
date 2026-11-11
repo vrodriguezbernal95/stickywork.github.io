@@ -104,6 +104,7 @@
         .dm-device.is-mobile { max-width: 400px; }
         .dm-frame { border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); }
         .dm-device.is-mobile .dm-frame { border-radius: 38px; border: 10px solid #111827; }
+        [data-theme="dark"] .dm-device.is-mobile .dm-frame { border-color: #2b3150; box-shadow: 0 0 0 1px #3a4166, var(--shadow-lg); }
         .dm-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; }
         .dm-device.is-mobile .dm-bar { justify-content: center; padding: 0.55rem; }
         .dm-dots { display: flex; gap: 6px; }
@@ -119,6 +120,7 @@
         .dm-loading::before { content: ''; width: 22px; height: 22px; margin-right: 0.6rem; border-radius: 50%; border: 3px solid #e5e7eb; border-top-color: #2E35F5; animation: dm-spin 0.8s linear infinite; }
         @keyframes dm-spin { to { transform: rotate(360deg); } }
         .dm-canvas.ready .dm-loading { opacity: 0; pointer-events: none; }
+        .dm-mk-widget .dm-loading { min-height: 300px; }
 
         /* Lo que pasa después */
         .dm-flow { display: grid; gap: 4.5rem; margin-top: 3.5rem; }
@@ -187,6 +189,50 @@
         .dm-final small { display: block; margin-top: 1rem; opacity: 0.8; }
 
         .dm-alt { background: var(--bg-secondary); }
+
+        /* ===== Ambiente por sector ===== */
+        #probar { --sec-a: #E91E63; --sec-b: #9C27B0; position: relative; transition: background 0.5s ease;
+            background: radial-gradient(900px 420px at 85% 15%, color-mix(in srgb, var(--sec-a) 14%, transparent), transparent 70%),
+                        radial-gradient(700px 380px at 10% 90%, color-mix(in srgb, var(--sec-b) 10%, transparent), transparent 70%); }
+        #probar .dm-eyebrow { color: var(--sec-a); }
+        .dm-sector[aria-pressed="true"] { border-color: var(--sec-a); background: color-mix(in srgb, var(--sec-a) 8%, var(--bg-primary)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sec-a) 18%, transparent); }
+        .dm-sector[aria-pressed="true"] .dm-sector-icon { background: linear-gradient(135deg, var(--sec-a), var(--sec-b)); }
+        .dm-info { border-top: 3px solid var(--sec-a); transition: border-color 0.4s ease; }
+        .dm-info li::before { color: var(--sec-a) !important; }
+        .dm-info-links a { color: var(--sec-a) !important; }
+
+        /* Mini web del negocio dentro del navegador */
+        .dm-canvas { padding: 0 !important; }
+        .dm-site-mock { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .dm-site-mock.is-switching { opacity: 0; transform: translateY(6px); }
+        .dm-mk-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1.4rem; border-bottom: 1px solid #f0f0f0; }
+        .dm-mk-brand { display: flex; align-items: center; gap: 0.6rem; font-weight: 700; color: #111827; font-size: 0.98rem; }
+        .dm-mk-logo { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 0.9rem; background: linear-gradient(135deg, var(--sec-a), var(--sec-b)); }
+        .dm-mk-links { display: flex; gap: 1.1rem; font-size: 0.82rem; color: #6b7280; }
+        .dm-mk-links b { color: var(--sec-a); }
+        .dm-mk-hero { position: relative; overflow: hidden; padding: 2rem 1.4rem 1.7rem; color: #fff; background: linear-gradient(120deg, var(--sec-a), var(--sec-b)); }
+        .dm-mk-hero::after { content: attr(data-art); position: absolute; right: -10px; bottom: -28px; font-size: 7.5rem; line-height: 1; opacity: 0.22; letter-spacing: -0.2em; transform: rotate(-8deg); pointer-events: none; }
+        .dm-mk-hero h4 { margin: 0 0 0.35rem; font-size: 1.65rem; line-height: 1.15; color: #fff; max-width: 78%; }
+        .dm-mk-hero p { margin: 0 0 1rem; opacity: 0.92; font-size: 0.95rem; max-width: 70%; }
+        .dm-mk-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; position: relative; z-index: 1; }
+        .dm-mk-chips span { font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.65rem; border-radius: 999px; background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); }
+        .dm-mk-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.6rem; padding: 1.1rem 1.4rem 0.4rem; }
+        .dm-mk-item { border: 1px solid #eef0f3; border-radius: 12px; padding: 0.7rem 0.8rem; background: #fafbfc; }
+        .dm-mk-item strong { display: block; font-size: 0.85rem; color: #111827; line-height: 1.3; }
+        .dm-mk-item small { color: #6b7280; font-size: 0.78rem; }
+        .dm-mk-item em { font-style: normal; font-weight: 700; color: var(--sec-a); float: right; }
+        .dm-mk-label { padding: 1.2rem 1.4rem 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9ca3af; }
+        .dm-mk-widget { padding: 0.4rem 1rem 1rem; }
+        /* Tipografía de cada negocio */
+        .dm-site-mock[data-style="serif"] .dm-mk-hero h4, .dm-site-mock[data-style="serif"] .dm-mk-brand { font-family: Georgia, 'Times New Roman', serif; }
+        .dm-site-mock[data-style="serif"] .dm-mk-hero h4 { font-style: italic; font-weight: 600; }
+        .dm-site-mock[data-style="bold"] .dm-mk-hero h4 { font-family: 'Poppins', sans-serif; text-transform: uppercase; font-weight: 800; letter-spacing: 0.02em; }
+        .dm-site-mock[data-style="soft"] .dm-mk-hero h4 { font-family: 'Poppins', sans-serif; font-weight: 700; }
+        .dm-device.is-mobile .dm-mk-links { display: none; }
+        .dm-device.is-mobile .dm-mk-hero h4, .dm-device.is-mobile .dm-mk-hero p { max-width: 100%; }
+        .dm-device.is-mobile .dm-mk-hero h4 { font-size: 1.35rem; }
+        .dm-device.is-mobile .dm-mk-list { grid-template-columns: 1fr 1fr; }
+        @media (max-width: 560px) { .dm-mk-links { display: none; } .dm-mk-hero h4, .dm-mk-hero p { max-width: 100%; } .dm-mk-list { grid-template-columns: 1fr 1fr; } }
         [data-theme="dark"] .dm-eyebrow, [data-theme="dark"] .dm-info-links a, [data-theme="dark"] .dm-card a.dm-link,
         [data-theme="dark"] .dm-badge, [data-theme="dark"] .dm-info li::before, [data-theme="dark"] .dm-flow-text li::before { color: #9ea2ff; }
 
@@ -289,8 +335,24 @@
                                 <span class="dm-url" id="dmUrl">esteticabellabella.es/reservar</span>
                             </div>
                             <div class="dm-canvas" id="dmCanvas">
-                                <div class="dm-loading">Cargando el formulario…</div>
-                                <iframe id="dmFrame" title="Formulario de reservas de demostración" src="demo-widget.html?b=6" loading="eager"></iframe>
+                                <div class="dm-site-mock" id="dmMock" data-style="serif">
+                                    <div class="dm-mk-nav">
+                                        <span class="dm-mk-brand"><span class="dm-mk-logo" id="dmLogo">EB</span><span id="dmBrand">Estética Bella &amp; Bella</span></span>
+                                        <span class="dm-mk-links" id="dmLinks"><span>Inicio</span><span>Tratamientos</span><b>Reservar</b></span>
+                                    </div>
+                                    <div class="dm-mk-hero" id="dmHero" data-art="💅✨">
+                                        <h4 id="dmTagline">Tu momento de cuidado</h4>
+                                        <p id="dmSub">Tratamientos de estética y bienestar.</p>
+                                        <div class="dm-mk-chips" id="dmChips"></div>
+                                    </div>
+                                    <div class="dm-mk-label" id="dmListLabel">Tratamientos</div>
+                                    <div class="dm-mk-list" id="dmList"></div>
+                                    <div class="dm-mk-label">Reserva online</div>
+                                    <div class="dm-mk-widget" style="position: relative;">
+                                        <div class="dm-loading">Cargando el formulario…</div>
+                                        <iframe id="dmFrame" title="Formulario de reservas de demostración" src="demo-widget.html?b=6" loading="eager"></iframe>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -536,30 +598,96 @@
             const SECTORS = {
                 belleza: {
                     id: 6, url: 'esteticabellabella.es/reservar', slug: 'estetica-bella-demo', site: 'demos/estetica.html',
+                    a: '#E91E63', b: '#9C27B0', style: 'serif', art: '💅✨', logo: 'BB',
+                    tagline: 'Tu momento de cuidado', sub: 'Tratamientos de estética y bienestar en el centro de la ciudad.',
+                    nav: ['Inicio', 'Tratamientos'], listLabel: 'Tratamientos',
                     title: 'Un centro de estética',
                     points: ['Cada tratamiento con su duración y su precio.', 'Solo se ofrecen los huecos donde cabe el servicio elegido.', 'Confirmación por email y recordatorio el día antes.']
                 },
                 nutricion: {
                     id: 4, url: 'nutrivida.es/reservar', slug: 'nutrivida-demo', site: 'demos/nutricion.html',
+                    a: '#2E9D4F', b: '#8BC34A', style: 'soft', art: '🥑🍏', logo: 'NV',
+                    tagline: 'Come mejor, vive mejor', sub: 'Planes de nutrición personalizados y seguimiento cercano.',
+                    nav: ['Inicio', 'Consultas'], listLabel: 'Consultas',
                     title: 'Una consulta de nutrición',
                     points: ['Primera visita y seguimientos, con distinta duración.', 'Las revisiones periódicas se programan de una vez desde el panel.', 'Si lo prefieres, cada cita queda pendiente hasta que la confirmas.']
                 },
                 psicologia: {
                     id: 3, url: 'menteclara.es/reservar', slug: 'psicologo-mente-clara-demo', site: 'demos/psicologo.html',
+                    a: '#3B6FD8', b: '#7B68EE', style: 'serif', art: '🌿☁️', logo: 'MC',
+                    tagline: 'Un espacio para ti', sub: 'Terapia individual, de pareja e infantil, a tu ritmo.',
+                    nav: ['Inicio', 'Terapias'], listLabel: 'Terapias',
                     title: 'Un gabinete de psicología',
                     points: ['Primeras entrevistas y sesiones de seguimiento.', 'Sesiones semanales que se programan de una vez.', 'El paciente puede cancelar o cambiar la hora desde su email.']
                 },
                 restaurante: {
                     id: 9, url: 'lafamiglia.es/reservar', slug: 'la-famiglia', site: null,
+                    a: '#1B5E20', b: '#C62828', style: 'serif', art: '🍝🍷', logo: 'LF',
+                    tagline: 'Cucina italiana, come a casa', sub: 'Pasta fresca, pizza al horno de leña y vinos italianos.',
+                    nav: ['Inicio', 'Carta'], listLabel: 'Turnos',
                     title: 'Un restaurante',
-                    points: ['El cliente indica cuántas personas vienen.', 'Elige zona: terraza o interior, según disponibilidad.', 'Horarios de comida y cena por turnos.']
+                    points: ['El cliente indica cuántas personas vienen.', 'Elige zona según la disponibilidad del día.', 'Horarios de comida y cena por turnos.']
                 },
                 gimnasio: {
                     id: 5, url: 'powerfit.es/reservar', slug: 'powerfit-gym-demo', site: 'demos/gimnasio.html',
+                    a: '#F4511E', b: '#FFB300', style: 'bold', art: '💪🔥', logo: 'PF',
+                    tagline: 'Entrena sin excusas', sub: 'Clases dirigidas y entrenamiento personal todos los días.',
+                    nav: ['Inicio', 'Clases'], listLabel: 'Clases',
                     title: 'Un gimnasio con clases',
                     points: ['El cliente elige la clase y el horario.', 'Cada clase tiene sus plazas y se cierra al llenarse.', 'Recordatorio el día antes para que no se pierda la clase.']
                 }
             };
+
+            // ---- Mini web del negocio con sus datos reales (API pública del widget) ----
+            const configCache = {};
+            const DAY = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            // Días como "Lun–Sáb" o "Mar–Dom" (semana empezando en lunes; 0 y 7 = domingo)
+            function daysLabel(days) {
+                const d = [...new Set((days || []).map(n => (n % 7) || 7))].sort((x, y) => x - y);
+                if (d.length === 7) return 'Todos los días';
+                if (!d.length) return '';
+                const consecutive = d.every((n, i) => i === 0 || n === d[i - 1] + 1);
+                return consecutive && d.length > 2 ? `${DAY[d[0]]}–${DAY[d[d.length - 1]]}` : d.map(n => DAY[n]).join(', ');
+            }
+            const esc = (t) => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            const price = (p) => { const n = Number(p); return n ? (Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')) + ' €' : ''; };
+
+            function renderMock(s, cfg) {
+                const chips = [];
+                const list = [];
+                if (cfg) {
+                    if (cfg.scheduleType === 'multiple' && cfg.shifts?.length) {
+                        cfg.shifts.forEach(sh => {
+                            const start = sh.startTime || sh.start, end = sh.endTime || sh.end;
+                            list.push(`<div class="dm-mk-item"><strong>${esc(sh.name)}</strong><small>${esc(start)}–${esc(end)} · ${daysLabel(sh.activeDays)}</small></div>`);
+                        });
+                        chips.push('🕒 Comidas y cenas');
+                    } else if (cfg.workHoursStart) {
+                        chips.push(`🕒 ${daysLabel(cfg.workDays)} · ${cfg.workHoursStart}–${cfg.workHoursEnd}`);
+                    }
+                    const zones = (cfg.restaurantZones || []).filter(z => z.enabled !== false).map(z => z.name || z);
+                    if (zones.length) chips.push('📍 ' + zones.join(' · '));
+                    if (cfg.bookingMode === 'classes') {
+                        (cfg.classes || []).slice(0, 4).forEach(c => list.push(`<div class="dm-mk-item"><strong>${esc(c.name)}</strong><small>${c.duration} min</small></div>`));
+                        chips.push(`🏷️ ${(cfg.classes || []).length} clases`);
+                    } else if (cfg.bookingMode !== 'tables') {
+                        (cfg.services || []).slice(0, 4).forEach(sv => list.push(`<div class="dm-mk-item"><em>${price(sv.price)}</em><strong>${esc(sv.name)}</strong><small>${sv.duration} min</small></div>`));
+                    }
+                    chips.push('✅ Reserva online 24 h');
+                }
+                document.getElementById('dmChips').innerHTML = chips.map(c => `<span>${c}</span>`).join('');
+                document.getElementById('dmList').innerHTML = list.join('');
+                document.getElementById('dmListLabel').style.display = list.length ? '' : 'none';
+            }
+
+            async function loadConfig(id) {
+                if (configCache[id]) return configCache[id];
+                try {
+                    const r = await fetch('https://api.stickywork.com/api/widget/' + id);
+                    if (r.ok) configCache[id] = await r.json();
+                } catch (e) {}
+                return configCache[id] || null;
+            }
 
             const frame = document.getElementById('dmFrame');
             const canvas = document.getElementById('dmCanvas');
@@ -569,6 +697,24 @@
                 const s = SECTORS[key];
                 if (!s) return;
                 document.querySelectorAll('.dm-sector').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sector === key)));
+                const section = document.getElementById('probar');
+                section.style.setProperty('--sec-a', s.a);
+                section.style.setProperty('--sec-b', s.b);
+                const mock = document.getElementById('dmMock');
+                mock.classList.add('is-switching');
+                setTimeout(() => {
+                    mock.dataset.style = s.style;
+                    document.getElementById('dmHero').dataset.art = s.art;
+                    document.getElementById('dmLogo').textContent = s.logo;
+                    document.getElementById('dmBrand').textContent = document.querySelector(`.dm-sector[data-sector="${key}"] small`).textContent;
+                    document.getElementById('dmLinks').innerHTML = s.nav.map(n => `<span>${n}</span>`).join('') + '<b>Reservar</b>';
+                    document.getElementById('dmTagline').textContent = s.tagline;
+                    document.getElementById('dmSub').textContent = s.sub;
+                    document.getElementById('dmListLabel').textContent = s.listLabel;
+                    renderMock(s, configCache[s.id]);
+                    mock.classList.remove('is-switching');
+                }, 180);
+                loadConfig(s.id).then(cfg => { if (document.querySelector('.dm-sector[aria-pressed="true"]').dataset.sector === key) renderMock(s, cfg); });
                 document.getElementById('dmUrl').textContent = s.url;
                 document.getElementById('dmInfoTitle').textContent = 'Qué estás viendo: ' + s.title.toLowerCase();
                 document.getElementById('dmInfoList').innerHTML = s.points.map(p => `<li>${p}</li>`).join('');
