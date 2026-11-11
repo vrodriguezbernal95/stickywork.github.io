@@ -262,7 +262,7 @@ const bookings = {
             <!-- Header -->
             <div class="bookings-page-header">
                 <h2 style="margin: 0; color: var(--text-primary);">Gestión de Reservas</h2>
-                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                     <!-- Toggle vista -->
                     <div style="display: flex; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
                         <button onclick="bookings.setView('list')" style="

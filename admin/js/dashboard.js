@@ -329,7 +329,7 @@ const dashboard = {
                 </div>
 
                 <!-- Peak Hours & Monthly Revenue -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(350px, 100%), 1fr)); gap: 2rem; margin: 2rem 0;">
                     <!-- Peak Hours Chart -->
                     <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 15px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
                         <h2 style="margin: 0 0 1.5rem 0; color: var(--text-primary); font-size: 1.3rem; display: flex; align-items: center; gap: 0.75rem;">

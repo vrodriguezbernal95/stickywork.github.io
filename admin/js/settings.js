@@ -2262,12 +2262,12 @@ const settings = {
                     <label style="color: rgba(255,255,255,0.9); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">
                         Tu enlace de reservas:
                     </label>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                         <input type="text"
                                id="public-url-display"
                                value="${publicUrl}"
                                readonly
-                               style="flex: 1; padding: 0.75rem 1rem; border-radius: 8px; border: none; background: rgba(255,255,255,0.95); font-size: 0.95rem; color: #1f2937;">
+                               style="flex: 1 1 200px; min-width: 0; padding: 0.75rem 1rem; border-radius: 8px; border: none; background: rgba(255,255,255,0.95); font-size: 0.95rem; color: #1f2937;">
                         <button onclick="settings.copyPublicUrl()"
                                 class="btn"
                                 style="padding: 0.75rem 1.25rem; background: white; color: #8b5cf6; border: none; border-radius: 8px; font-weight: 600; white-space: nowrap;">
