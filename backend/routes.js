@@ -2638,11 +2638,14 @@ router.get('/api/business/:businessId', async (req, res) => {
 // Negocios de demostración de producción: su página pública nunca se ofrece a Google
 // (son negocios ficticios). Si se crea otra demo, añadir aquí su id.
 const DEMO_BUSINESS_IDS = [1, 2, 3, 4, 5, 6, 9];
+// Además, cualquier negocio cuyo enlace indique que es de demo o de pruebas
+const TEST_SLUG = /(^|-)(demo|prueba|pruebas|test)(-|$)/i;
 
 // ¿Puede Google indexar la página pública de este negocio?
 // Página activa + el negocio no lo ha desactivado + no es demo + tiene algún servicio.
-function isPageIndexable(businessId, pageSettings, activeServices) {
+function isPageIndexable(businessId, pageSettings, activeServices, slug) {
     return pageSettings.pageEnabled !== false
+        && !TEST_SLUG.test(slug || '')
         && pageSettings.indexable !== false
         && !DEMO_BUSINESS_IDS.includes(Number(businessId))
         && activeServices > 0;
@@ -2661,7 +2664,7 @@ router.get('/sitemap-negocios.xml', async (req, res) => {
             .filter(b => {
                 let ps = {};
                 try { ps = typeof b.public_page_settings === 'string' ? JSON.parse(b.public_page_settings || '{}') : (b.public_page_settings || {}); } catch (e) {}
-                return isPageIndexable(b.id, ps, Number(b.services));
+                return isPageIndexable(b.id, ps, Number(b.services), b.slug);
             })
             .map(b => {
                 const d = b.updated_at ? new Date(b.updated_at) : null;
@@ -2746,7 +2749,7 @@ router.get('/api/public/business/:slug', async (req, res) => {
                 ...publicData,
                 services,
                 showBranding: showsBranding(plan),
-                indexable: isPageIndexable(businessData.id, pageSettings, services.length)
+                indexable: isPageIndexable(businessData.id, pageSettings, services.length, businessData.slug)
             }
         });
     } catch (error) {
