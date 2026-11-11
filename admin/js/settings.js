@@ -836,6 +836,12 @@ const settings = {
                     <input type="url" id="business-website" value="${business.website || ''}" placeholder="https://www.tunegocio.com">
                 </div>
 
+                <div class="form-group">
+                    <label>Descripción del negocio</label>
+                    <textarea id="business-description" rows="4" maxlength="1000" placeholder="Ej: Peluquería de barrio en Gràcia desde 2010. Cortes, color y peinados para toda la familia.">${(business.description || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</textarea>
+                    <p class="hint">Sale en tu página de reservas y ayuda a que te encuentren en Google. Cuenta qué haces, dónde estás y qué te diferencia.</p>
+                </div>
+
                 <button class="btn-save" onclick="settings.saveBusiness()">
                     💾 Guardar Cambios
                 </button>
@@ -1020,6 +1026,7 @@ const settings = {
         const phone = document.getElementById('business-phone').value.trim();
         const address = document.getElementById('business-address').value.trim();
         const website = document.getElementById('business-website').value.trim();
+        const description = document.getElementById('business-description').value.trim();
 
         if (!name || !email) {
             alert('❌ El nombre y email del negocio son obligatorios');
@@ -1032,7 +1039,8 @@ const settings = {
                 email,
                 phone,
                 address,
-                website
+                website,
+                description
             });
 
             // Update local data
@@ -1041,6 +1049,7 @@ const settings = {
             this.businessData.phone = phone;
             this.businessData.address = address;
             this.businessData.website = website;
+            this.businessData.description = description;
 
             alert('✅ Datos del negocio actualizados correctamente');
         } catch (error) {
@@ -2240,6 +2249,7 @@ const settings = {
         const showAddress = publicPageSettings.showAddress !== false;
         const showWebsite = publicPageSettings.showWebsite !== false;
         const showSchedule = publicPageSettings.showSchedule !== false;
+        const indexable = publicPageSettings.indexable !== false;
 
         return `
             <div class="settings-section">
@@ -2400,6 +2410,18 @@ const settings = {
                             <p class="hint" style="margin: 0;">Mostrar tus horarios de atención</p>
                         </div>
                     </label>
+
+                    <label class="privacy-option" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; cursor: pointer;">
+                        <input type="checkbox"
+                               id="page-indexable"
+                               ${indexable ? 'checked' : ''}
+                               onchange="settings.updatePublicPageSettings()"
+                               style="width: 20px; height: 20px;">
+                        <div>
+                            <strong>🔎 Aparecer en Google</strong>
+                            <p class="hint" style="margin: 0;">Permite que tu página de reservas salga en las búsquedas de Google (por ejemplo, al buscar el nombre de tu negocio). Puede tardar unas semanas en aparecer.</p>
+                        </div>
+                    </label>
                 </div>
             </div>
 
@@ -2479,7 +2501,8 @@ const settings = {
                 showPhone: document.getElementById('show-phone')?.checked !== false,
                 showAddress: document.getElementById('show-address')?.checked !== false,
                 showWebsite: document.getElementById('show-website')?.checked !== false,
-                showSchedule: document.getElementById('show-schedule')?.checked !== false
+                showSchedule: document.getElementById('show-schedule')?.checked !== false,
+                indexable: document.getElementById('page-indexable')?.checked !== false
             });
 
             if (response.success) {
@@ -2545,7 +2568,8 @@ const settings = {
                 showPhone: document.getElementById('show-phone')?.checked,
                 showAddress: document.getElementById('show-address')?.checked,
                 showWebsite: document.getElementById('show-website')?.checked,
-                showSchedule: document.getElementById('show-schedule')?.checked
+                showSchedule: document.getElementById('show-schedule')?.checked,
+                indexable: document.getElementById('page-indexable')?.checked
             });
 
             if (response.success) {

@@ -21,7 +21,6 @@ Disallow: /onboarding.html
 Disallow: /forgot-password.html
 Disallow: /reset-password.html
 Disallow: /booking.html
-Disallow: /reservar.html
 Disallow: /feedback.html
 Disallow: /fidelidad.html
 Disallow: /gestionar-reserva.html
@@ -31,7 +30,6 @@ Disallow: /privacidad.html
 Disallow: /test-*.html
 Disallow: /widget-test.html
 Disallow: /demo-widget.html
-Disallow: /widget/
 
 # Bloquear directorios técnicos
 Disallow: /backend/
@@ -40,3 +38,5 @@ Disallow: /.git/
 
 # Sitemap
 Sitemap: https://stickywork.com/sitemap.xml
+# Páginas de reservas de los negocios (se genera sola en el servidor)
+Sitemap: https://api.stickywork.com/sitemap-negocios.xml

@@ -2635,6 +2635,48 @@ router.get('/api/business/:businessId', async (req, res) => {
 
 // ==================== PÁGINA PÚBLICA DE RESERVAS ====================
 
+// Negocios de demostración de producción: su página pública nunca se ofrece a Google
+// (son negocios ficticios). Si se crea otra demo, añadir aquí su id.
+const DEMO_BUSINESS_IDS = [1, 2, 3, 4, 5, 6, 9];
+
+// ¿Puede Google indexar la página pública de este negocio?
+// Página activa + el negocio no lo ha desactivado + no es demo + tiene algún servicio.
+function isPageIndexable(businessId, pageSettings, activeServices) {
+    return pageSettings.pageEnabled !== false
+        && pageSettings.indexable !== false
+        && !DEMO_BUSINESS_IDS.includes(Number(businessId))
+        && activeServices > 0;
+}
+
+// Sitemap con las páginas públicas indexables (se anuncia en el robots.txt de stickywork.com)
+router.get('/sitemap-negocios.xml', async (req, res) => {
+    try {
+        const rows = await db.query(
+            `SELECT b.id, b.slug, b.public_page_settings, b.updated_at,
+                    (SELECT COUNT(*) FROM services s WHERE s.business_id = b.id AND s.is_active = TRUE) AS services
+             FROM businesses b
+             WHERE b.slug IS NOT NULL AND b.slug <> ''`
+        );
+        const urls = rows
+            .filter(b => {
+                let ps = {};
+                try { ps = typeof b.public_page_settings === 'string' ? JSON.parse(b.public_page_settings || '{}') : (b.public_page_settings || {}); } catch (e) {}
+                return isPageIndexable(b.id, ps, Number(b.services));
+            })
+            .map(b => {
+                const d = b.updated_at ? new Date(b.updated_at) : null;
+                const lastmod = d && !isNaN(d) ? `\n    <lastmod>${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}</lastmod>` : '';
+                return `  <url>\n    <loc>https://stickywork.com/reservar?n=${encodeURIComponent(b.slug)}</loc>${lastmod}\n  </url>`;
+            });
+        res.type('application/xml').send(
+            `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`
+        );
+    } catch (error) {
+        console.error('Error generando sitemap de negocios:', error);
+        res.status(500).type('text/plain').send('Error');
+    }
+});
+
 // Obtener negocio por slug (PÚBLICO - para página de reservas)
 router.get('/api/public/business/:slug', async (req, res) => {
     try {
@@ -2703,7 +2745,8 @@ router.get('/api/public/business/:slug', async (req, res) => {
             data: {
                 ...publicData,
                 services,
-                showBranding: showsBranding(plan)
+                showBranding: showsBranding(plan),
+                indexable: isPageIndexable(businessData.id, pageSettings, services.length)
             }
         });
     } catch (error) {
@@ -2785,7 +2828,7 @@ router.patch('/api/business/:id/slug', requireAuth, requireRole('owner', 'admin'
 router.patch('/api/business/:id/public-page-settings', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const businessId = req.params.id;
-        const { showPhone, showAddress, showWebsite, showSchedule, pageEnabled } = req.body;
+        const { showPhone, showAddress, showWebsite, showSchedule, pageEnabled, indexable } = req.body;
 
         // Verificar permisos
         if (parseInt(businessId) !== parseInt(req.user.businessId)) {
@@ -2800,7 +2843,8 @@ router.patch('/api/business/:id/public-page-settings', requireAuth, requireRole(
             showAddress: showAddress !== false,
             showWebsite: showWebsite !== false,
             showSchedule: showSchedule !== false,
-            pageEnabled: pageEnabled !== false
+            pageEnabled: pageEnabled !== false,
+            indexable: indexable !== false
         };
 
         await db.query(
@@ -3493,7 +3537,7 @@ router.patch('/api/business/:id/onboarding', requireAuth, async (req, res) => {
 router.put('/api/business/:id', requireAuth, requireRole('owner', 'admin'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email, phone, address, website, booking_settings } = req.body;
+        const { name, email, phone, address, website, booking_settings, description } = req.body;
 
         // Verificar que el usuario tiene acceso a este negocio
         if (req.user.businessId != id) {
@@ -3527,6 +3571,14 @@ router.put('/api/business/:id', requireAuth, requireRole('owner', 'admin'), asyn
                  SET name = ?, email = ?, phone = ?, address = ?, website = ?
                  WHERE id = ?`,
                 [name, email, phone || null, address || null, website || null, id]
+            );
+        }
+
+        // La descripción solo se toca si viene (otras pantallas guardan sin ella)
+        if (description !== undefined) {
+            await db.query(
+                'UPDATE businesses SET description = ? WHERE id = ?',
+                [String(description || '').trim().slice(0, 1000) || null, id]
             );
         }
 

@@ -56,6 +56,15 @@ window.HELP_TOPICS = [
         actions: [{ label: 'Ir a Widget', go: 'settings:widget' }]
     },
     {
+        id: 'google', cat: 'empezar',
+        q: '¿Mi página de reservas sale en Google?',
+        keywords: 'google buscador buscar aparecer encontrar seo posicionamiento indexar busquedas ocultar privado',
+        a: `<p>Sí, si tienes al menos un servicio activo: tu página de reservas está preparada para que Google la encuentre, con tu nombre, tu descripción y tus servicios con precios. Suele tardar unas semanas en empezar a salir.</p>
+            <p>Para que salga mejor, rellena la <strong>descripción del negocio</strong> y las descripciones de tus servicios.</p>
+            <p>Si prefieres que no salga, desmarca <strong>🔎 Aparecer en Google</strong> en <strong>Configuración → Mi página</strong>. El enlace seguirá funcionando para quien lo tenga.</p>`,
+        actions: [{ label: 'Ir a Mi página', go: 'settings:publicpage' }]
+    },
+    {
         id: 'qr', cat: 'empezar',
         q: '¿Cómo consigo un código QR para mi local?',
         keywords: 'qr codigo imprimir local cartel folleto tarjeta escanear movil',

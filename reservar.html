@@ -20,7 +20,10 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
+    <!-- Indexable por defecto: si se pusiera noindex aquí, Google ni siquiera ejecutaría el JS.
+         El script lo cambia a noindex cuando el negocio no debe aparecer (demo, desactivado, error...). -->
+    <meta name="robots" id="page-robots" content="index, follow">
+    <link rel="canonical" id="page-canonical" href="https://stickywork.com/reservar">
     <title id="page-title">Reservar Cita - StickyWork</title>
     <meta name="description" id="page-description" content="Reserva tu cita de forma rapida y sencilla">
     <link rel="stylesheet" href="css/styles.css">
@@ -186,6 +189,77 @@
             text-decoration: underline;
         }
 
+        /* Sobre el negocio y servicios (contenido que también lee Google) */
+        .business-details {
+            background: var(--bg-primary);
+            border-radius: 15px;
+            padding: 1.75rem 2rem;
+            box-shadow: var(--shadow);
+            margin-top: 1.5rem;
+        }
+
+        .business-details h2 {
+            margin: 0 0 0.75rem;
+            font-size: 1.15rem;
+            color: var(--text-primary);
+        }
+
+        .business-details h2 + p {
+            margin: 0;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .details-block + .details-block {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .service-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            padding: 0.7rem 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .service-item:last-child {
+            border-bottom: none;
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .service-desc {
+            display: block;
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        .service-meta {
+            white-space: nowrap;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .service-meta strong {
+            color: var(--page-primary);
+            margin-left: 0.5rem;
+        }
+
         /* Footer */
         .booking-footer {
             text-align: center;
@@ -222,7 +296,8 @@
                 height: 60px;
             }
 
-            #stickywork-widget {
+            #stickywork-widget,
+            .business-details {
                 padding: 1.5rem 1rem;
                 border-radius: 12px;
             }
@@ -261,6 +336,8 @@
                     <p>Preparando formulario de reservas...</p>
                 </div>
             </div>
+
+            <div class="business-details" id="business-details" hidden></div>
         </div>
     </main>
 
@@ -287,8 +364,104 @@
         const slug = urlParams.get('n') || urlParams.get('slug');
         const businessId = urlParams.get('business') || urlParams.get('id');
 
+        // Escapar texto que viene del negocio antes de meterlo en HTML
+        function esc(str) {
+            return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function setNoIndex() {
+            document.getElementById('page-robots').content = 'noindex, follow';
+        }
+
+        // Precio y duración legibles: "30 min · 25 €"
+        function formatPrice(price) {
+            const n = Number(price);
+            if (!price || isNaN(n) || n <= 0) return '';
+            return (Number.isInteger(n) ? n : n.toFixed(2).replace('.', ',')) + ' €';
+        }
+
+        function formatDuration(min) {
+            const n = Number(min);
+            if (!n) return '';
+            if (n < 60) return `${n} min`;
+            const h = Math.floor(n / 60), m = n % 60;
+            return m ? `${h} h ${m} min` : `${h} h`;
+        }
+
+        // "Sobre nosotros" + lista de servicios: útil para el cliente y es el contenido que indexa Google
+        function renderDetails(business) {
+            const services = business.services || [];
+            let html = '';
+            if (business.description) {
+                html += `<div class="details-block"><h2>Sobre ${esc(business.name)}</h2><p>${esc(business.description)}</p></div>`;
+            }
+            if (services.length) {
+                html += `<div class="details-block"><h2>Servicios</h2><ul class="service-list">` + services.map(s => {
+                    const meta = [formatDuration(s.duration), formatPrice(s.price)];
+                    return `<li class="service-item">
+                        <span class="service-name">${esc(s.name)}${s.description ? `<span class="service-desc">${esc(s.description)}</span>` : ''}</span>
+                        <span class="service-meta">${esc(meta[0])}${meta[1] ? `<strong>${esc(meta[1])}</strong>` : ''}</span>
+                    </li>`;
+                }).join('') + `</ul></div>`;
+            }
+            if (html) {
+                const box = document.getElementById('business-details');
+                box.innerHTML = html;
+                box.hidden = false;
+            }
+        }
+
+        // Título, descripción, canónica y datos estructurados (LocalBusiness) para Google
+        function updateSeo(business) {
+            const services = business.services || [];
+            const pageUrl = `https://stickywork.com/reservar?n=${encodeURIComponent(business.slug)}`;
+            const typeText = business.type ? ` · ${business.type}` : '';
+            const serviceNames = services.slice(0, 4).map(s => s.name).join(', ');
+
+            let description = business.description
+                ? business.description.replace(/\s+/g, ' ').trim()
+                : `Reserva cita online en ${business.name}${business.type ? ` (${business.type})` : ''}${business.address ? `, ${business.address}` : ''}.${serviceNames ? ` Servicios: ${serviceNames}.` : ''}`;
+            if (description.length > 160) description = description.slice(0, 157).trim() + '…';
+
+            document.title = `${business.name}${typeText} — Reserva cita online`;
+            document.getElementById('page-description').content = description;
+            document.getElementById('og-title').content = `Reserva cita en ${business.name}`;
+            document.getElementById('og-description').content = description;
+            document.getElementById('page-canonical').href = pageUrl;
+            if (business.logo_url) document.getElementById('og-image').content = business.logo_url;
+
+            if (!business.indexable) {
+                setNoIndex();
+                return;
+            }
+
+            const data = {
+                '@context': 'https://schema.org',
+                '@type': 'LocalBusiness',
+                name: business.name,
+                url: pageUrl,
+                description
+            };
+            if (business.logo_url) data.image = business.logo_url;
+            if (business.phone) data.telephone = business.phone;
+            if (business.address) data.address = business.address;
+            if (business.website) data.sameAs = [business.website.startsWith('http') ? business.website : 'https://' + business.website];
+            if (services.length) {
+                data.makesOffer = services.map(s => {
+                    const offer = { '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.name } };
+                    if (Number(s.price) > 0) { offer.price = Number(s.price); offer.priceCurrency = 'EUR'; }
+                    return offer;
+                });
+            }
+            const ld = document.createElement('script');
+            ld.type = 'application/ld+json';
+            ld.textContent = JSON.stringify(data).replace(/</g, '\\u003c');
+            document.head.appendChild(ld);
+        }
+
         // Funcion para mostrar error
         function showError(title, message) {
+            setNoIndex();
             document.getElementById('loading-header').style.display = 'none';
             document.getElementById('business-header').style.display = 'none';
             document.getElementById('stickywork-widget').innerHTML = `
@@ -334,14 +507,14 @@
             let infoHTML = '';
 
             if (business.address) {
-                infoHTML += `<div class="business-info-item">📍 ${business.address}</div>`;
+                infoHTML += `<div class="business-info-item">📍 ${esc(business.address)}</div>`;
             }
             if (business.phone) {
-                infoHTML += `<div class="business-info-item"><a href="tel:${business.phone}">📞 ${business.phone}</a></div>`;
+                infoHTML += `<div class="business-info-item"><a href="tel:${esc(business.phone.replace(/\s/g, ''))}">📞 ${esc(business.phone)}</a></div>`;
             }
             if (business.website) {
                 const websiteUrl = business.website.startsWith('http') ? business.website : 'https://' + business.website;
-                infoHTML += `<div class="business-info-item"><a href="${websiteUrl}" target="_blank">🌐 Web</a></div>`;
+                infoHTML += `<div class="business-info-item"><a href="${esc(websiteUrl)}" target="_blank" rel="noopener">🌐 Web</a></div>`;
             }
 
             infoContainer.innerHTML = infoHTML;
@@ -357,14 +530,6 @@
                 }
             }
 
-            // Actualizar meta tags para SEO y compartir
-            document.getElementById('page-title').textContent = `Reservar en ${business.name} - StickyWork`;
-            document.getElementById('page-description').content = `Reserva tu cita en ${business.name} de forma rapida y sencilla`;
-            document.getElementById('og-title').content = `Reservar en ${business.name}`;
-            document.getElementById('og-description').content = `Reserva tu cita en ${business.name}`;
-            if (business.logo_url) {
-                document.getElementById('og-image').content = business.logo_url;
-            }
         }
 
         // Funcion principal para cargar el negocio
@@ -391,7 +556,8 @@
                     }
 
                 } else if (businessId) {
-                    // Cargar por ID (legacy)
+                    // Cargar por ID (legacy): no se indexa, la URL buena es la del slug
+                    setNoIndex();
                     const response = await fetch(`${API_URL}/api/business/${businessId}`);
                     const result = await response.json();
 
@@ -419,6 +585,10 @@
 
                 // Actualizar header con info del negocio
                 updateHeader(businessData);
+                if (slug) {
+                    updateSeo(businessData);
+                    renderDetails(businessData);
+                }
 
                 // Inicializar widget
                 document.getElementById('widget-loading').style.display = 'none';
