@@ -439,7 +439,7 @@
                     <div class="dm-card-icon">📱</div>
                     <h3>Código QR en tu local</h3>
                     <div class="dm-qr">
-                        <img id="dmQr" src="https://quickchart.io/qr?text=https%3A%2F%2Fstickywork.com%2Freservar%3Fn%3Destetica-bella-demo&size=300&margin=1" alt="Código QR de la página de reservas de ejemplo" width="96" height="96" loading="lazy">
+                        <img id="dmQr" src="images/demo/qr-estetica-bella-demo.png" alt="Código QR de la página de reservas de ejemplo" width="96" height="96" loading="lazy">
                         <p style="margin:0">Imprímelo en el mostrador, las tarjetas o el escaparate. Escanéalo con tu móvil para probarlo.</p>
                     </div>
                 </div>
@@ -723,7 +723,7 @@
                     `<a href="${page}" target="_blank" rel="noopener">Ver su página de reservas ↗</a>` +
                     (s.site ? `<a href="${s.site}" target="_blank" rel="noopener">Ver en una web de ejemplo ↗</a>` : '');
                 document.getElementById('dmPublicLink').href = page;
-                document.getElementById('dmQr').src = 'https://quickchart.io/qr?text=' + encodeURIComponent(page) + '&size=300&margin=1';
+                document.getElementById('dmQr').src = 'images/demo/qr-' + s.slug + '.png';  // QR pregenerados (sin servicios externos)
                 canvas.classList.remove('ready');
                 frame.style.opacity = '0';
                 frame.src = 'demo-widget.html?b=' + s.id;
