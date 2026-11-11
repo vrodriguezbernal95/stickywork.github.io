@@ -52,13 +52,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Marcar enlace activo según la página actual
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    // Marcar enlace activo según la página actual (también dentro del blog y en las guías por sector)
+    const normalize = (path) => path.replace(/index\.html$/, '').replace(/\/+$/, '/') || '/';
+    const here = normalize(window.location.pathname);
     navLinks.forEach(link => {
-        if (link.getAttribute('href') === currentPage) {
-            link.classList.add('active');
-        }
+        if (link.classList.contains('nav-link-cta')) return;
+        const target = normalize(new URL(link.getAttribute('href'), window.location.href).pathname);
+        const inBlog = target.endsWith('/blog/') && here.includes('/blog/');
+        const inSectorGuide = target.endsWith('/casos-exito.html') && /\/reservas-online-[a-z-]+\.html$/.test(here);
+        if (target === here || inBlog || inSectorGuide) link.classList.add('active');
     });
+
+    // Sombra en la barra al hacer scroll
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        const onScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 8);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+    }
 
     // Animación al hacer scroll
     const observerOptions = {

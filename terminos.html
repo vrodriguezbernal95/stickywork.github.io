@@ -115,26 +115,22 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <nav class="nav container">
-            <a href="index.html" class="logo">
-                <span class="logo-icon">SW</span>
-                StickyWork
-            </a>
-            <div class="nav-links">
-                <a href="como-funciona.html">Cómo Funciona</a>
-                <a href="planes.html">Planes</a>
-                <a href="contacto.html">Contacto</a>
-                <a href="admin-login.html" class="btn btn-outline">Acceder</a>
-                <a href="registro.html" class="btn btn-primary">Empezar Gratis</a>
-            </div>
-            <button class="mobile-menu-btn" aria-label="Menú">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </nav>
-    </header>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">StickyWork</a>
+            <button class="nav-toggle" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+            <ul class="nav-menu">
+                <li><a href="como-funciona.html" class="nav-link">Cómo funciona</a></li>
+                <li><a href="planes.html" class="nav-link">Planes</a></li>
+                <li><a href="casos-exito.html" class="nav-link">Casos de uso</a></li>
+                <li><a href="demo.html" class="nav-link">Demo</a></li>
+                <li><a href="blog/" class="nav-link">Blog</a></li>
+                <li class="nav-sep" aria-hidden="true"></li><li><a href="registro.html" class="nav-link nav-link-cta">Empezar Gratis</a></li>
+                <li><a href="admin-login.html" class="nav-link" style="color: var(--primary-color);">Iniciar Sesión</a></li>
+                <li><button id="theme-toggle" class="theme-toggle-nav" aria-label="Cambiar a modo oscuro" role="menuitem"><span class="theme-icon">🌙</span></button></li>
+            </ul>
+        </div>
+    </nav>
 
     <main class="container">
         <div class="terms-container">
@@ -412,5 +408,6 @@
     </footer>
 
     <script src="js/main.js"></script>
+    <script src="js/dark-mode.js"></script>
 </body>
 </html>
