@@ -127,7 +127,9 @@
         .dm-flow-item { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 3rem; align-items: center; }
         .dm-flow-item:nth-child(even) .dm-flow-text { order: 2; }
         .dm-num { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); margin-bottom: 1rem; }
-        .dm-flow-text h3 { font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin: 0 0 0.75rem; color: var(--text-primary); }
+        .dm-step1 { max-width: 720px; margin-bottom: 2rem; }
+        .dm-step1 p { margin: 0; }
+        .dm-flow-text h2, .dm-flow-text h3 { font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin: 0 0 0.75rem; color: var(--text-primary); }
         .dm-flow-text p { color: var(--text-secondary); line-height: 1.7; margin: 0 0 1rem; }
         .dm-flow-text ul { margin: 0; padding: 0; list-style: none; }
         .dm-flow-text li { padding-left: 1.4rem; position: relative; color: var(--text-secondary); margin-bottom: 0.5rem; line-height: 1.55; }
@@ -295,10 +297,10 @@
     <!-- ===== Demo interactiva ===== -->
     <section class="dm-section" id="probar">
         <div class="dm-container">
-            <div class="dm-center">
-                <span class="dm-eyebrow">Paso 1 · Tu cliente reserva</span>
-                <h2 class="dm-title">Elige un negocio y reserva como si fueras su cliente</h2>
-                <p class="dm-lead">Cada ejemplo usa la configuración real de un negocio de demostración: sus servicios, sus horarios y sus colores.</p>
+            <div class="dm-flow-text dm-step1">
+                <span class="dm-num">1</span>
+                <h2>Tu cliente reserva: pruébalo tú</h2>
+                <p>Elige un negocio y reserva como si fueras su cliente. Cada ejemplo usa la configuración real de un negocio de demostración: sus servicios, sus horarios y sus colores.</p>
             </div>
 
             <div class="dm-demo">
