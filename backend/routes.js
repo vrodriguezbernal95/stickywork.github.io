@@ -3385,6 +3385,17 @@ router.get('/api/business/:id/plan', requireAuth, async (req, res) => {
 });
 
 /**
+ * POST /api/help/missed
+ * El asistente de ayuda avisa de las búsquedas sin resultado: se apuntan en el log
+ * del servidor (Railway → Logs, buscar "[help-missed]") para saber qué falta en la guía.
+ */
+router.post('/api/help/missed', requireAuth, (req, res) => {
+    const query = String(req.body?.query || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+    if (query) console.log(`[help-missed] negocio=${req.user.businessId} "${query}"`);
+    res.json({ success: true });
+});
+
+/**
  * Checklist de inicio del dashboard
  * GET   /api/business/:id/onboarding  → estado de los 5 pasos
  * PATCH /api/business/:id/onboarding  → { flag } marca un paso manual o "dismissed" (ocultar)

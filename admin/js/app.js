@@ -14,6 +14,9 @@ const app = {
         this.setupNavigation();
         this.setupLogout();
 
+        // Asistente de ayuda (botón "?" en todas las pantallas)
+        if (window.helpAssistant) helpAssistant.init();
+
         // Load initial view (dashboard, o la sección pedida por una redirección, p. ej. admin/opiniones.html)
         let initialSection = 'dashboard';
         try {
