@@ -70,6 +70,21 @@
     <meta name="msapplication-TileImage" content="/images/favicon-512x512.png">
 
     <style>
+        /* Guías por sector (píldoras) */
+        .guide-pills { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; margin: -0.25rem auto 2.75rem; }
+        .guide-pills-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); }
+        .guide-pills-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; }
+        .guide-pill { display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.65rem 1.1rem; border-radius: 999px;
+            border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);
+            font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: var(--transition); }
+        .guide-pill:visited { color: var(--text-primary); }
+        .guide-pill:hover, .guide-pill:focus-visible { border-color: var(--primary-color); color: var(--primary-color);
+            transform: translateY(-2px); box-shadow: 0 8px 20px rgba(46, 53, 245, 0.18); outline: none; }
+        .guide-pill-arrow { opacity: 0; margin-left: -0.3rem; transition: var(--transition); }
+        .guide-pill:hover .guide-pill-arrow, .guide-pill:focus-visible .guide-pill-arrow { opacity: 1; margin-left: 0; }
+        [data-theme="dark"] .guide-pill:hover, [data-theme="dark"] .guide-pill:focus-visible { color: #9ea2ff; border-color: #6a70ff; }
+        @media (max-width: 560px) { .guide-pill { padding: 0.55rem 0.9rem; font-size: 0.9rem; } }
+
         /* Estilos específicos para casos de éxito */
         .case-card {
             background: var(--bg-primary);
@@ -288,12 +303,15 @@
         <div class="container">
             <h2 class="section-title">Casos de uso por sector</h2>
             <p class="section-subtitle">Situaciones habituales y las funciones de StickyWork que las resuelven</p>
-            <p style="text-align: center; margin: -0.5rem 0 2rem; color: var(--text-secondary);">
-                Guías detalladas: <a href="reservas-online-nutricionistas.html">nutricionistas</a> ·
-                <a href="reservas-online-peluquerias.html">peluquerías</a> ·
-                <a href="reservas-online-psicologos.html">psicólogos</a> ·
-                <a href="reservas-online-fisioterapeutas.html">fisioterapeutas</a>
-            </p>
+            <nav class="guide-pills" aria-label="Guías por sector">
+                <span class="guide-pills-label">Guías detalladas por sector</span>
+                <div class="guide-pills-list">
+                    <a href="reservas-online-nutricionistas.html" class="guide-pill"><span aria-hidden="true">🥗</span>Nutricionistas<span class="guide-pill-arrow" aria-hidden="true">→</span></a>
+                    <a href="reservas-online-peluquerias.html" class="guide-pill"><span aria-hidden="true">💇‍♀️</span>Peluquerías<span class="guide-pill-arrow" aria-hidden="true">→</span></a>
+                    <a href="reservas-online-psicologos.html" class="guide-pill"><span aria-hidden="true">🧠</span>Psicólogos<span class="guide-pill-arrow" aria-hidden="true">→</span></a>
+                    <a href="reservas-online-fisioterapeutas.html" class="guide-pill"><span aria-hidden="true">🩺</span>Fisioterapeutas<span class="guide-pill-arrow" aria-hidden="true">→</span></a>
+                </div>
+            </nav>
 
             <div class="case-card">
                 <div class="case-header">
