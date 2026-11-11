@@ -142,6 +142,94 @@
       ]
     }
     </script>
+    <style>
+        /* ===== Portada (prefijo hp-) ===== */
+        .hp-hero-shot { position: relative; z-index: 1; max-width: 1040px; margin: 3.5rem auto -9rem; padding: 0 1rem; }
+        .hp-browser { border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); background: #0b1026; box-shadow: 0 30px 80px rgba(15, 22, 163, 0.25); }
+        .hp-browser-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 1rem; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; }
+        .hp-dots { display: flex; gap: 6px; }
+        .hp-dots i { width: 11px; height: 11px; border-radius: 50%; background: #f87171; }
+        .hp-dots i:nth-child(2) { background: #fbbf24; } .hp-dots i:nth-child(3) { background: #34d399; }
+        .hp-browser-url { flex: 1; text-align: center; font-size: 0.8rem; color: #6b7280; background: #fff; border-radius: 8px; padding: 0.25rem 0.6rem; margin-right: 52px; }
+        .hp-browser img { display: block; width: 100%; height: auto; }
+        .hero:has(.hp-hero-shot) { overflow: visible; padding-bottom: 0; }
+        .hp-steps-section { padding-top: 12rem; }
+
+        .hp-steps { list-style: none; padding: 0; margin: 3rem auto 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; max-width: 1080px; counter-reset: none; }
+        .hp-step { position: relative; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 18px; padding: 1.75rem 1.5rem; }
+        .hp-step-num { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; color: #fff; font-weight: 700; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); margin-bottom: 1rem; }
+        .hp-step h3 { margin: 0 0 0.5rem; font-size: 1.15rem; color: var(--text-primary); }
+        .hp-step p { margin: 0; color: var(--text-secondary); line-height: 1.65; }
+
+        .hp-sectors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 2.5rem; }
+        .hp-sector { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border-radius: 16px; background: var(--bg-primary); border: 1px solid var(--border-color); text-decoration: none; color: var(--text-primary); transition: var(--transition); }
+        .hp-sector:visited { color: var(--text-primary); }
+        .hp-sector:hover, .hp-sector:focus-visible { border-color: var(--primary-color); transform: translateY(-3px); box-shadow: var(--shadow); outline: none; }
+        .hp-sector-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: var(--bg-secondary); }
+        .hp-sector strong { display: block; font-size: 1.02rem; margin-bottom: 0.2rem; }
+        .hp-sector small { display: block; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.45; }
+        .hp-arrow { margin-left: auto; color: var(--primary-color); font-weight: 700; transition: transform 0.2s ease; }
+        .hp-sector:hover .hp-arrow { transform: translateX(4px); }
+
+        .hp-demo { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 3rem; align-items: center; max-width: 1080px; margin: 0 auto; }
+        .hp-eyebrow { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 0.75rem; }
+        .hp-demo-text h2 { font-family: 'Poppins', sans-serif; font-size: clamp(1.7rem, 3vw, 2.3rem); line-height: 1.2; margin: 0 0 1rem; color: var(--text-primary); }
+        .hp-demo-text p { color: var(--text-secondary); line-height: 1.7; margin: 0 0 1.25rem; font-size: 1.05rem; }
+        .hp-checks { list-style: none; padding: 0; margin: 0 0 1.75rem; }
+        .hp-checks li { position: relative; padding-left: 1.6rem; margin-bottom: 0.55rem; color: var(--text-primary); }
+        .hp-checks li::before { content: '✓'; position: absolute; left: 0; color: #22c55e; font-weight: 700; }
+        .hp-demo-visual { position: relative; }
+        .hp-demo-visual img { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 18px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); max-height: 520px; object-fit: cover; object-position: top; }
+
+        .hp-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 600; text-decoration: none; transition: var(--transition); border: 1px solid transparent; }
+        .hp-btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: #fff; box-shadow: 0 10px 25px rgba(46, 53, 245, 0.25); }
+        .hp-btn-primary:visited { color: #fff; }
+        .hp-btn-primary:hover { transform: translateY(-2px); color: #fff; }
+        .hp-btn-ghost { background: var(--bg-primary); color: var(--text-primary); border-color: var(--border-color); }
+        .hp-btn-ghost:visited { color: var(--text-primary); }
+        .hp-btn-ghost:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+        .hp-plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; max-width: 1000px; margin: 2.5rem auto 0; }
+        .hp-plan { position: relative; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 18px; padding: 1.75rem 1.5rem; text-align: center; }
+        .hp-plan-featured { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(46, 53, 245, 0.12), var(--shadow); }
+        .hp-plan-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: #fff; padding: 0.25rem 0.75rem; border-radius: 999px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); }
+        .hp-plan h3 { margin: 0 0 0.5rem; color: var(--text-primary); }
+        .hp-price { font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem; }
+        .hp-price small { font-size: 1rem; font-weight: 500; color: var(--text-secondary); }
+        .hp-plan p { margin: 0; color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; }
+
+        .hp-blog { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; max-width: 1000px; margin: 2.5rem auto 0; }
+        .hp-post { display: flex; flex-direction: column; padding: 1.75rem; border-radius: 18px; background: var(--bg-primary); border: 1px solid var(--border-color); text-decoration: none; transition: var(--transition); }
+        .hp-post:hover { border-color: var(--primary-color); transform: translateY(-3px); box-shadow: var(--shadow); }
+        .hp-post-tag { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 0.6rem; }
+        .hp-post h3 { margin: 0 0 0.6rem; font-size: 1.2rem; line-height: 1.35; color: var(--text-primary); }
+        .hp-post p { margin: 0 0 1.25rem; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+        .hp-post-more { font-weight: 600; color: var(--primary-color); }
+
+        .hp-faq { max-width: 820px; margin: 2rem auto 0; display: grid; gap: 0.75rem; }
+        .hp-faq details { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.1rem 1.3rem; }
+        .hp-faq summary { cursor: pointer; font-weight: 600; color: var(--text-primary); list-style: none; display: flex; justify-content: space-between; gap: 1rem; }
+        .hp-faq summary::-webkit-details-marker { display: none; }
+        .hp-faq summary::after { content: '+'; font-size: 1.3rem; line-height: 1; color: var(--text-secondary); }
+        .hp-faq details[open] summary::after { content: '−'; }
+        .hp-faq p { margin: 0.8rem 0 0; color: var(--text-secondary); line-height: 1.65; }
+
+        [data-theme="dark"] .hp-eyebrow, [data-theme="dark"] .hp-post-tag, [data-theme="dark"] .hp-post-more, [data-theme="dark"] .hp-arrow { color: #9ea2ff; }
+
+        @media (max-width: 900px) {
+            .hp-hero-shot { margin-bottom: -5rem; }
+            .hp-steps-section { padding-top: 8rem; }
+            .hp-steps, .hp-sectors, .hp-plans { grid-template-columns: 1fr; }
+            .hp-demo { grid-template-columns: 1fr; gap: 2rem; }
+            .hp-blog { grid-template-columns: 1fr; }
+            .hp-plan-featured { order: -1; }
+        }
+        @media (max-width: 560px) {
+            .hp-hero-shot { margin: 2.5rem auto -3rem; }
+            .hp-steps-section { padding-top: 6rem; }
+            .hp-browser-url { margin-right: 0; }
+        }
+    </style>
 </head>
 <body>
     <!-- Skip to main content para accesibilidad -->
@@ -206,6 +294,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- El producto real -->
+            <div class="hp-hero-shot">
+                <div class="hp-browser">
+                    <div class="hp-browser-bar"><span class="hp-dots"><i></i><i></i><i></i></span><span class="hp-browser-url">stickywork.com · Tu panel</span></div>
+                    <img src="images/demo/panel-dashboard.jpg" alt="Panel de StickyWork: reservas pendientes de confirmar, avisos y agenda del día" width="1440" height="900" fetchpriority="high">
+                </div>
+            </div>
+        </section>
+
+        <!-- Cómo funciona en 3 pasos -->
+        <section class="hp-steps-section" aria-labelledby="steps-title">
+            <div class="container">
+                <h2 id="steps-title" class="section-title">Empieza a recibir reservas en 3 pasos</h2>
+                <p class="section-subtitle">Sin instalar nada y sin conocimientos técnicos</p>
+                <ol class="hp-steps">
+                    <li class="hp-step">
+                        <span class="hp-step-num">1</span>
+                        <h3>Crea tu cuenta gratis</h3>
+                        <p>Elige tu tipo de negocio y te preparamos unos servicios y un horario de ejemplo para que solo tengas que ajustarlos.</p>
+                    </li>
+                    <li class="hp-step">
+                        <span class="hp-step-num">2</span>
+                        <h3>Comparte tu enlace</h3>
+                        <p>Tienes tu propia página de reservas y un código QR. Ponlos en Instagram, Google o WhatsApp, o añade el formulario a tu web.</p>
+                    </li>
+                    <li class="hp-step">
+                        <span class="hp-step-num">3</span>
+                        <h3>Recibe reservas solo</h3>
+                        <p>Tus clientes reservan a cualquier hora y reciben su confirmación y un recordatorio. Tú lo ves todo en tu panel.</p>
+                    </li>
+                </ol>
+            </div>
         </section>
 
         <!-- Características principales -->
@@ -219,15 +340,15 @@
                         <div class="feature-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
-                        <h3 itemprop="name">Reservas y Agenda</h3>
-                        <p itemprop="description">Tus clientes reservan online 24/7. Calendario inteligente con disponibilidad en tiempo real, servicios, horarios y zonas.</p>
+                        <h3 itemprop="name">Reservas y agenda</h3>
+                        <p itemprop="description">Tus clientes reservan online 24/7 y solo ven los huecos libres. Servicios con su duración, horarios por turnos y zonas.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
                         <div class="feature-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         </div>
-                        <h3 itemprop="name">Gestión de Clientes</h3>
+                        <h3 itemprop="name">Gestión de clientes</h3>
                         <p itemprop="description">Base de datos completa con historial de visitas, notas y preferencias. Conoce a tus clientes y fideliza mejor.</p>
                     </article>
 
@@ -235,7 +356,7 @@
                         <div class="feature-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </div>
-                        <h3 itemprop="name">WhatsApp Integrado</h3>
+                        <h3 itemprop="name">WhatsApp integrado</h3>
                         <p itemprop="description">Confirmaciones y recordatorios por WhatsApp con un clic. Reduce cancelaciones y mejora la comunicación con tus clientes.</p>
                     </article>
 
@@ -243,8 +364,8 @@
                         <div class="feature-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                         </div>
-                        <h3 itemprop="name">Feedback y Opiniones</h3>
-                        <p itemprop="description">Encuestas automáticas tras cada visita. Recoge opiniones, mejora tu servicio y construye tu reputación online.</p>
+                        <h3 itemprop="name">Feedback y opiniones</h3>
+                        <p itemprop="description">Una encuesta corta después de cada visita, que envías con un clic. Descubre qué valoran tus clientes y mejora tu servicio.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
@@ -259,7 +380,7 @@
                         <div class="feature-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                         </div>
-                        <h3 itemprop="name">Listo en 5 Minutos</h3>
+                        <h3 itemprop="name">Listo en 5 minutos</h3>
                         <p itemprop="description">Integra el widget en tu web o comparte tu enlace directo. Sin conocimientos técnicos, sin desarrollo. Empieza hoy mismo.</p>
                     </article>
                 </div>
@@ -271,68 +392,98 @@
             </div>
         </section>
 
-        <!-- Casos de uso -->
+        <!-- Sectores -->
         <section style="background-color: var(--bg-secondary);" aria-labelledby="use-cases-title">
             <div class="container">
-                <h2 id="use-cases-title" class="section-title">Perfecto para tu tipo de negocio</h2>
-                <p class="section-subtitle">Gestiona reservas, clientes y comunicaciones adaptado a tu sector</p>
-
-                <div class="features-grid" role="list">
-                <div class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
-                    </div>
-                    <h3>Restaurantes</h3>
-                    <p>Gestiona mesas, zonas y capacidad. Confirmaciones por WhatsApp y opiniones de tus clientes.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                    </div>
-                    <h3>Peluquerías & Salones</h3>
-                    <p>Agenda citas por servicio y profesional. Historial de clientes y recordatorios automáticos.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    </div>
-                    <h3>Clínicas & Consultorios</h3>
-                    <p>Organiza consultas por tipo y profesional. Reduce no-shows con recordatorios por WhatsApp.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                    </div>
-                    <h3>Despachos de Abogados</h3>
-                    <p>Programa reuniones y consultas. Gestión de clientes con notas y seguimiento profesional.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                    </div>
-                    <h3>Centros de Nutrición</h3>
-                    <p>Planifica seguimientos y sesiones. Reportes IA para analizar la evolución de tus pacientes.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    </div>
-                    <h3>Y muchos más...</h3>
-                    <p>Gimnasios, spas, talleres, academias. Todo negocio con cita previa tiene su plataforma aquí.</p>
+                <h2 id="use-cases-title" class="section-title">Pensado para tu tipo de negocio</h2>
+                <p class="section-subtitle">Mira cómo funciona en tu sector, con ejemplos concretos</p>
+                <div class="hp-sectors">
+                    <a class="hp-sector" href="reservas-online-peluquerias.html"><span class="hp-sector-icon">💇‍♀️</span><span><strong>Peluquerías y estética</strong><small>Servicios con duración, recordatorios y fidelización</small></span><span class="hp-arrow" aria-hidden="true">→</span></a>
+                    <a class="hp-sector" href="reservas-online-nutricionistas.html"><span class="hp-sector-icon">🥗</span><span><strong>Nutricionistas</strong><small>Primeras visitas, seguimientos y revisiones periódicas</small></span><span class="hp-arrow" aria-hidden="true">→</span></a>
+                    <a class="hp-sector" href="reservas-online-psicologos.html"><span class="hp-sector-icon">🧠</span><span><strong>Psicólogos</strong><small>Sesiones semanales y confirmación de cada solicitud</small></span><span class="hp-arrow" aria-hidden="true">→</span></a>
+                    <a class="hp-sector" href="reservas-online-fisioterapeutas.html"><span class="hp-sector-icon">🩺</span><span><strong>Fisioterapeutas</strong><small>Tratamientos en serie y varias reservas a la vez</small></span><span class="hp-arrow" aria-hidden="true">→</span></a>
+                    <a class="hp-sector" href="casos-exito.html"><span class="hp-sector-icon">🍽️</span><span><strong>Restaurantes</strong><small>Comensales, zonas como terraza o interior y turnos</small></span><span class="hp-arrow" aria-hidden="true">→</span></a>
+                    <a class="hp-sector" href="casos-exito.html"><span class="hp-sector-icon">✨</span><span><strong>Y muchos más</strong><small>Gimnasios, talleres, clínicas, academias…</small></span><span class="hp-arrow" aria-hidden="true">→</span></a>
                 </div>
             </div>
+        </section>
 
-            <!-- Botón Demo -->
-            <div style="text-align: center; margin-top: 3rem;">
-                <a href="demo.html" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;" aria-label="Prueba StickyWork en tu página">Pruébalo en tu página</a>
+        <!-- Demo -->
+        <section aria-labelledby="demo-title">
+            <div class="container">
+                <div class="hp-demo">
+                    <div class="hp-demo-text">
+                        <span class="hp-eyebrow">Demo en vivo</span>
+                        <h2 id="demo-title">Pruébalo como lo vivirán tus clientes</h2>
+                        <p>Elige un sector, haz una reserva de verdad en un negocio de demostración y recibe en tu email la misma confirmación que recibirían tus clientes.</p>
+                        <ul class="hp-checks">
+                            <li>Formulario real, con servicios, horarios y precios</li>
+                            <li>Emails de confirmación y recordatorio</li>
+                            <li>Sin registrarte</li>
+                        </ul>
+                        <a href="demo.html" class="hp-btn hp-btn-primary">Probar la demo →</a>
+                    </div>
+                    <div class="hp-demo-visual">
+                        <img src="images/demo/mail-confirmed.jpg" alt="Email de confirmación que recibe el cliente al reservar" width="640" height="1065" loading="lazy">
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <!-- Planes en resumen -->
+        <section style="background-color: var(--bg-secondary);" aria-labelledby="plans-title">
+            <div class="container">
+                <h2 id="plans-title" class="section-title">Empieza gratis y crece cuando lo necesites</h2>
+                <p class="section-subtitle">Sin permanencia. Cambia de plan cuando quieras.</p>
+                <div class="hp-plans">
+                    <div class="hp-plan"><h3>Gratis</h3><div class="hp-price">0 €</div><p>Hasta 30 reservas al mes y 1 usuario. Para empezar sin riesgo.</p></div>
+                    <div class="hp-plan hp-plan-featured"><span class="hp-plan-badge">Recomendado</span><h3>Profesional</h3><div class="hp-price">39 €<small>/mes</small></div><p>Reservas ilimitadas, 3 usuarios, informe mensual con IA y ayuda para ponerlo en marcha.</p></div>
+                    <div class="hp-plan"><h3>Premium</h3><div class="hp-price">79 €<small>/mes</small></div><p>10 usuarios, informes con IA cada semana, consultoría mensual y landing page incluida.</p></div>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="planes.html" class="hp-btn hp-btn-ghost">Comparar planes →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog -->
+        <section aria-labelledby="blog-title">
+            <div class="container">
+                <h2 id="blog-title" class="section-title">Consejos para tu negocio</h2>
+                <p class="section-subtitle">Ideas prácticas para llenar la agenda y reducir ausencias</p>
+                <div class="hp-blog">
+                    <a class="hp-post" href="blog/como-reducir-citas-no-presentadas.html">
+                        <span class="hp-post-tag">Guía · 6 min</span>
+                        <h3>Cómo reducir las citas a las que no se presenta el cliente</h3>
+                        <p>Siete medidas prácticas: recordatorios, confirmación, facilidad para cancelar y más.</p>
+                        <span class="hp-post-more">Leer artículo →</span>
+                    </a>
+                    <a class="hp-post" href="blog/boton-reservas-instagram-google-whatsapp.html">
+                        <span class="hp-post-tag">Guía · 5 min</span>
+                        <h3>Cómo poner un enlace de reservas en Instagram, Google y WhatsApp</h3>
+                        <p>Paso a paso para que tus clientes reserven desde donde ya te encuentran.</p>
+                        <span class="hp-post-more">Leer artículo →</span>
+                    </a>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="blog/" class="hp-btn hp-btn-ghost">Ver todos los artículos →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Preguntas frecuentes -->
+        <section style="background-color: var(--bg-secondary);" aria-labelledby="faq-title">
+            <div class="container">
+                <h2 id="faq-title" class="section-title">Preguntas frecuentes</h2>
+                <div class="hp-faq">
+                    <details><summary>¿Necesito tener página web?</summary><p>No. Al registrarte tienes una página de reservas propia con un enlace y un código QR. Si tienes web, también puedes añadir el formulario copiando un pequeño código.</p></details>
+                    <details><summary>¿Mis clientes tienen que descargar una aplicación?</summary><p>No. Reservan desde el navegador del móvil o del ordenador, en un par de minutos.</p></details>
+                    <details><summary>¿El plan gratuito tiene trampa?</summary><p>No. Es gratis para siempre, sin tarjeta, con hasta 30 reservas al mes. Si te quedas corto, puedes pasarte al plan Profesional cuando quieras.</p></details>
+                    <details><summary>¿Puedo aceptar cada reserva antes de que sea definitiva?</summary><p>Sí. Activa la confirmación manual y cada solicitud quedará pendiente hasta que la confirmes o la rechaces; el cliente recibe un email en cada caso.</p></details>
+                    <details><summary>¿Qué pasa si un cliente quiere cancelar o cambiar la cita?</summary><p>Lo hace él mismo desde el enlace de su email de confirmación y a ti te llega un aviso. También puedes mover la cita tú desde el calendario.</p></details>
+                </div>
+            </div>
+        </section>
 
         <!-- CTA Section -->
         <section aria-labelledby="cta-title" itemscope itemtype="https://schema.org/Offer">
@@ -342,8 +493,8 @@
                 <meta itemprop="price" content="0">
                 <meta itemprop="priceCurrency" content="EUR">
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;" role="group" aria-label="Acciones para comenzar">
-                    <a href="demo.html" class="btn btn-primary" aria-label="Probar demostración gratuita">Probar Demo</a>
-                    <a href="contacto.html" class="btn" aria-label="Solicitar más información">Solicitar Información</a>
+                    <a href="registro.html" class="btn btn-primary" aria-label="Crear cuenta gratis">Crear mi cuenta gratis</a>
+                    <a href="demo.html" class="btn" aria-label="Ver la demo">Ver la demo</a>
                 </div>
             </div>
         </section>

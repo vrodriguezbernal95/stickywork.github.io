@@ -355,15 +355,22 @@ body::after {
     line-height: 1.15;
     letter-spacing: -0.5px;
     animation: fadeInUp 0.7s ease-out;
-    text-shadow: 0 2px 24px rgba(0,0,0,0.25);
-    color: #ffffff;
+    color: var(--hero-text);
 }
 
+/* En modo oscuro el fondo de la cabecera es intenso: título blanco con sombra */
+[data-theme="dark"] .hero h1 { text-shadow: 0 2px 24px rgba(0,0,0,0.25); }
+
+/* Frase destacada: degradado de marca en modo claro, blanco en modo oscuro */
 .hero-highlight {
-    color: #ffffff;
     position: relative;
     display: inline-block;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
+[data-theme="dark"] .hero-highlight { background: none; color: #ffffff; }
 
 .hero-highlight::after {
     content: '';
@@ -372,9 +379,11 @@ body::after {
     left: 0;
     width: 100%;
     height: 3px;
-    background: rgba(255,255,255,0.55);
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    opacity: 0.35;
     border-radius: 2px;
 }
+[data-theme="dark"] .hero-highlight::after { background: rgba(255,255,255,0.55); opacity: 1; }
 
 .hero p {
     font-size: clamp(1rem, 2vw, 1.2rem);
@@ -790,20 +799,27 @@ section:nth-child(even)::before {
 
 /* Pricing con efectos de brillo */
 .pricing-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    margin-top: 2rem;
-    max-width: 900px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+    max-width: 1150px;
     margin-left: auto;
     margin-right: auto;
+    align-items: stretch;
+}
+@media (max-width: 960px) {
+    .pricing-grid { grid-template-columns: 1fr; max-width: 520px; }
+    .pricing-card.featured { order: -1; }
 }
 
 .pricing-card {
     background-color: var(--bg-primary);
     border: 2px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem 2rem;
+    border-radius: 18px;
+    padding: 2rem 1.6rem;
+    display: flex;
+    flex-direction: column;
     text-align: center;
     transition: var(--transition);
     position: relative;
@@ -887,13 +903,20 @@ section:nth-child(even)::before {
 
 .pricing-features {
     list-style: none;
-    margin-bottom: 1.25rem;
+    margin: 0 0 1.5rem;
+    padding: 0;
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 0.93rem;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem 1.5rem; /* row-gap column-gap */
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+    flex: 1;
 }
+/* El botón de cada plan, siempre abajo para que las tarjetas queden alineadas */
+.pricing-card > .btn { align-self: center; }
+.pricing-card > .pricing-badge { align-self: center; }
+.t-yes { color: #16a34a; font-weight: 700; font-size: 1.1rem; }
+.t-no { color: var(--text-tertiary, #9ca3af); font-weight: 700; font-size: 1.05rem; }
 
 .pricing-features li {
     padding: 0.3rem 0;
@@ -907,11 +930,15 @@ section:nth-child(even)::before {
 }
 
 .pricing-features li:before {
-    content: "✓ ";
-    color: var(--secondary-color);
+    content: "✓";
+    color: #16a34a;
     font-weight: bold;
-    margin-right: 0.5rem;
+    margin-right: 0.6rem;
 }
+.pricing-features li.no { color: var(--text-tertiary, #9ca3af); }
+.pricing-features li.no:before { content: "✕"; color: var(--text-tertiary, #9ca3af); }
+.pricing-features li.note { font-style: italic; margin-top: 0.35rem; }
+.pricing-features li.note:before { content: none; }
 
 /* Demo Widget */
 .demo-container {
