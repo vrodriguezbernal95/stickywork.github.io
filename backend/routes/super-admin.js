@@ -1,5 +1,6 @@
 // Rutas para Super Admin
 const express = require('express');
+const { VALID_PLANS, getPlanLimits } = require('../plans');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -673,8 +674,7 @@ router.patch('/businesses/:id/change-plan', requireSuperAdmin, async (req, res) 
         const { plan, reason } = req.body;
 
         // Validar plan
-        const validPlans = ['free', 'founders', 'professional', 'premium'];
-        if (!plan || !validPlans.includes(plan)) {
+        if (!plan || !VALID_PLANS.includes(plan)) {
             return res.status(400).json({
                 success: false,
                 message: 'Plan inválido. Debe ser: free, founders, professional o premium'
@@ -698,73 +698,7 @@ router.patch('/businesses/:id/change-plan', requireSuperAdmin, async (req, res) 
         const oldPlan = business.plan;
         const oldLimits = business.plan_limits;
 
-        // Definir límites según el plan
-        // Actualizado 16-ene-2026: Nueva estructura de precios
-        const planLimits = {
-            free: {
-                maxBookingsPerMonth: 30, // Límite de 30 reservas/mes para plan gratuito
-                maxServices: null, // ilimitado
-                maxUsers: 1,
-                features: {
-                    aiReports: false,
-                    aiReportsPerMonth: 0,
-                    whatsapp: true,
-                    feedback: true,
-                    zones: true,
-                    api: false,
-                    whiteLabel: false,
-                    landingPage: false
-                }
-            },
-            founders: {
-                maxBookingsPerMonth: null, // ilimitado
-                maxServices: null, // ilimitado
-                maxUsers: 3, // 3 usuarios para pequeños equipos
-                features: {
-                    aiReports: true,
-                    aiReportsPerMonth: 1, // 1 reporte al mes
-                    whatsapp: true,
-                    feedback: true,
-                    zones: true,
-                    api: false, // API no implementada aún
-                    whiteLabel: false, // White Label no implementado aún
-                    landingPage: false // Landing page como add-on (+200€)
-                }
-            },
-            professional: {
-                maxBookingsPerMonth: null, // ilimitado
-                maxServices: null, // ilimitado
-                maxUsers: 3, // 3 usuarios (igual que founders)
-                features: {
-                    aiReports: true,
-                    aiReportsPerMonth: 1, // 1 reporte al mes (igual que founders)
-                    whatsapp: true,
-                    feedback: true,
-                    zones: true,
-                    api: false, // API no implementada aún
-                    whiteLabel: false, // White Label no implementado aún
-                    landingPage: false // Landing page como add-on (+200€)
-                }
-            },
-            premium: {
-                maxBookingsPerMonth: null, // ilimitado
-                maxServices: null, // ilimitado
-                maxUsers: 10, // 10 usuarios para equipos
-                features: {
-                    aiReports: true,
-                    aiReportsPerMonth: 8, // 2 reportes a la semana (8 al mes aprox)
-                    whatsapp: true,
-                    feedback: true,
-                    zones: true,
-                    api: false, // API no implementada aún (feature futura)
-                    whiteLabel: false, // White Label no implementado aún (feature futura)
-                    landingPage: true, // Landing page incluida gratis (valor 200€)
-                    consultancy: true // 1h consultoría al mes
-                }
-            }
-        };
-
-        const newLimits = planLimits[plan];
+        const newLimits = getPlanLimits(plan);
 
         // Actualizar plan en la base de datos
         await db.query(

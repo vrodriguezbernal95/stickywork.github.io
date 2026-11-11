@@ -8,6 +8,7 @@ const {
     requireAuth
 } = require('../middleware/auth');
 const { loginLimiter, registerLimiter } = require('../middleware/rate-limit');
+const { getPlanLimits } = require('../plans');
 
 // Permitir inyección de la base de datos
 let db = require('../../config/database');
@@ -248,8 +249,8 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
             `INSERT INTO businesses (
                 name, slug, type_key, type, email, phone, address, website,
                 subscription_status, trial_ends_at, onboarding_completed,
-                widget_settings, booking_settings
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'trial', ?, FALSE, ?, ?)`,
+                widget_settings, booking_settings, plan, plan_limits
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'trial', ?, FALSE, ?, ?, 'free', ?)`,
             [
                 businessName,
                 slug,
@@ -275,7 +276,8 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
                     slotDuration: 30,
                     minAdvanceHours: 2,
                     maxAdvanceDays: 30
-                })
+                }),
+                JSON.stringify(getPlanLimits('free'))
             ]
         );
 

@@ -4,6 +4,26 @@ const dashboard = {
     businessSettings: {}, // Store business settings including WhatsApp config
 
     // Load dashboard with stats and recent bookings
+    // Aviso cuando el plan tiene límite de reservas y se está acercando o lo ha alcanzado
+    renderPlanUsageBanner(planInfo) {
+        const limit = planInfo?.limits?.maxBookingsPerMonth;
+        const used = planInfo?.usage?.bookingsThisMonth || 0;
+        if (!limit || used < limit * 0.8) return '';
+
+        const full = used >= limit;
+        const color = full ? '#ef4444' : '#f59e0b';
+        const text = full
+            ? `Has llegado al límite de <strong>${limit} reservas</strong> de este mes. <strong>Tus clientes ya no pueden reservar online</strong> hasta el mes que viene.`
+            : `Llevas <strong>${used} de ${limit} reservas</strong> este mes. Al llegar a ${limit}, tus clientes no podrán reservar online hasta el mes que viene.`;
+
+        return `
+            <div class="plan-usage-banner" style="border-left-color: ${color};">
+                <div class="plan-usage-text">${full ? '⛔' : '⚠️'} ${text}</div>
+                <button class="plan-usage-btn" onclick="app.navigateTo('billing')">Ver planes</button>
+            </div>
+        `;
+    },
+
     async load() {
         const contentArea = document.getElementById('contentArea');
         document.getElementById('pageTitle').textContent = 'Dashboard';
@@ -70,17 +90,22 @@ const dashboard = {
             const d2 = new Date();
             d2.setDate(d2.getDate() + 1);
             const tomorrowStr = `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, '0')}-${String(d2.getDate()).padStart(2, '0')}`;
-            const [tomorrowRes, feedbackRes, cancelledRes] = await Promise.all([
+            const [tomorrowRes, feedbackRes, cancelledRes, planRes] = await Promise.all([
                 api.get(`/api/bookings/${auth.getBusinessId()}?date=${tomorrowStr}`),
                 api.get(`/api/admin/feedback/pending/${auth.getBusinessId()}`),
-                api.get(`/api/bookings/${auth.getBusinessId()}/cancelled-future`)
+                api.get(`/api/bookings/${auth.getBusinessId()}/cancelled-future`),
+                api.get(`/api/business/${auth.getBusinessId()}/plan`).catch(() => null)
             ]);
+            this.planInfo = planRes?.data || null;
             this.tomorrowBookings = (tomorrowRes.data || []).filter(b => b.status !== 'cancelled');
             this.feedbackPending  = feedbackRes.data || [];
             this.cancelledFuture  = cancelledRes.data || [];
 
             // Render dashboard
             contentArea.innerHTML = `
+                <!-- Aviso de límite de reservas del plan -->
+                ${this.renderPlanUsageBanner(this.planInfo)}
+
                 <!-- 4 Action Boxes -->
                 ${this.renderActionBoxes(todayBookings)}
 
@@ -2002,3 +2027,21 @@ const dashboard = {
 
 // Export
 window.dashboard = dashboard;
+
+// Estilos del aviso de límite del plan
+(function () {
+    const style = document.createElement('style');
+    style.textContent = `
+        .plan-usage-banner {
+            display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+            background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: 4px solid;
+            border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+        }
+        .plan-usage-text { color: var(--text-primary); line-height: 1.5; flex: 1; min-width: 220px; }
+        .plan-usage-btn {
+            background: var(--primary-color); color: #fff; border: none; border-radius: 8px;
+            padding: 0.6rem 1.2rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+        }
+    `;
+    document.head.appendChild(style);
+})();

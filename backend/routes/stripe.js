@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
+const { getPlanLimits } = require('../plans');
 
 // Email service
 const {
@@ -281,10 +282,11 @@ async function handleCheckoutComplete(session) {
     await db.query(`
         UPDATE businesses
         SET plan = ?,
+            plan_limits = ?,
             subscription_status = 'trialing',
             trial_ends_at = DATE_ADD(NOW(), INTERVAL 7 DAY)
         WHERE id = ?
-    `, [planName, businessId]);
+    `, [planName, JSON.stringify(getPlanLimits(planName)), businessId]);
 
     // Enviar email de bienvenida
     const businessData = await db.query(`
@@ -349,12 +351,18 @@ async function handleSubscriptionUpdate(subscription) {
     ]);
 
     // Actualizar estado en businesses
-    await db.query(`
-        UPDATE businesses
-        SET subscription_status = ?,
-            plan = ?
-        WHERE id = ?
-    `, [status, planName, businessId]);
+    if (planName) {
+        await db.query(`
+            UPDATE businesses
+            SET subscription_status = ?,
+                plan = ?,
+                plan_limits = ?
+            WHERE id = ?
+        `, [status, planName, JSON.stringify(getPlanLimits(planName)), businessId]);
+    } else {
+        // Sin plan en los metadatos: solo actualizar el estado, sin tocar plan ni límites
+        await db.query('UPDATE businesses SET subscription_status = ? WHERE id = ?', [status, businessId]);
+    }
 
     // Si el pago falló, iniciar período de gracia
     if (status === 'past_due') {
@@ -380,9 +388,10 @@ async function handleSubscriptionCanceled(subscription) {
     await db.query(`
         UPDATE businesses
         SET plan = 'free',
+            plan_limits = ?,
             subscription_status = 'canceled'
         WHERE id = ?
-    `, [businessId]);
+    `, [JSON.stringify(getPlanLimits('free')), businessId]);
 
     await db.query(`
         UPDATE subscriptions
