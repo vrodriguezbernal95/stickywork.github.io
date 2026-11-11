@@ -264,12 +264,12 @@
         </div>
     </main>
 
-    <footer class="booking-footer">
+    <footer class="booking-footer" id="brandingFooter" hidden>
         <div>
-            Reservas gestionadas con <a href="https://stickywork.com" target="_blank">StickyWork</a>
+            Reservas gestionadas con <a href="https://stickywork.com/?utm_source=public_page&amp;utm_medium=referral&amp;utm_campaign=powered_by" target="_blank" rel="noopener">StickyWork</a>
         </div>
         <div class="footer-cta">
-            <a href="https://stickywork.com/registro" target="_blank">Quiero esto para mi negocio</a>
+            <a href="https://stickywork.com/registro.html?utm_source=public_page&amp;utm_medium=referral&amp;utm_campaign=powered_by" target="_blank" rel="noopener">Crea tu página de reservas gratis →</a>
         </div>
     </footer>
 
@@ -423,13 +423,16 @@
                 // Inicializar widget
                 document.getElementById('widget-loading').style.display = 'none';
 
+                // La marca la muestra el pie de esta página (solo plan gratuito); el widget no la repite
+                document.getElementById('brandingFooter').hidden = businessData.showBranding === false;
                 StickyWork.init({
                     businessId: businessData.id,
                     mode: 'embedded',
                     apiUrl: API_URL,
                     language: 'es',
                     showPrices: true,
-                    showDuration: true
+                    showDuration: true,
+                    hideBranding: true
                 });
 
             } catch (error) {

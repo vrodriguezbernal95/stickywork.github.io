@@ -74,4 +74,11 @@ function getPlanLimits(plan) {
     return PLAN_LIMITS[plan] || PLAN_LIMITS.free;
 }
 
-module.exports = { PLAN_LIMITS, VALID_PLANS, getPlanLimits };
+// "Funciona con StickyWork" (emails al cliente, widget y página pública): solo en el plan gratuito.
+// Quitar la marca es una ventaja de los planes de pago.
+const PAID_PLANS = ['founders', 'professional', 'premium'];
+function showsBranding(plan) {
+    return !PAID_PLANS.includes(plan);
+}
+
+module.exports = { PLAN_LIMITS, VALID_PLANS, getPlanLimits, showsBranding };

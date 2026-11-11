@@ -100,6 +100,18 @@ async function verifyEmailService() {
     }
 }
 
+// Firma "Funciona con StickyWork" al pie de los emails que recibe el cliente final (solo plan gratuito)
+const { showsBranding } = require('./plans');
+function brandingFooter(business) {
+    if (!business || !showsBranding(business.plan)) return '';
+    return `
+            <p style="font-size: 12px; color: #9ca3af; margin-top: 14px; padding-top: 12px; border-top: 1px solid #eef0f3;">
+                Agenda gestionada con
+                <a href="https://stickywork.com/?utm_source=email&amp;utm_medium=footer&amp;utm_campaign=powered_by" style="color: #4D53FF; font-weight: 600; text-decoration: none;">StickyWork</a>
+                · <a href="https://stickywork.com/registro.html?utm_source=email&amp;utm_medium=footer&amp;utm_campaign=powered_by" style="color: #6b7280;">Crea tu agenda online gratis</a>
+            </p>`;
+}
+
 // Textos del email de reserva al cliente según su estado
 const BOOKING_EMAIL_VARIANTS = {
     confirmed: {
@@ -257,6 +269,7 @@ const emailTemplates = {
             <p style="font-size: 12px; color: #999; margin-top: 10px;">
                 Este es un email automático, por favor no respondas a este mensaje.
             </p>
+            ${brandingFooter(business)}
         </div>
     </div>
 </body>
@@ -345,6 +358,7 @@ const emailTemplates = {
             <p style="font-size: 12px; color: #999; margin-top: 10px;">
                 Este es un email automático, por favor no respondas a este mensaje.
             </p>
+            ${brandingFooter(business)}
         </div>
     </div>
 </body>
@@ -1523,5 +1537,6 @@ module.exports = {
     sendConsultancyScheduledEmail,
     sendEmail,
     emailTemplates,
-    getTransporter
+    getTransporter,
+    brandingFooter
 };

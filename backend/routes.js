@@ -15,6 +15,7 @@ const { requireAuth, requireBusinessAccess, requireRole } = require('./middlewar
 const { requireSuperAdmin } = require('./middleware/super-admin');
 const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
+const { showsBranding } = require('./plans');
 const { setupPostgres } = require('./setup-postgres');
 const { createBookingLimiter, contactLimiter } = require('./middleware/rate-limit');
 
@@ -2644,7 +2645,7 @@ router.get('/api/public/business/:slug', async (req, res) => {
                 id, name, slug, type_key, type,
                 phone, address, website, logo_url, description,
                 widget_settings, booking_settings, widget_customization,
-                public_page_settings
+                public_page_settings, plan
             FROM businesses
             WHERE slug = ?`,
             [slug]
@@ -2696,11 +2697,13 @@ router.get('/api/public/business/:slug', async (req, res) => {
             [businessData.id]
         );
 
+        const { plan, ...publicData } = businessData;
         res.json({
             success: true,
             data: {
-                ...businessData,
-                services
+                ...publicData,
+                services,
+                showBranding: showsBranding(plan)
             }
         });
     } catch (error) {
@@ -3144,7 +3147,7 @@ router.get('/api/widget/:businessId', async (req, res) => {
 
         // Obtener negocio
         const businesses = await db.query(
-            `SELECT id, name, type_key, type, email, phone, address,
+            `SELECT id, name, slug, type_key, type, email, phone, address, plan,
                     widget_settings, booking_settings, widget_customization
              FROM businesses WHERE id = ?`,
             [businessId]
@@ -3263,7 +3266,10 @@ router.get('/api/widget/:businessId', async (req, res) => {
             // Configuración de diferenciación adultos/niños (para restaurantes principalmente)
             childrenSettings: bookingSettings.childrenSettings || null,
             // El negocio confirma cada reserva a mano → el widget muestra "Solicitud enviada"
-            requireConfirmation: bookingSettings.requireConfirmation === true
+            requireConfirmation: bookingSettings.requireConfirmation === true,
+            // "Reservas con StickyWork" (solo plan gratuito)
+            showBranding: showsBranding(business.plan),
+            slug: business.slug
         });
     } catch (error) {
         console.error('Error obteniendo config del widget:', error);
@@ -4632,6 +4638,7 @@ router.post('/api/booking/manage/:token/reschedule', async (req, res) => {
                                 <p style="color: #9ca3af; font-size: 0.8rem; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
                                     Este email ha sido enviado automáticamente por StickyWork.
                                 </p>
+                                ${emailService.brandingFooter(business)}
                             </div>
                         </div>
                     `

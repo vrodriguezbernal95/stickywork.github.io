@@ -77,6 +77,8 @@
             successPending: '¡Solicitud enviada!',
             successPendingMessage: 'Tu cita aún no está confirmada. Te enviaremos un email cuando el negocio la acepte. Por favor, no acudas hasta recibirlo.',
             newBooking: 'Nueva reserva',
+            poweredBy: 'Reservas con',
+            brandingCta: '¿Tienes un negocio? Crea tu agenda gratis →',
             demoNote: 'Demo: en producción se guardará en tu base de datos',
             loading: 'Cargando...',
             error: 'Error al cargar. Inténtalo de nuevo.',
@@ -128,6 +130,8 @@
             successPending: 'Request sent!',
             successPendingMessage: 'Your appointment is not confirmed yet. We will email you once the business accepts it. Please do not come until you receive it.',
             newBooking: 'New Booking',
+            poweredBy: 'Bookings by',
+            brandingCta: 'Own a business? Create your free booking page →',
             demoNote: 'Demo - In production it will save to your database',
             loading: 'Loading...',
             error: 'Error loading. Please try again.',
@@ -574,6 +578,28 @@
                 margin-top: 1rem;
                 font-size: 0.9rem;
             }
+            .stickywork-branding {
+                text-align: center;
+                margin-top: 0.9rem;
+                font-size: 0.78rem;
+                color: ${colors.textSecondary};
+                opacity: 0.85;
+            }
+            .stickywork-branding a {
+                color: ${colors.textSecondary};
+                font-weight: 700;
+                text-decoration: none;
+            }
+            .stickywork-branding a:hover { text-decoration: underline; }
+            .stickywork-branding-cta {
+                display: inline-block;
+                margin-top: 1rem;
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: ${colors.textSecondary};
+                text-decoration: none;
+            }
+            .stickywork-branding-cta:hover { text-decoration: underline; }
             .stickywork-service-option {
                 display: flex;
                 justify-content: space-between;
@@ -1731,12 +1757,27 @@
                     </div>
                     <button type="submit" class="stickywork-button">${t.submit}</button>
                     ${isDemoMode ? `<p class="stickywork-note">${t.demoNote}</p>` : ''}
+                    ${brandingLine(t)}
                 </form>
             </div>
         `;
     }
 
     // Crear HTML de confirmacion
+    // "Reservas con StickyWork": solo en el plan gratuito (showBranding lo decide el servidor).
+    // La página pública de StickyWork lo oculta (hideBranding) porque ya lo muestra en su pie.
+    function showBranding() {
+        return config.showBranding === true && !config.hideBranding;
+    }
+    function brandingUrl(page, content) {
+        const params = 'utm_source=widget&utm_medium=referral&utm_campaign=powered_by&utm_content=' + encodeURIComponent(content + (config.slug ? '_' + config.slug : ''));
+        return 'https://stickywork.com/' + page + '?' + params;
+    }
+    function brandingLine(t) {
+        if (!showBranding()) return '';
+        return `<p class="stickywork-branding">${t.poweredBy} <a href="${brandingUrl('', 'widget_form')}" target="_blank" rel="nofollow noopener">StickyWork</a></p>`;
+    }
+
     function createSuccessHTML(formData) {
         const t = translations[config.language];
         const activeMode = currentTabMode || config.bookingMode;
@@ -1809,6 +1850,7 @@
                     <div class="stickywork-success-details">${details}</div>
                     <p class="stickywork-success-message">${pendingConfirmation ? t.successPendingMessage : t.successMessage}</p>
                     <button onclick="StickyWork.reset()" class="stickywork-button">${t.newBooking}</button>
+                    ${showBranding() ? `<a class="stickywork-branding-cta" href="${brandingUrl('registro.html', 'widget_success')}" target="_blank" rel="nofollow noopener">${t.brandingCta}</a>` : ''}
                 </div>
             </div>
         `;
