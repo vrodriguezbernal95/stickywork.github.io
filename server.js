@@ -51,7 +51,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       scriptSrcAttr: ["'unsafe-inline'"], // Permite onclick, onsubmit, etc.
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"]
+      connectSrc: ["'self'", "https://api.stickywork.com"]
     }
   },
   crossOriginEmbedderPolicy: false, // Permite embedding del widget

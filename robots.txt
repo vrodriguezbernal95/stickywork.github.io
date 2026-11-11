@@ -30,6 +30,7 @@ Disallow: /privacidad.html
 # Bloquear archivos de test
 Disallow: /test-*.html
 Disallow: /widget-test.html
+Disallow: /demo-widget.html
 Disallow: /widget/
 
 # Bloquear directorios técnicos

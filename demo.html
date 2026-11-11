@@ -10,7 +10,6 @@
 
       gtag('config', 'G-QNNFJWC6PV');
     </script>
-    <!-- Microsoft Clarity -->
     <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -19,55 +18,201 @@
     })(window, document, "clarity", "script", "us5furlqob");
     </script>
 
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Interactiva - StickyWork</title>
-    <meta name="description" content="Prueba el sistema de reservas de StickyWork en vivo. Ve cómo quedaría en tu negocio: restaurante, peluquería, clínica o cualquier negocio con cita previa. Sin registro.">
+    <title>Demo en vivo - StickyWork | Prueba el sistema de reservas</title>
+    <meta name="description" content="Prueba StickyWork como lo vivirán tus clientes: elige tu sector, haz una reserva real en un negocio de demostración y mira qué recibes tú y qué recibe tu cliente.">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
     <link rel="canonical" href="https://stickywork.com/demo.html">
-    <link rel="stylesheet" href="css/styles.css">
 
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://stickywork.com/demo.html">
     <meta property="og:site_name" content="StickyWork">
-    <meta property="og:title" content="Demo en Vivo - StickyWork">
-    <meta property="og:description" content="Prueba nuestro sistema de reservas en acción. Ver demos de restaurantes, peluquerías, clínicas y más.">
+    <meta property="og:title" content="Demo en vivo - StickyWork">
+    <meta property="og:description" content="Haz una reserva real en un negocio de demostración y mira todo el proceso: tu cliente, tu panel y los emails.">
     <meta property="og:image" content="https://stickywork.com/images/og-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="StickyWork - Sistema de Reservas Online">
     <meta property="og:locale" content="es_ES">
-
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://stickywork.com/demo.html">
-    <meta name="twitter:title" content="Demo en Vivo - StickyWork">
-    <meta name="twitter:description" content="Prueba nuestro sistema de reservas en acción. Ver demos de restaurantes, peluquerías, clínicas y más.">
-    <meta name="twitter:image" content="https://stickywork.com/images/twitter-card.jpg">
-    <meta name="twitter:image:alt" content="StickyWork Dashboard">
-    <meta name="twitter:creator" content="@stickywork">
-    <meta name="twitter:site" content="@stickywork">
 
-    <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/images/favicon-512x512.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
-
-    <!-- Web App Manifest -->
     <link rel="manifest" href="/manifest.json">
-
-    <!-- Theme Color -->
     <meta name="theme-color" content="#0F16A3">
-    <meta name="msapplication-TileColor" content="#0F16A3">
-    <meta name="msapplication-TileImage" content="/images/favicon-512x512.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        /* ===== Página demo (prefijo dm-) ===== */
+        .dm-section { padding: 5rem 1.5rem; }
+        .dm-container { max-width: 1160px; margin: 0 auto; }
+        .dm-eyebrow { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 0.75rem; }
+        .dm-title { font-family: 'Poppins', sans-serif; font-size: clamp(1.7rem, 3.2vw, 2.4rem); line-height: 1.2; color: var(--text-primary); margin: 0 0 0.75rem; }
+        .dm-lead { font-size: 1.08rem; line-height: 1.7; color: var(--text-secondary); max-width: 640px; margin: 0; }
+        .dm-center { text-align: center; }
+        .dm-center .dm-lead { margin: 0 auto; }
+
+        /* Hero */
+        .dm-hero { padding: 8rem 1.5rem 4rem; text-align: center; background:
+            radial-gradient(1200px 400px at 50% -10%, rgba(46, 53, 245, 0.18), transparent 70%),
+            linear-gradient(180deg, var(--bg-secondary), var(--bg-primary)); }
+        .dm-hero h1 { font-family: 'Poppins', sans-serif; font-size: clamp(2.1rem, 5vw, 3.4rem); line-height: 1.12; margin: 0 auto 1.1rem; max-width: 820px; color: var(--text-primary); }
+        .dm-hero h1 span { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .dm-hero p { font-size: 1.15rem; line-height: 1.65; color: var(--text-secondary); max-width: 640px; margin: 0 auto 2rem; }
+        .dm-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.95rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; color: var(--primary-color); background: rgba(46, 53, 245, 0.08); border: 1px solid rgba(46, 53, 245, 0.18); margin-bottom: 1.4rem; }
+        .dm-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2); }
+        .dm-trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem 1.6rem; margin-top: 2rem; color: var(--text-secondary); font-size: 0.95rem; }
+        .dm-trust span::before { content: '✓'; color: #22c55e; font-weight: 700; margin-right: 0.45rem; }
+
+        .dm-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.9rem 1.6rem; border-radius: 12px; font-weight: 600; font-size: 1rem; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: var(--transition); }
+        .dm-btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: #fff; box-shadow: 0 10px 25px rgba(46, 53, 245, 0.28); }
+        .dm-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(46, 53, 245, 0.35); }
+        .dm-btn-ghost { background: var(--bg-primary); color: var(--text-primary); border-color: var(--border-color); }
+        .dm-btn-ghost:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .dm-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+
+        /* Demo interactiva */
+        .dm-demo { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 3rem; align-items: start; margin-top: 3rem; }
+        .dm-side { position: sticky; top: 96px; }
+        .dm-step-label { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); margin: 0 0 0.75rem; }
+        .dm-sectors { display: grid; gap: 0.5rem; margin-bottom: 1.75rem; }
+        .dm-sector { display: flex; align-items: center; gap: 0.85rem; width: 100%; text-align: left; padding: 0.8rem 1rem; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); cursor: pointer; font: inherit; transition: var(--transition); }
+        .dm-sector:hover { border-color: var(--primary-color); }
+        .dm-sector[aria-pressed="true"] { border-color: var(--primary-color); background: rgba(46, 53, 245, 0.06); box-shadow: 0 0 0 3px rgba(46, 53, 245, 0.12); }
+        .dm-sector-icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: var(--bg-secondary); }
+        .dm-sector strong { display: block; font-size: 0.98rem; }
+        .dm-sector small { color: var(--text-secondary); font-size: 0.82rem; }
+        .dm-info { border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-secondary); padding: 1.25rem 1.3rem; }
+        .dm-info h3 { margin: 0 0 0.6rem; font-size: 1.02rem; color: var(--text-primary); }
+        .dm-info ul { margin: 0 0 1rem; padding: 0; list-style: none; }
+        .dm-info li { position: relative; padding-left: 1.4rem; margin-bottom: 0.45rem; color: var(--text-secondary); font-size: 0.94rem; line-height: 1.5; }
+        .dm-info li::before { content: '✓'; position: absolute; left: 0; color: var(--primary-color); font-weight: 700; }
+        .dm-info-links { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.9rem; }
+        .dm-info-links a { color: var(--primary-color); font-weight: 600; text-decoration: none; }
+        .dm-info-links a:hover { text-decoration: underline; }
+        .dm-real { display: flex; gap: 0.75rem; margin-top: 1rem; padding: 0.9rem 1rem; border-radius: 12px; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); }
+
+        .dm-stage { display: flex; flex-direction: column; align-items: center; }
+        .dm-toggle { display: inline-flex; padding: 4px; border-radius: 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); margin-bottom: 1.25rem; }
+        .dm-toggle button { border: none; background: transparent; color: var(--text-secondary); font: inherit; font-weight: 600; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 9px; cursor: pointer; }
+        .dm-toggle button[aria-pressed="true"] { background: var(--bg-primary); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+
+        .dm-device { width: 100%; transition: max-width 0.35s ease; }
+        .dm-device.is-desktop { max-width: 760px; }
+        .dm-device.is-mobile { max-width: 400px; }
+        .dm-frame { border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); }
+        .dm-device.is-mobile .dm-frame { border-radius: 38px; border: 10px solid #111827; }
+        .dm-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; }
+        .dm-device.is-mobile .dm-bar { justify-content: center; padding: 0.55rem; }
+        .dm-dots { display: flex; gap: 6px; }
+        .dm-dots i { width: 11px; height: 11px; border-radius: 50%; background: #d1d5db; }
+        .dm-dots i:nth-child(1) { background: #f87171; } .dm-dots i:nth-child(2) { background: #fbbf24; } .dm-dots i:nth-child(3) { background: #34d399; }
+        .dm-device.is-mobile .dm-dots { display: none; }
+        .dm-url { flex: 1; text-align: center; font-size: 0.8rem; color: #6b7280; background: #fff; border-radius: 8px; padding: 0.3rem 0.7rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .dm-device.is-mobile .dm-url { flex: 0 1 auto; }
+        .dm-canvas { position: relative; padding: 1.5rem; background: #fff; min-height: 560px; }
+        .dm-device.is-mobile .dm-canvas { padding: 0.6rem; }
+        .dm-canvas iframe { display: block; width: 100%; height: 900px; border: 0; transition: opacity 0.25s ease; }
+        .dm-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #fff; color: #6b7280; font-size: 0.95rem; transition: opacity 0.25s ease; }
+        .dm-loading::before { content: ''; width: 22px; height: 22px; margin-right: 0.6rem; border-radius: 50%; border: 3px solid #e5e7eb; border-top-color: #2E35F5; animation: dm-spin 0.8s linear infinite; }
+        @keyframes dm-spin { to { transform: rotate(360deg); } }
+        .dm-canvas.ready .dm-loading { opacity: 0; pointer-events: none; }
+
+        /* Lo que pasa después */
+        .dm-flow { display: grid; gap: 4.5rem; margin-top: 3.5rem; }
+        .dm-flow-item { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 3rem; align-items: center; }
+        .dm-flow-item:nth-child(even) .dm-flow-text { order: 2; }
+        .dm-num { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); margin-bottom: 1rem; }
+        .dm-flow-text h3 { font-family: 'Poppins', sans-serif; font-size: 1.5rem; margin: 0 0 0.75rem; color: var(--text-primary); }
+        .dm-flow-text p { color: var(--text-secondary); line-height: 1.7; margin: 0 0 1rem; }
+        .dm-flow-text ul { margin: 0; padding: 0; list-style: none; }
+        .dm-flow-text li { padding-left: 1.4rem; position: relative; color: var(--text-secondary); margin-bottom: 0.5rem; line-height: 1.55; }
+        .dm-flow-text li::before { content: '✓'; position: absolute; left: 0; color: var(--primary-color); font-weight: 700; }
+        .dm-tabs { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+        .dm-tabs button { border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-secondary); font: inherit; font-size: 0.88rem; font-weight: 600; padding: 0.45rem 0.9rem; border-radius: 999px; cursor: pointer; }
+        .dm-tabs button[aria-selected="true"] { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+        .dm-shot { border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); background: var(--bg-secondary); }
+        .dm-shot img { display: block; width: 100%; height: auto; }
+        .dm-shot.is-mail { max-width: 460px; margin: 0 auto; max-height: 560px; overflow-y: auto; }
+
+        /* Formas de recibir reservas */
+        .dm-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-top: 3rem; }
+        .dm-card { border-radius: 18px; border: 1px solid var(--border-color); background: var(--bg-primary); padding: 1.6rem; display: flex; flex-direction: column; }
+        .dm-card-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: rgba(46, 53, 245, 0.08); margin-bottom: 1rem; }
+        .dm-card h3 { margin: 0 0 0.5rem; font-size: 1.15rem; color: var(--text-primary); }
+        .dm-card p { margin: 0 0 1.2rem; color: var(--text-secondary); line-height: 1.6; font-size: 0.96rem; flex: 1; }
+        .dm-card a.dm-link { color: var(--primary-color); font-weight: 600; text-decoration: none; }
+        .dm-card a.dm-link:hover { text-decoration: underline; }
+        .dm-qr { display: flex; align-items: center; gap: 1rem; }
+        .dm-qr img { width: 96px; height: 96px; border-radius: 10px; background: #fff; padding: 6px; border: 1px solid var(--border-color); }
+
+        /* Webs de ejemplo */
+        .dm-sites { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 2.5rem; }
+        .dm-site { display: block; text-decoration: none; border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-primary); padding: 1.25rem; transition: var(--transition); }
+        .dm-site:hover { border-color: var(--primary-color); transform: translateY(-3px); box-shadow: var(--shadow); }
+        .dm-site span { font-size: 1.6rem; }
+        .dm-site strong { display: block; margin: 0.6rem 0 0.25rem; color: var(--text-primary); }
+        .dm-site small { color: var(--text-secondary); }
+
+        /* Incluye */
+        .dm-features { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-top: 3rem; }
+        .dm-feature { border-radius: 16px; background: var(--bg-primary); border: 1px solid var(--border-color); padding: 1.3rem; }
+        .dm-feature span { font-size: 1.4rem; }
+        .dm-feature h3 { font-size: 1rem; margin: 0.6rem 0 0.35rem; color: var(--text-primary); }
+        .dm-feature p { margin: 0; font-size: 0.9rem; line-height: 1.55; color: var(--text-secondary); }
+
+        /* Código para la web */
+        .dm-dev { max-width: 820px; margin: 0 auto; }
+        .dm-dev details { border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-primary); }
+        .dm-dev summary { list-style: none; cursor: pointer; padding: 1.2rem 1.4rem; font-weight: 600; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; }
+        .dm-dev summary::-webkit-details-marker { display: none; }
+        .dm-dev summary::after { content: '+'; font-size: 1.4rem; color: var(--text-secondary); }
+        .dm-dev details[open] summary::after { content: '−'; }
+        .dm-dev-body { padding: 0 1.4rem 1.4rem; }
+        .dm-dev-body p { color: var(--text-secondary); line-height: 1.6; margin: 0 0 1rem; }
+        .dm-code { position: relative; background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 1.1rem 1.2rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.83rem; line-height: 1.6; overflow-x: auto; white-space: pre; }
+        .dm-copy { position: absolute; top: 0.6rem; right: 0.6rem; border: none; border-radius: 8px; padding: 0.35rem 0.75rem; font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: rgba(255,255,255,0.12); color: #fff; }
+        .dm-copy:hover { background: rgba(255,255,255,0.22); }
+
+        /* CTA final */
+        .dm-final { border-radius: 28px; padding: 3.5rem 2rem; text-align: center; color: #fff; background:
+            radial-gradient(600px 240px at 20% 0%, rgba(255,255,255,0.18), transparent 70%),
+            linear-gradient(135deg, #0F16A3, #2E35F5 55%, #bf2300); }
+        .dm-final h2 { font-family: 'Poppins', sans-serif; color: #fff; font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin: 0 0 0.75rem; }
+        .dm-final p { opacity: 0.9; font-size: 1.08rem; margin: 0 auto 1.75rem; max-width: 560px; line-height: 1.6; }
+        .dm-final .dm-btn-primary { background: #fff; color: #0F16A3; box-shadow: none; }
+        .dm-final .dm-btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.5); }
+        .dm-final small { display: block; margin-top: 1rem; opacity: 0.8; }
+
+        .dm-alt { background: var(--bg-secondary); }
+        [data-theme="dark"] .dm-eyebrow, [data-theme="dark"] .dm-info-links a, [data-theme="dark"] .dm-card a.dm-link,
+        [data-theme="dark"] .dm-badge, [data-theme="dark"] .dm-info li::before, [data-theme="dark"] .dm-flow-text li::before { color: #9ea2ff; }
+
+        @media (max-width: 980px) {
+            .dm-demo { grid-template-columns: 1fr; gap: 2rem; }
+            .dm-side { position: static; }
+            .dm-sectors { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+            .dm-flow-item { grid-template-columns: 1fr; gap: 1.5rem; }
+            .dm-flow-item:nth-child(even) .dm-flow-text { order: 0; }
+            .dm-cards { grid-template-columns: 1fr; }
+            .dm-sites, .dm-features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 560px) {
+            .dm-section { padding: 3.5rem 1rem; }
+            .dm-hero { padding: 6.5rem 1rem 3rem; }
+            .dm-sectors { grid-template-columns: 1fr 1fr; }
+            .dm-sector { padding: 0.65rem; gap: 0.55rem; }
+            .dm-sector small { display: none; }
+            .dm-sector-icon { width: 34px; height: 34px; font-size: 1.1rem; }
+            .dm-canvas { padding: 0.75rem; }
+            .dm-toggle { display: none; }
+            .dm-features { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Navegación -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">StickyWork</a>
@@ -76,7 +221,7 @@
                 <li><a href="como-funciona.html" class="nav-link">Cómo funciona</a></li>
                 <li><a href="planes.html" class="nav-link">Planes</a></li>
                 <li><a href="casos-exito.html" class="nav-link">Casos de uso</a></li>
-                <li><a href="demo.html" class="nav-link">Demo</a></li>
+                <li><a href="demo.html" class="nav-link active">Demo</a></li>
                 <li class="nav-sep" aria-hidden="true"></li><li><a href="registro.html" class="nav-link nav-link-cta">Empezar Gratis</a></li>
                 <li><a href="admin-login.html" class="nav-link" style="color: var(--primary-color);">Iniciar Sesión</a></li>
                 <li><button id="theme-toggle" class="theme-toggle-nav" aria-label="Cambiar a modo oscuro" role="menuitem"><span class="theme-icon">🌙</span></button></li>
@@ -84,356 +229,244 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Prueba Nuestro Sistema en Vivo</h1>
-            <p>Experimenta cómo funcionaría el widget de reservas en tu sitio web</p>
+    <!-- ===== Hero ===== -->
+    <header class="dm-hero">
+        <span class="dm-badge">Demo en vivo · sin registro</span>
+        <h1>Pruébalo como lo vivirán <span>tus clientes</span></h1>
+        <p>Elige tu tipo de negocio y haz una reserva de verdad. Después te enseñamos lo que verías tú en tu panel y lo que recibiría tu cliente.</p>
+        <div class="dm-actions">
+            <a href="#probar" class="dm-btn dm-btn-primary">Probar la demo</a>
+            <a href="registro.html" class="dm-btn dm-btn-ghost">Crear mi cuenta gratis</a>
         </div>
-    </section>
-
-    <!-- Selector de Modo -->
-    <section style="padding: 2rem 0; background-color: var(--bg-secondary);">
-        <div class="container">
-            <div style="max-width: 700px; margin: 0 auto; text-align: center;">
-                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Elige el modo de integración</h3>
-                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <button onclick="mostrarModo('embedded')" id="btnModoEmbedded" style="padding: 1rem 2rem; border: 2px solid var(--primary-color); background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; min-width: 220px;">
-                        📄 Formulario Directo
-                    </button>
-                    <button onclick="mostrarModo('modal')" id="btnModoModal" style="padding: 1rem 2rem; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; min-width: 220px;">
-                        🎯 Botón Flotante
-                    </button>
-                    <button onclick="mostrarModo('qr')" id="btnModoQR" style="padding: 1rem 2rem; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease; min-width: 220px;">
-                        📱 Código QR
-                    </button>
-                </div>
-            </div>
+        <div class="dm-trust">
+            <span>Tus clientes no descargan ninguna app</span>
+            <span>Funciona en cualquier móvil</span>
+            <span>Plan gratuito, sin tarjeta</span>
         </div>
-    </section>
+    </header>
 
-    <!-- Demo Widget -->
-    <section style="background-color: var(--bg-secondary);">
-        <div class="container">
-            <div id="tituloModo">
-                <h2 class="section-title">Formulario Directo - Integrado en la Página</h2>
-                <p class="section-subtitle">El formulario se muestra directamente en tu página web</p>
+    <!-- ===== Demo interactiva ===== -->
+    <section class="dm-section" id="probar">
+        <div class="dm-container">
+            <div class="dm-center">
+                <span class="dm-eyebrow">Paso 1 · Tu cliente reserva</span>
+                <h2 class="dm-title">Elige un negocio y reserva como si fueras su cliente</h2>
+                <p class="dm-lead">Cada ejemplo usa la configuración real de un negocio de demostración: sus servicios, sus horarios y sus colores.</p>
             </div>
 
-            <div class="demo-container">
-                <!-- MODO EMBEBIDO -->
-                <div class="widget-preview" id="modoEmbedded">
-                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1rem;">
-                        <strong>Widget en Vivo:</strong> Este es el widget embebido funcionando
-                    </p>
-
-                    <!-- Widget Demo Real -->
-                    <div id="stickywork-widget">
-                        <!-- El widget se renderizará aquí -->
+            <div class="dm-demo">
+                <aside class="dm-side">
+                    <p class="dm-step-label">Tipo de negocio</p>
+                    <div class="dm-sectors" role="group" aria-label="Tipo de negocio">
+                        <button class="dm-sector" data-sector="belleza" aria-pressed="true"><span class="dm-sector-icon">💇‍♀️</span><span><strong>Belleza</strong><small>Estética Bella &amp; Bella</small></span></button>
+                        <button class="dm-sector" data-sector="nutricion" aria-pressed="false"><span class="dm-sector-icon">🥗</span><span><strong>Nutrición</strong><small>NutriVida</small></span></button>
+                        <button class="dm-sector" data-sector="psicologia" aria-pressed="false"><span class="dm-sector-icon">🧠</span><span><strong>Psicología</strong><small>Mente Clara</small></span></button>
+                        <button class="dm-sector" data-sector="restaurante" aria-pressed="false"><span class="dm-sector-icon">🍝</span><span><strong>Restaurante</strong><small>La Famiglia</small></span></button>
+                        <button class="dm-sector" data-sector="gimnasio" aria-pressed="false"><span class="dm-sector-icon">🏋️</span><span><strong>Gimnasio</strong><small>PowerFit</small></span></button>
                     </div>
 
-                    <p style="text-align: center; color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
-                        ✨ Demo interactiva - En producción se conecta a tu base de datos
-                    </p>
-                </div>
-
-                <!-- MODO MODAL -->
-                <div class="widget-preview" id="modoModal" style="display: none;">
-                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
-                        <strong>Demo del Botón Flotante:</strong> Haz clic en el botón para abrir el formulario
-                    </p>
-
-                    <div style="text-align: center; padding: 4rem 2rem; background: var(--bg-secondary); border-radius: 15px;">
-                        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem;">
-                            Así se vería el botón en tu página web:
-                        </p>
-                        <button onclick="abrirModalDemo()" style="padding: 1rem 2.5rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;">
-                            📅 Reserva tu Cita Ahora
-                        </button>
-                        <p style="color: var(--text-secondary); margin-top: 1.5rem; font-size: 0.9rem;">
-                            💡 Personalizable: texto, colores, icono y posición
-                        </p>
+                    <div class="dm-info" aria-live="polite">
+                        <h3 id="dmInfoTitle">Qué estás viendo</h3>
+                        <ul id="dmInfoList"></ul>
+                        <div class="dm-info-links" id="dmInfoLinks"></div>
                     </div>
 
-                    <p style="text-align: center; color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
-                        ✨ Al hacer clic, se abre un modal centrado con el formulario
-                    </p>
-                </div>
+                    <div class="dm-real">
+                        <span aria-hidden="true">✉️</span>
+                        <span><strong>Es una reserva de verdad</strong> en un negocio de demostración. Pon tu email y recibirás la misma confirmación que recibirían tus clientes.</span>
+                    </div>
+                </aside>
 
-                <!-- MODO QR -->
-                <div class="widget-preview" id="modoQR" style="display: none;">
-                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: clamp(0.95rem, 2vw, 1.1rem);">
-                        <strong>Código QR para Reservas:</strong> Ideal para materiales impresos
-                    </p>
-
-                    <!-- Rectángulo único centrado -->
-                    <div class="qr-single-box">
-                        <!-- QR Code -->
-                        <div style="text-align: center; margin-bottom: 2rem;">
-                            <div id="qrcode-container" style="display: inline-block; background: white; padding: 0.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-width: 100%;">
-                                <img id="qr-image"
-                                     src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://stickywork.com"
-                                     alt="Código QR de StickyWork"
-                                     style="display: block; width: 250px; max-width: 100%; height: auto; margin: 0;"
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div style="display: none; width: 250px; max-width: 100%; height: auto; aspect-ratio: 1; background: #f7fafc; border-radius: 8px; align-items: center; justify-content: center; color: #718096; font-size: 14px; text-align: center; line-height: 1.4;">
-                                    QR Code<br>stickywork.com
-                                </div>
+                <div class="dm-stage">
+                    <div class="dm-toggle" role="group" aria-label="Vista">
+                        <button data-view="desktop" aria-pressed="true">💻 Ordenador</button>
+                        <button data-view="mobile" aria-pressed="false">📱 Móvil</button>
+                    </div>
+                    <div class="dm-device is-desktop" id="dmDevice">
+                        <div class="dm-frame">
+                            <div class="dm-bar">
+                                <span class="dm-dots"><i></i><i></i><i></i></span>
+                                <span class="dm-url" id="dmUrl">esteticabellabella.es/reservar</span>
                             </div>
-                            <p style="color: var(--text-secondary); margin: 0.75rem 0 0 0; font-size: 0.85rem;">Escanea para probar StickyWork</p>
-                        </div>
-
-                        <!-- Usos del QR -->
-                        <div style="margin-bottom: 2rem;">
-                            <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.3rem; text-align: center;">¿Dónde usar el código QR?</h4>
-                            <ul class="qr-uses-list">
-                                <li><strong>📇 Tarjetas de presentación:</strong> Los clientes escanean y reservan al instante</li>
-                                <li><strong>📄 Folletos y flyers:</strong> Facilita la conversión en campañas impresas</li>
-                                <li><strong>🏪 En el local:</strong> Carteles en recepción o escaparates</li>
-                                <li><strong>📧 Email marketing:</strong> Incluye el QR en newsletters</li>
-                                <li><strong>📱 Redes sociales:</strong> Comparte en Instagram, Facebook, etc.</li>
-                                <li><strong>🎫 Eventos:</strong> En stands o material promocional</li>
-                            </ul>
-                        </div>
-
-                        <!-- Consejo PRO -->
-                        <div class="qr-tip-box" style="margin-bottom: 2rem;">
-                            <p style="margin: 0; color: var(--text-primary); font-size: 0.95rem;">
-                                💡 <strong>Consejo PRO:</strong> El QR apunta directamente a tu página de reservas. Puedes regenerarlo con diferentes parámetros UTM para trackear conversiones.
-                            </p>
-                        </div>
-
-                        <!-- CTA Principal -->
-                        <div style="text-align: center;">
-                            <a href="registro.html" class="btn-cta-qr">
-                                🚀 Crea tu QR Gratis
-                            </a>
-                            <p style="color: var(--text-secondary); margin: 1rem 0 0 0; font-size: 0.9rem;">
-                                Plan gratuito para siempre • Sin tarjeta de crédito
-                            </p>
+                            <div class="dm-canvas" id="dmCanvas">
+                                <div class="dm-loading">Cargando el formulario…</div>
+                                <iframe id="dmFrame" title="Formulario de reservas de demostración" src="demo-widget.html?b=6" loading="eager"></iframe>
+                            </div>
                         </div>
                     </div>
-
-                    <p style="text-align: center; color: var(--text-secondary); margin-top: 2rem; font-size: clamp(0.85rem, 1.8vw, 0.95rem); padding: 0 1rem;">
-                        ✨ El código QR apunta a: <strong style="word-break: break-all;">https://stickywork.com</strong>
-                    </p>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <!-- Código de integración -->
-                <div style="margin-top: 3rem;">
-                    <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-primary);">
-                        Código para integrar en tu web
-                    </h3>
+    <!-- ===== Lo que pasa después ===== -->
+    <section class="dm-section dm-alt">
+        <div class="dm-container">
+            <div class="dm-center">
+                <span class="dm-eyebrow">Y después de reservar</span>
+                <h2 class="dm-title">Lo que ves tú y lo que recibe tu cliente</h2>
+                <p class="dm-lead">Imágenes reales de la plataforma, con datos de ejemplo.</p>
+            </div>
 
-                    <!-- Código Modo Embebido -->
-                    <div id="codigoEmbedded" style="position: relative;">
-                        <button onclick="copiarCodigo('embedded')" id="btnCopiarEmbedded" style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; z-index: 10;">
-                            📋 Copiar Código
-                        </button>
-
-                        <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
-                            <div style="color: #888; margin-bottom: 1rem;"><!-- Paso 1: Agrega el contenedor --></div>
-                            &lt;<span style="color: #ff6b6b;">div</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-widget"</span>&gt;&lt;/<span style="color: #ff6b6b;">div</span>&gt;<br><br>
-
-                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
-                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"https://api.stickywork.com/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
-
-                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa en formulario directo --></div>
-                            &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
-                            &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'embedded'</span>,<span style="color: #888;"> // Formulario directo</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'https://api.stickywork.com'</span>,<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
-                            &nbsp;&nbsp;});<br>
-                            &lt;/<span style="color: #ff6b6b;">script</span>&gt;
-                        </div>
-
-                        <!-- CTA para Formulario Directo -->
-                        <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 15px; border: 1px solid rgba(102, 126, 234, 0.2);">
-                            <h4 style="color: var(--text-primary); margin: 0 0 0.75rem 0; font-size: 1.3rem;">¿Listo para integrar en tu web?</h4>
-                            <p style="color: var(--text-secondary); margin: 0 0 1.5rem 0; font-size: 1rem;">Crea tu cuenta gratis y obtén tu código personalizado</p>
-                            <a href="registro.html" class="btn-cta-qr">
-                                🚀 Crea tu Widget Gratis
-                            </a>
-                            <p style="color: var(--text-secondary); margin: 1rem 0 0 0; font-size: 0.9rem;">
-                                Plan gratuito para siempre • Sin tarjeta de crédito
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Código Modo Modal -->
-                    <div id="codigoModal" style="position: relative; display: none;">
-                        <button onclick="copiarCodigo('modal')" id="btnCopiarModal" style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; z-index: 10;">
-                            📋 Copiar Código
-                        </button>
-
-                        <div style="background: var(--dark); color: #e0e0e0; padding: 2rem; border-radius: 15px; font-family: 'Courier New', monospace; overflow-x: auto; font-size: 0.9rem;">
-                            <div style="color: #888; margin-bottom: 1rem;"><!-- Paso 1: Agrega el botón --></div>
-                            &lt;<span style="color: #ff6b6b;">button</span> <span style="color: #4ecdc4;">id</span>=<span style="color: #ffe66d;">"stickywork-btn"</span>&gt;📅 Reserva Ahora&lt;/<span style="color: #ff6b6b;">button</span>&gt;<br><br>
-
-                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 2: Carga el script del widget --></div>
-                            &lt;<span style="color: #ff6b6b;">script</span> <span style="color: #4ecdc4;">src</span>=<span style="color: #ffe66d;">"https://api.stickywork.com/widget/stickywork-widget.js"</span>&gt;&lt;/<span style="color: #ff6b6b;">script</span>&gt;<br><br>
-
-                            <div style="color: #888; margin: 1rem 0;"><!-- Paso 3: Inicializa como botón flotante --></div>
-                            &lt;<span style="color: #ff6b6b;">script</span>&gt;<br>
-                            &nbsp;&nbsp;<span style="color: #c7ecee;">StickyWork</span>.<span style="color: #ffd93d;">init</span>({<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">businessId</span>: <span style="color: #f9ca24;">1</span>,<span style="color: #888;"> // Tu ID de negocio</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">mode</span>: <span style="color: #ffe66d;">'modal'</span>,<span style="color: #888;"> // Botón flotante (ventana emergente)</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">trigger</span>: <span style="color: #ffe66d;">'#stickywork-btn'</span>,<span style="color: #888;"> // ID del botón</span><br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">apiUrl</span>: <span style="color: #ffe66d;">'https://api.stickywork.com'</span>,<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">primaryColor</span>: <span style="color: #ffe66d;">'#3b82f6'</span>,<br>
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #4ecdc4;">language</span>: <span style="color: #ffe66d;">'es'</span><br>
-                            &nbsp;&nbsp;});<br>
-                            &lt;/<span style="color: #ff6b6b;">script</span>&gt;
-                        </div>
-
-                        <!-- CTA para Botón Flotante -->
-                        <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 15px; border: 1px solid rgba(102, 126, 234, 0.2);">
-                            <h4 style="color: var(--text-primary); margin: 0 0 0.75rem 0; font-size: 1.3rem;">¿Listo para integrar en tu web?</h4>
-                            <p style="color: var(--text-secondary); margin: 0 0 1.5rem 0; font-size: 1rem;">Crea tu cuenta gratis y obtén tu código personalizado</p>
-                            <a href="registro.html" class="btn-cta-qr">
-                                🚀 Crea tu Widget Gratis
-                            </a>
-                            <p style="color: var(--text-secondary); margin: 1rem 0 0 0; font-size: 0.9rem;">
-                                Plan gratuito para siempre • Sin tarjeta de crédito
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Código Modo QR -->
-                    <div id="codigoQR" style="position: relative; display: none;">
-                        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.6;">
-                            El código QR se genera automáticamente en tu panel de administración. <br>
-                            Podrás descargarlo en alta resolución y personalizarlo según tus necesidades.
-                        </p>
-                    </div>
-
-                    <div style="margin-top: 2rem; padding: 1.5rem; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
-                        <p style="margin: 0 0 0.5rem 0; color: #856404;"><strong>💡 Nota importante:</strong></p>
-                        <ul style="margin: 0; padding-left: 1.5rem; color: #856404;">
-                            <li>Reemplaza <code>TU-DOMINIO.com</code> con la URL donde alojes el script del widget</li>
-                            <li>Reemplaza <code>TU-API.com</code> con la URL de tu API backend</li>
-                            <li>El <code>businessId</code> por defecto es <code>1</code> (negocio demo). Después de configurar tu cuenta, obtendrás tu propio ID único.</li>
+            <div class="dm-flow">
+                <div class="dm-flow-item">
+                    <div class="dm-flow-text">
+                        <span class="dm-num">2</span>
+                        <h3>La reserva aparece en tu panel</h3>
+                        <p>Te llega un email al momento y la ves en tu panel, junto a la agenda del día y el calendario.</p>
+                        <ul>
+                            <li>Si quieres revisar cada reserva, las tienes en <strong>Pendientes de confirmar</strong>: un clic para confirmar o rechazar.</li>
+                            <li>Mueve una cita a otro día desde el calendario y avisa al cliente por email.</li>
+                            <li>Funciona en el ordenador y en el móvil.</li>
                         </ul>
                     </div>
+                    <div>
+                        <div class="dm-tabs" role="tablist" data-target="panelShot">
+                            <button role="tab" aria-selected="true" data-src="images/demo/panel-dashboard.jpg" data-alt="Panel de StickyWork con las reservas pendientes de confirmar y la agenda del día">Panel</button>
+                            <button role="tab" aria-selected="false" data-src="images/demo/panel-calendar.jpg" data-alt="Calendario mensual de StickyWork con las reservas de cada día">Calendario</button>
+                        </div>
+                        <div class="dm-shot"><img id="panelShot" src="images/demo/panel-dashboard.jpg" alt="Panel de StickyWork con las reservas pendientes de confirmar y la agenda del día" width="1440" height="900" loading="lazy"></div>
+                    </div>
+                </div>
+
+                <div class="dm-flow-item">
+                    <div class="dm-flow-text">
+                        <span class="dm-num">3</span>
+                        <h3>Tu cliente recibe todo por email</h3>
+                        <p>Sin que tengas que escribir nada: los emails salen solos, con el nombre y la dirección de tu negocio.</p>
+                        <ul>
+                            <li><strong>Confirmación</strong> con un archivo para añadir la cita a su calendario.</li>
+                            <li><strong>Recordatorio</strong> el día antes, para que no se olvide.</li>
+                            <li>Un enlace para <strong>cancelar o cambiar la hora</strong> sin llamarte. Y si cancela, el hueco queda libre al momento.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="dm-tabs" role="tablist" data-target="mailShot">
+                            <button role="tab" aria-selected="true" data-src="images/demo/mail-confirmed.jpg" data-alt="Email de confirmación de reserva que recibe el cliente">Confirmación</button>
+                            <button role="tab" aria-selected="false" data-src="images/demo/mail-reminder.jpg" data-alt="Email de recordatorio que recibe el cliente el día antes de su cita">Recordatorio</button>
+                            <button role="tab" aria-selected="false" data-src="images/demo/mail-pending.jpg" data-alt="Email de solicitud recibida cuando el negocio confirma cada reserva">Si confirmas a mano</button>
+                        </div>
+                        <div class="dm-shot is-mail"><img id="mailShot" src="images/demo/mail-confirmed.jpg" alt="Email de confirmación de reserva que recibe el cliente" width="640" height="1065" loading="lazy"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Características del widget -->
-    <section>
-        <div class="container">
-            <h2 class="section-title">Características del Widget</h2>
-            <p class="section-subtitle">Todo lo que necesitas en una solución simple</p>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="13" r="2.5"/><circle cx="6.5" cy="13" r="2.5"/><circle cx="13.5" cy="19.5" r="2.5"/><line x1="13.5" y1="9" x2="13.5" y2="17"/><line x1="9" y1="13" x2="16.5" y2="13"/></svg>
-                    </div>
-                    <h3>Totalmente Personalizable</h3>
-                    <p>Colores, fuentes, campos y estilos adaptados a tu marca. El widget se verá como parte de tu web.</p>
+    <!-- ===== Formas de recibir reservas ===== -->
+    <section class="dm-section">
+        <div class="dm-container">
+            <div class="dm-center">
+                <span class="dm-eyebrow">Dónde te reservan</span>
+                <h2 class="dm-title">Tres formas de recibir reservas, incluso sin web</h2>
+            </div>
+            <div class="dm-cards">
+                <div class="dm-card">
+                    <div class="dm-card-icon">🔗</div>
+                    <h3>Tu página de reservas</h3>
+                    <p>Al registrarte tienes una página propia con tus servicios. Comparte el enlace en Instagram, Google o WhatsApp.</p>
+                    <a class="dm-link" id="dmPublicLink" href="https://stickywork.com/reservar?n=estetica-bella-demo" target="_blank" rel="noopener">Ver una página de ejemplo →</a>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                    </div>
-                    <h3>Diseño Responsive</h3>
-                    <p>Funciona perfectamente en móviles, tablets y escritorio. Se adapta automáticamente al tamaño de pantalla.</p>
+                <div class="dm-card">
+                    <div class="dm-card-icon">💻</div>
+                    <h3>En tu propia web</h3>
+                    <p>Si ya tienes web, añade el formulario copiando un pequeño código. Se adapta a tus colores.</p>
+                    <a class="dm-link" href="#codigo">Ver cómo se instala →</a>
                 </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <div class="dm-card">
+                    <div class="dm-card-icon">📱</div>
+                    <h3>Código QR en tu local</h3>
+                    <div class="dm-qr">
+                        <img id="dmQr" src="https://quickchart.io/qr?text=https%3A%2F%2Fstickywork.com%2Freservar%3Fn%3Destetica-bella-demo&size=300&margin=1" alt="Código QR de la página de reservas de ejemplo" width="96" height="96" loading="lazy">
+                        <p style="margin:0">Imprímelo en el mostrador, las tarjetas o el escaparate. Escanéalo con tu móvil para probarlo.</p>
                     </div>
-                    <h3>Carga Rápida</h3>
-                    <p>Optimizado para velocidad. No afecta el rendimiento de tu sitio web. Menos de 50KB de tamaño.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    </div>
-                    <h3>Multiidioma</h3>
-                    <p>Soporta español, inglés, francés, alemán y más. Detecta automáticamente el idioma del navegador.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                    </div>
-                    <h3>Validación Inteligente</h3>
-                    <p>Validación de datos en tiempo real. Solo muestra horarios disponibles. Previene reservas duplicadas.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    </div>
-                    <h3>Seguro y GDPR</h3>
-                    <p>Cumple con normativas de privacidad. Datos encriptados. Conforme con RGPD y LOPD.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Personalización -->
-    <section style="background-color: var(--bg-secondary);">
-        <div class="container">
-            <h2 class="section-title">Opciones de Personalización</h2>
-            <p class="section-subtitle">Configura el widget exactamente como lo necesitas</p>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">🎯 Campos del Formulario</h3>
-                    <ul style="text-align: left; color: var(--text-secondary); line-height: 2;">
-                        <li>Agrega o quita campos personalizados</li>
-                        <li>Campos obligatorios u opcionales</li>
-                        <li>Validación personalizada</li>
-                        <li>Etiquetas en tu idioma</li>
-                    </ul>
-                </div>
-
-                <div class="feature-card">
-                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">🎨 Diseño Visual</h3>
-                    <ul style="text-align: left; color: var(--text-secondary); line-height: 2;">
-                        <li>Colores de tu marca</li>
-                        <li>Fuentes personalizadas</li>
-                        <li>Tamaños y espaciados</li>
-                        <li>Botones y efectos</li>
-                    </ul>
-                </div>
-
-                <div class="feature-card">
-                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">⚙️ Comportamiento</h3>
-                    <ul style="text-align: left; color: var(--text-secondary); line-height: 2;">
-                        <li>Horarios y disponibilidad</li>
-                        <li>Duración de servicios</li>
-                        <li>Tiempo entre citas</li>
-                        <li>Límites y restricciones</li>
-                    </ul>
-                </div>
+    <!-- ===== Webs de ejemplo ===== -->
+    <section class="dm-section dm-alt">
+        <div class="dm-container">
+            <div class="dm-center">
+                <span class="dm-eyebrow">En una web real</span>
+                <h2 class="dm-title">Así queda integrado en la web de un negocio</h2>
+                <p class="dm-lead">Webs de ejemplo con el formulario de reservas ya instalado.</p>
+            </div>
+            <div class="dm-sites">
+                <a class="dm-site" href="demos/estetica.html" target="_blank" rel="noopener"><span>💅</span><strong>Centro de estética</strong><small>Abrir web de ejemplo ↗</small></a>
+                <a class="dm-site" href="demos/nutricion.html" target="_blank" rel="noopener"><span>🥗</span><strong>Nutricionista</strong><small>Abrir web de ejemplo ↗</small></a>
+                <a class="dm-site" href="demos/psicologo.html" target="_blank" rel="noopener"><span>🧠</span><strong>Psicólogo</strong><small>Abrir web de ejemplo ↗</small></a>
+                <a class="dm-site" href="demos/gimnasio.html" target="_blank" rel="noopener"><span>🏋️</span><strong>Gimnasio</strong><small>Abrir web de ejemplo ↗</small></a>
             </div>
         </div>
     </section>
 
-    <!-- CTA -->
-    <section style="background: linear-gradient(135deg, var(--hero-bg-start) 0%, var(--hero-bg-end) 100%); color: var(--hero-text);">
-        <div class="container" style="text-align: center;">
-            <h2 style="color: var(--hero-text); font-size: 2.5rem; margin-bottom: 1rem;">¿Te gusta lo que ves?</h2>
-            <p style="font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95;">Empieza hoy con el plan gratuito, sin tarjeta</p>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="planes.html" class="btn btn-secondary">Ver Planes</a>
-                <a href="contacto.html" class="btn btn-outline">Contactar</a>
+    <!-- ===== Qué incluye ===== -->
+    <section class="dm-section">
+        <div class="dm-container">
+            <div class="dm-center">
+                <span class="dm-eyebrow">Incluido desde el plan gratuito</span>
+                <h2 class="dm-title">Todo lo que necesitas para no perder ni una cita</h2>
+            </div>
+            <div class="dm-features">
+                <div class="dm-feature"><span>🕒</span><h3>Reservas 24 horas</h3><p>Tus clientes reservan cuando quieren, y solo ven los huecos realmente libres.</p></div>
+                <div class="dm-feature"><span>🔔</span><h3>Recordatorio automático</h3><p>Email el día antes de cada cita para reducir las ausencias.</p></div>
+                <div class="dm-feature"><span>🤝</span><h3>Tú decides</h3><p>Acepta cada reserva a mano si lo prefieres; el cliente recibe tu respuesta por email.</p></div>
+                <div class="dm-feature"><span>🔄</span><h3>Cambios sin llamadas</h3><p>El cliente cancela o cambia la hora desde su email, y a ti te llega un aviso.</p></div>
+                <div class="dm-feature"><span>👥</span><h3>Tus clientes</h3><p>Historial de cada cliente, clientes VIP y aviso de quien falta a sus citas.</p></div>
+                <div class="dm-feature"><span>⭐</span><h3>Opiniones</h3><p>Encuesta corta después de la cita para saber cómo te valoran.</p></div>
+                <div class="dm-feature"><span>🎁</span><h3>Fidelización</h3><p>Premia a los clientes que repiten con vales automáticos.</p></div>
+                <div class="dm-feature"><span>📲</span><h3>Sin descargas</h3><p>Ni tú ni tus clientes instaláis nada: funciona en el navegador del móvil y del ordenador.</p></div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- ===== Código para la web ===== -->
+    <section class="dm-section dm-alt" id="codigo">
+        <div class="dm-container">
+            <div class="dm-center" style="margin-bottom: 2rem;">
+                <span class="dm-eyebrow">Para tu web</span>
+                <h2 class="dm-title">¿Tienes web? Se instala en un minuto</h2>
+                <p class="dm-lead">Copia el código desde tu panel (Configuración → Widget) y pégalo en tu página, o pásaselo a quien te lleve la web.</p>
+            </div>
+            <div class="dm-dev">
+                <details>
+                    <summary>Ver el código de ejemplo</summary>
+                    <div class="dm-dev-body">
+                        <p><strong>Formulario dentro de tu página.</strong> En tu panel encontrarás este mismo código ya preparado con el número de tu negocio.</p>
+<div class="dm-code"><button class="dm-copy" data-copy="codeEmbedded">Copiar</button><span id="codeEmbedded">&lt;div id="stickywork-widget"&gt;&lt;/div&gt;
+&lt;script src="https://api.stickywork.com/widget/stickywork-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  StickyWork.init({
+    businessId: TU_NÚMERO_DE_NEGOCIO,
+    mode: 'embedded',
+    apiUrl: 'https://api.stickywork.com'
+  });
+&lt;/script&gt;</span></div>
+                        <p style="margin-top: 1.25rem;"><strong>Botón flotante</strong> que abre el formulario desde cualquier página: cambia <code>mode: 'embedded'</code> por <code>mode: 'floating'</code> y no necesitas el <code>&lt;div&gt;</code>.</p>
+                        <p>¿Prefieres que lo hagamos nosotros? Los planes de pago incluyen ayuda para instalarlo en tu web.</p>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA final ===== -->
+    <section class="dm-section">
+        <div class="dm-container">
+            <div class="dm-final">
+                <h2>Empieza a recibir reservas hoy</h2>
+                <p>Crea tu cuenta, ajusta tus servicios y comparte tu enlace. En unos minutos tus clientes podrán reservar solos.</p>
+                <div class="dm-actions">
+                    <a href="registro.html" class="dm-btn dm-btn-primary">Crear mi cuenta gratis</a>
+                    <a href="planes.html" class="dm-btn dm-btn-ghost">Ver planes</a>
+                </div>
+                <small>Plan gratuito para siempre · Sin tarjeta · Sin permanencia</small>
+            </div>
+        </div>
+    </section>
+
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -494,536 +527,107 @@
         </div>
     </footer>
 
-    <!-- Botón flotante de contacto/reserva -->
-    <button id="sticky-contact-btn" class="sticky-contact-button" onclick="window.location.href='contacto.html'">
-        Contáctanos
-    </button>
-
     <script src="js/main.js"></script>
     <script src="js/cookie-consent.js"></script>
-
-    <!-- Widget de StickyWork -->
-    <script src="widget/stickywork-widget.js"></script>
-
-    <!-- Librería QRCode.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-    <!-- Estilos adicionales para demo móvil -->
-    <style>
-        /* Estilos base para QR */
-        .qr-single-box {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 3rem;
-            background: var(--bg-primary);
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border-color);
-        }
-
-        .qr-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 0;
-            padding: 0;
-            background: transparent;
-            border-radius: 0;
-            box-shadow: none;
-            max-width: 100%;
-        }
-
-        .qr-container canvas,
-        .qr-container img {
-            max-width: 100% !important;
-            height: auto !important;
-            display: block;
-        }
-
-        .qr-uses-list {
-            color: var(--text-secondary);
-            line-height: 2;
-            text-align: left;
-            padding-left: 1.5rem;
-            margin: 0;
-            list-style: none;
-        }
-
-        .qr-uses-list li {
-            margin-bottom: 0.75rem;
-            padding-left: 0.5rem;
-        }
-
-        .qr-tip-box {
-            padding: 1.25rem;
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 4px solid var(--primary-color);
-            border-radius: 8px;
-        }
-
-        .btn-cta-qr {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            text-decoration: none;
-            padding: 1rem 2.5rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-cta-qr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
-        }
-
-        .btn-cta-qr:active {
-            transform: translateY(0);
-        }
-
-        /* Contenedor del widget */
-        #stickywork-widget {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Mejoras responsive para la página demo */
-        @media (max-width: 768px) {
-            /* Widget en móvil - sin restricciones de ancho */
-            #stickywork-widget {
-                max-width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-
-            /* widget-preview más compacto y sin overflow */
-            .widget-preview {
-                padding: 1rem !important;
-                overflow: hidden;
-            }
-
-            /* Botones del selector: sin min-width fijo en móvil */
-            #btnModoEmbedded,
-            #btnModoModal,
-            #btnModoQR {
-                min-width: unset !important;
-                width: 100%;
-                padding: 0.75rem 1rem !important;
-                font-size: 0.95rem !important;
-            }
-
-            /* Código de integración más compacto */
-            .demo-container > div:last-child > div > div {
-                padding: 1.25rem 1rem !important;
-                font-size: 0.75rem !important;
-            }
-
-            /* Botón copiar código más pequeño */
-            #btnCopiarEmbedded,
-            #btnCopiarModal,
-            #btnCopiarQR {
-                position: static !important;
-                width: 100%;
-                margin-bottom: 1rem;
-            }
-
-            /* Sección de notas más compacta */
-            .demo-container > div:last-child > div:last-child {
-                padding: 1rem !important;
-                font-size: 0.85rem !important;
-            }
-
-            .demo-container > div:last-child > div:last-child ul {
-                font-size: 0.85rem !important;
-            }
-
-            .demo-container > div:last-child > div:last-child code {
-                font-size: 0.8rem !important;
-                padding: 0.2rem 0.4rem;
-                background: rgba(0,0,0,0.1);
-                border-radius: 4px;
-            }
-
-            /* Modo QR responsive - diseño compacto */
-            .qr-single-box {
-                padding: 1.25rem 1rem !important;
-            }
-
-            #qrcode-container {
-                max-width: calc(100% - 2rem) !important;
-            }
-
-            #qr-image {
-                width: 100% !important;
-                max-width: 220px !important;
-            }
-
-            .qr-container {
-                max-width: 100%;
-            }
-
-            .qr-uses-list {
-                font-size: 0.9rem !important;
-                line-height: 1.8 !important;
-            }
-
-            .btn-cta-qr {
-                font-size: 1rem !important;
-                padding: 0.9rem 2rem !important;
-                display: block;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            /* Código aún más pequeño en móviles pequeños */
-            .demo-container > div:last-child > div > div {
-                padding: 1rem !important;
-                font-size: 0.7rem !important;
-                line-height: 1.6 !important;
-            }
-        }
-    </style>
-
-    <!-- Script del widget demo -->
-    <script>
-        // Función para cambiar entre modos
-        function mostrarModo(modo) {
-            // Actualizar botones
-            const btnEmbedded = document.getElementById('btnModoEmbedded');
-            const btnModal = document.getElementById('btnModoModal');
-            const btnQR = document.getElementById('btnModoQR');
-
-            // Resetear todos los botones
-            btnEmbedded.style.background = 'var(--bg-primary)';
-            btnEmbedded.style.color = 'var(--text-primary)';
-            btnEmbedded.style.borderColor = 'var(--border-color)';
-
-            btnModal.style.background = 'var(--bg-primary)';
-            btnModal.style.color = 'var(--text-primary)';
-            btnModal.style.borderColor = 'var(--border-color)';
-
-            btnQR.style.background = 'var(--bg-primary)';
-            btnQR.style.color = 'var(--text-primary)';
-            btnQR.style.borderColor = 'var(--border-color)';
-
-            // Activar botón seleccionado
-            if (modo === 'embedded') {
-                btnEmbedded.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
-                btnEmbedded.style.color = 'white';
-                btnEmbedded.style.borderColor = 'var(--primary-color)';
-            } else if (modo === 'modal') {
-                btnModal.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
-                btnModal.style.color = 'white';
-                btnModal.style.borderColor = 'var(--primary-color)';
-            } else if (modo === 'qr') {
-                btnQR.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
-                btnQR.style.color = 'white';
-                btnQR.style.borderColor = 'var(--primary-color)';
-            }
-
-            // Actualizar título
-            const titulo = document.getElementById('tituloModo');
-            if (modo === 'embedded') {
-                titulo.innerHTML = '<h2 class="section-title">Formulario Directo - Integrado en la Página</h2><p class="section-subtitle">El formulario se muestra directamente en tu página web</p>';
-            } else if (modo === 'modal') {
-                titulo.innerHTML = '<h2 class="section-title">Botón Flotante - Ventana Emergente</h2><p class="section-subtitle">Un botón discreto que abre el formulario en una ventana emergente</p>';
-            } else if (modo === 'qr') {
-                titulo.innerHTML = '<h2 class="section-title">Código QR - Para Materiales Impresos</h2><p class="section-subtitle">Genera un código QR para que tus clientes reserven desde cualquier lugar</p>';
-            }
-
-            // Mostrar/ocultar widgets
-            document.getElementById('modoEmbedded').style.display = modo === 'embedded' ? 'block' : 'none';
-            document.getElementById('modoModal').style.display = modo === 'modal' ? 'block' : 'none';
-            document.getElementById('modoQR').style.display = modo === 'qr' ? 'block' : 'none';
-
-            // Mostrar/ocultar códigos
-            document.getElementById('codigoEmbedded').style.display = modo === 'embedded' ? 'block' : 'none';
-            document.getElementById('codigoModal').style.display = modo === 'modal' ? 'block' : 'none';
-            document.getElementById('codigoQR').style.display = modo === 'qr' ? 'block' : 'none';
-
-            // Generar QR si es el modo QR
-            if (modo === 'qr') {
-                generarQR();
-            }
-        }
-
-        // Función para copiar el código según el modo
-        function copiarCodigo(modo) {
-            let codigoTexto = '';
-            let btnId = '';
-
-            if (modo === 'embedded') {
-                codigoTexto = `<!-- Paso 1: Agrega el contenedor -->
-<div id="stickywork-widget"></div>
-
-<!-- Paso 2: Carga el script del widget -->
-<script src="https://api.stickywork.com/widget/stickywork-widget.js"><\/script>
-
-<!-- Paso 3: Inicializa en formulario directo -->
-<script>
-  StickyWork.init({
-    businessId: 1, // Tu ID de negocio
-    mode: 'embedded', // Formulario directo
-    apiUrl: 'https://api.stickywork.com',
-    primaryColor: '#3b82f6',
-    language: 'es'
-  });
-<\/script>`;
-                btnId = 'btnCopiarEmbedded';
-            } else if (modo === 'modal') {
-                codigoTexto = `<!-- Paso 1: Agrega el botón -->
-<button id="stickywork-btn">📅 Reserva Ahora</button>
-
-<!-- Paso 2: Carga el script del widget -->
-<script src="https://api.stickywork.com/widget/stickywork-widget.js"><\/script>
-
-<!-- Paso 3: Inicializa como botón flotante -->
-<script>
-  StickyWork.init({
-    businessId: 1, // Tu ID de negocio
-    mode: 'modal', // Botón flotante (ventana emergente)
-    trigger: '#stickywork-btn', // ID del botón
-    apiUrl: 'https://api.stickywork.com',
-    primaryColor: '#3b82f6',
-    language: 'es'
-  });
-<\/script>`;
-                btnId = 'btnCopiarModal';
-            } else if (modo === 'qr') {
-                codigoTexto = 'https://stickywork.com/';
-                btnId = 'btnCopiarQR';
-            }
-
-            // Copiar al portapapeles
-            navigator.clipboard.writeText(codigoTexto).then(function() {
-                // Cambiar el botón temporalmente
-                const btn = document.getElementById(btnId);
-                const textoOriginal = btn.innerHTML;
-                btn.innerHTML = '✓ ¡Copiado!';
-                btn.style.background = '#10b981';
-
-                // Restaurar después de 2 segundos
-                setTimeout(function() {
-                    btn.innerHTML = textoOriginal;
-                    btn.style.background = 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))';
-                }, 2000);
-            }).catch(function(err) {
-                alert('Error al copiar: ' + err);
-            });
-        }
-
-        // Función para abrir el modal demo
-        function abrirModalDemo() {
-            // Crear overlay
-            const overlay = document.createElement('div');
-            overlay.id = 'modal-overlay';
-            overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 9998; animation: fadeIn 0.3s ease;';
-
-            // Crear modal
-            const modal = document.createElement('div');
-            modal.id = 'modal-widget';
-            modal.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-primary); border-radius: 20px; padding: 2rem; z-index: 9999; max-width: 650px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); animation: slideUp 0.3s ease;';
-
-            modal.innerHTML = `
-                <div style="position: relative;">
-                    <button onclick="cerrarModalDemo()" style="position: absolute; top: -1rem; right: -1rem; background: var(--secondary-color); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
-                        ✕
-                    </button>
-                    <h3 style="text-align: center; color: var(--primary-color); margin-bottom: 1.5rem; font-size: 1.8rem;">Reserva tu Cita</h3>
-
-                    <form id="modal-form" style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div>
-                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Nombre completo</label>
-                            <input type="text" placeholder="Tu nombre" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
-                        </div>
-                        <div>
-                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Email</label>
-                            <input type="email" placeholder="tu@email.com" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
-                        </div>
-                        <div>
-                            <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Servicio</label>
-                            <select required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
-                                <option value="">Selecciona un servicio</option>
-                                <option value="Corte de pelo">Corte de pelo - 25€</option>
-                                <option value="Tinte">Tinte - 45€</option>
-                                <option value="Manicura">Manicura - 20€</option>
-                                <option value="Masaje">Masaje - 50€</option>
-                            </select>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Fecha</label>
-                                <input type="date" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Hora</label>
-                                <select required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; background: var(--bg-secondary); color: var(--text-primary);">
-                                    <option value="">Selecciona hora</option>
-                                    <option value="09:00">09:00</option>
-                                    <option value="10:00">10:00</option>
-                                    <option value="11:00">11:00</option>
-                                    <option value="12:00">12:00</option>
-                                    <option value="15:00">15:00</option>
-                                    <option value="16:00">16:00</option>
-                                    <option value="17:00">17:00</option>
-                                    <option value="18:00">18:00</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 1rem; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: var(--transition); margin-top: 1rem;">
-                            Confirmar Reserva
-                        </button>
-                    </form>
-                </div>
-            `;
-
-            // Añadir animaciones CSS
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                @keyframes slideUp {
-                    from { opacity: 0; transform: translate(-50%, -45%); }
-                    to { opacity: 1; transform: translate(-50%, -50%); }
-                }
-            `;
-            document.head.appendChild(style);
-
-            // Añadir al DOM
-            document.body.appendChild(overlay);
-            document.body.appendChild(modal);
-
-            // Cerrar al hacer clic en el overlay
-            overlay.onclick = cerrarModalDemo;
-
-            // Manejar submit del formulario
-            document.getElementById('modal-form').onsubmit = function(e) {
-                e.preventDefault();
-                const nombre = this.querySelector('input[type="text"]').value;
-                const email = this.querySelector('input[type="email"]').value;
-                const servicio = this.querySelectorAll('select')[0].value;
-                const fecha = this.querySelector('input[type="date"]').value;
-                const hora = this.querySelectorAll('select')[1].value;
-
-                modal.innerHTML = `
-                    <div style="text-align: center; padding: 2rem;">
-                        <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
-                        <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.8rem;">¡Reserva Confirmada!</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: left;">
-                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Nombre:</strong> ${nombre}</p>
-                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Email:</strong> ${email}</p>
-                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Servicio:</strong> ${servicio}</p>
-                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Fecha:</strong> ${fecha}</p>
-                            <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Hora:</strong> ${hora}</p>
-                        </div>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Recibirás un email de confirmación en breve</p>
-                        <button onclick="cerrarModalDemo()" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
-                            Cerrar
-                        </button>
-                    </div>
-                `;
-            };
-        }
-
-        // Función para cerrar el modal
-        function cerrarModalDemo() {
-            const overlay = document.getElementById('modal-overlay');
-            const modal = document.getElementById('modal-widget');
-            if (overlay) overlay.remove();
-            if (modal) modal.remove();
-        }
-
-        // Manejar el envío del formulario demo
-        document.addEventListener('DOMContentLoaded', function() {
-            const demoForm = document.getElementById('demo-widget-form');
-
-            if (demoForm) {
-                demoForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    // Obtener datos del formulario
-                    const formData = new FormData(demoForm);
-                    const nombre = demoForm.querySelector('input[type="text"]').value;
-                    const email = demoForm.querySelector('input[type="email"]').value;
-                    const servicio = demoForm.querySelector('select').value;
-                    const fecha = demoForm.querySelector('input[type="date"]').value;
-                    const hora = demoForm.querySelectorAll('select')[1].value;
-
-                    // Crear mensaje de confirmación
-                    const widgetContainer = document.getElementById('stickywork-widget');
-                    widgetContainer.innerHTML = `
-                        <div style="text-align: center; padding: 3rem 2rem;">
-                            <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
-                            <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.8rem;">¡Reserva Confirmada!</h3>
-                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem;">
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Nombre:</strong> ${nombre}</p>
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Email:</strong> ${email}</p>
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Servicio:</strong> ${servicio}</p>
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Fecha:</strong> ${fecha}</p>
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>Hora:</strong> ${hora}</p>
-                            </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Recibirás un email de confirmación en breve</p>
-                            <button onclick="location.reload()" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
-                                Nueva Reserva
-                            </button>
-                        </div>
-                    `;
-                });
-            }
-        });
-
-        // Función para generar el código QR (ahora usa QR estático en HTML)
-        function generarQR() {
-            // El QR ya está generado como imagen estática en el HTML
-            // No necesitamos generar nada dinámicamente
-            const qrContainer = document.getElementById('qrcode-container');
-            if (qrContainer) {
-                // Scroll suave al QR
-                qrContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-
-        // Función para descargar el QR como imagen PNG
-        function descargarQR() {
-            const qrImage = document.getElementById('qr-image');
-
-            if (qrImage) {
-                // Descargar QR en alta resolución (500x500)
-                const link = document.createElement('a');
-                link.href = 'https://chart.googleapis.com/chart?cht=qr&chs=500x500&chl=https://stickywork.com';
-                link.download = 'stickywork-qr.png';
-                link.target = '_blank';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } else {
-                alert('No se encontró el código QR para descargar');
-            }
-        }
-
-        // Inicializar el widget de StickyWork en modo embedded
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.StickyWork && document.getElementById('stickywork-widget')) {
-                StickyWork.init({
-                    businessId: 1, // Demo business
-                    mode: 'embedded',
-                    apiUrl: 'https://api.stickywork.com',
-                    primaryColor: '#3b82f6',
-                    secondaryColor: '#8b5cf6',
-                    language: 'es',
-                    bookingMode: 'services'
-                });
-            }
-        });
-    </script>
-    <!-- Dark Mode Toggle Script -->
     <script src="js/dark-mode.js"></script>
-    <!-- Scroll to Top Button -->
     <script src="js/scroll-to-top.js"></script>
+    <script>
+        (function () {
+            const SECTORS = {
+                belleza: {
+                    id: 6, url: 'esteticabellabella.es/reservar', slug: 'estetica-bella-demo', site: 'demos/estetica.html',
+                    title: 'Un centro de estética',
+                    points: ['Cada tratamiento con su duración y su precio.', 'Solo se ofrecen los huecos donde cabe el servicio elegido.', 'Confirmación por email y recordatorio el día antes.']
+                },
+                nutricion: {
+                    id: 4, url: 'nutrivida.es/reservar', slug: 'nutrivida-demo', site: 'demos/nutricion.html',
+                    title: 'Una consulta de nutrición',
+                    points: ['Primera visita y seguimientos, con distinta duración.', 'Las revisiones periódicas se programan de una vez desde el panel.', 'Si lo prefieres, cada cita queda pendiente hasta que la confirmas.']
+                },
+                psicologia: {
+                    id: 3, url: 'menteclara.es/reservar', slug: 'psicologo-mente-clara-demo', site: 'demos/psicologo.html',
+                    title: 'Un gabinete de psicología',
+                    points: ['Primeras entrevistas y sesiones de seguimiento.', 'Sesiones semanales que se programan de una vez.', 'El paciente puede cancelar o cambiar la hora desde su email.']
+                },
+                restaurante: {
+                    id: 9, url: 'lafamiglia.es/reservar', slug: 'la-famiglia', site: null,
+                    title: 'Un restaurante',
+                    points: ['El cliente indica cuántas personas vienen.', 'Elige zona: terraza o interior, según disponibilidad.', 'Horarios de comida y cena por turnos.']
+                },
+                gimnasio: {
+                    id: 5, url: 'powerfit.es/reservar', slug: 'powerfit-gym-demo', site: 'demos/gimnasio.html',
+                    title: 'Un gimnasio con clases',
+                    points: ['El cliente elige la clase y el horario.', 'Cada clase tiene sus plazas y se cierra al llenarse.', 'Recordatorio el día antes para que no se pierda la clase.']
+                }
+            };
+
+            const frame = document.getElementById('dmFrame');
+            const canvas = document.getElementById('dmCanvas');
+            const device = document.getElementById('dmDevice');
+
+            function setSector(key, focusFrame) {
+                const s = SECTORS[key];
+                if (!s) return;
+                document.querySelectorAll('.dm-sector').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sector === key)));
+                document.getElementById('dmUrl').textContent = s.url;
+                document.getElementById('dmInfoTitle').textContent = 'Qué estás viendo: ' + s.title.toLowerCase();
+                document.getElementById('dmInfoList').innerHTML = s.points.map(p => `<li>${p}</li>`).join('');
+                const page = 'https://stickywork.com/reservar?n=' + s.slug;
+                document.getElementById('dmInfoLinks').innerHTML =
+                    `<a href="${page}" target="_blank" rel="noopener">Ver su página de reservas ↗</a>` +
+                    (s.site ? `<a href="${s.site}" target="_blank" rel="noopener">Ver en una web de ejemplo ↗</a>` : '');
+                document.getElementById('dmPublicLink').href = page;
+                document.getElementById('dmQr').src = 'https://quickchart.io/qr?text=' + encodeURIComponent(page) + '&size=300&margin=1';
+                canvas.classList.remove('ready');
+                frame.style.opacity = '0';
+                frame.src = 'demo-widget.html?b=' + s.id;
+                if (focusFrame && window.innerWidth < 980) {
+                    document.getElementById('dmDevice').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                try { localStorage.setItem('sw-demo-sector', key); } catch (e) {}
+            }
+
+            frame.addEventListener('load', () => {
+                setTimeout(() => { canvas.classList.add('ready'); frame.style.opacity = '1'; }, 250);
+            });
+
+            // El marco avisa de su altura para que no haya barras de desplazamiento
+            window.addEventListener('message', (e) => {
+                if (e.source !== frame.contentWindow || !e.data || e.data.type !== 'stickywork-demo-height') return;
+                frame.style.height = Math.max(420, e.data.height + 8) + 'px';
+            });
+
+            document.querySelectorAll('.dm-sector').forEach(b => b.addEventListener('click', () => setSector(b.dataset.sector, true)));
+
+            document.querySelectorAll('.dm-toggle button').forEach(b => b.addEventListener('click', () => {
+                document.querySelectorAll('.dm-toggle button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+                device.classList.toggle('is-mobile', b.dataset.view === 'mobile');
+                device.classList.toggle('is-desktop', b.dataset.view !== 'mobile');
+            }));
+
+            // Pestañas de imágenes (panel / emails)
+            document.querySelectorAll('.dm-tabs').forEach(tabs => {
+                const img = document.getElementById(tabs.dataset.target);
+                tabs.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => {
+                    tabs.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', String(x === btn)));
+                    img.src = btn.dataset.src;
+                    img.alt = btn.dataset.alt;
+                    if (img.parentElement.classList.contains('is-mail')) img.parentElement.scrollTop = 0;
+                }));
+            });
+
+            // Copiar código
+            document.querySelectorAll('.dm-copy').forEach(btn => btn.addEventListener('click', async () => {
+                const text = document.getElementById(btn.dataset.copy).textContent;
+                try { await navigator.clipboard.writeText(text); btn.textContent = '¡Copiado!'; }
+                catch (e) { btn.textContent = 'Selecciona y copia'; }
+                setTimeout(() => { btn.textContent = 'Copiar'; }, 1800);
+            }));
+
+            let initial = 'belleza';
+            try { initial = localStorage.getItem('sw-demo-sector') || 'belleza'; } catch (e) {}
+            setSector(SECTORS[initial] ? initial : 'belleza', false);
+        })();
+    </script>
 </body>
 </html>

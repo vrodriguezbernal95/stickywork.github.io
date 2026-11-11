@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>StickyWork · Demo del widget</title>
+    <!-- Marco de la página demo.html: carga el widget real de un negocio de demostración,
+         igual que lo instalaría un negocio en su web. -->
+    <style>
+        html, body { margin: 0; background: transparent; }
+        body { padding: 4px; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="stickywork-widget"></div>
+
+    <script src="/widget/stickywork-widget.js"></script>
+    <script>
+        // Solo los negocios de demostración
+        const DEMO_BUSINESSES = [1, 3, 4, 5, 6, 9];
+        const requested = Number(new URLSearchParams(location.search).get('b'));
+        const businessId = DEMO_BUSINESSES.includes(requested) ? requested : 1;
+
+        StickyWork.init({
+            businessId,
+            mode: 'embedded',
+            apiUrl: 'https://api.stickywork.com',
+            language: 'es'
+        });
+
+        // Avisar a la página de la altura del contenido para ajustar el marco
+        let lastHeight = 0;
+        function sendHeight() {
+            const h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+            if (h !== lastHeight) {
+                lastHeight = h;
+                parent.postMessage({ type: 'stickywork-demo-height', height: h }, '*');
+            }
+        }
+        new ResizeObserver(sendHeight).observe(document.body);
+        window.addEventListener('load', sendHeight);
+        setInterval(sendHeight, 800);
+    </script>
+</body>
+</html>
