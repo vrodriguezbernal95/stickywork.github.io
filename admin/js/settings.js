@@ -2586,7 +2586,7 @@ const settings = {
                     ` : ''}
                     <ul class="plan-features">
                         <li>Widget de reservas ilimitado</li>
-                        <li>Hasta 50 reservas al mes</li>
+                        <li>Hasta 30 reservas al mes</li>
                         <li>Panel de administración</li>
                         <li>Notificaciones por email</li>
                         <li>Soporte por email</li>
@@ -3293,7 +3293,7 @@ const settings = {
                     </div>
 
                     <!-- 12. Facturación -->
-                    <div class="guide-section" data-keywords="facturacion planes suscripcion pago stripe gratis founders profesional premium cambiar historial renovacion">
+                    <div class="guide-section" data-keywords="facturacion planes suscripcion pago stripe gratis profesional premium cambiar historial renovacion">
                         <div class="guide-header" onclick="settings.toggleGuideSection(this)">
                             <span class="guide-icon">💳</span>
                             <h4>Facturación</h4>
@@ -3312,7 +3312,6 @@ const settings = {
                             <h5>Planes Disponibles</h5>
                             <ul>
                                 <li><strong>Gratis:</strong> Funcionalidades básicas, ideal para empezar</li>
-                                <li><strong>Founders:</strong> Plan especial para early adopters</li>
                                 <li><strong>Profesional:</strong> Funcionalidades avanzadas para negocios en crecimiento</li>
                                 <li><strong>Premium:</strong> Todo incluido: Reportes IA, Equipo, Consultoría y más</li>
                             </ul>

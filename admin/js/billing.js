@@ -131,7 +131,6 @@ const billing = {
                             Desbloquea más funciones para hacer crecer tu negocio
                         </p>
                         <div class="plans-grid">
-                            ${this.renderPlanCard('founders', currentPlan)}
                             ${this.renderPlanCard('professional', currentPlan)}
                             ${this.renderPlanCard('premium', currentPlan)}
                         </div>
@@ -185,11 +184,11 @@ const billing = {
     renderPlanCard(planKey, currentPlan) {
         const plan = this.plans[planKey];
         const isCurrent = planKey === currentPlan;
-        const isPopular = planKey === 'founders';
+        const isPopular = planKey === 'professional';
 
         return `
             <div class="plan-card ${isCurrent ? 'current' : ''} ${isPopular ? 'popular' : ''}">
-                ${isPopular ? '<div class="popular-badge">⭐ Más popular</div>' : ''}
+                ${isPopular ? '<div class="popular-badge">⭐ Recomendado</div>' : ''}
                 <h3>${plan.name}</h3>
                 <div class="plan-price-large">
                     <span class="price">€${plan.price}</span>
