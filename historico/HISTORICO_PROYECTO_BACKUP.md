@@ -149,10 +149,10 @@
    - Problema: Variables solo estaban en servicio "mysql", no en "stickywork api"
    - Solución: Añadir variables directamente al servicio de la API:
      ```
-     MYSQL_URL=mysql://root:KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ@mysql.railway.internal:3306/railway
+     MYSQL_URL=mysql://root:<CONTRASEÑA>@mysql.railway.internal:3306/railway
      DB_HOST=mysql.railway.internal
      DB_USER=root
-     DB_PASSWORD=KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ
+     DB_PASSWORD=<CONTRASEÑA>
      DB_NAME=railway
      DB_PORT=3306
      ```
@@ -1103,7 +1103,7 @@ Después de implementar el Super Admin Dashboard completo (login, estadísticas,
 - **Ejecución:** PowerShell command con secret de seguridad
 - **Resultado:** Usuario creado exitosamente:
   - Email: `admin@stickywork.com`
-  - Password: `StickyAdmin2025!`
+  - Password: `<CONTRASEÑA>`
   - URL: https://stickywork.com/super-admin-login.html
 
 **4. Error de Array Destructuring en Queries**
@@ -1204,7 +1204,7 @@ Después de implementar el Super Admin Dashboard completo (login, estadísticas,
 **URLs de producción:**
 - Super Admin Login: https://stickywork.com/super-admin-login.html
 - Super Admin Dashboard: https://stickywork.com/super-admin.html
-- Credenciales: admin@stickywork.com / StickyAdmin2025!
+- Credenciales: admin@stickywork.com / <CONTRASEÑA>
 
 ---
 
@@ -1466,7 +1466,7 @@ CREATE TABLE support_messages (
   - Login: admin@lexpartners.demo / demo123
   - Sección: "Contactar Soporte"
 - Super-admin: https://stickywork.com/super-admin.html
-  - Login: admin@stickywork.com / StickyAdmin2025!
+  - Login: admin@stickywork.com / <CONTRASEÑA>
   - Sección: "Mensajes" → Tab "🆘 Soporte Clientes"
 
 ---

@@ -11,7 +11,7 @@ async function migrateRailway() {
         connection = await mysql.createConnection({
             host: 'switchback.proxy.rlwy.net',
             user: 'root',
-            password: 'KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ',
+            password: process.env.DB_PASSWORD,
             database: 'railway',
             port: 26447,
             multipleStatements: true

@@ -52,7 +52,8 @@ async function setupPlatformAdmin() {
         // 2. Crear/actualizar usuario super-admin
         console.log('👤 Configurando usuario super-admin...');
         const email = 'admin@stickywork.com';
-        const password = 'StickyAdmin2025!'; // CAMBIAR EN PRODUCCIÓN
+        const password = process.env.SUPER_ADMIN_PASSWORD;
+        if (!password) throw new Error("Define SUPER_ADMIN_PASSWORD");
         const fullName = 'Super Admin StickyWork';
 
         // Hashear contraseña
@@ -80,7 +81,7 @@ async function setupPlatformAdmin() {
         console.log('📝 CREDENCIALES SUPER-ADMIN');
         console.log('='.repeat(60));
         console.log(`📧 Email:    ${email}`);
-        console.log(`🔑 Password: ${password}`);
+        console.log('🔑 Password: (la de SUPER_ADMIN_PASSWORD)');
         console.log('='.repeat(60));
         console.log('\n🌐 Accede en: https://stickywork.com/super-admin-login.html');
         console.log('\n⚠️  IMPORTANTE: Cambia la contraseña después del primer login\n');

@@ -62,10 +62,10 @@ Dentro del servicio **MySQL**, Railway genera automáticamente estas variables:
 
 ```env
 # URL Interna (para conexiones desde otros servicios de Railway)
-MYSQL_URL="mysql://root:XXXXX@mysql.railway.internal:3306/railway"
+MYSQL_URL="mysql://root:<CONTRASEÑA>@mysql.railway.internal:3306/railway"
 
 # URL Pública (para conexiones externas/development)
-MYSQL_PUBLIC_URL="mysql://root:XXXXX@tramway.proxy.rlwy.net:49999/railway"
+MYSQL_PUBLIC_URL="mysql://root:<CONTRASEÑA>@tramway.proxy.rlwy.net:49999/railway"
 ```
 
 **Diferencia clave:**
@@ -104,7 +104,7 @@ MYSQL_PUBLIC_URL="mysql://root:XXXXX@tramway.proxy.rlwy.net:49999/railway"
 
 El servidor usa la referencia `${{MySQL.MYSQL_URL}}` que Railway resuelve automáticamente a:
 ```
-mysql://root:XXX@mysql.railway.internal:3306/railway
+mysql://root:<CONTRASEÑA>@mysql.railway.internal:3306/railway
 ```
 
 Esta es la conexión **interna** optimizada para servicios dentro de Railway.
@@ -114,7 +114,7 @@ Esta es la conexión **interna** optimizada para servicios dentro de Railway.
 Para conectarte desde tu máquina local (scripts de migración, testing, etc.), usa `MYSQL_PUBLIC_URL`:
 
 ```javascript
-const MYSQL_URL = 'mysql://root:doIXDoyRlYQpWjxfWaMBufyNMmdaFDUx@tramway.proxy.rlwy.net:49999/railway';
+const MYSQL_URL = 'mysql://root:<CONTRASEÑA>@tramway.proxy.rlwy.net:49999/railway';
 const connection = await mysql.createConnection(MYSQL_URL);
 ```
 
@@ -179,7 +179,7 @@ Cuando el servidor arranca, verás estos logs clave:
 
 ```
 🚀 SERVIDOR STICKYWORK INICIADO
-📦 Conectando vía MYSQL_URL: mysql://root:****@mysql.railway.internal:3306/railway
+📦 Conectando vía MYSQL_URL: mysql://root:<CONTRASEÑA>@mysql.railway.internal:3306/railway
 📦 Configuración parseada: { host: 'mysql.railway.internal', port: 3306, database: 'railway' }
 ✓ Pool de conexiones MySQL creado
 ✓ Conexión a MySQL exitosa

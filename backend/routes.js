@@ -12,6 +12,7 @@ const stripeRoutes = require('./routes/stripe');
 const consultancyRoutes = require('./routes/consultancy');
 const workshopsRoutes = require('./routes/workshops');
 const { requireAuth, requireBusinessAccess, requireRole } = require('./middleware/auth');
+const { requireSuperAdmin } = require('./middleware/super-admin');
 const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlanInfo } = require('./middleware/entitlements');
 const emailService = require('./email-service');
 const { setupPostgres } = require('./setup-postgres');
@@ -149,6 +150,22 @@ function validateShifts(shifts) {
 }
 
 // ==================== AUTENTICACIÓN ====================
+// ==================== ENDPOINTS DE DEBUG / SETUP / MIGRACIONES ====================
+// Solo con "Authorization: Bearer <SUPER_ADMIN_SECRET>". Si la variable no está definida,
+// se rechazan siempre (nunca hay token por defecto).
+function requireSetupSecret(req, res, next) {
+    const secret = process.env.SUPER_ADMIN_SECRET;
+    const given = Buffer.from((req.headers.authorization || '').replace(/^Bearer /, ''));
+    const expected = Buffer.from(secret || '');
+    const ok = expected.length >= 32 && given.length === expected.length &&
+        crypto.timingSafeEqual(given, expected);
+    if (!ok) {
+        return res.status(404).json({ success: false, message: 'Ruta no encontrada' });
+    }
+    next();
+}
+router.use(['/api/debug', '/api/setup', '/api/setup-database'], requireSetupSecret);
+
 router.use(authRoutes);
 
 // ==================== SUPER ADMIN ====================
@@ -219,7 +236,7 @@ router.get('/api/debug/version', async (req, res) => {
 router.post('/api/debug/test-email', async (req, res) => {
     // Verificar token de super-admin simple
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({
@@ -293,7 +310,7 @@ router.post('/api/debug/test-email', async (req, res) => {
 // Endpoint para ejecutar migración de talleres (solo una vez)
 router.post('/api/debug/run-workshops-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -362,7 +379,7 @@ router.post('/api/debug/run-workshops-migration', async (req, res) => {
 // Migración para sesiones múltiples en talleres
 router.post('/api/debug/run-workshop-sessions-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -448,7 +465,7 @@ router.post('/api/debug/run-workshop-sessions-migration', async (req, res) => {
 // Endpoint para ejecutar migración de adultos/niños en reservas (solo una vez)
 router.post('/api/debug/run-children-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -510,7 +527,7 @@ router.post('/api/debug/run-children-migration', async (req, res) => {
 // Endpoint para ejecutar migración de clientes/customers (solo una vez)
 router.post('/api/debug/run-customers-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -561,7 +578,7 @@ router.post('/api/debug/run-customers-migration', async (req, res) => {
 // Migración para sistema de niveles de clientes (normal, premium, riesgo, baneado)
 router.post('/api/debug/run-customer-status-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -651,7 +668,7 @@ router.post('/api/debug/run-customer-status-migration', async (req, res) => {
 // Migración para página pública de reservas
 router.post('/api/debug/run-public-page-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -2142,8 +2159,15 @@ router.patch('/api/booking/:id', requireAuth, async (req, res) => {
             });
         }
 
-        const previous = await db.query('SELECT status FROM bookings WHERE id = ?', [id]);
-        const previousStatus = previous[0]?.status;
+        const previous = await db.query('SELECT status, business_id FROM bookings WHERE id = ?', [id]);
+        if (previous.length === 0) {
+            return res.status(404).json({ success: false, message: 'Reserva no encontrada' });
+        }
+        // Solo el propio negocio puede cambiar sus reservas
+        if (req.user.businessId != previous[0].business_id) {
+            return res.status(403).json({ success: false, message: 'No tienes acceso a esta reserva' });
+        }
+        const previousStatus = previous[0].status;
 
         // Si se está cancelando, guardar información de cancelación incluyendo quién canceló
         if (status === 'cancelled') {
@@ -2457,7 +2481,7 @@ router.patch('/api/booking/:id/reschedule', requireAuth, async (req, res) => {
 });
 
 // Obtener reservas canceladas futuras (requiere autenticación)
-router.get('/api/bookings/:businessId/cancelled-future', requireAuth, async (req, res) => {
+router.get('/api/bookings/:businessId/cancelled-future', requireAuth, requireBusinessAccess, async (req, res) => {
     try {
         const { businessId } = req.params;
 
@@ -2934,7 +2958,7 @@ router.post('/api/contact', contactLimiter, async (req, res) => {
 });
 
 // Obtener todos los mensajes de contacto (requiere autenticación)
-router.get('/api/contact', requireAuth, async (req, res) => {
+router.get('/api/contact', requireSuperAdmin, async (req, res) => {
     try {
         const { status } = req.query;
 
@@ -2965,7 +2989,7 @@ router.get('/api/contact', requireAuth, async (req, res) => {
 });
 
 // Obtener un mensaje específico (requiere autenticación)
-router.get('/api/contact/:id', requireAuth, async (req, res) => {
+router.get('/api/contact/:id', requireSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -2996,7 +3020,7 @@ router.get('/api/contact/:id', requireAuth, async (req, res) => {
 });
 
 // Actualizar estado de un mensaje (requiere autenticación)
-router.patch('/api/contact/:id', requireAuth, async (req, res) => {
+router.patch('/api/contact/:id', requireSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
@@ -3032,7 +3056,7 @@ router.patch('/api/contact/:id', requireAuth, async (req, res) => {
 });
 
 // Eliminar un mensaje (requiere autenticación)
-router.delete('/api/contact/:id', requireAuth, async (req, res) => {
+router.delete('/api/contact/:id', requireSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -3745,161 +3769,11 @@ router.post('/api/setup-database', async (req, res) => {
     }
 });
 
-// ==================== DEBUG: Ver estructura de tabla (TEMPORAL) ====================
-router.get('/api/debug/table-structure', async (req, res) => {
-    try {
-        const structure = await db.query('DESCRIBE businesses');
-        res.json({
-            success: true,
-            structure: structure
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// ==================== DEBUG: Ver rutas registradas (TEMPORAL) ====================
-router.get('/api/debug/routes', (req, res) => {
-    const routes = [];
-
-    // Función para extraer rutas de un router
-    function extractRoutes(stack, basePath = '') {
-        stack.forEach(layer => {
-            if (layer.route) {
-                // Ruta directa
-                const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
-                routes.push({
-                    path: basePath + layer.route.path,
-                    methods: methods
-                });
-            } else if (layer.name === 'router' && layer.handle.stack) {
-                // Subrouter
-                const routePath = layer.regexp.source
-                    .replace('\\/?', '')
-                    .replace('(?=\\/|$)', '')
-                    .replace(/\\\//g, '/')
-                    .replace(/\^/g, '')
-                    .replace(/\$/g, '')
-                    .replace(/\\/g, '');
-                extractRoutes(layer.handle.stack, basePath + routePath);
-            }
-        });
-    }
-
-    // Extraer rutas del router principal
-    if (router.stack) {
-        extractRoutes(router.stack);
-    }
-
-    res.json({
-        success: true,
-        totalRoutes: routes.length,
-        routes: routes.filter(r => r.path.includes('super-admin')),
-        timestamp: new Date().toISOString(),
-        version: 'superadmin-deployment-v2'
-    });
-});
-
-// ==================== SETUP SUPER ADMIN (TEMPORAL) ====================
-router.post('/api/setup/create-super-admin', async (req, res) => {
-    try {
-        const bcrypt = require('bcrypt');
-
-        // Protección: requiere clave secreta
-        const { secret } = req.body;
-        if (secret !== 'setup-super-admin-2025') {
-            return res.status(403).json({
-                success: false,
-                message: 'Acceso denegado'
-            });
-        }
-
-        console.log('🔧 Creando tabla platform_admins...');
-
-        // 1. Crear tabla si no existe
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS platform_admins (
-                id INT PRIMARY KEY AUTO_INCREMENT,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL,
-                full_name VARCHAR(255) NOT NULL,
-                role ENUM('super_admin', 'support', 'viewer') DEFAULT 'super_admin',
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX idx_email (email)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-        `);
-
-        console.log('✅ Tabla creada/verificada');
-
-        // 2. Crear super-admin
-        const email = 'admin@stickywork.com';
-        const password = 'StickyAdmin2025!';
-        const passwordHash = await bcrypt.hash(password, 10);
-
-        // Verificar si existe
-        const existing = await db.query(
-            'SELECT id FROM platform_admins WHERE email = ?',
-            [email]
-        );
-
-        if (existing && existing.length > 0) {
-            // Actualizar
-            await db.query(
-                `UPDATE platform_admins
-                 SET password_hash = ?,
-                     full_name = ?,
-                     is_active = TRUE,
-                     updated_at = CURRENT_TIMESTAMP
-                 WHERE email = ?`,
-                [passwordHash, 'Super Admin StickyWork', email]
-            );
-            console.log('✅ Usuario actualizado');
-        } else {
-            // Crear nuevo
-            await db.query(
-                `INSERT INTO platform_admins (email, password_hash, full_name, role, is_active)
-                 VALUES (?, ?, ?, 'super_admin', TRUE)`,
-                [email, passwordHash, 'Super Admin StickyWork']
-            );
-            console.log('✅ Usuario creado');
-        }
-
-        res.json({
-            success: true,
-            message: 'Super admin configurado correctamente',
-            credentials: {
-                email: email,
-                password: password,
-                url: 'https://stickywork.com/super-admin-login.html'
-            }
-        });
-
-    } catch (error) {
-        console.error('Error creando super admin:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al crear super admin',
-            error: error.message
-        });
-    }
-});
-
 // ==================== MIGRACIÓN: REPORTES IA ====================
 router.post('/api/setup/migrate-ai-reports', async (req, res) => {
     try {
         // Protección: requiere clave secreta
-        const { secret } = req.body;
-        if (secret !== 'migrate-ai-reports-2026') {
-            return res.status(403).json({
-                success: false,
-                message: 'Acceso denegado'
-            });
-        }
+        // Protegido por requireSetupSecret (SUPER_ADMIN_SECRET)
 
         console.log('🚀 Iniciando migración: Sistema de Reportes IA');
 
@@ -4051,7 +3925,7 @@ router.get('/api/search', requireAuth, async (req, res) => {
 // Migración: Añadir columna business_context JSON a businesses
 router.post('/api/debug/run-business-context-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -4195,7 +4069,7 @@ router.patch('/api/businesses/:id/business-context', requireAuth, requireRole('o
 // Migración: Añadir columna manage_token a bookings
 router.post('/api/debug/run-manage-token-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -4764,7 +4638,7 @@ router.get('/api/qr/:businessId', async (req, res) => {
 // Migración: Crear tabla loyalty_vouchers y columna loyalty_config en businesses
 router.post('/api/debug/run-loyalty-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });
@@ -5055,7 +4929,7 @@ router.post('/api/loyalty/:businessId/check', async (req, res) => {
 // ==================== MIGRACIÓN: PHONE EN ADMIN_USERS ====================
 router.post('/api/debug/run-admin-phone-migration', async (req, res) => {
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+    const expectedToken = process.env.SUPER_ADMIN_SECRET;
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
         return res.status(401).json({ success: false, message: 'No autorizado' });

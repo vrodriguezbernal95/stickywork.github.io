@@ -163,7 +163,7 @@ TTL: 300
 ```
 DB_HOST=mysql.railway.internal
 MYSQLHOST=autorack.proxy.rlwy.net
-MYSQL_URL=mysql://root:...@autorack.proxy.rlwy.net:PORT/railway
+MYSQL_URL=mysql://root:<CONTRASEÑA>@autorack.proxy.rlwy.net:PORT/railway
 
 NODE_ENV=production
 PORT=3000

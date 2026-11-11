@@ -1,0 +1,59 @@
+# Publica en GitHub Pages (stickywork.com) SOLO el frontend.
+# El backend, la configuración, los scripts y la documentación interna no se publican.
+# Requiere: Settings > Pages > Build and deployment > Source = "GitHub Actions".
+name: Deploy frontend a GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copiar solo los archivos públicos
+        run: |
+          mkdir _site
+          rsync -a ./ _site/ \
+            --exclude='_site/' \
+            --exclude='.*' \
+            --exclude='backend/' \
+            --exclude='config/' \
+            --exclude='historico/' \
+            --exclude='node_modules/' \
+            --exclude='*.md' \
+            --exclude='*.sql' \
+            --exclude='*.toml' \
+            --exclude='*.yaml' \
+            --exclude='*.yml' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='railway.json' \
+            --exclude='CHEATSHEET.txt' \
+            --exclude='/*.js'
+          # sw.js (service worker) es el único .js de la raíz que usa el frontend
+          cp sw.js _site/sw.js
+          touch _site/.nojekyll
+          echo "Archivos publicados: $(find _site -type f | wc -l)"
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

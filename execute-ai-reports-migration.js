@@ -8,7 +8,7 @@ async function executeMigration() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                secret: 'migrate-ai-reports-2026'
+                secret: process.env.SUPER_ADMIN_SECRET
             })
         });
 

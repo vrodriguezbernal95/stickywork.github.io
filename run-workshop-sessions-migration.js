@@ -4,7 +4,7 @@
 const https = require('https');
 
 const API_URL = 'api.stickywork.com';
-const TOKEN = process.env.SUPER_ADMIN_SECRET || 'super-admin-test-token';
+const TOKEN = process.env.SUPER_ADMIN_SECRET;
 
 const options = {
     hostname: API_URL,

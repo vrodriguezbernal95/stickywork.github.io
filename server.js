@@ -64,6 +64,20 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// No servir como estáticos el código del servidor ni la documentación interna
+// (solo el frontend: html, css, js/, admin/, widget/, images/, demos/, sw.js, robots.txt...)
+const PRIVATE_PATHS = /^\/(backend|config|historico|node_modules|\.github)(\/|$)|^\/[^/]+\.(md|toml|ya?ml|sql|log)$|^\/(package(-lock)?|railway)\.json$|^\/(?!robots\.txt$)[^/]+\.txt$|^\/(?!sw\.js$)[^/]+\.js$/i;
+app.use((req, res, next) => {
+    let p;
+    try {
+        p = path.posix.normalize(decodeURIComponent(req.path));
+    } catch (e) {
+        return res.status(400).end();
+    }
+    if (PRIVATE_PATHS.test(p)) return res.status(404).end();
+    next();
+});
+
 // Servir archivos estáticos
 app.use(express.static(path.join(__dirname)));
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -87,23 +101,6 @@ app.get('/api/health', (req, res) => {
         success: true,
         message: 'Servidor funcionando correctamente',
         timestamp: new Date().toISOString()
-    });
-});
-
-// Debug de variables de entorno (solo en producción)
-app.get('/api/debug/env', (req, res) => {
-    // Mostrar TODAS las variables (ocultando passwords)
-    const allVars = {};
-    Object.keys(process.env).sort().forEach(key => {
-        if (key.includes('PASSWORD') || key.includes('SECRET') || key.includes('KEY')) {
-            allVars[key] = '***HIDDEN***';
-        } else {
-            allVars[key] = process.env[key];
-        }
-    });
-    res.json({
-        totalEnvVars: Object.keys(process.env).length,
-        allVars
     });
 });
 

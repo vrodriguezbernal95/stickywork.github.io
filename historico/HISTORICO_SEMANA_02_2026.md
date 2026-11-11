@@ -337,7 +337,7 @@ Continuación de la sesión de WhatsApp. Usuario solicitó mejoras de UX basadas
 **Credenciales proporcionadas:**
 ```
 📧 Email:    admin@stickywork.com
-🔑 Password: StickyAdmin2025!
+🔑 Password: <CONTRASEÑA>
 🌐 URL:      https://stickywork.com/super-admin-login.html
 ```
 
@@ -1655,7 +1655,7 @@ bookingSettings: {
 - ✅ Business ID: 11
 - ✅ User ID: 12
 - 📧 Email: admin@inmobiliariaprime.demo
-- 🔑 Password: prime2024
+- 🔑 Password: <CONTRASEÑA>
 - 🆓 Free access: true (para demo)
 
 #### Fase 4: Servicios de Ejemplo (15 min)

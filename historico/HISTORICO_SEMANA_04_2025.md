@@ -93,10 +93,10 @@
    - Problema: Variables solo estaban en servicio "mysql", no en "stickywork api"
    - Solución: Añadir variables directamente al servicio de la API:
      ```
-     MYSQL_URL=mysql://root:KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ@mysql.railway.internal:3306/railway
+     MYSQL_URL=mysql://root:<CONTRASEÑA>@mysql.railway.internal:3306/railway
      DB_HOST=mysql.railway.internal
      DB_USER=root
-     DB_PASSWORD=KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ
+     DB_PASSWORD=<CONTRASEÑA>
      DB_NAME=railway
      DB_PORT=3306
      ```

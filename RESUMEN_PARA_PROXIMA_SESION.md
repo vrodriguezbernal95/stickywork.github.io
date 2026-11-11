@@ -82,12 +82,12 @@ EMAIL_PASSWORD="xsmtpsib-XXXXXXX...XXXXXXX" # (Ver Railway)
 
 **Interna** (desde servidor Railway):
 ```
-mysql://root:XXXXX@mysql.railway.internal:3306/railway
+mysql://root:<CONTRASEÑA>@mysql.railway.internal:3306/railway
 ```
 
 **Pública** (desde tu máquina local):
 ```
-mysql://root:XXXXX@tramway.proxy.rlwy.net:49999/railway
+mysql://root:<CONTRASEÑA>@tramway.proxy.rlwy.net:49999/railway
 ```
 
 ⚠️ **Nota**: Las credenciales reales están en Railway > MySQL > Variables

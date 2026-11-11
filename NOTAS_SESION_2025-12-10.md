@@ -145,8 +145,8 @@ EMAIL_PASSWORD="xsmtpsib-23339..."
 
 ### Variables del Servicio MySQL
 ```env
-MYSQL_URL="mysql://root:XXX@mysql.railway.internal:3306/railway"
-MYSQL_PUBLIC_URL="mysql://root:XXX@tramway.proxy.rlwy.net:49999/railway"
+MYSQL_URL="mysql://root:<CONTRASEÑA>@mysql.railway.internal:3306/railway"
+MYSQL_PUBLIC_URL="mysql://root:<CONTRASEÑA>@tramway.proxy.rlwy.net:49999/railway"
 ```
 
 ---

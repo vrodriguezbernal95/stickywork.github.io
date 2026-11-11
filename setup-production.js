@@ -1,7 +1,7 @@
 // Script para ejecutar setup en la BD de producción (Railway)
 const mysql = require('mysql2/promise');
 
-const MYSQL_URL = 'mysql://root:KisshtRHbXmrJeKLOzOIZGZDlmcpLzJQ@switchback.proxy.rlwy.net:26447/railway';
+const MYSQL_URL = process.env.MYSQL_PUBLIC_URL;
 
 async function setupProduction() {
     console.log('🚀 Conectando a MySQL de Railway...\n');
