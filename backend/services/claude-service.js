@@ -24,10 +24,16 @@ async function generateBusinessReport(data) {
         const prompt = buildPrompt(data);
 
         // Llamar a Claude API
-        const message = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514', // Claude Sonnet 4 (más reciente)
-            max_tokens: 4096,
-            temperature: 0.7,
+        // - Claude Opus 5.5 siempre razona antes de responder (no admite desactivarlo ni `temperature`);
+        //   el razonamiento cuenta dentro de max_tokens, de ahí el margen.
+        // - fallbacks "default": si el modelo declina la petición por sus filtros de seguridad,
+        //   la API la reintenta automáticamente con un modelo de respaldo.
+        const message = await anthropic.beta.messages.create({
+            model: 'claude-opus-5-5',
+            max_tokens: 16000,
+            output_config: { effort: 'medium' },
+            betas: ['server-side-fallback-2026-07-01'],
+            fallbacks: 'default',
             messages: [
                 {
                     role: 'user',
@@ -36,8 +42,18 @@ async function generateBusinessReport(data) {
             ]
         });
 
-        // Extraer el contenido de la respuesta
-        const responseText = message.content[0].text;
+        if (message.stop_reason === 'refusal') {
+            throw new Error('La IA no ha podido generar este reporte. Inténtalo de nuevo más tarde.');
+        }
+
+        // El texto del reporte: los bloques de razonamiento ("thinking") van antes y se ignoran
+        const responseText = message.content
+            .filter(block => block.type === 'text')
+            .map(block => block.text)
+            .join('');
+        if (!responseText) {
+            throw new Error(`Respuesta vacía de la IA (stop_reason: ${message.stop_reason})`);
+        }
 
         // Parsear la respuesta JSON
         const report = parseClaudeResponse(responseText);

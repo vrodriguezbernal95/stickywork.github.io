@@ -2647,74 +2647,6 @@ const settings = {
         const business = this.businessData;
 
         return `
-            <!-- General Settings Section -->
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Configuración General</h3>
-                    <p>Preferencias avanzadas del sistema</p>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Zona Horaria</label>
-                        <select id="timezone">
-                            <option value="Europe/Madrid" selected>Madrid (GMT+1)</option>
-                            <option value="Europe/London">Londres (GMT+0)</option>
-                            <option value="America/New_York">Nueva York (GMT-5)</option>
-                            <option value="America/Los_Angeles">Los Ángeles (GMT-8)</option>
-                            <option value="America/Mexico_City">Ciudad de México (GMT-6)</option>
-                            <option value="America/Buenos_Aires">Buenos Aires (GMT-3)</option>
-                        </select>
-                        <p class="hint">Afecta a los horarios de reservas y notificaciones</p>
-                    </div>
-                    <div class="form-group">
-                        <label>Formato de Fecha</label>
-                        <select id="date-format">
-                            <option value="DD/MM/YYYY" selected>DD/MM/YYYY (31/12/2025)</option>
-                            <option value="MM/DD/YYYY">MM/DD/YYYY (12/31/2025)</option>
-                            <option value="YYYY-MM-DD">YYYY-MM-DD (2025-12-31)</option>
-                        </select>
-                        <p class="hint">Cómo se muestran las fechas en el sistema</p>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Políticas de Cancelación</label>
-                    <textarea id="cancellation-policy" rows="4"
-                              placeholder="Ej: Las cancelaciones deben realizarse con al menos 24 horas de antelación..."
-                    ></textarea>
-                    <p class="hint">Se mostrará a los clientes al hacer una reserva</p>
-                </div>
-
-                <button class="btn-save" onclick="settings.saveAdvancedSettings()">
-                    💾 Guardar Configuración
-                </button>
-            </div>
-
-            <!-- Export Data Section -->
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Exportar Datos</h3>
-                    <p>Descarga toda tu información</p>
-                </div>
-
-                <div class="info-box">
-                    <p>
-                        📦 Puedes exportar todos tus datos (reservas, clientes, servicios)
-                        en formato JSON o CSV para tener un respaldo o migrar a otro sistema.
-                    </p>
-                </div>
-
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <button class="btn-secondary" onclick="settings.exportData('json')">
-                        📄 Exportar JSON
-                    </button>
-                    <button class="btn-secondary" onclick="settings.exportData('csv')">
-                        📊 Exportar CSV
-                    </button>
-                </div>
-            </div>
-
             <!-- Integrations Section -->
             <div class="settings-section">
                 <div class="settings-section-header">
@@ -2727,8 +2659,8 @@ const settings = {
                         <h4>📅 Google Calendar</h4>
                         <p>Sincroniza automáticamente tus reservas con Google Calendar</p>
                     </div>
-                    <button class="btn-secondary">
-                        Conectar
+                    <button class="btn-secondary" disabled>
+                        Próximamente
                     </button>
                 </div>
 
@@ -2753,26 +2685,16 @@ const settings = {
                 </div>
             </div>
 
-            <!-- Danger Zone Section -->
+            <!-- Eliminar cuenta: se gestiona a través de soporte -->
             <div class="settings-section danger-zone">
-                <h3>⚠️ Zona de Peligro</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                    Las siguientes acciones son irreversibles. Procede con cuidado.
+                <h3>🗑️ Eliminar mi cuenta</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.6;">
+                    Si quieres dar de baja tu negocio y que borremos tus datos (reservas, clientes y configuración),
+                    escríbenos y lo gestionamos. Te confirmaremos cuando esté hecho.
                 </p>
-
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <button class="btn-danger" onclick="settings.resetSettings()">
-                        🔄 Restablecer Configuración
-                    </button>
-                    <button class="btn-danger" onclick="settings.deleteAccount()">
-                        🗑️ Eliminar Cuenta Permanentemente
-                    </button>
-                </div>
-
-                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 1rem;">
-                    💡 Eliminar tu cuenta borrará todos tus datos de forma permanente.
-                    Esta acción no se puede deshacer.
-                </p>
+                <button class="btn-secondary" onclick="app.navigateTo('support')">
+                    Escribir a soporte
+                </button>
             </div>
         `;
     },
@@ -3065,46 +2987,6 @@ const settings = {
     // Add exception
     addException() {
         alert('ℹ️ Función de excepciones próximamente disponible');
-    },
-
-    // Save advanced settings
-    async saveAdvancedSettings() {
-        // TODO: Implement save advanced settings logic
-        alert('✅ Configuración avanzada guardada correctamente');
-    },
-
-    // Export data
-    exportData(format) {
-        alert(`ℹ️ Exportación ${format.toUpperCase()} próximamente disponible`);
-    },
-
-    // Reset settings
-    resetSettings() {
-        if (!confirm('¿Estás seguro de que quieres restablecer toda la configuración?\n\nEsta acción no se puede deshacer.')) {
-            return;
-        }
-
-        if (!confirm('⚠️ ÚLTIMA ADVERTENCIA\n\nSe perderán todos tus ajustes personalizados. ¿Continuar?')) {
-            return;
-        }
-
-        alert('ℹ️ Función de restablecimiento próximamente disponible');
-    },
-
-    // Delete account
-    deleteAccount() {
-        if (!confirm('⚠️ PELIGRO\n\n¿Estás seguro de que quieres eliminar tu cuenta?\n\nEsta acción es IRREVERSIBLE y borrará:\n- Todos tus datos\n- Todas tus reservas\n- Toda tu configuración\n- Todo tu historial')) {
-            return;
-        }
-
-        const confirmation = prompt('Para confirmar, escribe "ELIMINAR MI CUENTA" (en mayúsculas):');
-
-        if (confirmation !== 'ELIMINAR MI CUENTA') {
-            alert('❌ Confirmación incorrecta. Cancelando...');
-            return;
-        }
-
-        alert('ℹ️ Función de eliminación de cuenta próximamente disponible');
     },
 
     // Render Capacity Tab

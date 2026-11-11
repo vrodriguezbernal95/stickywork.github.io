@@ -377,6 +377,14 @@ window.HELP_TOPICS = [
         actions: [{ label: 'Ir a Consultoría', go: 'settings:consultancy' }]
     },
     {
+        id: 'eliminar-cuenta', cat: 'cuenta',
+        q: '¿Cómo doy de baja mi cuenta y borro mis datos?',
+        keywords: 'eliminar borrar cuenta baja darse de baja datos rgpd cancelar suscripcion cerrar',
+        a: `<p>Escríbenos desde <strong>Ayuda → Escríbenos</strong> (o en <strong>Configuración → Avanzado → Eliminar mi cuenta</strong>) y gestionamos la baja y el borrado de tus datos: reservas, clientes y configuración. Te confirmaremos cuando esté hecho.</p>
+            <p>Si solo quieres dejar de pagar, puedes cambiar al plan Gratis en <strong>Configuración → Plan</strong> sin perder nada.</p>`,
+        actions: [{ label: 'Escribir a soporte', go: 'support' }, { label: 'Ver planes', go: 'settings:billing' }]
+    },
+    {
         id: 'datos-negocio', cat: 'cuenta',
         q: '¿Cómo cambio el nombre, la dirección o el teléfono de mi negocio?',
         keywords: 'datos negocio nombre direccion telefono web email cambiar informacion',
