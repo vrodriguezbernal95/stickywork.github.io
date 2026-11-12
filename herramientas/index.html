@@ -62,7 +62,8 @@
         .seo-cta { text-align: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 18px; padding: 2.25rem 1.5rem; margin: 3rem 0 1rem; }
         .seo-cta h2 { margin-top: 0; }
         .seo-meta { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
-        .seo-related a { color: var(--primary-color); }
+        .seo-related a, .seo-wrap p a:not(.btn), .seo-wrap li a:not(.btn) { color: var(--primary-color); }
+        [data-theme="dark"] .seo-related a, [data-theme="dark"] .seo-wrap p a:not(.btn), [data-theme="dark"] .seo-wrap li a:not(.btn) { color: #9ea2ff; }
         .seo-note { border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 8px; margin: 1.5rem 0; }
         .blog-list { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
         .blog-item { display: block; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; }
@@ -96,6 +97,11 @@
         .tpl h3 { margin: 0 0 0.6rem; font-size: 1.05rem; }
         .tpl pre { white-space: pre-wrap; font-family: inherit; font-size: 0.98rem; line-height: 1.6; color: var(--text-secondary); margin: 0 0 0.9rem; background: var(--bg-secondary); padding: 0.9rem 1rem; border-radius: 10px; }
         .tpl .btn { padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; }
+        .tool-app ul { text-align: left; max-width: 620px; margin: 0 auto 1.25rem; padding-left: 1.3rem; }
+        .tool-app li { margin-bottom: 0.6rem; }
+        .seo-badge-app { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 0.5rem; }
+        .tool-note { display: flex; gap: 0.75rem; align-items: flex-start; border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 10px; margin: 0 0 1.5rem; }
+        .tool-note p { margin: 0; }
         .tool-list { display: grid; gap: 1rem; margin: 1.5rem 0; }
         .tool-link { display: flex; gap: 1rem; align-items: flex-start; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.4rem; }
         .tool-link:hover { border-color: var(--primary-color); }
@@ -129,8 +135,8 @@
 
     <header class="seo-hero">
         <span class="seo-badge">Gratis</span>
-        <h1>Herramientas gratis para negocios con cita previa</h1>
-        <p>Para llenar tu agenda y perder menos citas. Sin registro y sin pagar nada.</p>
+        <h1>Herramientas gratis de StickyWork para negocios con cita previa</h1>
+        <p>Úsalas sin registrarte. Son una muestra de lo que la app de StickyWork hace sola por tu negocio.</p>
     </header>
 
     <main class="seo-wrap">
@@ -148,11 +154,13 @@
                 <div><h2>Plantillas de WhatsApp para citas</h2><p>Recordatorios, confirmaciones, huecos libres y reseñas, listos para copiar.</p></div>
             </a>
         </div>
-        <div class="seo-cta">
-            <h2>¿Y si los recordatorios se enviaran solos?</h2>
-            <p>Con StickyWork tus clientes reservan online a cualquier hora y reciben la confirmación y un recordatorio por email el día antes, sin que tú hagas nada. Plan gratuito para siempre, sin tarjeta.</p>
+        <div class="seo-cta tool-app">
+            <span class="seo-badge-app">La app de StickyWork</span>
+            <h2>Todo esto, hecho solo, dentro de StickyWork</h2>
+            <ul><li><strong>Recordatorios automáticos</strong> por email el día antes, con enlace para cancelar o cambiar la hora.</li><li>Tu <strong>página de reservas y su código QR</strong>, listos desde el primer día.</li><li>Un <strong>botón de WhatsApp en cada reserva</strong> con el mensaje ya escrito.</li></ul>
+            <p>Plan gratuito para siempre, sin tarjeta de crédito.</p>
             <a href="/registro.html?utm_source=herramientas&amp;utm_medium=cta&amp;utm_campaign=indice" class="btn btn-primary">Crear mi cuenta gratis</a>
-            <a href="/demo.html" class="btn btn-secondary">Ver la demo</a>
+            <a href="/demo.html" class="btn btn-secondary">Ver la app en acción</a>
         </div>
     </main>
 

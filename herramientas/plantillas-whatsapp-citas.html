@@ -116,7 +116,8 @@
         .seo-cta { text-align: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 18px; padding: 2.25rem 1.5rem; margin: 3rem 0 1rem; }
         .seo-cta h2 { margin-top: 0; }
         .seo-meta { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
-        .seo-related a { color: var(--primary-color); }
+        .seo-related a, .seo-wrap p a:not(.btn), .seo-wrap li a:not(.btn) { color: var(--primary-color); }
+        [data-theme="dark"] .seo-related a, [data-theme="dark"] .seo-wrap p a:not(.btn), [data-theme="dark"] .seo-wrap li a:not(.btn) { color: #9ea2ff; }
         .seo-note { border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 8px; margin: 1.5rem 0; }
         .blog-list { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
         .blog-item { display: block; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; }
@@ -150,6 +151,11 @@
         .tpl h3 { margin: 0 0 0.6rem; font-size: 1.05rem; }
         .tpl pre { white-space: pre-wrap; font-family: inherit; font-size: 0.98rem; line-height: 1.6; color: var(--text-secondary); margin: 0 0 0.9rem; background: var(--bg-secondary); padding: 0.9rem 1rem; border-radius: 10px; }
         .tpl .btn { padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; }
+        .tool-app ul { text-align: left; max-width: 620px; margin: 0 auto 1.25rem; padding-left: 1.3rem; }
+        .tool-app li { margin-bottom: 0.6rem; }
+        .seo-badge-app { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 0.5rem; }
+        .tool-note { display: flex; gap: 0.75rem; align-items: flex-start; border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 10px; margin: 0 0 1.5rem; }
+        .tool-note p { margin: 0; }
         .tool-list { display: grid; gap: 1rem; margin: 1.5rem 0; }
         .tool-link { display: flex; gap: 1rem; align-items: flex-start; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.4rem; }
         .tool-link:hover { border-color: var(--primary-color); }
@@ -184,7 +190,7 @@
     <header class="seo-hero">
         <span class="seo-badge">Herramienta gratis</span>
         <h1>Plantillas de WhatsApp para recordar citas y llenar la agenda</h1>
-        <p>Recordatorios, confirmaciones, huecos libres y reseñas: escribe el nombre de tu negocio y copia el mensaje.</p>
+        <p>Mensajes listos para copiar y pegar en tu WhatsApp: recordatorios, confirmaciones, huecos libres y reseñas. Gratis y sin registro.</p>
     </header>
 
     <main class="seo-wrap">
@@ -203,6 +209,7 @@
         </div>
 
         <h2>Plantillas listas para copiar</h2>
+        <div class="tool-note"><span aria-hidden="true">💡</span><p><strong>Cómo se usan:</strong> pulsa «Copiar» y pégalo en el chat del cliente, o «Abrir en WhatsApp» para elegir a quién enviarlo. Cambia lo que va entre [corchetes]. <strong>En la app de StickyWork no hace falta:</strong> cada reserva tiene su botón de WhatsApp con el nombre, el día y la hora ya puestos.</p></div>
             <div class="tpl">
                 <h3>⏰ Recordatorio el día antes</h3>
                 <pre data-tpl="Hola [nombre] 👋 Te recordamos tu cita mañana [día] a las [hora] en {negocio}. Si no puedes venir, avísanos y se la damos a otra persona. ¡Te esperamos!"></pre>
@@ -291,11 +298,13 @@
                 <p>Sí. Con un sistema de reservas online como StickyWork, la confirmación y el recordatorio del día antes se envían solos por email, con un enlace para cancelar o cambiar la hora.</p>
             </details>
         </div>
-        <div class="seo-cta">
-            <h2>¿Y si los recordatorios se enviaran solos?</h2>
-            <p>Con StickyWork tus clientes reservan online a cualquier hora y reciben la confirmación y un recordatorio por email el día antes, sin que tú hagas nada. Plan gratuito para siempre, sin tarjeta.</p>
+        <div class="seo-cta tool-app">
+            <span class="seo-badge-app">La app de StickyWork</span>
+            <h2>Dentro de StickyWork, el mensaje ya viene escrito</h2>
+            <ul><li>Cada reserva tiene un <strong>botón de WhatsApp</strong> que abre la conversación con el <strong>nombre, el día, la hora y el servicio ya puestos</strong>. Tú solo pulsas enviar.</li><li>Tu plantilla la escribes una vez en el panel, a tu manera.</li><li>Y sin que hagas nada, el cliente recibe <strong>la confirmación y el recordatorio por email</strong> el día antes.</li></ul>
+            <p>Plan gratuito para siempre, sin tarjeta de crédito.</p>
             <a href="/registro.html?utm_source=herramientas&amp;utm_medium=cta&amp;utm_campaign=whatsapp" class="btn btn-primary">Crear mi cuenta gratis</a>
-            <a href="/demo.html" class="btn btn-secondary">Ver la demo</a>
+            <a href="/demo.html" class="btn btn-secondary">Ver la app en acción</a>
         </div>
         <p class="seo-related">Más herramientas gratis: <a href="/herramientas/calculadora-citas-perdidas.html">calculadora de citas perdidas</a> · <a href="/herramientas/generador-qr-reservas.html">cartel con código QR</a> · <a href="/herramientas/plantillas-whatsapp-citas.html">plantillas de WhatsApp</a></p>
     </main>

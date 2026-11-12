@@ -118,7 +118,8 @@ STYLE = '''    <style>
         .seo-cta { text-align: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 18px; padding: 2.25rem 1.5rem; margin: 3rem 0 1rem; }
         .seo-cta h2 { margin-top: 0; }
         .seo-meta { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
-        .seo-related a { color: var(--primary-color); }
+        .seo-related a, .seo-wrap p a:not(.btn), .seo-wrap li a:not(.btn) { color: var(--primary-color); }
+        [data-theme="dark"] .seo-related a, [data-theme="dark"] .seo-wrap p a:not(.btn), [data-theme="dark"] .seo-wrap li a:not(.btn) { color: #9ea2ff; }
         .seo-note { border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 8px; margin: 1.5rem 0; }
         .blog-list { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
         .blog-item { display: block; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; }
@@ -486,6 +487,11 @@ TOOL_STYLE = """    <style>
         .tpl h3 { margin: 0 0 0.6rem; font-size: 1.05rem; }
         .tpl pre { white-space: pre-wrap; font-family: inherit; font-size: 0.98rem; line-height: 1.6; color: var(--text-secondary); margin: 0 0 0.9rem; background: var(--bg-secondary); padding: 0.9rem 1rem; border-radius: 10px; }
         .tpl .btn { padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; }
+        .tool-app ul { text-align: left; max-width: 620px; margin: 0 auto 1.25rem; padding-left: 1.3rem; }
+        .tool-app li { margin-bottom: 0.6rem; }
+        .seo-badge-app { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--primary-color); margin-bottom: 0.5rem; }
+        .tool-note { display: flex; gap: 0.75rem; align-items: flex-start; border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 10px; margin: 0 0 1.5rem; }
+        .tool-note p { margin: 0; }
         .tool-list { display: grid; gap: 1rem; margin: 1.5rem 0; }
         .tool-link { display: flex; gap: 1rem; align-items: flex-start; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.4rem; }
         .tool-link:hover { border-color: var(--primary-color); }
@@ -500,12 +506,35 @@ TOOL_STYLE = """    <style>
     </style>
 """
 
+APP_TEXT = {
+    'calculadora': ('Dentro de StickyWork, esto se hace solo', [
+        'Cada cliente recibe <strong>la confirmación y un recordatorio por email el día antes</strong>, sin que tú escribas nada.',
+        'En el email tiene un <strong>enlace para cancelar o cambiar la hora</strong>: te avisa en lugar de no venir y el hueco queda libre al momento.',
+        'Tus clientes <strong>reservan solos a cualquier hora</strong> desde tu página de reservas o tu web.']),
+    'qr': ('Dentro de StickyWork, tu QR ya viene hecho', [
+        'Tienes tu <strong>propia página de reservas</strong> con un enlace para compartir, aunque no tengas web.',
+        'Su <strong>código QR</strong> está listo para descargar en el panel, en <em>Configuración → Mi página</em>.',
+        'Cada reserva que entra por el QR <strong>aparece directamente en tu agenda</strong> y el cliente recibe su confirmación.']),
+    'whatsapp': ('Dentro de StickyWork, el mensaje ya viene escrito', [
+        'Cada reserva tiene un <strong>botón de WhatsApp</strong> que abre la conversación con el <strong>nombre, el día, la hora y el servicio ya puestos</strong>. Tú solo pulsas enviar.',
+        'Tu plantilla la escribes una vez en el panel, a tu manera.',
+        'Y sin que hagas nada, el cliente recibe <strong>la confirmación y el recordatorio por email</strong> el día antes.']),
+    'indice': ('Todo esto, hecho solo, dentro de StickyWork', [
+        '<strong>Recordatorios automáticos</strong> por email el día antes, con enlace para cancelar o cambiar la hora.',
+        'Tu <strong>página de reservas y su código QR</strong>, listos desde el primer día.',
+        'Un <strong>botón de WhatsApp en cada reserva</strong> con el mensaje ya escrito.']),
+}
+
 def tool_cta(source):
-    return f"""        <div class="seo-cta">
-            <h2>¿Y si los recordatorios se enviaran solos?</h2>
-            <p>Con StickyWork tus clientes reservan online a cualquier hora y reciben la confirmación y un recordatorio por email el día antes, sin que tú hagas nada. Plan gratuito para siempre, sin tarjeta.</p>
+    title, items = APP_TEXT[source]
+    lis = ''.join(f'<li>{i}</li>' for i in items)
+    return f"""        <div class="seo-cta tool-app">
+            <span class="seo-badge-app">La app de StickyWork</span>
+            <h2>{title}</h2>
+            <ul>{lis}</ul>
+            <p>Plan gratuito para siempre, sin tarjeta de crédito.</p>
             <a href="/registro.html?utm_source=herramientas&amp;utm_medium=cta&amp;utm_campaign={source}" class="btn btn-primary">Crear mi cuenta gratis</a>
-            <a href="/demo.html" class="btn btn-secondary">Ver la demo</a>
+            <a href="/demo.html" class="btn btn-secondary">Ver la app en acción</a>
         </div>"""
 
 TOOLS_FOOT = """        <p class="seo-related">Más herramientas gratis: <a href="/herramientas/calculadora-citas-perdidas.html">calculadora de citas perdidas</a> · <a href="/herramientas/generador-qr-reservas.html">cartel con código QR</a> · <a href="/herramientas/plantillas-whatsapp-citas.html">plantillas de WhatsApp</a></p>"""
@@ -756,6 +785,7 @@ WA_BODY = f"""        <div class="tool-box">
         </div>
 
         <h2>Plantillas listas para copiar</h2>
+        <div class="tool-note"><span aria-hidden="true">💡</span><p><strong>Cómo se usan:</strong> pulsa «Copiar» y pégalo en el chat del cliente, o «Abrir en WhatsApp» para elegir a quién enviarlo. Cambia lo que va entre [corchetes]. <strong>En la app de StickyWork no hace falta:</strong> cada reserva tiene su botón de WhatsApp con el nombre, el día y la hora ya puestos.</p></div>
 {wa_items}
 
         <h2>Consejos para que funcionen</h2>
@@ -799,7 +829,7 @@ urls.append(page('herramientas/plantillas-whatsapp-citas.html',
     'Plantillas de WhatsApp para recordar citas a tus clientes (gratis) | StickyWork',
     WA_DESC,
     'Plantillas de WhatsApp para recordar citas y llenar la agenda',
-    '<p>Recordatorios, confirmaciones, huecos libres y reseñas: escribe el nombre de tu negocio y copia el mensaje.</p>',
+    '<p>Mensajes listos para copiar y pegar en tu WhatsApp: recordatorios, confirmaciones, huecos libres y reseñas. Gratis y sin registro.</p>',
     WA_BODY + faq_html(WA_FAQ) + '\n' + tool_cta('whatsapp') + '\n' + TOOLS_FOOT,
     schema=[tool_schema('Plantillas de WhatsApp para citas', 'herramientas/plantillas-whatsapp-citas.html', WA_DESC), faq_schema(WA_FAQ)],
     badge='Herramienta gratis', extra_head=TOOL_STYLE, scripts=WA_JS))
@@ -808,8 +838,8 @@ urls.append(page('herramientas/plantillas-whatsapp-citas.html',
 urls.append(page('herramientas/index.html',
     'Herramientas gratis para negocios con cita previa | StickyWork',
     'Herramientas gratuitas para peluquerías, clínicas y consultas: calcula lo que pierdes con las citas que fallan, crea un cartel con QR para reservas y copia plantillas de WhatsApp.',
-    'Herramientas gratis para negocios con cita previa',
-    '<p>Para llenar tu agenda y perder menos citas. Sin registro y sin pagar nada.</p>',
+    'Herramientas gratis de StickyWork para negocios con cita previa',
+    '<p>Úsalas sin registrarte. Son una muestra de lo que la app de StickyWork hace sola por tu negocio.</p>',
     """        <div class="tool-list">
             <a class="tool-link" href="/herramientas/calculadora-citas-perdidas.html">
                 <span class="tool-icon">🧮</span>
