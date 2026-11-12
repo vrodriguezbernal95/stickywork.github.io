@@ -419,7 +419,7 @@
                 <div class="trial-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
                 </div>
-                <div>
+                <div id="trial-banner-text">
                     <h4>Empieza con el plan gratuito</h4>
                     <p>Hasta 30 reservas al mes · Sin tarjeta de crédito · Cambia de plan cuando quieras</p>
                 </div>
@@ -605,6 +605,31 @@
             ? 'http://localhost:3000'
             : 'https://api.stickywork.com';
 
+        // Enlace de invitación (?ref=CODIGO): se recuerda 30 días por si vuelve más tarde
+        let referralCode = null;
+        (function () {
+            const fromUrl = new URLSearchParams(location.search).get('ref');
+            try {
+                if (fromUrl && /^[A-Za-z0-9]{4,16}$/.test(fromUrl)) {
+                    localStorage.setItem('sw_ref', JSON.stringify({ code: fromUrl.toUpperCase(), t: Date.now() }));
+                }
+                const saved = JSON.parse(localStorage.getItem('sw_ref') || 'null');
+                if (saved && Date.now() - saved.t < 30 * 24 * 3600 * 1000) referralCode = saved.code;
+            } catch (e) {
+                if (fromUrl) referralCode = fromUrl.toUpperCase();
+            }
+            if (!referralCode) return;
+            fetch(`${API_URL}/api/public/referral/${encodeURIComponent(referralCode)}`)
+                .then(r => r.ok ? r.json() : null)
+                .then(res => {
+                    if (!res || !res.success) { referralCode = null; return; }
+                    const box = document.getElementById('trial-banner-text');
+                    box.innerHTML = '<h4></h4><p>Al registrarte empiezas con <strong>1 mes del plan Profesional gratis</strong>. Después sigues gratis, sin tarjeta.</p>';
+                    box.querySelector('h4').textContent = `🎁 ${res.data.businessName} te invita`;
+                })
+                .catch(() => {});
+        })();
+
         // Selección de tipo de negocio
         document.querySelectorAll('.business-type-card').forEach(card => {
             card.addEventListener('click', function() {
@@ -723,13 +748,15 @@
                         adminName: formData.adminName,
                         adminPhone: formData.adminPhone,
                         adminEmail: formData.adminEmail,
-                        adminPassword: formData.adminPassword
+                        adminPassword: formData.adminPassword,
+                        referralCode: referralCode || undefined
                     })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
+                    try { localStorage.removeItem('sw_ref'); } catch (e) {}
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('userData', JSON.stringify(data.user));
                     localStorage.setItem('businessData', JSON.stringify(data.business));

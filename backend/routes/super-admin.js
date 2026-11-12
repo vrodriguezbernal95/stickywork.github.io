@@ -702,7 +702,8 @@ router.patch('/businesses/:id/change-plan', requireSuperAdmin, async (req, res) 
 
         // Actualizar plan en la base de datos
         await db.query(
-            'UPDATE businesses SET plan = ?, plan_limits = ?, ai_reports_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            // plan_bonus_until = NULL: un cambio manual de plan anula el mes regalado por recomendación
+            'UPDATE businesses SET plan = ?, plan_limits = ?, ai_reports_enabled = ?, plan_bonus_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
             [plan, JSON.stringify(newLimits), newLimits.features.aiReports ? 1 : 0, id]
         );
 

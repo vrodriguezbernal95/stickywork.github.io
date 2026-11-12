@@ -104,6 +104,7 @@ const settings = {
                             <button class="settings-tab" data-tab="security" onclick="settings.switchTab('security')">🔐 Seguridad</button>
                             <button class="settings-tab" data-tab="team" onclick="settings.switchTab('team')">👥 Equipo</button>
                             <button class="settings-tab" data-tab="billing" onclick="settings.switchTab('billing')">💳 Plan</button>
+                            <button class="settings-tab" data-tab="invite" onclick="settings.switchTab('invite')">🎁 Invita y gana</button>
                             <button class="settings-tab" data-tab="consultancy" onclick="settings.switchTab('consultancy')">💼 Consultoría</button>
                             <button class="settings-tab" data-tab="advanced" onclick="settings.switchTab('advanced')">⚙️ Avanzado</button>
                         </div>
@@ -150,6 +151,9 @@ const settings = {
                     </div>
                     <div class="settings-tab-content" id="tab-team">
                         <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando equipo...</div>
+                    </div>
+                    <div class="settings-tab-content" id="tab-invite">
+                        <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando...</div>
                     </div>
                     <div class="settings-tab-content" id="tab-consultancy">
                         <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando consultoría...</div>
@@ -892,6 +896,11 @@ const settings = {
             content.classList.remove('active');
         });
         document.getElementById(`tab-${tabName}`).classList.add('active');
+
+        // Programa de recomendación
+        if (tabName === 'invite') {
+            this.loadInviteTab();
+        }
 
         // Load schedule settings when opening schedule tab
         if (tabName === 'schedule') {
@@ -2583,12 +2592,120 @@ const settings = {
         }
     },
 
+    // ===== Invita y gana (programa de recomendación) =====
+    async loadInviteTab() {
+        const box = document.getElementById('tab-invite');
+        try {
+            const res = await api.get('/api/referrals/me');
+            if (!res.success) throw new Error(res.message);
+            box.innerHTML = this.renderInviteTab(res.data);
+        } catch (error) {
+            console.error('Error cargando recomendaciones:', error);
+            box.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-secondary);">No se pudo cargar tu enlace de invitación. Inténtalo de nuevo en un momento.</div>';
+        }
+    },
+
+    renderInviteTab(d) {
+        const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        let bonusText = '';
+        if (d.bonusUntil) {
+            const f = new Date(d.bonusUntil);
+            bonusText = `<div class="invite-bonus">✨ Tienes el plan <strong>Profesional</strong> de regalo hasta el <strong>${f.getDate()} de ${meses[f.getMonth()]} de ${f.getFullYear()}</strong>. Después vuelves al plan Gratis, sin pagar nada.</div>`;
+        }
+        if (d.pendingRewards > 0) {
+            bonusText += `<div class="invite-bonus">✨ Has ganado <strong>${d.pendingRewards} ${d.pendingRewards === 1 ? 'mes' : 'meses'}</strong>: te los descontaremos de tu factura.</div>`;
+        }
+        const waText = encodeURIComponent(`Te recomiendo StickyWork para las reservas de tu negocio: tus clientes reservan solos y les llegan recordatorios. Con mi enlace empiezas con un mes del plan Profesional gratis: ${d.link}`);
+        const pendientes = d.invited - d.rewarded;
+
+        return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>🎁 Invita a otro negocio y ganáis un mes de Profesional los dos</h3>
+                    <p>¿Conoces a alguien con peluquería, clínica, centro de estética o cualquier negocio con citas? Pásale tu enlace.</p>
+                </div>
+
+                ${bonusText}
+
+                <ol class="invite-steps">
+                    <li><strong>Comparte tu enlace</strong> con otro negocio.</li>
+                    <li><strong>Se registra gratis</strong> con él y empieza con <strong>1 mes de Profesional</strong> de regalo.</li>
+                    <li>Cuando reciba sus <strong>primeras ${d.bookingsNeeded} reservas</strong>, tú también ganas <strong>1 mes de Profesional</strong>. Te avisamos por email.</li>
+                </ol>
+
+                <div class="form-group">
+                    <label>Tu enlace de invitación</label>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <input type="text" id="invite-link" value="${esc(d.link)}" readonly style="flex: 1; min-width: 220px;">
+                        <button class="btn btn-primary" onclick="settings.copyInviteLink(this)" style="white-space: nowrap;">📋 Copiar</button>
+                        <a class="btn btn-secondary" href="https://wa.me/?text=${waText}" target="_blank" rel="noopener" style="white-space: nowrap; text-decoration: none;">💬 WhatsApp</a>
+                    </div>
+                </div>
+
+                <div class="invite-stats">
+                    <div><strong>${d.invited}</strong><span>${d.invited === 1 ? 'negocio invitado' : 'negocios invitados'}</span></div>
+                    <div><strong>${d.rewarded}</strong><span>${d.rewarded === 1 ? 'mes ganado' : 'meses ganados'}</span></div>
+                    <div><strong>${pendientes}</strong><span>esperando sus primeras reservas</span></div>
+                </div>
+
+                <p class="hint" style="margin-top: 1rem;">Los meses se suman (hasta ${d.maxRewards}). Si ya pagas un plan, el mes se descuenta de tu factura. El mes de regalo no se renueva solo ni te cobraremos nada.</p>
+            </div>
+
+            <style>
+                .invite-bonus { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.35); color: var(--text-primary); padding: 0.85rem 1rem; border-radius: 10px; margin-bottom: 1rem; line-height: 1.5; }
+                .invite-steps { margin: 0 0 1.5rem; padding-left: 1.25rem; color: var(--text-secondary); line-height: 1.7; }
+                .invite-steps strong { color: var(--text-primary); }
+                .invite-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1.5rem; }
+                .invite-stats > div { background: var(--bg-secondary); border-radius: 10px; padding: 1rem; text-align: center; }
+                .invite-stats strong { display: block; font-size: 1.6rem; color: var(--primary-color); }
+                .invite-stats span { font-size: 0.85rem; color: var(--text-secondary); }
+                @media (max-width: 600px) { .invite-stats { grid-template-columns: 1fr; } }
+            </style>
+        `;
+    },
+
+    async copyInviteLink(btn) {
+        const input = document.getElementById('invite-link');
+        try {
+            await navigator.clipboard.writeText(input.value);
+        } catch (e) {
+            input.select();
+            document.execCommand('copy');
+        }
+        const original = btn.innerHTML;
+        btn.innerHTML = '✅ Copiado';
+        setTimeout(() => { btn.innerHTML = original; }, 2000);
+    },
+
     // Render Billing Tab
     renderBillingTab() {
         const business = this.businessData;
         const trialEndsAt = business.trial_ends_at ? new Date(business.trial_ends_at) : null;
         const daysLeft = trialEndsAt ? Math.ceil((trialEndsAt - new Date()) / (1000 * 60 * 60 * 24)) : 0;
         const isTrialActive = daysLeft > 0;
+
+        // Plan real (también el mes de Profesional regalado por una recomendación)
+        const planNames = { founders: 'Founders', professional: 'Profesional', premium: 'Premium' };
+        const bonusUntil = business.plan_bonus_until ? new Date(business.plan_bonus_until) : null;
+        if (planNames[business.plan] || bonusUntil) {
+            const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>Tu Plan Actual</h3>
+                </div>
+                <div class="plan-card">
+                    <div class="plan-name">${bonusUntil ? '🎁' : '💎'} Plan ${planNames[business.plan] || 'Profesional'}</div>
+                    ${bonusUntil ? `
+                        <p style="color: var(--text-secondary); line-height: 1.6;">De regalo por el programa de recomendación hasta el <strong>${bonusUntil.getDate()} de ${meses[bonusUntil.getMonth()]} de ${bonusUntil.getFullYear()}</strong>. Después vuelves al plan Gratis automáticamente, sin pagar nada.</p>
+                        <button class="btn-save" style="width: 100%; max-width: 300px; margin: 0 auto;" onclick="settings.switchTab('invite')">🎁 Ganar más meses</button>
+                    ` : `
+                        <p style="color: var(--text-secondary);">Para cambios de plan o facturación, escríbenos desde Soporte.</p>
+                    `}
+                </div>
+            </div>`;
+        }
 
         return `
             <!-- Current Plan Section -->

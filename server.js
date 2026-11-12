@@ -16,6 +16,7 @@ const emailService = require('./backend/email-service');
 const { marcarFeedbacksPendientes } = require('./backend/jobs/enviar-feedback');
 const { enviarRecordatoriosCitas } = require('./backend/jobs/enviar-recordatorios');
 const { completarCitasPasadas } = require('./backend/jobs/completar-citas');
+const referrals = require('./backend/referrals');
 
 // Función para ejecutar migraciones MySQL
 async function runMigrations() {
@@ -27,6 +28,8 @@ async function runMigrations() {
             console.log('⚠️ Tabla business_types no existe. Ejecuta: npm run setup');
         } else {
             console.log('✅ Tablas verificadas');
+            // Columnas del programa de recomendación
+            await referrals.ensureReferralColumns(db);
         }
     } catch (err) {
         console.error('⚠️ Error verificando tablas:', err.message);
@@ -224,6 +227,13 @@ async function startServer() {
             cron.schedule('0 * * * *', async () => {
                 // Primero completar las citas que ya pasaron, para que el job de feedback las encuentre
                 await completarCitasPasadas(db);
+                // Programa de recomendación: premios y fin de los meses regalados
+                try {
+                    await referrals.checkReferralRewards(db, emailService);
+                    await referrals.expireBonuses(db);
+                } catch (error) {
+                    console.error('❌ [Cron] Error en recomendaciones:', error.message);
+                }
                 console.log('⏰ [Cron] Ejecutando job de marcado de feedbacks pendientes...');
                 try {
                     await marcarFeedbacksPendientes(db);

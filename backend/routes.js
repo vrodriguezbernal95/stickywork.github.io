@@ -2633,6 +2633,32 @@ router.get('/api/business/:businessId', async (req, res) => {
     }
 });
 
+// ==================== PROGRAMA DE RECOMENDACIÓN ====================
+
+const referrals = require('./referrals');
+
+// Mi enlace de invitación y cómo va (panel)
+router.get('/api/referrals/me', requireAuth, async (req, res) => {
+    try {
+        const data = await referrals.getSummary(db, req.user.businessId);
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('Error obteniendo recomendaciones:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener tu enlace de invitación' });
+    }
+});
+
+// Quién invita (página de registro): solo el nombre del negocio
+router.get('/api/public/referral/:code', async (req, res) => {
+    try {
+        const referrer = await referrals.findByCode(db, req.params.code);
+        if (!referrer) return res.status(404).json({ success: false });
+        res.json({ success: true, data: { businessName: referrer.name } });
+    } catch (error) {
+        res.status(500).json({ success: false });
+    }
+});
+
 // ==================== PÁGINA PÚBLICA DE RESERVAS ====================
 
 // Negocios de demostración de producción: su página pública nunca se ofrece a Google

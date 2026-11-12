@@ -285,7 +285,8 @@ async function handleCheckoutComplete(session) {
             plan_limits = ?,
             ai_reports_enabled = ?,
             subscription_status = 'trialing',
-            trial_ends_at = DATE_ADD(NOW(), INTERVAL 7 DAY)
+            trial_ends_at = DATE_ADD(NOW(), INTERVAL 7 DAY),
+            plan_bonus_until = NULL
         WHERE id = ?
     `, [planName, JSON.stringify(getPlanLimits(planName)), getPlanLimits(planName).features.aiReports ? 1 : 0, businessId]);
 
@@ -358,7 +359,8 @@ async function handleSubscriptionUpdate(subscription) {
             SET subscription_status = ?,
                 plan = ?,
                 plan_limits = ?,
-                ai_reports_enabled = ?
+                ai_reports_enabled = ?,
+                plan_bonus_until = NULL
             WHERE id = ?
         `, [status, planName, JSON.stringify(getPlanLimits(planName)), getPlanLimits(planName).features.aiReports ? 1 : 0, businessId]);
     } else {

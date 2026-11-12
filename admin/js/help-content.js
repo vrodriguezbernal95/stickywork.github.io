@@ -4,7 +4,7 @@
  * Cada tema es una pregunta tal y como la haría un negocio, con una respuesta corta
  * y botones que llevan a la pantalla correspondiente.
  *   go: 'seccion'            → app.navigateTo(seccion)        (dashboard, bookings, clients, services, calendar, opiniones, ai-reports, workshops, settings, support)
- *   go: 'settings:pestaña'   → Configuración en esa pestaña    (business, schedule, capacity, zones, notifications, feedback, widget, publicpage, profile, security, team, billing, consultancy, advanced)
+ *   go: 'settings:pestaña'   → Configuración en esa pestaña    (business, schedule, capacity, zones, notifications, feedback, widget, publicpage, profile, security, team, billing, invite, consultancy, advanced)
  *   go: 'clients:pestaña'    → Clientes en esa pestaña         (clientes, estadisticas, recordatorios, promociones)
  *
  * IMPORTANTE: describir solo lo que la plataforma hace de verdad. Al cambiar una función,
@@ -63,6 +63,18 @@ window.HELP_TOPICS = [
             <p>Para que salga mejor, rellena la <strong>descripción del negocio</strong> y las descripciones de tus servicios.</p>
             <p>Si prefieres que no salga, desmarca <strong>🔎 Aparecer en Google</strong> en <strong>Configuración → Mi página</strong>. El enlace seguirá funcionando para quien lo tenga.</p>`,
         actions: [{ label: 'Ir a Mi página', go: 'settings:publicpage' }]
+    },
+    {
+        id: 'invitar', cat: 'empezar',
+        q: '¿Cómo consigo meses gratis de Profesional?',
+        keywords: 'invitar recomendar referido amigo enlace invitacion mes gratis regalo profesional ganar compartir',
+        a: `<p>Invita a otro negocio con tu enlace de <strong>Configuración → Invita y gana</strong>.</p>
+            <ul>
+                <li>El negocio invitado empieza con <strong>1 mes de Profesional</strong> gratis.</li>
+                <li>Cuando reciba sus primeras 3 reservas, tú también ganas <strong>1 mes de Profesional</strong>. Los meses se suman.</li>
+            </ul>
+            <p>Al acabar, vuelves al plan Gratis sin pagar nada. Si ya pagas un plan, el mes se descuenta de tu factura.</p>`,
+        actions: [{ label: 'Ir a Invita y gana', go: 'settings:invite' }]
     },
     {
         id: 'qr', cat: 'empezar',

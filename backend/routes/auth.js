@@ -138,6 +138,7 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
             businessWebsite,
             // Datos del admin
             adminName,
+            referralCode,
             adminPhone,
             adminEmail,
             adminPassword
@@ -294,6 +295,11 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
         );
 
         const userId = userResult.insertId;
+
+        // Si viene con enlace de invitación: mes de Profesional de regalo (nunca rompe el registro)
+        if (referralCode) {
+            await require('../referrals').applyAtSignup(db, businessId, referralCode);
+        }
 
         // Crear servicios por defecto según el tipo de negocio
         if (typeInfo.default_services) {
