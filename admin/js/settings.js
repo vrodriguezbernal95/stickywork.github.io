@@ -2606,7 +2606,20 @@ const settings = {
     },
 
     renderInviteTab(d) {
-        const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        if (d.demo) {
+            return `
+            <div class="settings-section">
+                <div class="settings-section-header">
+                    <h3>🎁 Invita a otro negocio y ganáis un mes de Profesional los dos</h3>
+                </div>
+                <div style="padding: 1.25rem; border-radius: 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); line-height: 1.6;">
+                    Esta es una <strong>cuenta de demostración</strong>, así que no tiene enlace de invitación.
+                    Cuando crees la cuenta de tu negocio, aquí tendrás tu enlace: por cada negocio que se registre con él
+                    y reciba sus primeras 3 reservas, los dos ganáis un mes del plan Profesional.
+                </div>
+            </div>`;
+        }
+        const esc =v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
         let bonusText = '';
         if (d.bonusUntil) {

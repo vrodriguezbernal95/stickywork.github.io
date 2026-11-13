@@ -2662,8 +2662,8 @@ router.get('/api/public/referral/:code', async (req, res) => {
 // ==================== PÁGINA PÚBLICA DE RESERVAS ====================
 
 // Negocios de demostración de producción: su página pública nunca se ofrece a Google
-// (son negocios ficticios). Si se crea otra demo, añadir aquí su id.
-const DEMO_BUSINESS_IDS = [1, 2, 3, 4, 5, 6, 9];
+// (son negocios ficticios). La lista está en backend/demo-businesses.js.
+const { DEMO_BUSINESS_IDS } = require('./demo-businesses');
 // Además, cualquier negocio cuyo enlace indique que es de demo o de pruebas
 const TEST_SLUG = /(^|-)(demo|prueba|pruebas|test)(-|$)/i;
 

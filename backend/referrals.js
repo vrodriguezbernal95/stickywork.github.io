@@ -11,6 +11,8 @@
 
 const crypto = require('crypto');
 const { getPlanLimits } = require('./plans');
+// Las demos no participan: sus credenciales son públicas y cualquiera podría usar su enlace
+const { isDemoBusiness } = require('./demo-businesses');
 
 const DIAS_PREMIO = 30;
 const RESERVAS_PARA_PREMIO = 3;
@@ -70,11 +72,13 @@ async function getOrCreateCode(db, businessId) {
 async function findByCode(db, code) {
     if (!code || !/^[A-Z0-9]{4,16}$/i.test(code)) return null;
     const rows = await db.query('SELECT id, name, email, plan FROM businesses WHERE referral_code = ?', [String(code).toUpperCase()]);
-    return rows[0] || null;
+    if (!rows.length || isDemoBusiness(rows[0].id)) return null;
+    return rows[0];
 }
 
 // Regala DIAS_PREMIO días de Profesional. Devuelve 'bonus' si se aplicó o 'pending' si el negocio ya paga.
 async function grantMonth(db, businessId) {
+    if (isDemoBusiness(businessId)) return null;
     const rows = await db.query('SELECT plan, plan_bonus_until FROM businesses WHERE id = ?', [businessId]);
     if (!rows.length) return null;
     const { plan, plan_bonus_until } = rows[0];
@@ -207,6 +211,7 @@ async function expireBonuses(db) {
 
 // Resumen para el panel
 async function getSummary(db, businessId) {
+    if (isDemoBusiness(businessId)) return { demo: true };
     const code = await getOrCreateCode(db, businessId);
     const [b] = await db.query('SELECT plan, plan_bonus_until, referral_pending_rewards FROM businesses WHERE id = ?', [businessId]);
     const [stats] = await db.query(

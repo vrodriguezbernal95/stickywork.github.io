@@ -153,14 +153,13 @@ async function handleContactFormSubmit(event) {
                 messageId = data.data?.id;
             }
         } catch (fetchError) {
-            console.log('Backend no disponible, mostrando confirmación demo:', fetchError.message);
-            // Continuar con modo demo
+            console.log('No se pudo enviar el formulario de contacto:', fetchError.message);
         }
 
-        // Mostrar mensaje de éxito (tanto si funcionó el backend como si no)
+        // Si el mensaje no ha llegado, decirlo claramente y dar otra vía de contacto
         const successMessage = backendSuccess
-            ? `¡Gracias por tu mensaje, ${formData.name}!\n\nTu solicitud ha sido enviada exitosamente.\n${messageId ? 'ID del mensaje: ' + messageId : ''}\n\nNos pondremos en contacto contigo en menos de 24 horas a ${formData.email}`
-            : `¡Gracias por tu interés, ${formData.name}!\n\nEsta es una demostración del sistema.\n\nPara solicitudes reales, por favor contacta directamente a:\ncontacto@stickywork.com\n\nEn producción, recibirías una respuesta en menos de 24 horas.`;
+            ? `¡Gracias por tu mensaje, ${formData.name}!\n\nLo hemos recibido. Te responderemos en menos de 24 horas a ${formData.email}.`
+            : `Lo sentimos, ${formData.name}: no hemos podido enviar tu mensaje.\n\nInténtalo de nuevo en unos minutos o escríbenos directamente a contacto@stickywork.com.`;
 
         alert(successMessage);
 
@@ -172,7 +171,7 @@ async function handleContactFormSubmit(event) {
     } catch (error) {
         // Error crítico (no debería pasar)
         console.error('Error crítico al procesar formulario:', error);
-        alert(`Solicitud Recibida (Demo)\n\nGracias por tu interés, ${formData.name}.\n\nEsta es una demostración del sistema.\nPara solicitudes reales, contacta: contacto@stickywork.com`);
+        alert(`Lo sentimos: no hemos podido enviar tu mensaje.\n\nInténtalo de nuevo en unos minutos o escríbenos directamente a contacto@stickywork.com.`);
     } finally {
         // Rehabilitar botón
         submitButton.disabled = false;
