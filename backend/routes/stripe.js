@@ -171,7 +171,8 @@ router.get('/api/stripe/subscription-status', requireAuth, async (req, res) => {
         const businessId = req.user.businessId;
 
         const subscription = await db.query(`
-            SELECT s.*, b.name as business_name, b.plan as current_plan
+            SELECT s.*, b.name as business_name, b.plan as current_plan,
+                   b.plan_bonus_until, b.referral_pending_rewards, b.plan_limits
             FROM subscriptions s
             RIGHT JOIN businesses b ON s.business_id = b.id
             WHERE b.id = ?
@@ -185,18 +186,42 @@ router.get('/api/stripe/subscription-status', requireAuth, async (req, res) => {
         }
 
         const sub = subscription[0];
-        const planDetails = PLAN_DETAILS[sub.plan_name || sub.current_plan || 'free'];
+        // El plan de verdad es businesses.plan: lo cambian Stripe, el superadmin y los meses regalados.
+        // La fila de subscriptions solo aporta el estado del pago en Stripe.
+        const plan = sub.current_plan || 'free';
+        const planDetails = PLAN_DETAILS[plan] || PLAN_DETAILS.free;
+        const hasActiveSubscription = sub.status === 'active' || sub.status === 'trialing' || sub.status === 'past_due';
+
+        // Uso del mes (para el límite de reservas del plan Gratis), con la misma cuenta que el bloqueo de reservas
+        let limits = sub.plan_limits;
+        if (typeof limits === 'string') { try { limits = JSON.parse(limits); } catch (e) { limits = null; } }
+        const maxBookings = limits?.maxBookingsPerMonth || null;
+        let bookingsThisMonth = null;
+        if (maxBookings) {
+            const [count] = await db.query(
+                `SELECT COUNT(*) AS total FROM bookings
+                 WHERE business_id = ?
+                 AND MONTH(booking_date) = MONTH(CURRENT_DATE)
+                 AND YEAR(booking_date) = YEAR(CURRENT_DATE)
+                 AND status != 'cancelled'`,
+                [businessId]
+            );
+            bookingsThisMonth = Number(count.total) || 0;
+        }
 
         res.json({
             success: true,
             data: {
-                plan: sub.plan_name || sub.current_plan || 'free',
+                plan,
                 planDetails,
-                status: sub.status || 'free',
+                status: hasActiveSubscription || sub.status === 'canceled' ? sub.status : 'free',
                 trialEnd: sub.trial_end,
                 currentPeriodEnd: sub.current_period_end,
-                cancelAtPeriodEnd: sub.cancel_at_period_end || false,
-                hasActiveSubscription: sub.status === 'active' || sub.status === 'trialing'
+                cancelAtPeriodEnd: !!sub.cancel_at_period_end,
+                hasActiveSubscription,
+                bonusUntil: sub.plan_bonus_until || null,
+                pendingRewards: sub.referral_pending_rewards || 0,
+                usage: maxBookings ? { bookingsThisMonth, maxBookings } : null
             }
         });
 

@@ -2692,108 +2692,9 @@ const settings = {
     },
 
     // Render Billing Tab
+    // El contenido real lo pinta billing.js al abrir la pestaña (switchTab → billing.load)
     renderBillingTab() {
-        const business = this.businessData;
-        const trialEndsAt = business.trial_ends_at ? new Date(business.trial_ends_at) : null;
-        const daysLeft = trialEndsAt ? Math.ceil((trialEndsAt - new Date()) / (1000 * 60 * 60 * 24)) : 0;
-        const isTrialActive = daysLeft > 0;
-
-        // Plan real (también el mes de Profesional regalado por una recomendación)
-        const planNames = { founders: 'Founders', professional: 'Profesional', premium: 'Premium' };
-        const bonusUntil = business.plan_bonus_until ? new Date(business.plan_bonus_until) : null;
-        if (planNames[business.plan] || bonusUntil) {
-            const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-            return `
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Tu Plan Actual</h3>
-                </div>
-                <div class="plan-card">
-                    <div class="plan-name">${bonusUntil ? '🎁' : '💎'} Plan ${planNames[business.plan] || 'Profesional'}</div>
-                    ${bonusUntil ? `
-                        <p style="color: var(--text-secondary); line-height: 1.6;">De regalo por el programa de recomendación hasta el <strong>${bonusUntil.getDate()} de ${meses[bonusUntil.getMonth()]} de ${bonusUntil.getFullYear()}</strong>. Después vuelves al plan Gratis automáticamente, sin pagar nada.</p>
-                        <button class="btn-save" style="width: 100%; max-width: 300px; margin: 0 auto;" onclick="settings.switchTab('invite')">🎁 Ganar más meses</button>
-                    ` : `
-                        <p style="color: var(--text-secondary);">Para cambios de plan o facturación, escríbenos desde Soporte.</p>
-                    `}
-                </div>
-            </div>`;
-        }
-
-        return `
-            <!-- Current Plan Section -->
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Tu Plan Actual</h3>
-                    <p>Estado de tu suscripción</p>
-                </div>
-
-                <div class="plan-card">
-                    <div class="plan-name">
-                        ${isTrialActive ? '🎁 Prueba Gratuita' : '💎 Plan Free'}
-                    </div>
-                    <div class="plan-price">
-                        ${isTrialActive ? 'GRATIS' : '0€'}
-                        <span style="font-size: 1rem; color: var(--text-secondary);">/mes</span>
-                    </div>
-                    ${isTrialActive ? `
-                        <div class="badge badge-success" style="font-size: 1rem; padding: 0.5rem 1rem;">
-                            ${daysLeft} días restantes de prueba
-                        </div>
-                    ` : ''}
-                    <ul class="plan-features">
-                        <li>Widget de reservas ilimitado</li>
-                        <li>Hasta 30 reservas al mes</li>
-                        <li>Panel de administración</li>
-                        <li>Notificaciones por email</li>
-                        <li>Soporte por email</li>
-                    </ul>
-                    ${isTrialActive ? `
-                        <button class="btn-save" style="width: 100%; max-width: 300px; margin: 0 auto;">
-                            🚀 Ver Planes Premium
-                        </button>
-                    ` : `
-                        <button class="btn-save" style="width: 100%; max-width: 300px; margin: 0 auto;">
-                            ⬆️ Actualizar Plan
-                        </button>
-                    `}
-                </div>
-            </div>
-
-            <!-- Payment Method Section -->
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Método de Pago</h3>
-                    <p>Tarjeta asociada a tu cuenta</p>
-                </div>
-
-                <div class="info-box">
-                    <p>
-                        💳 <strong>Próximamente:</strong> Podrás añadir tu método de pago para
-                        actualizar a planes premium cuando termine tu período de prueba.
-                    </p>
-                </div>
-
-                <button class="btn-secondary" disabled>
-                    💳 Añadir Tarjeta (Próximamente)
-                </button>
-            </div>
-
-            <!-- Billing History Section -->
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Historial de Facturación</h3>
-                    <p>Tus facturas y pagos</p>
-                </div>
-
-                <div class="info-box">
-                    <p>
-                        📄 No hay facturas disponibles. Tu historial de pagos aparecerá aquí
-                        una vez comiences a pagar tu suscripción.
-                    </p>
-                </div>
-            </div>
-        `;
+        return '<div class="loading"><p>Cargando tu plan...</p></div>';
     },
 
     // Render Advanced Tab
@@ -2801,44 +2702,6 @@ const settings = {
         const business = this.businessData;
 
         return `
-            <!-- Integrations Section -->
-            <div class="settings-section">
-                <div class="settings-section-header">
-                    <h3>Integraciones</h3>
-                    <p>Conecta con otras herramientas</p>
-                </div>
-
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>📅 Google Calendar</h4>
-                        <p>Sincroniza automáticamente tus reservas con Google Calendar</p>
-                    </div>
-                    <button class="btn-secondary" disabled>
-                        Próximamente
-                    </button>
-                </div>
-
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>📱 WhatsApp Business</h4>
-                        <p>Envía confirmaciones y recordatorios por WhatsApp</p>
-                    </div>
-                    <button class="btn-secondary" disabled>
-                        Próximamente
-                    </button>
-                </div>
-
-                <div class="notification-item">
-                    <div class="notification-info">
-                        <h4>💬 Telegram</h4>
-                        <p>Recibe notificaciones de nuevas reservas en Telegram</p>
-                    </div>
-                    <button class="btn-secondary" disabled>
-                        Próximamente
-                    </button>
-                </div>
-            </div>
-
             <!-- Eliminar cuenta: se gestiona a través de soporte -->
             <div class="settings-section danger-zone">
                 <h3>🗑️ Eliminar mi cuenta</h3>
