@@ -32,6 +32,8 @@ async function runMigrations() {
             await referrals.ensureReferralColumns(db);
             // Tablas de captación de clientes (super admin → Captación)
             await require('./backend/prospects').ensureProspectTables(db);
+            // Recuperación de contraseña del super admin
+            await require('./backend/super-admin-reset').ensureResetTable(db);
         }
     } catch (err) {
         console.error('⚠️ Error verificando tablas:', err.message);

@@ -10,6 +10,39 @@ const { superAdminLoginLimiter } = require('../middleware/rate-limit');
 const { getPlanInfo } = require('../middleware/entitlements');
 const { sendConsultancyScheduledEmail } = require('../email-service');
 
+// ==================== RECUPERAR CONTRASEÑA DEL SUPER ADMIN ====================
+const rateLimit = require('express-rate-limit');
+const superAdminReset = require('../super-admin-reset');
+const resetLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hora
+    max: 5,
+    message: { success: false, message: 'Demasiados intentos. Espera una hora y vuelve a probar.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+router.post('/forgot-password', resetLimiter, async (req, res) => {
+    try {
+        await superAdminReset.requestReset(db, require('../email-service'), (req.body || {}).email, req.ip);
+    } catch (error) {
+        console.error('Error en recuperación de super admin:', error.message);
+    }
+    // Siempre la misma respuesta: no revela si el email existe
+    res.json({ success: true, message: 'Si el email corresponde a un super admin, recibirás un enlace para elegir una contraseña nueva. Caduca en 30 minutos.' });
+});
+
+router.post('/reset-password', resetLimiter, async (req, res) => {
+    try {
+        const { token, newPassword } = req.body || {};
+        const r = await superAdminReset.resetPassword(db, token, newPassword);
+        if (r.error) return res.status(400).json({ success: false, message: r.error });
+        res.json({ success: true, message: 'Contraseña cambiada. Ya puedes iniciar sesión.' });
+    } catch (error) {
+        console.error('Error restableciendo contraseña de super admin:', error.message);
+        res.status(500).json({ success: false, message: 'Error al cambiar la contraseña' });
+    }
+});
+
 // Login de super-admin
 router.post('/login', superAdminLoginLimiter, async (req, res) => {
     try {
