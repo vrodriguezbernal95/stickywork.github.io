@@ -158,7 +158,7 @@ async function handleContactFormSubmit(event) {
 
         // Si el mensaje no ha llegado, decirlo claramente y dar otra vía de contacto
         const successMessage = backendSuccess
-            ? `¡Gracias por tu mensaje, ${formData.name}!\n\nLo hemos recibido. Te responderemos en menos de 24 horas a ${formData.email}.`
+            ? `¡Gracias por tu mensaje, ${formData.name}!\n\nLo hemos recibido. Te responderemos en menos de 24 horas laborables a ${formData.email}.`
             : `Lo sentimos, ${formData.name}: no hemos podido enviar tu mensaje.\n\nInténtalo de nuevo en unos minutos o escríbenos directamente a contacto@stickywork.com.`;
 
         alert(successMessage);

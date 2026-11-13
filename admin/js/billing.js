@@ -34,7 +34,7 @@ const billing = {
             name: 'Premium',
             price: 79,
             priceId: null,
-            features: ['10 usuarios', 'Reservas ilimitadas', '2 reportes IA/semana', 'Consultoría 1h/mes', 'Landing page gratis', 'Soporte prioritario 24/7']
+            features: ['10 usuarios', 'Reservas ilimitadas', '2 reportes IA/semana', 'Consultoría 1h/mes', 'Landing page gratis', 'Soporte prioritario']
         }
     },
 

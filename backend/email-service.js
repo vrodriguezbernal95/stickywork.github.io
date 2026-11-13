@@ -346,8 +346,18 @@ const emailTemplates = {
             <p><strong>📍 Dirección:</strong><br>${business.address}</p>
             ` : ''}
 
+            ${booking.manage_token ? `
+            <div style="text-align: center; margin-top: 25px;">
+                <p style="margin-bottom: 15px;"><strong>📋 ¿No puedes venir?</strong></p>
+                <a href="https://stickywork.com/gestionar-reserva.html?token=${booking.manage_token}"
+                   style="display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Cancelar o cambiar la hora
+                </a>
+            </div>
+            ` : ''}
+
             ${business.phone ? `
-            <p><strong>💬 ¿Necesitas cancelar o reprogramar?</strong><br>Contacta con nosotros: ${business.phone}</p>
+            <p style="margin-top: 20px;"><strong>💬 ¿Alguna duda?</strong><br>Contacta con nosotros: ${business.phone}</p>
             ` : ''}
 
             <p style="margin-top: 20px;">¡Te esperamos!</p>
@@ -830,7 +840,7 @@ const emailTemplates = {
                     <li>Soporte prioritario</li>
                     ` : ''}
                     <li>Widget personalizable</li>
-                    <li>Notificaciones WhatsApp</li>
+                    <li>Botón de WhatsApp en cada reserva</li>
                     <li>Encuestas de feedback</li>
                 </ul>
             </div>
@@ -866,7 +876,7 @@ const emailTemplates = {
                 </a>
             </p>
 
-            <p style="margin-top: 30px;">¿Necesitas ayuda? Respondemos en menos de 24 horas.</p>
+            <p style="margin-top: 30px;">¿Necesitas ayuda? Respondemos en menos de 24 horas laborables.</p>
             <p>📧 <a href="mailto:soporte@stickywork.com">soporte@stickywork.com</a></p>
         </div>
 

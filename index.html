@@ -110,7 +110,7 @@
           "featureList": [
             "Gestión de reservas y citas",
             "Base de datos de clientes",
-            "Notificaciones WhatsApp",
+            "Botón de WhatsApp en cada reserva",
             "Encuestas de feedback",
             "Reportes con inteligencia artificial",
             "Widget embebible para tu web"
@@ -265,7 +265,7 @@
                 </div>
 
                 <h1 id="hero-title" itemprop="name">Tu negocio con cita previa,<br><span class="hero-highlight">sin complicaciones</span></h1>
-                <p itemprop="description">Reservas online, gestión de clientes, recordatorios por WhatsApp y reportes IA. Todo en un solo lugar, listo en 5 minutos.</p>
+                <p itemprop="description">Reservas online, gestión de clientes, recordatorios por email y reportes IA. Todo en un solo lugar, listo en 5 minutos.</p>
 
                 <div class="hero-actions" role="group" aria-label="Acciones principales">
                     <a href="registro.html" class="btn btn-primary btn-hero" aria-label="Empezar gratis">
@@ -350,15 +350,15 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         </div>
                         <h3 itemprop="name">Gestión de clientes</h3>
-                        <p itemprop="description">Base de datos completa con historial de visitas, notas y preferencias. Conoce a tus clientes y fideliza mejor.</p>
+                        <p itemprop="description">Base de datos completa con historial de visitas y notas. Conoce a tus clientes y fideliza mejor.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
                         <div class="feature-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </div>
-                        <h3 itemprop="name">WhatsApp integrado</h3>
-                        <p itemprop="description">Confirmaciones y recordatorios por WhatsApp con un clic. Reduce cancelaciones y mejora la comunicación con tus clientes.</p>
+                        <h3 itemprop="name">WhatsApp a un clic</h3>
+                        <p itemprop="description">Cada reserva tiene un botón que abre WhatsApp con el mensaje ya escrito: tú solo pulsas enviar. Los avisos automáticos (confirmación y recordatorio) salen por email.</p>
                     </article>
 
                     <article class="feature-card" role="listitem" itemprop="itemListElement" itemscope itemtype="https://schema.org/Thing">
@@ -479,7 +479,7 @@
                 <div class="hp-faq">
                     <details><summary>¿Necesito tener página web?</summary><p>No. Al registrarte tienes una página de reservas propia con un enlace y un código QR. Si tienes web, también puedes añadir el formulario copiando un pequeño código.</p></details>
                     <details><summary>¿Mis clientes tienen que descargar una aplicación?</summary><p>No. Reservan desde el navegador del móvil o del ordenador, en un par de minutos.</p></details>
-                    <details><summary>¿El plan gratuito tiene trampa?</summary><p>No. Es gratis para siempre, sin tarjeta, con hasta 30 reservas al mes. Si te quedas corto, puedes pasarte al plan Profesional cuando quieras.</p></details>
+                    <details><summary>¿El plan gratuito tiene trampa?</summary><p>No. Es gratis para siempre, sin tarjeta, con hasta 30 reservas al mes. Al llegar a 30, tus clientes no pueden reservar online hasta el mes siguiente; si te quedas corto, pasas al plan Profesional cuando quieras.</p></details>
                     <details><summary>¿Puedo aceptar cada reserva antes de que sea definitiva?</summary><p>Sí. Activa la confirmación manual y cada solicitud quedará pendiente hasta que la confirmes o la rechaces; el cliente recibe un email en cada caso.</p></details>
                     <details><summary>¿Qué pasa si un cliente quiere cancelar o cambiar la cita?</summary><p>Lo hace él mismo desde el enlace de su email de confirmación y a ti te llega un aviso. También puedes mover la cita tú desde el calendario.</p></details>
                 </div>
@@ -605,7 +605,7 @@
                         ✕
                     </button>
                     <h3 style="text-align: center; color: var(--primary-color); margin-bottom: 0.5rem; font-size: 1.8rem;">Solicita una Demo Personalizada</h3>
-                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">Te contactaremos en menos de 24 horas</p>
+                    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">Te contactaremos en menos de 24 horas laborables</p>
 
                     <form id="contacto-form" style="display: flex; flex-direction: column; gap: 1rem;">
                         <div>
@@ -737,58 +737,52 @@
                             backendSuccess = true;
                         }
                     } catch (fetchError) {
-                        console.log('Backend no disponible, mostrando confirmación demo:', fetchError.message);
-                        // Continuar con el modo demo
+                        console.log('No se pudo enviar el formulario de contacto:', fetchError.message);
                     }
 
-                    // Mostrar confirmación (tanto si funcionó el backend como si no)
-                    modal.innerHTML = `
+                    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+                    modal.innerHTML = backendSuccess ? `
                         <div style="text-align: center; padding: 2rem;">
                             <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
-                            <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.8rem;">¡Solicitud Recibida!</h3>
+                            <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.8rem;">¡Solicitud recibida!</h3>
                             <p style="color: var(--text-primary); margin-bottom: 1rem;">
-                                Gracias por tu interés, <strong>${nombre}</strong>
+                                Gracias por tu interés, <strong>${esc(nombre)}</strong>
                             </p>
                             <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: left;">
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>📧 Email:</strong> ${email}</p>
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>📞 Teléfono:</strong> ${telefono || 'No especificado'}</p>
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>🏢 Negocio:</strong> ${negocio}</p>
-                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>🎯 Interés:</strong> ${interes}</p>
+                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>📧 Email:</strong> ${esc(email)}</p>
+                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>📞 Teléfono:</strong> ${esc(telefono || 'No especificado')}</p>
+                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>🏢 Negocio:</strong> ${esc(negocio)}</p>
+                                <p style="margin: 0.5rem 0; color: var(--text-primary);"><strong>🎯 Interés:</strong> ${esc(interes)}</p>
                             </div>
-                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                                ${backendSuccess
-                                    ? 'Nuestro equipo revisará tu solicitud y te contactará en menos de 24 horas'
-                                    : 'Esta es una demostración. En producción, recibirías una respuesta en 24 horas'}
-                            </p>
-                            ${!backendSuccess ? '<p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">💡 Para solicitudes reales, contacta: <a href="mailto:contacto@stickywork.com" style="color: var(--primary-color);">contacto@stickywork.com</a></p>' : ''}
+                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Te responderemos en menos de 24 horas laborables.</p>
                             <button onclick="cerrarModalContacto()" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
                                 Cerrar
                             </button>
                         </div>
-                    `;
+                    ` : falloEnvio(esc(nombre));
                 } catch (error) {
-                    // Error crítico (no debería pasar)
-                    console.error('Error crítico:', error);
-                    modal.innerHTML = `
-                        <div style="text-align: center; padding: 2rem;">
-                            <div style="font-size: 4rem; margin-bottom: 1rem;">ℹ️</div>
-                            <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.8rem;">Solicitud Recibida (Demo)</h3>
-                            <p style="color: var(--text-primary); margin-bottom: 1rem;">
-                                Gracias por tu interés, <strong>${nombre}</strong>
-                            </p>
-                            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                                Esta es una demostración del sistema. Para solicitudes reales, contacta directamente a:
-                            </p>
-                            <p style="margin-bottom: 2rem;">
-                                <a href="mailto:contacto@stickywork.com" style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem;">contacto@stickywork.com</a>
-                            </p>
-                            <button onclick="cerrarModalContacto()" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
-                                Cerrar
-                            </button>
-                        </div>
-                    `;
+                    console.error('Error enviando el formulario de contacto:', error);
+                    modal.innerHTML = falloEnvio('');
                 }
             };
+        }
+
+        // Aviso cuando el mensaje no ha llegado: decirlo claro y dar otra vía de contacto
+        function falloEnvio(nombre) {
+            return `
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.8rem;">No hemos podido enviar tu mensaje</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        Lo sentimos${nombre ? ', <strong>' + nombre + '</strong>' : ''}. Inténtalo de nuevo en unos minutos o escríbenos directamente a:
+                    </p>
+                    <p style="margin-bottom: 2rem;">
+                        <a href="mailto:contacto@stickywork.com" style="color: var(--primary-color); font-weight: 600; font-size: 1.1rem;">contacto@stickywork.com</a>
+                    </p>
+                    <button onclick="cerrarModalContacto()" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer;">
+                        Cerrar
+                    </button>
+                </div>`;
         }
 
         // Función para cerrar el modal

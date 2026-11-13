@@ -229,7 +229,7 @@ window.HELP_TOPICS = [
         keywords: 'emails cliente recibe confirmacion recordatorio aviso mensaje correo',
         a: `<ul>
                 <li><strong>Al reservar</strong>: email de confirmación con un archivo para añadir la cita a su calendario y el botón <em>Gestionar mi reserva</em>. Si usas la confirmación manual, recibe primero <em>solicitud recibida</em> y después la confirmación o el rechazo.</li>
-                <li><strong>El día antes</strong>: un recordatorio de su cita (si tienes activados los recordatorios automáticos).</li>
+                <li><strong>El día antes</strong>: un recordatorio de su cita con un botón para cancelarla o cambiar la hora (si tienes activados los recordatorios automáticos).</li>
                 <li><strong>Si mueves su cita</strong> y marcas "Avisar al cliente": los datos nuevos.</li>
             </ul>`,
         actions: [{ label: 'Ir a Notificaciones', go: 'settings:notifications' }]
@@ -263,7 +263,7 @@ window.HELP_TOPICS = [
         id: 'recordatorios', cat: 'avisos',
         q: '¿Se envían recordatorios a los clientes antes de la cita?',
         keywords: 'recordatorio aviso antes cita dia anterior 24 horas olvido',
-        a: `<p>Sí: cada mañana se envía un email a los clientes que tienen cita al día siguiente. Puedes activarlo o desactivarlo en <strong>Configuración → Notificaciones → Recordatorios automáticos</strong>.</p>
+        a: `<p>Sí: cada mañana se envía un email a los clientes que tienen cita al día siguiente, con un botón para cancelar o cambiar la hora si no pueden venir. Puedes activarlo o desactivarlo en <strong>Configuración → Notificaciones → Recordatorios automáticos</strong>.</p>
             <p>En el Dashboard, la caja <em>Recordatorio 24h</em> te permite además enviarles un WhatsApp a mano.</p>`,
         actions: [{ label: 'Ir a Notificaciones', go: 'settings:notifications' }]
     },
@@ -285,7 +285,7 @@ window.HELP_TOPICS = [
                 <li><strong>VIP</strong>: clientes especiales o habituales (lo marcas tú).</li>
                 <li><strong>Normal</strong>: el resto.</li>
                 <li><strong>Riesgo</strong>: clientes con 3 o más faltas; se asigna sola.</li>
-                <li><strong>Baneado</strong>: clientes que no quieres atender.</li>
+                <li><strong>Baneado</strong>: clientes que no quieres atender; no pueden reservar online.</li>
             </ul>
             <p>Cambia la categoría desde la ficha del cliente en <strong>Clientes</strong>, y filtra tus reservas por categoría en <strong>Reservas</strong>.</p>`,
         actions: [{ label: 'Ir a Clientes', go: 'clients' }]
@@ -379,7 +379,7 @@ window.HELP_TOPICS = [
                 <li><strong>Profesional</strong> (39 €/mes): reservas ilimitadas, 3 usuarios, 1 reporte de IA al mes y sin la marca StickyWork.</li>
                 <li><strong>Premium</strong> (79 €/mes): 10 usuarios, 2 reportes de IA a la semana y 1 hora de consultoría al mes.</li>
             </ul>
-            <p>Cambia de plan en <strong>Configuración → Plan</strong>; los planes de pago tienen 7 días de prueba. Si estás en el plan Gratis, te avisaremos en el Dashboard al acercarte a las 30 reservas.</p>`,
+            <p>Cambia de plan en <strong>Configuración → Plan</strong>; los planes de pago tienen 7 días de prueba. En el plan Gratis, al llegar a 30 reservas en el mes tus clientes no pueden reservar online hasta el mes siguiente, salvo que cambies a Profesional; te avisamos en el Dashboard cuando te acercas.</p>`,
         actions: [{ label: 'Ver planes', go: 'settings:billing' }]
     },
     {

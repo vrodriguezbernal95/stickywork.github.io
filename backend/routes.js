@@ -3277,14 +3277,6 @@ router.get('/api/widget/:businessId', async (req, res) => {
             [businessId]
         );
 
-        // Obtener profesionales activos
-        const professionals = await db.query(
-            `SELECT id, name, role
-             FROM professionals WHERE business_id = ? AND is_active = TRUE
-             ORDER BY display_order, name`,
-            [businessId]
-        );
-
         // Zonas para restaurantes (Terraza, Interior, etc.) - desde booking_settings
         const restaurantZones = bookingMode === 'tables' && bookingSettings.restaurantZones
             ? bookingSettings.restaurantZones
@@ -3333,7 +3325,10 @@ router.get('/api/widget/:businessId', async (req, res) => {
             // Datos
             // Para restaurantes, retornar servicios (Comida, Cena) Y zones (áreas de mesas)
             services: (bookingMode === 'services' || bookingMode === 'tables') ? services : [],
-            professionals,
+            // Sin profesionales: el panel no permite gestionarlos y la reserva no guarda el elegido,
+            // así que el selector «Profesional» del widget sería una función falsa. Volver a enviar
+            // `professionals` cuando exista su pantalla en el panel y se guarde en la reserva.
+            professionals: [],
             restaurantZones, // Zonas configurables desde dashboard (Terraza, Interior, etc.)
             classes,
             // Configuración de diferenciación adultos/niños (para restaurantes principalmente)
