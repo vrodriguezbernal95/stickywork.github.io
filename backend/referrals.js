@@ -233,7 +233,7 @@ async function getSummary(db, businessId) {
 }
 
 module.exports = {
-    ensureReferralColumns, getOrCreateCode, findByCode, applyAtSignup,
+    ensureReferralColumns, getOrCreateCode, findByCode, applyAtSignup, grantMonth,
     checkReferralRewards, expireBonuses, getSummary,
     RESERVAS_PARA_PREMIO, DIAS_PREMIO
 };

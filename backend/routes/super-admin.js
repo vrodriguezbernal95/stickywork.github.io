@@ -1200,4 +1200,251 @@ router.delete('/leads/:id', requireSuperAdmin, async (req, res) => {
     }
 });
 
+// ==================== CAPTACIÓN (agente de captación) ====================
+// Ver backend/prospects.js y docs/captacion/diseno-agente-captacion.md
+
+const prospects = require('../prospects');
+
+const PROSPECT_FIELDS = ['name', 'sector', 'address', 'district', 'city', 'phone', 'website', 'instagram',
+    'booking_method', 'booking_tool', 'hook', 'call_script', 'wa_message', 'followup_message', 'notes', 'next_action_at'];
+
+// Lista (vista «hoy» o «todos» con filtros)
+router.get('/prospects', requireSuperAdmin, async (req, res) => {
+    try {
+        const { view, status, sector, tier, q } = req.query;
+        const where = [];
+        const vals = [];
+        if (view === 'today') {
+            where.push(`next_action_at IS NOT NULL AND next_action_at <= CURDATE() AND status NOT IN ('no_interesa','no_contactar','descartado')`);
+        }
+        if (status && prospects.ESTADOS.includes(status)) { where.push('status = ?'); vals.push(status); }
+        if (sector && prospects.SECTORES.includes(sector)) { where.push('sector = ?'); vals.push(sector); }
+        if (tier && ['A', 'B', 'C'].includes(tier)) { where.push('tier = ?'); vals.push(tier); }
+        if (q && String(q).trim()) {
+            where.push('(name LIKE ? OR city LIKE ? OR district LIKE ? OR phone LIKE ?)');
+            const like = `%${String(q).trim().slice(0, 80)}%`;
+            vals.push(like, like, like, like);
+        }
+        const order = view === 'today'
+            ? `FIELD(status,'permiso_wa','volver_llamar','registrado','interesado','mensaje_enviado','seguimiento','no_contesta','nuevo'), score DESC`
+            : 'updated_at DESC';
+        const rows = await db.query(
+            `SELECT * FROM prospects ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY ${order} LIMIT 500`,
+            vals
+        );
+        res.json({ success: true, data: rows.map(prospects.fixDates) });
+    } catch (error) {
+        console.error('Error listando captación:', error);
+        res.status(500).json({ success: false, message: 'Error al obtener los contactos' });
+    }
+});
+
+// Historial de un contacto
+router.get('/prospects/:id/events', requireSuperAdmin, async (req, res) => {
+    try {
+        const rows = await db.query('SELECT * FROM prospect_events WHERE prospect_id = ? ORDER BY created_at DESC LIMIT 100', [req.params.id]);
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al obtener el historial' });
+    }
+});
+
+// Alta manual (el negocio que ves por la calle)
+router.post('/prospects', requireSuperAdmin, async (req, res) => {
+    try {
+        const b = req.body || {};
+        if (!b.name || !String(b.name).trim()) return res.status(400).json({ success: false, message: 'Falta el nombre del negocio' });
+        if (await prospects.isDoNotContact(db, b)) return res.status(409).json({ success: false, message: 'Este negocio está en la lista de no contactar' });
+        const dup = await prospects.findDuplicate(db, b);
+        if (dup) return res.status(409).json({ success: false, message: 'Ya está en la lista', id: dup });
+        const id = await prospects.insertProspect(db, { ...b, source: b.source || 'Añadido a mano', source_date: null });
+        const [row] = await db.query('SELECT * FROM prospects WHERE id = ?', [id]);
+        res.json({ success: true, data: prospects.fixDates(row) });
+    } catch (error) {
+        console.error('Error creando contacto:', error);
+        res.status(500).json({ success: false, message: 'Error al añadir el negocio' });
+    }
+});
+
+// Importar una tanda del agente
+router.post('/prospects/import', requireSuperAdmin, async (req, res) => {
+    try {
+        const body = req.body || {};
+        const items = Array.isArray(body) ? body : body.prospects;
+        if (!Array.isArray(items) || !items.length) return res.status(400).json({ success: false, message: 'El archivo no trae negocios' });
+        if (items.length > 300) return res.status(400).json({ success: false, message: 'Máximo 300 negocios por tanda' });
+        const result = await prospects.importBatch(db, items, Array.isArray(body) ? null : body.batch);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error('Error importando tanda:', error);
+        res.status(500).json({ success: false, message: 'Error al importar la tanda' });
+    }
+});
+
+// Editar datos (teléfono, notas, fecha del próximo paso…)
+router.patch('/prospects/:id', requireSuperAdmin, async (req, res) => {
+    try {
+        const b = req.body || {};
+        const sets = [];
+        const vals = [];
+        for (const f of PROSPECT_FIELDS) {
+            if (b[f] === undefined) continue;
+            if (f === 'next_action_at') {
+                if (b[f] !== null && !/^\d{4}-\d{2}-\d{2}$/.test(b[f])) continue;
+            }
+            if (f === 'sector' && b[f] && !prospects.SECTORES.includes(b[f])) continue;
+            sets.push(`${f} = ?`);
+            vals.push(b[f] === '' ? null : b[f]);
+            if (f === 'phone') { sets.push('phone_norm = ?'); vals.push(prospects.normPhone(b[f])); }
+        }
+        if (!sets.length) return res.status(400).json({ success: false, message: 'Nada que actualizar' });
+        vals.push(req.params.id);
+        await db.query(`UPDATE prospects SET ${sets.join(', ')} WHERE id = ?`, vals);
+        if (b.notes !== undefined) await prospects.logEvent(db, req.params.id, 'nota', 'notas actualizadas');
+        const [row] = await db.query('SELECT * FROM prospects WHERE id = ?', [req.params.id]);
+        res.json({ success: true, data: prospects.fixDates(row) });
+    } catch (error) {
+        console.error('Error actualizando contacto:', error);
+        res.status(500).json({ success: false, message: 'Error al guardar' });
+    }
+});
+
+// Resultado de una llamada, visita o mensaje
+router.post('/prospects/:id/outcome', requireSuperAdmin, async (req, res) => {
+    try {
+        const { outcome, date, reason } = req.body || {};
+        const r = await prospects.applyOutcome(db, req.params.id, outcome, { date, reason });
+        if (!r) return res.status(404).json({ success: false, message: 'No encontrado' });
+        if (r.error) return res.status(400).json({ success: false, message: r.error });
+        res.json({ success: true, data: r.prospect, deleted: !!r.deleted });
+    } catch (error) {
+        console.error('Error guardando resultado:', error);
+        res.status(500).json({ success: false, message: 'Error al guardar el resultado' });
+    }
+});
+
+// Borrar un contacto (p. ej. si pide que borremos sus datos). Queda en la lista de no contactar.
+router.delete('/prospects/:id', requireSuperAdmin, async (req, res) => {
+    try {
+        const [p] = await db.query('SELECT * FROM prospects WHERE id = ?', [req.params.id]);
+        if (!p) return res.status(404).json({ success: false, message: 'No encontrado' });
+        await prospects.addDoNotContact(db, { phone: p.phone, name: p.name, city: p.city, reason: 'Datos borrados a petición' });
+        await db.query('DELETE FROM prospect_events WHERE prospect_id = ?', [p.id]);
+        await db.query('DELETE FROM prospects WHERE id = ?', [p.id]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al borrar' });
+    }
+});
+
+// Estadísticas del embudo
+router.get('/prospects-stats', requireSuperAdmin, async (req, res) => {
+    try {
+        res.json({ success: true, data: await prospects.getStats(db) });
+    } catch (error) {
+        console.error('Error en estadísticas de captación:', error);
+        res.status(500).json({ success: false, message: 'Error al calcular las estadísticas' });
+    }
+});
+
+// Lista de no contactar
+router.get('/do-not-contact', requireSuperAdmin, async (req, res) => {
+    try {
+        const rows = await db.query('SELECT * FROM do_not_contact ORDER BY created_at DESC LIMIT 2000');
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al obtener la lista' });
+    }
+});
+
+router.post('/do-not-contact', requireSuperAdmin, async (req, res) => {
+    try {
+        const { phone, name, city, reason } = req.body || {};
+        if (!prospects.normPhone(phone) && !prospects.normText(name)) return res.status(400).json({ success: false, message: 'Indica un teléfono o un nombre' });
+        await prospects.addDoNotContact(db, { phone, name, city, reason: reason || 'Añadido a mano' });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al guardar' });
+    }
+});
+
+// Exportar para el agente (CSV sin guiones ni mensajes)
+router.get('/prospects-export', requireSuperAdmin, async (req, res) => {
+    try {
+        const csvCell = v => {
+            if (v === null || v === undefined) return '';
+            let s = v instanceof Date
+                ? `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}-${String(v.getDate()).padStart(2, '0')}`
+                : String(v);
+            if (/^[=+\-@]/.test(s)) s = "'" + s; // evita fórmulas al abrirlo en Excel
+            return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+        };
+        if (req.query.type === 'dnc') {
+            const rows = await db.query('SELECT phone_norm, name_norm, city_norm, created_at FROM do_not_contact');
+            const lines = ['phone_norm,name_norm,city_norm,created_at', ...rows.map(r => [r.phone_norm, r.name_norm, r.city_norm, r.created_at].map(csvCell).join(','))];
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename="no-contactar.csv"');
+            return res.send('﻿' + lines.join('\n'));
+        }
+        const cols = ['id', 'name', 'sector', 'district', 'city', 'phone_norm', 'website', 'instagram', 'booking_method', 'booking_tool',
+            'score', 'tier', 'source', 'batch', 'variant', 'status', 'attempts', 'consent_wa_at', 'business_id', 'created_at', 'updated_at'];
+        const rows = await db.query(`SELECT ${cols.join(', ')} FROM prospects ORDER BY id`);
+        const events = await db.query(`SELECT prospect_id, type, created_at FROM prospect_events WHERE prospect_id > 0 ORDER BY id`);
+        const byP = {};
+        for (const e of events) (byP[e.prospect_id] = byP[e.prospect_id] || []).push(e.type);
+        const lines = [[...cols, 'historial'].join(','),
+            ...rows.map(r => [...cols.map(c => csvCell(r[c])), csvCell((byP[r.id] || []).join('>'))].join(','))];
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="captacion.csv"');
+        res.send('﻿' + lines.join('\n'));
+    } catch (error) {
+        console.error('Error exportando captación:', error);
+        res.status(500).json({ success: false, message: 'Error al exportar' });
+    }
+});
+
+// Documentos internos (guía de captación): se guardan en la base de datos para no publicarlos en el repositorio
+const DOC_KEYS = ['guia-captacion'];
+
+router.get('/documents/:key', requireSuperAdmin, async (req, res) => {
+    try {
+        if (!DOC_KEYS.includes(req.params.key)) return res.status(404).json({ success: false, message: 'Documento desconocido' });
+        const [doc] = await db.query('SELECT content, updated_at FROM admin_documents WHERE doc_key = ?', [req.params.key]);
+        res.json({ success: true, data: doc || null });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al leer el documento' });
+    }
+});
+
+router.put('/documents/:key', requireSuperAdmin, async (req, res) => {
+    try {
+        if (!DOC_KEYS.includes(req.params.key)) return res.status(404).json({ success: false, message: 'Documento desconocido' });
+        const content = String((req.body || {}).content || '');
+        if (!content.trim()) return res.status(400).json({ success: false, message: 'El documento está vacío' });
+        if (content.length > 500000) return res.status(400).json({ success: false, message: 'Documento demasiado grande' });
+        await db.query(
+            'INSERT INTO admin_documents (doc_key, content) VALUES (?, ?) ON DUPLICATE KEY UPDATE content = VALUES(content)',
+            [req.params.key, content]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al guardar el documento' });
+    }
+});
+
+// Regalar un mes de Profesional a un negocio (último empujón de la captación)
+router.post('/businesses/:id/gift-month', requireSuperAdmin, async (req, res) => {
+    try {
+        const { grantMonth } = require('../referrals');
+        const result = await grantMonth(db, Number(req.params.id));
+        if (!result) return res.status(400).json({ success: false, message: 'No se puede regalar a este negocio (no existe o es una demo)' });
+        if (result === 'pending') return res.json({ success: true, message: 'Ya paga un plan: apuntado como mes a descontar', result });
+        const [b] = await db.query('SELECT plan, plan_bonus_until FROM businesses WHERE id = ?', [req.params.id]);
+        res.json({ success: true, message: 'Mes de Profesional regalado', result, data: b });
+    } catch (error) {
+        console.error('Error regalando mes:', error);
+        res.status(500).json({ success: false, message: 'Error al regalar el mes' });
+    }
+});
+
 module.exports = router;

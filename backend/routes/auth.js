@@ -139,6 +139,7 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
             // Datos del admin
             adminName,
             referralCode,
+            leadCode,
             adminPhone,
             adminEmail,
             adminPassword
@@ -300,6 +301,9 @@ router.post('/api/auth/register-business', registerLimiter, async (req, res) => 
         if (referralCode) {
             await require('../referrals').applyAtSignup(db, businessId, referralCode);
         }
+
+        // Si venía de la captación (enlace ?lead= o mismo teléfono): se enlaza con su ficha (nunca rompe el registro)
+        await require('../prospects').linkRegistration(db, businessId, { leadCode, phone: businessPhone || adminPhone });
 
         // Crear servicios por defecto según el tipo de negocio
         if (typeInfo.default_services) {

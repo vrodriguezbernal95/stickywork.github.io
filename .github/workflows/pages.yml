@@ -40,6 +40,8 @@ jobs:
             --exclude='*.sql' \
             --exclude='*.toml' \
             --exclude='*.yaml' \
+            --exclude='docs/' \
+            --exclude='captacion/' \
             --exclude='*.yml' \
             --exclude='package.json' \
             --exclude='package-lock.json' \

@@ -45,3 +45,8 @@ fix-*.js
 setup-*.js
 test-*.html
 RAILWAY-MIGRATION.sql
+
+# Captación: datos descargados, tandas y exportes del panel (datos de negocios, no se suben)
+/captacion/
+__pycache__/
+/docs/captacion/

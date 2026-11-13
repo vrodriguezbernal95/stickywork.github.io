@@ -30,6 +30,8 @@ async function runMigrations() {
             console.log('✅ Tablas verificadas');
             // Columnas del programa de recomendación
             await referrals.ensureReferralColumns(db);
+            // Tablas de captación de clientes (super admin → Captación)
+            await require('./backend/prospects').ensureProspectTables(db);
         }
     } catch (err) {
         console.error('⚠️ Error verificando tablas:', err.message);
@@ -65,12 +67,15 @@ app.use(helmet({
 app.use(cors());
 
 // Body parser para JSON
+// Las tandas de captación (super admin) pueden pesar más que el límite por defecto de 100 KB
+app.use('/api/super-admin/prospects/import', require('./backend/middleware/super-admin').requireSuperAdmin, bodyParser.json({ limit: '2mb' }));
+app.use('/api/super-admin/documents', require('./backend/middleware/super-admin').requireSuperAdmin, bodyParser.json({ limit: '1mb' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // No servir como estáticos el código del servidor ni la documentación interna
 // (solo el frontend: html, css, js/, admin/, widget/, images/, demos/, sw.js, robots.txt...)
-const PRIVATE_PATHS = /^\/(backend|config|historico|node_modules|\.github)(\/|$)|^\/[^/]+\.(md|toml|ya?ml|sql|log)$|^\/(package(-lock)?|railway)\.json$|^\/(?!robots\.txt$)[^/]+\.txt$|^\/(?!sw\.js$)[^/]+\.js$/i;
+const PRIVATE_PATHS = /^\/(backend|config|historico|node_modules|docs|captacion|\.github)(\/|$)|\.(md|toml|ya?ml|sql|log)$|^\/(package(-lock)?|railway)\.json$|^\/(?!robots\.txt$)[^/]+\.txt$|^\/(?!sw\.js$)[^/]+\.js$/i;
 app.use((req, res, next) => {
     let p;
     try {
@@ -233,6 +238,12 @@ async function startServer() {
                     await referrals.expireBonuses(db);
                 } catch (error) {
                     console.error('❌ [Cron] Error en recomendaciones:', error.message);
+                }
+                // Captación: borrar contactos sin interés de hace más de 12 meses
+                try {
+                    await require('./backend/prospects').cleanupOldProspects(db);
+                } catch (error) {
+                    console.error('❌ [Cron] Error limpiando captación:', error.message);
                 }
                 console.log('⏰ [Cron] Ejecutando job de marcado de feedbacks pendientes...');
                 try {

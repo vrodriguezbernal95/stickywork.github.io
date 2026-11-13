@@ -605,6 +605,21 @@
             ? 'http://localhost:3000'
             : 'https://api.stickywork.com';
 
+        // Enlace de captación (?lead=CODIGO, del WhatsApp que enviamos con permiso): se recuerda 30 días
+        let leadCode = null;
+        (function () {
+            const fromUrl = new URLSearchParams(location.search).get('lead');
+            try {
+                if (fromUrl && /^[A-Za-z0-9]{4,12}$/.test(fromUrl)) {
+                    localStorage.setItem('sw_lead', JSON.stringify({ code: fromUrl.toUpperCase(), t: Date.now() }));
+                }
+                const saved = JSON.parse(localStorage.getItem('sw_lead') || 'null');
+                if (saved && Date.now() - saved.t < 30 * 24 * 3600 * 1000) leadCode = saved.code;
+            } catch (e) {
+                if (fromUrl && /^[A-Za-z0-9]{4,12}$/.test(fromUrl)) leadCode = fromUrl.toUpperCase();
+            }
+        })();
+
         // Enlace de invitación (?ref=CODIGO): se recuerda 30 días por si vuelve más tarde
         let referralCode = null;
         (function () {
@@ -749,14 +764,15 @@
                         adminPhone: formData.adminPhone,
                         adminEmail: formData.adminEmail,
                         adminPassword: formData.adminPassword,
-                        referralCode: referralCode || undefined
+                        referralCode: referralCode || undefined,
+                        leadCode: leadCode || undefined
                     })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    try { localStorage.removeItem('sw_ref'); } catch (e) {}
+                    try { localStorage.removeItem('sw_ref'); localStorage.removeItem('sw_lead'); } catch (e) {}
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('userData', JSON.stringify(data.user));
                     localStorage.setItem('businessData', JSON.stringify(data.business));
