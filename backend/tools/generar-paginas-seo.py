@@ -719,6 +719,13 @@ QR_JS = """    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.
             ctx.fillText('Cartel creado gratis en stickywork.com', W / 2, H - 50);
         }
         function schedule() { clearTimeout(timer); timer = setTimeout(draw, 150); }
+        // Desde el panel de StickyWork se abre con el enlace y el nombre del negocio ya puestos
+        (function () {
+            const q = new URLSearchParams(location.search);
+            const u = q.get('url'), n = q.get('name');
+            if (u && /^https:\/\/stickywork\.com\//.test(u)) $('q-url').value = u.slice(0, 200);
+            if (n) $('q-name').value = n.slice(0, 40);
+        })();
         ['q-url', 'q-name', 'q-title'].forEach(id => $(id).addEventListener('input', schedule));
         $('q-colors').addEventListener('click', e => {
             const b = e.target.closest('button'); if (!b) return;

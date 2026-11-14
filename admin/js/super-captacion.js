@@ -381,7 +381,7 @@ const superCaptacion = {
                             <td>${this.esc(a.plan)}${a.bonus ? ' 🎁' : ''}</td>
                             <td>${a.servicios}</td>
                             <td>${a.reservas ? a.reservas : '⚠️ 0'}</td>
-                            <td>${a.bonus ? '<span class="cap-sub">Ya tiene un mes regalado</span>' : `<button class="cap-btn small" onclick="superCaptacion.giftMonth(${Number(a.businessId)})">🎁 Regalar 1 mes de Profesional</button>`}</td>
+                            <td>${a.slug ? `<button class="cap-btn small" data-name="${this.esc(a.businessName || a.name)}" data-slug="${this.esc(a.slug)}" onclick="superCaptacion.kit(this)">📣 Kit de bienvenida</button> ` : ''}${a.bonus ? '<span class="cap-sub">Ya tiene un mes regalado</span>' : `<button class="cap-btn small" onclick="superCaptacion.giftMonth(${Number(a.businessId)})">🎁 Regalar 1 mes</button>`}</td>
                         </tr>`).join('')}</tbody>
                     </table></div>
                     <p class="cap-hint">⚠️ = aún sin reservas: llámales para ayudarles a ponerlo en marcha (enlace en Instagram, respuesta automática de WhatsApp, cartel con QR).</p>` : '<p class="cap-hint">Todavía ningún negocio captado. ¡A por el primero!</p>'}
@@ -389,6 +389,11 @@ const superCaptacion = {
         } catch (e) {
             this.body().innerHTML = `<div class="cap-empty">Error: ${this.esc(e.message)}</div>`;
         }
+    },
+
+    kit(btn) {
+        shareKit.onUse = null;
+        shareKit.open(btn.dataset.name, `https://stickywork.com/reservar?n=${encodeURIComponent(btn.dataset.slug)}`, { forOwner: false });
     },
 
     async giftMonth(businessId) {

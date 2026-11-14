@@ -29,7 +29,7 @@ window.HELP_TOPICS = [
         a: `<p>En tres pasos:</p>
             <ol>
                 <li><strong>Revisa tus servicios y tu horario</strong>: al registrarte te creamos unos de ejemplo; ajústalos a tu negocio.</li>
-                <li><strong>Comparte tu enlace de reservas</strong> en Instagram, Google o WhatsApp, o pon el formulario en tu web.</li>
+                <li><strong>Pon tu enlace donde te buscan</strong>: el <em>kit para compartir</em> te da los textos para la respuesta automática de WhatsApp, Instagram y Google, y un cartel con QR. También puedes poner el formulario en tu web.</li>
                 <li>Cuando un cliente reserve, te llegará un email y la verás en <strong>Reservas</strong>.</li>
             </ol>
             <p>En el Dashboard tienes la lista de <em>Primeros pasos</em> con tu progreso.</p>`,
@@ -38,9 +38,10 @@ window.HELP_TOPICS = [
     {
         id: 'enlace-reservas', cat: 'empezar', popular: true,
         q: '¿Dónde está mi enlace de reservas para compartir?',
-        keywords: 'enlace link url compartir pagina publica reservar instagram google whatsapp redes',
+        keywords: 'enlace link url compartir pagina publica reservar instagram google whatsapp redes kit bio respuesta automatica bienvenida cartel qr ficha',
         a: `<p>Tu enlace está en <strong>Configuración → Mi página</strong>, con botones para copiarlo y verlo. Tiene esta forma: <code>stickywork.com/reservar?n=tu-negocio</code>.</p>
-            <p>Funciona aunque no tengas web: tus clientes ven tus servicios y reservan desde ahí. En la misma pantalla tienes el <strong>código QR</strong> para imprimir.</p>`,
+            <p>Funciona aunque no tengas web: tus clientes ven tus servicios y reservan desde ahí. En la misma pantalla tienes el <strong>código QR</strong> para imprimir.</p>
+            <p>Para que te reserven, ponlo donde te buscan: en el Dashboard, en <em>Primeros pasos</em>, el botón <strong>Ver kit para compartir</strong> te da listos para copiar la respuesta automática de WhatsApp Business, el texto para tu bio de Instagram, los pasos para tu ficha de Google, un cartel con QR y un mensaje para tus clientes habituales.</p>`,
         actions: [{ label: 'Ir a Mi página', go: 'settings:publicpage' }]
     },
     {

@@ -123,6 +123,7 @@ const superNegocios = {
                     <div class="sa-actions" style="margin-top:0.5rem;">
                         ${b.is_demo ? '' : `<button class="sa-btn" onclick="superNegocios.gift(${Number(b.id)})">🎁 Regalar 1 mes de Profesional</button>`}
                         <button class="sa-btn" onclick="superNegocios.history(${Number(b.id)})">📜 Historial de cambios</button>
+                        ${b.slug ? `<button class="sa-btn" data-name="${ui.esc(b.name)}" data-slug="${ui.esc(b.slug)}" onclick="shareKit.onUse = null; shareKit.open(this.dataset.name, 'https://stickywork.com/reservar?n=' + encodeURIComponent(this.dataset.slug), { forOwner: false })">📣 Kit de bienvenida</button>` : ''}
                     </div>
                     <div id="negHistory"></div>
                 </div>

@@ -3493,7 +3493,7 @@ router.get('/api/business/:id/onboarding', requireAuth, async (req, res) => {
             return res.status(403).json({ success: false, message: 'No tienes acceso a este negocio' });
         }
         const rows = await db.query(
-            `SELECT b.slug, b.booking_settings, b.widget_customization,
+            `SELECT b.slug, b.name, b.booking_settings, b.widget_customization,
                     (SELECT COUNT(*) FROM bookings WHERE business_id = b.id) AS total_bookings
              FROM businesses b WHERE b.id = ?`,
             [id]
@@ -3525,6 +3525,7 @@ router.get('/api/business/:id/onboarding', requireAuth, async (req, res) => {
                 total: Object.keys(steps).length,
                 flags,
                 slug: b.slug,
+                name: b.name,
                 // Solo para negocios que están empezando: no molestar a quien ya trabaja con StickyWork
                 show: !flags.dismissed && done < Object.keys(steps).length && totalBookings < 5
             }

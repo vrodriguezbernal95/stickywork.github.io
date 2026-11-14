@@ -378,7 +378,7 @@ async function getStats(db) {
         FROM prospects WHERE status <> 'nuevo' GROUP BY variant ORDER BY total DESC`);
     // Lo que de verdad importa: negocios registrados que lo usan
     const activacion = await db.query(`
-        SELECT p.id, p.name, p.sector, p.business_id, b.plan, b.plan_bonus_until,
+        SELECT p.id, p.name, p.sector, p.business_id, b.slug, b.name AS business_name, b.plan, b.plan_bonus_until,
                (SELECT COUNT(*) FROM services s WHERE s.business_id = b.id AND s.is_active = TRUE) AS servicios,
                (SELECT COUNT(*) FROM bookings bk WHERE bk.business_id = b.id AND bk.status <> 'cancelled') AS reservas
         FROM prospects p JOIN businesses b ON b.id = p.business_id`);
@@ -403,7 +403,7 @@ async function getStats(db) {
         },
         porSector: porSector.map(r => ({ ...r, total: Number(r.total), contactados: Number(r.contactados) || 0, permisos: Number(r.permisos) || 0, registrados: Number(r.registrados) || 0 })),
         porVariante: porVariante.map(r => ({ ...r, total: Number(r.total), permisos: Number(r.permisos) || 0, registrados: Number(r.registrados) || 0 })),
-        activacion: activacion.map(a => ({ id: a.id, businessId: a.business_id, name: a.name, sector: a.sector, plan: a.plan, bonus: !!a.plan_bonus_until, servicios: Number(a.servicios), reservas: Number(a.reservas) }))
+        activacion: activacion.map(a => ({ id: a.id, businessId: a.business_id, slug: a.slug, businessName: a.business_name, name: a.name, sector: a.sector, plan: a.plan, bonus: !!a.plan_bonus_until, servicios: Number(a.servicios), reservas: Number(a.reservas) }))
     };
 }
 

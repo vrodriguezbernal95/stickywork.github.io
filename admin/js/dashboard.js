@@ -47,9 +47,9 @@ const dashboard = {
                 ${step(ob.steps.widget, 'Personaliza tu widget',
                     'Pon los colores de tu negocio para que el formulario de reserva sea tuyo.',
                     `<button class="onb-btn" onclick="dashboard.openSettingsTab('widget')">Personalizar</button>`)}
-                ${step(ob.steps.link, 'Comparte tu enlace de reservas',
-                    `Ponlo en Instagram, Google o WhatsApp: <span class="onb-url">${url}</span>`,
-                    `<button class="onb-btn" onclick="dashboard.copyBookingLink()">Copiar enlace</button>`)}
+                ${step(ob.steps.link, 'Pon tu enlace donde te buscan tus clientes',
+                    `Respuesta automática de WhatsApp, Instagram, tu ficha de Google y un cartel con QR: te lo damos todo listo para copiar.`,
+                    `<button class="onb-btn" onclick="dashboard.openShareKit()">Ver kit para compartir</button>`)}
                 ${step(ob.steps.firstBooking, 'Recibe tu primera reserva',
                     'Se marcará sola cuando un cliente reserve.',
                     '')}
@@ -68,6 +68,13 @@ const dashboard = {
     async openSettingsTab(tab) {
         await app.navigateTo('settings');
         if (window.settings) settings.switchTab(tab);
+    },
+
+    // Kit para compartir el enlace (admin/js/share-kit.js); el paso se marca al copiar algo o abrir el cartel
+    openShareKit() {
+        const url = this.publicBookingUrl(this.onboarding?.slug);
+        shareKit.onUse = () => this.markOnboarding('linkShared');
+        shareKit.open(this.onboarding?.name || '', url, { forOwner: true });
     },
 
     async copyBookingLink() {
