@@ -1051,6 +1051,11 @@
         try {
             console.log('📡 [Widget] Cargando config desde:', `${config.apiUrl}/api/widget/${config.businessId}`);
             const response = await fetch(`${config.apiUrl}/api/widget/${config.businessId}`);
+            if (response.status === 403) {
+                // Negocio suspendido: no acepta reservas online
+                const data = await response.json().catch(() => ({}));
+                return { unavailable: true, message: data.message || 'Este negocio no acepta reservas online en este momento.' };
+            }
             if (response.ok) {
                 const data = await response.json();
                 console.log('✅ [Widget] Config recibida:', data);
@@ -3065,6 +3070,17 @@
         // Cargar configuracion del backend si hay API
         if (config.apiUrl && config.businessId) {
             const loaded = await loadBusinessConfig();
+            if (loaded && loaded.unavailable) {
+                const box = document.getElementById(config.containerId || 'stickywork-widget');
+                if (box) {
+                    const p = document.createElement('p');
+                    p.style.cssText = 'padding:16px;border:1px solid #e5e7eb;border-radius:12px;text-align:center;font-family:system-ui,sans-serif;color:#374151;background:#f9fafb;';
+                    p.textContent = loaded.message;
+                    box.innerHTML = '';
+                    box.appendChild(p);
+                }
+                return; // sin formulario ni botón flotante
+            }
             if (loaded) {
                 businessConfig = loaded;
                 config = { ...config, ...loaded };

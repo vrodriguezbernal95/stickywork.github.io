@@ -338,6 +338,11 @@
             }, 5000);
         }
 
+        // Venía de una sesión de un negocio suspendido
+        if (new URLSearchParams(location.search).get('suspendida')) {
+            alertContainer.innerHTML = '<div class="alert alert-error">Tu cuenta está suspendida. Si crees que es un error, escríbenos a soporte@stickywork.com.</div>';
+        }
+
         // Handle login form submission
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();

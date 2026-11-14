@@ -64,6 +64,9 @@ const superCaptacion = {
             <div id="capModal" class="cap-modal" style="display:none;" onclick="if(event.target===this) superCaptacion.closeModal()">
                 <div class="cap-modal-box"><button class="cap-modal-close" onclick="superCaptacion.closeModal()">✕</button><div id="capModalBody"></div></div>
             </div>`;
+        // La ventana va directamente en <body> para que no la tape el menú lateral
+        document.querySelectorAll('body > #capModal').forEach(m => m.remove());
+        document.body.appendChild(document.getElementById('capModal'));
         this.switchTab(this.tab);
     },
 

@@ -96,6 +96,15 @@ function requireAuth(req, res, next) {
             });
         }
 
+        // Negocio suspendido desde el super admin: sin acceso al panel
+        if (require('../suspension').isSuspended(decoded.businessId)) {
+            return res.status(403).json({
+                success: false,
+                suspended: true,
+                message: require('../suspension').MENSAJE_PANEL
+            });
+        }
+
         // Agregar datos del usuario al request
         req.user = decoded;
         next();

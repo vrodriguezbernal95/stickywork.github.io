@@ -36,6 +36,8 @@ async function runMigrations() {
             await require('./backend/super-admin-reset').ensureResetTable(db);
             // Registro de envíos de email (aviso en el super admin si fallan)
             await require('./backend/email-health').ensureEmailEventsTable(db);
+            // Suspensión de negocios desde el super admin
+            await require('./backend/suspension').ensureColumn(db);
         }
     } catch (err) {
         console.error('⚠️ Error verificando tablas:', err.message);

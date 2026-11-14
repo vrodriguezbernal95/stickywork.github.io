@@ -542,6 +542,10 @@
                     const response = await fetch(`${API_URL}/api/public/business/${slug}`);
                     const result = await response.json();
 
+                    if (response.status === 403) {
+                        showError('Reservas no disponibles', 'Este negocio no acepta reservas online en este momento. Contacta directamente con el negocio.');
+                        return;
+                    }
                     if (!response.ok || !result.success) {
                         showError('Negocio no encontrado', 'No hemos encontrado ningún negocio con ese nombre. Verifica que el enlace sea correcto.');
                         return;

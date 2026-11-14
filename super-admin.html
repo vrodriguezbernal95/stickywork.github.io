@@ -48,26 +48,23 @@
                 <span class="nav-icon">📊</span>
                 <span class="nav-text">Dashboard</span>
             </a>
-            <a href="#" class="nav-link" data-page="clients">
+            <a href="#" class="nav-link" data-page="negocios">
                 <span class="nav-icon">🏢</span>
-                <span class="nav-text">Clientes</span>
-            </a>
-            <a href="#" class="nav-link" data-page="plans">
-                <span class="nav-icon">💎</span>
-                <span class="nav-text">Planes</span>
+                <span class="nav-text">Negocios</span>
             </a>
             <a href="#" class="nav-link" data-page="messages">
                 <span class="nav-icon">📧</span>
                 <span class="nav-text">Mensajes</span>
                 <span id="unreadBadge" class="badge" style="display: none;"></span>
             </a>
+            <a href="#" class="nav-link" data-page="consultorias">
+                <span class="nav-icon">🗓️</span>
+                <span class="nav-text">Consultorías</span>
+                <span id="consultBadge" class="badge" style="display: none;"></span>
+            </a>
             <a href="#" class="nav-link" data-page="captacion">
                 <span class="nav-icon">🎯</span>
                 <span class="nav-text">Captación</span>
-            </a>
-            <a href="#" class="nav-link" data-page="stats">
-                <span class="nav-icon">📈</span>
-                <span class="nav-text">Estadísticas</span>
             </a>
         </nav>
 
@@ -199,13 +196,12 @@
     <script src="admin/js/components/stat-card.js"></script>
     <script src="admin/js/components/modal.js"></script>
     <script src="admin/js/utils.js"></script>
+    <script src="admin/js/super-ui.js"></script>
     <script src="admin/js/super-dashboard.js"></script>
-    <script src="admin/js/super-clients.js"></script>
-    <script src="admin/js/super-plans.js"></script>
+    <script src="admin/js/super-negocios.js"></script>
+    <script src="admin/js/super-consultorias.js"></script>
     <script src="admin/js/super-messages.js"></script>
-    <script src="admin/js/super-leads.js"></script>
     <script src="admin/js/super-captacion.js"></script>
-    <script src="admin/js/super-stats.js"></script>
     <script>
         // Navigation handling
         document.querySelectorAll('.nav-link').forEach(link => {
@@ -223,31 +219,14 @@
         });
 
         function loadPage(page) {
-            switch (page) {
-                case 'dashboard':
-                    superDashboard.load();
-                    break;
-                case 'clients':
-                    superClients.load();
-                    break;
-                case 'plans':
-                    superPlans.load();
-                    break;
-                case 'messages':
-                    superMessages.load();
-                    break;
-                case 'leads':
-                    superLeads.load();
-                    break;
-                case 'captacion':
-                    superCaptacion.load();
-                    break;
-                case 'stats':
-                    superStats.load();
-                    break;
-                default:
-                    superDashboard.load();
-            }
+            const pages = {
+                dashboard: () => superDashboard.load(),
+                negocios: () => superNegocios.load(),
+                messages: () => superMessages.load(),
+                consultorias: () => superConsultorias.load(),
+                captacion: () => superCaptacion.load()
+            };
+            (pages[page] || pages.dashboard)();
         }
 
         // Load dashboard on startup
@@ -270,6 +249,21 @@
                 console.error('Error checking messages:', error);
             }
         }
+
+        // Consultorías por agendar
+        async function checkPendingConsultancy() {
+            try {
+                const data = await superApi.get('/api/super-admin/consultancy?status=pending');
+                const n = (data.data || []).length;
+                const badge = document.getElementById('consultBadge');
+                badge.textContent = n;
+                badge.style.display = n > 0 ? 'inline-block' : 'none';
+            } catch (error) {
+                console.error('Error checking consultancy:', error);
+            }
+        }
+        checkPendingConsultancy();
+        setInterval(checkPendingConsultancy, 120000);
 
         // Check immediately and then every 30 seconds
         checkUnreadMessages();

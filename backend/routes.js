@@ -1572,6 +1572,9 @@ router.get('/api/availability/:businessId/:date', async (req, res) => {
 // Crear una nueva reserva
 router.post('/api/bookings', createBookingLimiter, async (req, res) => {
     try {
+        if (require('./suspension').isSuspended(req.body.businessId || req.body.business_id)) {
+            return res.status(403).json({ success: false, message: require('./suspension').MENSAJE_PUBLICO });
+        }
         // Soportar tanto businessId (camelCase) como business_id (snake_case) para compatibilidad con widget
         const businessId = req.body.businessId || req.body.business_id;
         const serviceId = req.body.serviceId || req.body.service_id;
@@ -2730,6 +2733,9 @@ router.get('/api/public/business/:slug', async (req, res) => {
         }
 
         const businessData = business[0];
+        if (require('./suspension').isSuspended(businessData.id)) {
+            return res.status(403).json({ success: false, message: require('./suspension').MENSAJE_PUBLICO });
+        }
 
         // Parsear JSON fields
         try {
@@ -3216,6 +3222,9 @@ router.delete('/api/contact/:id', requireSuperAdmin, async (req, res) => {
  */
 router.get('/api/widget/:businessId', async (req, res) => {
     try {
+        if (require('./suspension').isSuspended(req.params.businessId)) {
+            return res.status(403).json({ success: false, message: require('./suspension').MENSAJE_PUBLICO });
+        }
         const { businessId } = req.params;
 
         // Obtener negocio

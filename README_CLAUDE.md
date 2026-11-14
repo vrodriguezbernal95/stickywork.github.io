@@ -70,7 +70,7 @@ Este documento es tu **punto de entrada** cada vez que inicies una nueva sesión
   - Cambio de plan con vista de uso actual
   - Histórico de cambios de plan (audit trail)
 - **Archivos clave:**
-  - `admin/js/super-plans.js`
+  - `admin/js/super-negocios.js` (antes super-plans.js; desde nov 2026 una sola pantalla «Negocios»)
   - `backend/routes/super-admin.js` (endpoints de planes)
   - `backend/migrations/add-plan-history.sql`
 

@@ -9,6 +9,7 @@ const { requireSuperAdmin } = require('../middleware/super-admin');
 const { superAdminLoginLimiter } = require('../middleware/rate-limit');
 const { getPlanInfo } = require('../middleware/entitlements');
 const { sendConsultancyScheduledEmail } = require('../email-service');
+const { realBusinessSql, DEMO_BUSINESS_IDS } = require('../demo-businesses');
 
 // ==================== RECUPERAR CONTRASEÑA DEL SUPER ADMIN ====================
 const rateLimit = require('express-rate-limit');
@@ -200,107 +201,131 @@ router.get('/stats', requireSuperAdmin, async (req, res) => {
     }
 });
 
-// Listar todos los negocios
-router.get('/businesses', requireSuperAdmin, async (req, res) => {
+// Resumen real de la plataforma (sin demos ni cuentas de prueba): lo que muestra el Dashboard
+const PLAN_PRICE = { founders: 25, professional: 39, premium: 79 };
+
+router.get('/overview', requireSuperAdmin, async (req, res) => {
     try {
-        const { status, type, search, plan, limit = 50, offset = 0 } = req.query;
-
-        let query = `
-            SELECT
-                b.*,
-                (SELECT COUNT(*) FROM bookings WHERE business_id = b.id) as total_bookings,
-                (SELECT COUNT(*) FROM admin_users WHERE business_id = b.id) as admin_count,
-                (SELECT COUNT(*) FROM services WHERE business_id = b.id) as services_count,
-                (SELECT COUNT(*) FROM bookings
-                 WHERE business_id = b.id
-                 AND MONTH(booking_date) = MONTH(NOW())
-                 AND YEAR(booking_date) = YEAR(NOW())
-                 AND status != 'cancelled') as bookings_this_month
+        const real = realBusinessSql('b');
+        const negocios = await db.query(`
+            SELECT b.id, b.plan, b.plan_bonus_until, COALESCE(b.is_active, 1) AS is_active, b.created_at,
+                   s.status AS sub_status, s.plan_name AS sub_plan,
+                   (SELECT COUNT(*) FROM bookings bk WHERE bk.business_id = b.id AND bk.status <> 'cancelled'
+                      AND bk.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)) AS reservas30
             FROM businesses b
-            WHERE 1=1
-        `;
-        const params = [];
+            LEFT JOIN subscriptions s ON s.business_id = b.id
+            WHERE ${real}`);
 
-        // Filtro por estado
-        if (status === 'active') {
-            query += ` AND (b.trial_ends_at > NOW() OR b.subscription_status = 'active')`;
-        } else if (status === 'inactive') {
-            query += ` AND (b.trial_ends_at <= NOW() AND b.subscription_status != 'active')`;
-        }
+        const pagando = n => ['active', 'past_due'].includes(n.sub_status);
+        const enPrueba = n => n.sub_status === 'trialing';
+        const deRegalo = n => !!n.plan_bonus_until;
+        const planDePago = n => !!PLAN_PRICE[n.plan];
+        const resumen = {
+            total: negocios.length,
+            activos30: negocios.filter(n => Number(n.reservas30) > 0).length,
+            suspendidos: negocios.filter(n => Number(n.is_active) === 0).length,
+            nuevosMes: negocios.filter(n => {
+                const d = new Date(n.created_at), h = new Date();
+                return d.getMonth() === h.getMonth() && d.getFullYear() === h.getFullYear();
+            }).length,
+            planes: {
+                free: negocios.filter(n => !planDePago(n)).length,
+                pagando: negocios.filter(pagando).length,
+                enPrueba: negocios.filter(enPrueba).length,
+                regalo: negocios.filter(deRegalo).length,
+                cortesia: negocios.filter(n => planDePago(n) && !pagando(n) && !enPrueba(n) && !deRegalo(n)).length
+            },
+            ingresosMes: negocios.filter(pagando).reduce((t, n) => t + (PLAN_PRICE[n.sub_plan || n.plan] || 0), 0)
+        };
 
-        // Filtro por tipo
-        if (type) {
-            query += ` AND b.type = ?`;
-            params.push(type);
-        }
+        const [reservas] = await db.query(`
+            SELECT SUM(bk.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)) AS creadas30,
+                   SUM(MONTH(bk.booking_date) = MONTH(CURDATE()) AND YEAR(bk.booking_date) = YEAR(CURDATE())) AS delMes
+            FROM bookings bk JOIN businesses b ON b.id = bk.business_id
+            WHERE bk.status <> 'cancelled' AND ${real}`);
 
-        // Filtro por plan
-        if (plan) {
-            query += ` AND b.plan = ?`;
-            params.push(plan);
-        }
+        const crecimiento = await db.query(`
+            SELECT DATE_FORMAT(b.created_at, '%Y-%m') AS mes, COUNT(*) AS n
+            FROM businesses b
+            WHERE b.created_at >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 5 MONTH) AND ${real}
+            GROUP BY mes`);
 
-        // Búsqueda por nombre
-        if (search) {
-            query += ` AND b.name LIKE ?`;
-            params.push(`%${search}%`);
-        }
+        const contar = async (sql) => { try { const [r] = await db.query(sql); return Number(r.n) || 0; } catch (e) { return 0; } };
+        const pendientes = {
+            contacto: await contar(`SELECT COUNT(*) AS n FROM contact_messages WHERE status = 'unread'`),
+            soporte: await contar(`SELECT COUNT(*) AS n FROM support_messages WHERE status = 'pending'`),
+            consultorias: await contar(`SELECT COUNT(*) AS n FROM consultancy_requests WHERE status = 'pending'`),
+            captacionHoy: await contar(`SELECT COUNT(*) AS n FROM prospects WHERE next_action_at IS NOT NULL AND next_action_at <= CURDATE()
+                                         AND status NOT IN ('no_interesa','no_contactar','descartado')`)
+        };
 
-        // Ordenar por fecha de creación (más recientes primero)
-        query += ` ORDER BY b.created_at DESC`;
-
-        // Paginación (usar valores directos en lugar de placeholders por compatibilidad con MySQL)
-        const limitNum = parseInt(limit) || 50;
-        const offsetNum = parseInt(offset) || 0;
-        query += ` LIMIT ${limitNum} OFFSET ${offsetNum}`;
-
-        const businesses = await db.query(query, params);
-
-        // Contar total (para paginación)
-        let countQuery = 'SELECT COUNT(*) as total FROM businesses b WHERE 1=1';
-        const countParams = [];
-
-        if (status === 'active') {
-            countQuery += ` AND (b.trial_ends_at > NOW() OR b.subscription_status = 'active')`;
-        } else if (status === 'inactive') {
-            countQuery += ` AND (b.trial_ends_at <= NOW() AND b.subscription_status != 'active')`;
-        }
-
-        if (type) {
-            countQuery += ` AND b.type = ?`;
-            countParams.push(type);
-        }
-
-        if (plan) {
-            countQuery += ` AND b.plan = ?`;
-            countParams.push(plan);
-        }
-
-        if (search) {
-            countQuery += ` AND b.name LIKE ?`;
-            countParams.push(`%${search}%`);
-        }
-
-        const totalResult = await db.query(countQuery, countParams);
-        const total = totalResult?.[0]?.total || 0;
+        const [demos] = await db.query(`
+            SELECT COUNT(*) AS n,
+                   (SELECT COUNT(*) FROM bookings bk WHERE bk.business_id IN (${DEMO_BUSINESS_IDS.join(',')})
+                      AND bk.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)) AS reservas30
+            FROM businesses WHERE id IN (${DEMO_BUSINESS_IDS.join(',')})`);
 
         res.json({
             success: true,
-            data: businesses,
-            pagination: {
-                total,
-                limit: parseInt(limit),
-                offset: parseInt(offset),
-                hasMore: (parseInt(offset) + parseInt(limit)) < total
+            data: {
+                negocios: resumen,
+                reservas: { creadas30: Number(reservas.creadas30) || 0, delMes: Number(reservas.delMes) || 0 },
+                crecimiento: crecimiento.map(c => ({ mes: c.mes, n: Number(c.n) })),
+                pendientes,
+                demos: { negocios: Number(demos.n) || 0, reservas30: Number(demos.reservas30) || 0 }
             }
         });
+    } catch (error) {
+        console.error('Error en el resumen del super admin:', error);
+        res.status(500).json({ success: false, message: 'Error al calcular el resumen' });
+    }
+});
 
+// Listar todos los negocios
+router.get('/businesses', requireSuperAdmin, async (req, res) => {
+    try {
+        const { status, plan, search, include_demos } = req.query;
+        const limitNum = Math.min(parseInt(req.query.limit) || 50, 200);
+        const offsetNum = Math.max(parseInt(req.query.offset) || 0, 0);
+
+        const where = ['1=1'];
+        const params = [];
+        // Por defecto solo negocios reales (sin demos ni cuentas de prueba)
+        if (include_demos !== '1') where.push(realBusinessSql('b'));
+        if (status === 'active') where.push(`EXISTS (SELECT 1 FROM bookings bk WHERE bk.business_id = b.id AND bk.status <> 'cancelled' AND bk.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY))`);
+        if (status === 'inactive') where.push(`NOT EXISTS (SELECT 1 FROM bookings bk WHERE bk.business_id = b.id AND bk.status <> 'cancelled' AND bk.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY))`);
+        if (status === 'suspended') where.push('COALESCE(b.is_active, 1) = 0');
+        if (plan && VALID_PLANS.includes(plan)) { where.push('b.plan = ?'); params.push(plan); }
+        if (search) { where.push('(b.name LIKE ? OR b.email LIKE ? OR b.slug LIKE ?)'); const like = `%${String(search).slice(0, 80)}%`; params.push(like, like, like); }
+
+        const businesses = await db.query(`
+            SELECT b.id, b.name, b.slug, b.email, b.phone, b.type, b.type_key, b.plan, b.plan_bonus_until,
+                   COALESCE(b.is_active, 1) AS is_active, b.created_at,
+                   s.status AS sub_status, s.plan_name AS sub_plan, s.current_period_end, s.cancel_at_period_end,
+                   (SELECT COUNT(*) FROM bookings bk WHERE bk.business_id = b.id AND bk.status <> 'cancelled'
+                      AND bk.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)) AS bookings_30d,
+                   (SELECT COUNT(*) FROM bookings bk WHERE bk.business_id = b.id) AS total_bookings,
+                   (SELECT MAX(bk.created_at) FROM bookings bk WHERE bk.business_id = b.id) AS last_booking_at,
+                   (SELECT COUNT(*) FROM admin_users au WHERE au.business_id = b.id) AS admin_count,
+                   (SELECT COUNT(*) FROM services sv WHERE sv.business_id = b.id AND sv.is_active = TRUE) AS services_count
+            FROM businesses b
+            LEFT JOIN subscriptions s ON s.business_id = b.id
+            WHERE ${where.join(' AND ')}
+            ORDER BY b.created_at DESC
+            LIMIT ${limitNum} OFFSET ${offsetNum}`, params);
+
+        const [count] = await db.query(`SELECT COUNT(*) AS total FROM businesses b WHERE ${where.join(' AND ')}`, params);
+        const total = Number(count?.total) || 0;
+        const demoIds = new Set(DEMO_BUSINESS_IDS);
+
+        res.json({
+            success: true,
+            data: businesses.map(b => ({ ...b, is_demo: demoIds.has(Number(b.id)) })),
+            pagination: { total, limit: limitNum, offset: offsetNum, hasMore: offsetNum + limitNum < total }
+        });
     } catch (error) {
         console.error('Error al listar negocios:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error al obtener lista de negocios'
-        });
+        res.status(500).json({ success: false, message: 'Error al obtener lista de negocios' });
     }
 });
 
@@ -333,16 +358,28 @@ router.get('/businesses/:id', requireSuperAdmin, async (req, res) => {
         );
 
         const services = await db.query(
-            'SELECT COUNT(*) as total FROM services WHERE business_id = ?',
+            'SELECT COUNT(*) as total FROM services WHERE business_id = ? AND is_active = TRUE',
             [id]
         );
+        const [actividad] = await db.query(
+            `SELECT SUM(status <> 'cancelled' AND created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)) AS reservas30,
+                    MAX(created_at) AS ultima
+             FROM bookings WHERE business_id = ?`, [id]);
+        const [sub] = await db.query(
+            'SELECT status, plan_name, current_period_end, cancel_at_period_end, trial_end FROM subscriptions WHERE business_id = ? LIMIT 1', [id]);
+        // No enviar al navegador datos internos que no hacen falta
+        for (const k of ['widget_settings', 'widget_customization', 'business_context', 'plan_limits', 'loyalty_config']) delete business[k];
 
         res.json({
             success: true,
             data: {
                 ...business,
+                is_demo: DEMO_BUSINESS_IDS.includes(Number(business.id)),
+                subscription: sub || null,
                 stats: {
                     totalBookings: bookingsCount?.[0]?.total || 0,
+                    bookings30d: Number(actividad?.reservas30) || 0,
+                    lastBookingAt: actividad?.ultima || null,
                     activeServices: services?.[0]?.total || 0,
                     admins: admins || []
                 }
@@ -404,6 +441,7 @@ router.patch('/businesses/:id', requireSuperAdmin, async (req, res) => {
         );
 
         const updatedBusiness = await db.query('SELECT * FROM businesses WHERE id = ?', [id]);
+        if (is_active !== undefined) await require('../suspension').refresh().catch(() => {});
 
         res.json({
             success: true,
@@ -863,6 +901,10 @@ router.get('/consultancy', requireSuperAdmin, async (req, res) => {
         let query = `
             SELECT
                 cr.*,
+                DATE_FORMAT(cr.preferred_date_1, '%Y-%m-%d') AS preferred_date_1,
+                DATE_FORMAT(cr.preferred_date_2, '%Y-%m-%d') AS preferred_date_2,
+                DATE_FORMAT(cr.preferred_date_3, '%Y-%m-%d') AS preferred_date_3,
+                DATE_FORMAT(cr.scheduled_date, '%Y-%m-%d') AS scheduled_date,
                 b.name as business_name,
                 b.email as business_email,
                 b.type as business_type,
@@ -916,6 +958,10 @@ router.get('/consultancy/:id', requireSuperAdmin, async (req, res) => {
         const request = await db.query(`
             SELECT
                 cr.*,
+                DATE_FORMAT(cr.preferred_date_1, '%Y-%m-%d') AS preferred_date_1,
+                DATE_FORMAT(cr.preferred_date_2, '%Y-%m-%d') AS preferred_date_2,
+                DATE_FORMAT(cr.preferred_date_3, '%Y-%m-%d') AS preferred_date_3,
+                DATE_FORMAT(cr.scheduled_date, '%Y-%m-%d') AS scheduled_date,
                 b.name as business_name,
                 b.email as business_email,
                 b.phone as business_phone,
@@ -1000,6 +1046,10 @@ router.patch('/consultancy/:id/schedule', requireSuperAdmin, async (req, res) =>
         const updatedRequest = await db.query(`
             SELECT
                 cr.*,
+                DATE_FORMAT(cr.preferred_date_1, '%Y-%m-%d') AS preferred_date_1,
+                DATE_FORMAT(cr.preferred_date_2, '%Y-%m-%d') AS preferred_date_2,
+                DATE_FORMAT(cr.preferred_date_3, '%Y-%m-%d') AS preferred_date_3,
+                DATE_FORMAT(cr.scheduled_date, '%Y-%m-%d') AS scheduled_date,
                 b.name as business_name,
                 b.email as business_email,
                 au.full_name as user_name,

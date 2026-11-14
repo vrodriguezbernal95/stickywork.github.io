@@ -19,6 +19,9 @@ router.setDatabase = setDatabase;
  */
 router.get('/public/:businessId', async (req, res) => {
     try {
+        if (require('../suspension').isSuspended(req.params.businessId)) {
+            return res.json({ success: true, data: [] }); // negocio suspendido: sin talleres
+        }
         const { businessId } = req.params;
 
         // Obtener talleres activos del negocio
@@ -121,6 +124,9 @@ router.post('/book-session/:sessionId', async (req, res) => {
         }
 
         const s = session[0];
+        if (require('../suspension').isSuspended(s.business_id)) {
+            return res.status(403).json({ success: false, message: require('../suspension').MENSAJE_PUBLICO });
+        }
 
         if (!s.is_active) {
             return res.status(400).json({
@@ -201,6 +207,10 @@ router.post('/book-session/:sessionId', async (req, res) => {
  */
 router.post('/book/:workshopId', async (req, res) => {
     try {
+        const [wsBiz] = await db.query('SELECT business_id FROM workshops WHERE id = ?', [req.params.workshopId]);
+        if (wsBiz && require('../suspension').isSuspended(wsBiz.business_id)) {
+            return res.status(403).json({ success: false, message: require('../suspension').MENSAJE_PUBLICO });
+        }
         const { workshopId } = req.params;
         const { session_id } = req.body;
 

@@ -443,6 +443,11 @@ router.post('/api/auth/login', loginLimiter, async (req, res) => {
             });
         }
 
+        // Negocio suspendido desde el super admin (se comprueba tras la contraseña para no revelar cuentas)
+        if (require('../suspension').isSuspended(user.business_id)) {
+            return res.status(403).json({ success: false, suspended: true, message: require('../suspension').MENSAJE_PANEL });
+        }
+
         // Si el usuario tiene 2FA activado, NO generar tokens aún
         if (user.two_factor_enabled) {
             return res.json({
@@ -1298,6 +1303,11 @@ router.post('/api/auth/2fa/disable', requireAuth, async (req, res) => {
                 success: false,
                 message: 'Contraseña incorrecta'
             });
+        }
+
+        // Negocio suspendido desde el super admin (se comprueba tras la contraseña para no revelar cuentas)
+        if (require('../suspension').isSuspended(user.business_id)) {
+            return res.status(403).json({ success: false, suspended: true, message: require('../suspension').MENSAJE_PANEL });
         }
 
         // Desactivar 2FA

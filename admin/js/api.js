@@ -110,6 +110,10 @@ const api = {
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({ message: 'Error desconocido' }));
+            if (response.status === 403 && error.suspended) {
+                this.clearAuthData();
+                window.location.href = 'admin-login.html?suspendida=1';
+            }
             throw new Error(error.error || error.message || `HTTP error ${response.status}`);
         }
 
