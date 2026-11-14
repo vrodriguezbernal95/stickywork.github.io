@@ -21,7 +21,7 @@ CADENAS = [
     'tony and guy', 'toni and guy', 'raffel pages', 'cebado', 'pelu express',
     'dessange', 'camille albane', 'nails factory', 'the nail bar',
     'no mas vello', 'nomasvello', 'centros ideal', 'dorsia', 'corporacion dermoestetica', 'depilite', 'body laser',
-    'sapphira', 'carmen navarro', 'yves rocher', 'mercadona', 'el corte ingles', 'carrefour',
+    'sapphira', 'sapphira prive', 'carmen navarro', 'yves rocher', 'mercadona', 'el corte ingles', 'carrefour',
     'vitaldent', 'dentix', 'sanitas', 'adeslas', 'caredent', 'unidental', 'donte', 'dental company', 'dentalcompany',
     'asisa', 'mapfre', 'quiron', 'ivi', 'clinica baviera', 'barnaclinic',
     'multiopticas', 'general optica', 'alain afflelou', 'afflelou', 'opticalia', 'vision lab', 'visionlab',

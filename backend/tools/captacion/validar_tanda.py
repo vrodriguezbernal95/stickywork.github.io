@@ -11,7 +11,7 @@ para que no se repitan en próximas tandas.
 import re
 import sys
 
-from comun import SECTORES, USADOS, guardar_json, leer_json, norm_tel
+from comun import SECTORES, USADOS, es_cadena, guardar_json, leer_json, norm_tel
 
 METODOS = {'whatsapp_telefono', 'web_sin_reservas', 'sin_web', 'marketplace', 'software', 'desconocido'}
 # Promesas que StickyWork no cumple: si aparecen en un mensaje, es un error
@@ -43,6 +43,8 @@ def main():
         q = f"#{i} {p.get('name', '¿sin nombre?')}"
         if not p.get('name'):
             errores.append(f'{q}: falta el nombre')
+        if p.get('name') and es_cadena(p['name']):
+            errores.append(f'{q}: parece una cadena o franquicia (lista de comun.py): solo pymes')
         if p.get('sector') not in SECTORES:
             errores.append(f"{q}: sector no válido ({p.get('sector')})")
         if p.get('booking_method') and p['booking_method'] not in METODOS:
