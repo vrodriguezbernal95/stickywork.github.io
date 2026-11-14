@@ -201,7 +201,7 @@ const superPlans = {
             console.error('Error loading businesses:', error);
             container.innerHTML = `
                 <div class="error-message">
-                    <p>⚠️ Error al cargar los negocios: ${error.message}</p>
+                    <p>⚠️ Error al cargar los negocios: ${utils.escapeHtml(error.message)}</p>
                 </div>
             `;
         }
@@ -217,8 +217,8 @@ const superPlans = {
 
         const rows = businesses.map(b => `
             <tr>
-                <td><strong>${b.name}</strong></td>
-                <td>${planBadges[b.plan] || b.plan}</td>
+                <td><strong>${utils.escapeHtml(b.name)}</strong></td>
+                <td>${planBadges[b.plan] || utils.escapeHtml(b.plan)}</td>
                 <td style="text-align: center;">
                     ${b.bookings_this_month || 0}
                 </td>
@@ -230,14 +230,14 @@ const superPlans = {
                 </td>
                 <td style="text-align: center;">
                     <button
-                        onclick="superPlans.showChangePlanModal(${b.id}, '${b.name}', '${b.plan}')"
+                        onclick="superPlans.showChangePlanModal(${Number(b.id)}, this.dataset.name, this.dataset.plan)" data-name="${utils.escapeHtml(b.name)}" data-plan="${utils.escapeHtml(b.plan)}"
                         class="btn-small btn-primary"
                         title="Cambiar plan"
                     >
                         🔄 Cambiar
                     </button>
                     <button
-                        onclick="superPlans.showPlanHistory(${b.id}, '${b.name}')"
+                        onclick="superPlans.showPlanHistory(${Number(b.id)}, this.dataset.name)" data-name="${utils.escapeHtml(b.name)}"
                         class="btn-small"
                         title="Ver histórico"
                     >
@@ -299,7 +299,7 @@ const superPlans = {
 
             content.innerHTML = `
                 <div style="margin-bottom: 1.5rem;">
-                    <h3>${businessName}</h3>
+                    <h3>${utils.escapeHtml(businessName)}</h3>
                     <p style="color: var(--text-secondary);">
                         Plan actual: <strong>${currentPlan.toUpperCase()}</strong>
                     </p>
@@ -416,7 +416,7 @@ const superPlans = {
 
             if (!data.data || data.data.length === 0) {
                 content.innerHTML = `
-                    <p class="empty-state">No hay cambios de plan registrados para ${businessName}</p>
+                    <p class="empty-state">No hay cambios de plan registrados para ${utils.escapeHtml(businessName)}</p>
                     <button onclick="superPlans.closePlanHistoryModal()" class="btn-secondary">
                         Cerrar
                     </button>
@@ -447,11 +447,11 @@ const superPlans = {
                             </div>
                         </div>
                         <div style="color: var(--text-secondary); font-size: 0.875rem;">
-                            Por: ${change.changed_by}
+                            Por: ${utils.escapeHtml(change.changed_by)}
                         </div>
                         ${change.change_reason ? `
                             <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-secondary); border-radius: 4px; font-size: 0.875rem;">
-                                ${change.change_reason}
+                                ${utils.escapeHtml(change.change_reason)}
                             </div>
                         ` : ''}
                     </div>
@@ -459,7 +459,7 @@ const superPlans = {
             }).join('');
 
             content.innerHTML = `
-                <h3 style="margin-top: 0;">${businessName}</h3>
+                <h3 style="margin-top: 0;">${utils.escapeHtml(businessName)}</h3>
                 <div style="margin-bottom: 1rem;">
                     ${rows}
                 </div>

@@ -141,7 +141,7 @@ const superMessages = {
             console.error('Error loading messages:', error);
             container.innerHTML = `
                 <div class="error-message">
-                    <p>⚠️ Error al cargar los mensajes: ${error.message}</p>
+                    <p>⚠️ Error al cargar los mensajes: ${utils.escapeHtml(error.message)}</p>
                 </div>
             `;
         }
@@ -163,17 +163,17 @@ const superMessages = {
                         >
                             <div class="message-header">
                                 <div class="message-from">
-                                    <strong>${message.name}</strong>
+                                    <strong>${utils.escapeHtml(message.name)}</strong>
                                     ${statusInfo.badge}
                                 </div>
                                 <div class="message-date">${date}</div>
                             </div>
                             <div class="message-contact">
-                                📧 ${message.email}
-                                ${message.phone ? `• 📱 ${message.phone}` : ''}
+                                📧 ${utils.escapeHtml(message.email)}
+                                ${message.phone ? `• 📱 ${utils.escapeHtml(message.phone)}` : ''}
                             </div>
                             <div class="message-preview">
-                                ${message.message.substring(0, 150)}${message.message.length > 150 ? '...' : ''}
+                                ${utils.escapeHtml(message.message.substring(0, 150))}${message.message.length > 150 ? '...' : ''}
                             </div>
                         </div>
                     `;
@@ -243,19 +243,19 @@ const superMessages = {
                         <div class="detail-grid">
                             <div class="detail-item">
                                 <span class="detail-label">Nombre:</span>
-                                <span class="detail-value">${message.name}</span>
+                                <span class="detail-value">${utils.escapeHtml(message.name)}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Email:</span>
                                 <span class="detail-value">
-                                    <a href="mailto:${message.email}">${message.email}</a>
+                                    <a href="mailto:${utils.escapeHtml(message.email)}">${utils.escapeHtml(message.email)}</a>
                                 </span>
                             </div>
                             ${message.phone ? `
                                 <div class="detail-item">
                                     <span class="detail-label">Teléfono:</span>
                                     <span class="detail-value">
-                                        <a href="tel:${message.phone}">${message.phone}</a>
+                                        <a href="tel:${utils.escapeHtml(message.phone)}">${utils.escapeHtml(message.phone)}</a>
                                     </span>
                                 </div>
                             ` : ''}
@@ -265,7 +265,7 @@ const superMessages = {
                     <div class="detail-section">
                         <h3>Mensaje</h3>
                         <div class="message-content">
-                            ${message.message.replace(/\n/g, '<br>')}
+                            ${utils.escapeHtml(message.message).replace(/\n/g, '<br>')}
                         </div>
                     </div>
 
@@ -292,7 +292,7 @@ const superMessages = {
             console.error('Error loading message details:', error);
             content.innerHTML = `
                 <div class="error-message">
-                    <p>⚠️ Error al cargar el mensaje: ${error.message}</p>
+                    <p>⚠️ Error al cargar el mensaje: ${utils.escapeHtml(error.message)}</p>
                 </div>
             `;
         }
@@ -324,7 +324,7 @@ const superMessages = {
                     'replied': 'respondido'
                 };
                 this.showNotification(
-                    `Mensaje marcado como ${statusLabels[status] || status}`,
+                    `Mensaje marcado como ${utils.escapeHtml(statusLabels[status] || status)}`,
                     'success'
                 );
             }
@@ -340,7 +340,7 @@ const superMessages = {
         } catch (error) {
             console.error('Error updating message status:', error);
             if (showNotification) {
-                this.showNotification(`Error al actualizar el mensaje: ${error.message}`, 'error');
+                this.showNotification(`Error al actualizar el mensaje: ${utils.escapeHtml(error.message)}`, 'error');
             }
         }
     },
@@ -366,7 +366,7 @@ const superMessages = {
 
         } catch (error) {
             console.error('Error deleting message:', error);
-            this.showNotification(`Error al eliminar el mensaje: ${error.message}`, 'error');
+            this.showNotification(`Error al eliminar el mensaje: ${utils.escapeHtml(error.message)}`, 'error');
         }
     },
 
@@ -395,18 +395,18 @@ const superMessages = {
                             onclick="superMessages.viewSupportMessage(${msg.id})">
                             <div class="message-header">
                                 <div class="message-from">
-                                    <strong>${msg.business_name || 'Cliente'}</strong>
-                                    ${categoryLabels[msg.category] || msg.category}
+                                    <strong>${utils.escapeHtml(msg.business_name || 'Cliente')}</strong>
+                                    ${utils.escapeHtml(categoryLabels[msg.category] || msg.category)}
                                     ${statusBadges[msg.status]}
                                 </div>
                                 <div class="message-date">${date}</div>
                             </div>
                             <div class="message-contact">
-                                📧 ${msg.business_email || 'N/A'}
-                                ${msg.business_type ? `• 🏢 ${msg.business_type}` : ''}
+                                📧 ${utils.escapeHtml(msg.business_email || 'N/A')}
+                                ${msg.business_type ? `• 🏢 ${utils.escapeHtml(msg.business_type)}` : ''}
                             </div>
                             <div class="message-preview">
-                                ${msg.message.substring(0, 150)}${msg.message.length > 150 ? '...' : ''}
+                                ${utils.escapeHtml(msg.message.substring(0, 150))}${msg.message.length > 150 ? '...' : ''}
                             </div>
                         </div>
                     `;
@@ -466,21 +466,21 @@ const superMessages = {
                         <div class="detail-grid">
                             <div class="detail-item">
                                 <span class="detail-label">Negocio:</span>
-                                <span class="detail-value">${message.business_name || 'N/A'}</span>
+                                <span class="detail-value">${utils.escapeHtml(message.business_name || 'N/A')}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Tipo:</span>
-                                <span class="detail-value">${message.business_type || 'N/A'}</span>
+                                <span class="detail-value">${utils.escapeHtml(message.business_type || 'N/A')}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Email:</span>
                                 <span class="detail-value">
-                                    <a href="mailto:${message.business_email}">${message.business_email}</a>
+                                    <a href="mailto:${utils.escapeHtml(message.business_email)}">${utils.escapeHtml(message.business_email)}</a>
                                 </span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Categoría:</span>
-                                <span class="detail-value">${categoryLabels[message.category]}</span>
+                                <span class="detail-value">${utils.escapeHtml(categoryLabels[message.category])}</span>
                             </div>
                         </div>
                     </div>
@@ -488,7 +488,7 @@ const superMessages = {
                     <div class="detail-section">
                         <h3>Mensaje del Cliente</h3>
                         <div class="message-content" style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--primary-color);">
-                            ${message.message.replace(/\n/g, '<br>')}
+                            ${utils.escapeHtml(message.message).replace(/\n/g, '<br>')}
                         </div>
                         <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
                             ${message.word_count} palabras
@@ -499,10 +499,10 @@ const superMessages = {
                         <div class="detail-section">
                             <h3>✅ Respuesta Enviada</h3>
                             <div class="message-content" style="background: rgba(77, 83, 255, 0.1); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--primary-color);">
-                                ${message.admin_response.replace(/\n/g, '<br>')}
+                                ${utils.escapeHtml(message.admin_response).replace(/\n/g, '<br>')}
                             </div>
                             <p style="color: var(--text-tertiary); font-size: 0.85rem; margin-top: 0.5rem;">
-                                Respondido por ${message.answered_by} el ${utils.formatDateTime(message.answered_at)}
+                                Respondido por ${utils.escapeHtml(message.answered_by)} el ${utils.formatDateTime(message.answered_at)}
                             </p>
                         </div>
                     ` : message.status !== 'closed' ? `
@@ -557,7 +557,7 @@ const superMessages = {
             console.error('Error loading support message details:', error);
             content.innerHTML = `
                 <div class="error-message">
-                    <p>⚠️ Error al cargar el mensaje: ${error.message}</p>
+                    <p>⚠️ Error al cargar el mensaje: ${utils.escapeHtml(error.message)}</p>
                 </div>
             `;
         }
@@ -598,7 +598,7 @@ const superMessages = {
 
         } catch (error) {
             console.error('Error sending response:', error);
-            this.showNotification(`Error al enviar respuesta: ${error.message}`, 'error');
+            this.showNotification(`Error al enviar respuesta: ${utils.escapeHtml(error.message)}`, 'error');
         }
     },
 
@@ -623,7 +623,7 @@ const superMessages = {
 
         } catch (error) {
             console.error('Error closing message:', error);
-            this.showNotification(`Error al cerrar el mensaje: ${error.message}`, 'error');
+            this.showNotification(`Error al cerrar el mensaje: ${utils.escapeHtml(error.message)}`, 'error');
         }
     },
 

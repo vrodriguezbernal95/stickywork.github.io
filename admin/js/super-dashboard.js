@@ -77,7 +77,7 @@ const superDashboard = {
             console.error('Error loading dashboard:', error);
             document.getElementById('contentArea').innerHTML = `
                 <div class="error-message">
-                    <p>⚠️ Error al cargar el dashboard: ${error.message}</p>
+                    <p>⚠️ Error al cargar el dashboard: ${utils.escapeHtml(error.message)}</p>
                 </div>
             `;
         }
@@ -147,7 +147,7 @@ const superDashboard = {
             <div class="horizontal-bars">
                 ${businessesByType.map(item => {
                     const percentage = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-                    const label = typeLabels[item.type] || item.type;
+                    const label = utils.escapeHtml(typeLabels[item.type] || item.type);
                     return `
                         <div class="bar-item">
                             <div class="bar-label">${label}</div>

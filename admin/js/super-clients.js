@@ -116,7 +116,7 @@ const superClients = {
             console.error('Error loading businesses:', error);
             container.innerHTML = `
                 <div class="error-message">
-                    <p>⚠️ Error al cargar los negocios: ${error.message}</p>
+                    <p>⚠️ Error al cargar los negocios: ${utils.escapeHtml(error.message)}</p>
                 </div>
             `;
         }
@@ -156,10 +156,10 @@ const superClients = {
                             return `
                                 <tr>
                                     <td>
-                                        <div class="business-name">${business.name}</div>
-                                        <div class="business-email">${business.email || 'Sin email'}</div>
+                                        <div class="business-name">${utils.escapeHtml(business.name)}</div>
+                                        <div class="business-email">${utils.escapeHtml(business.email || 'Sin email')}</div>
                                     </td>
-                                    <td>${typeLabels[business.type] || business.type}</td>
+                                    <td>${utils.escapeHtml(typeLabels[business.type] || business.type)}</td>
                                     <td>${statusBadge}</td>
                                     <td style="text-align: center; font-weight: 600;">${business.total_bookings || 0}</td>
                                     <td style="text-align: center; font-weight: 600;">${business.admin_count || 0}</td>
@@ -174,7 +174,7 @@ const superClients = {
                                             🗒️
                                         </button>
                                         <button
-                                            onclick="superClients.toggleActiveStatus(${business.id}, ${business.is_active || 1})"
+                                            onclick="superClients.toggleActiveStatus(${business.id}, ${business.is_active === 0 || business.is_active === false ? 0 : 1})"
                                             class="btn-icon"
                                             title="${business.is_active === 0 || business.is_active === false ? 'Activar negocio' : 'Suspender negocio'}"
                                             style="font-size: 1.2rem;"
@@ -330,19 +330,19 @@ const superClients = {
                         <div class="detail-grid">
                             <div class="detail-item">
                                 <span class="detail-label">Nombre:</span>
-                                <span class="detail-value">${business.name}</span>
+                                <span class="detail-value">${utils.escapeHtml(business.name)}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Tipo:</span>
-                                <span class="detail-value">${typeLabels[business.type] || business.type}</span>
+                                <span class="detail-value">${utils.escapeHtml(typeLabels[business.type] || business.type)}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Email:</span>
-                                <span class="detail-value">${business.email || 'No especificado'}</span>
+                                <span class="detail-value">${utils.escapeHtml(business.email || 'No especificado')}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Teléfono:</span>
-                                <span class="detail-value">${business.phone || 'No especificado'}</span>
+                                <span class="detail-value">${utils.escapeHtml(business.phone || 'No especificado')}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Estado:</span>
@@ -352,7 +352,7 @@ const superClients = {
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Suscripción:</span>
-                                <span class="detail-value">${business.subscription_status || 'Ninguna'}</span>
+                                <span class="detail-value">${utils.escapeHtml(business.subscription_status || 'Ninguna')}</span>
                             </div>
                         </div>
                     </div>
@@ -396,14 +396,14 @@ const superClients = {
                                 ${business.stats.admins.map(admin => `
                                     <div class="admin-item">
                                         <div class="admin-info">
-                                            <strong>${admin.full_name}</strong>
-                                            <span class="admin-email">${admin.email}</span>
+                                            <strong>${utils.escapeHtml(admin.full_name)}</strong>
+                                            <span class="admin-email">${utils.escapeHtml(admin.email)}</span>
                                         </div>
                                         <div class="admin-meta">
                                             <span class="badge" style="${admin.is_active ? 'background: rgba(34, 197, 94, 0.25); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.5); font-weight: 700;' : 'background: rgba(148, 163, 184, 0.25); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.4); font-weight: 700;'}">
                                                 ${admin.is_active ? 'Activo' : 'Inactivo'}
                                             </span>
-                                            <span class="admin-role">${admin.role}</span>
+                                            <span class="admin-role">${utils.escapeHtml(admin.role)}</span>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -435,7 +435,7 @@ const superClients = {
             console.error('Error loading business details:', error);
             content.innerHTML = `
                 <div class="error-message">
-                    <p>⚠️ Error al cargar los detalles: ${error.message}</p>
+                    <p>⚠️ Error al cargar los detalles: ${utils.escapeHtml(error.message)}</p>
                 </div>
             `;
         }
@@ -468,7 +468,7 @@ const superClients = {
 
         } catch (error) {
             console.error('Error updating business:', error);
-            this.showNotification(`Error al ${action} el negocio: ${error.message}`, 'error');
+            this.showNotification(`Error al ${action} el negocio: ${utils.escapeHtml(error.message)}`, 'error');
         }
     },
 
@@ -495,7 +495,7 @@ const superClients = {
 
         } catch (error) {
             console.error('Error updating business:', error);
-            this.showNotification(`Error al ${action} acceso gratuito: ${error.message}`, 'error');
+            this.showNotification(`Error al ${action} acceso gratuito: ${utils.escapeHtml(error.message)}`, 'error');
         }
     },
 
@@ -522,7 +522,7 @@ const superClients = {
 
         } catch (error) {
             console.error('Error updating AI reports:', error);
-            this.showNotification(`Error al ${action} reportes IA: ${error.message}`, 'error');
+            this.showNotification(`Error al ${action} reportes IA: ${utils.escapeHtml(error.message)}`, 'error');
         }
     },
 

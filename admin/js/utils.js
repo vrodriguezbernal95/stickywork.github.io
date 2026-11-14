@@ -5,6 +5,13 @@
 
 const utils = {
     /**
+     * Escapa texto para pintarlo dentro de HTML (nombres, emails, mensajes... que escribe otra persona)
+     */
+    escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    },
+
+    /**
      * Formatea una fecha en formato largo español
      * @param {string|Date} date - Fecha a formatear
      * @returns {string} - Fecha formateada (ej: "15 de enero de 2025")
