@@ -73,7 +73,7 @@ const team = {
                 <!-- Header -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div>
-                        <h2 style="margin: 0 0 0.5rem 0;">Equipo de ${auth.userData.businessName || 'tu negocio'}</h2>
+                        <h2 style="margin: 0 0 0.5rem 0;">Equipo de ${utils.escapeHtml(auth.userData.businessName || 'tu negocio')}</h2>
                         <span class="team-usage-badge ${limitReached ? 'limit-reached' : ''}">${usageText}</span>
                     </div>
                     ${isOwner ? `
@@ -131,10 +131,10 @@ const team = {
             return `
                 <tr>
                     <td>
-                        <strong>${user.full_name}</strong>
+                        <strong>${utils.escapeHtml(user.full_name)}</strong>
                         ${isCurrentUser ? '<span style="color: var(--primary-color); font-size: 0.85rem;"> (Tú)</span>' : ''}
                     </td>
-                    <td>${user.email}</td>
+                    <td>${utils.escapeHtml(user.email)}</td>
                     <td>
                         <span class="role-badge role-${user.role}">${roleLabel}</span>
                     </td>
@@ -144,13 +144,13 @@ const team = {
                         ${canManage ? `
                             <div class="actions-dropdown">
                                 <button class="btn-icon" onclick="team.openEditModal(${user.id})">✏️ Editar</button>
-                                <button class="btn-icon" onclick="team.confirmResetPassword(${user.id}, '${user.full_name.replace(/'/g, "\\'")}', '${user.email}')">🔐 Reset Password</button>
+                                <button class="btn-icon" onclick="team.confirmResetPassword(${user.id}, this.dataset.name, this.dataset.email)" data-name="${utils.escapeHtml(user.full_name)}" data-email="${utils.escapeHtml(user.email)}">🔐 Reset Password</button>
                                 ${user.is_active ? `
-                                    <button class="btn-icon" onclick="team.confirmDeactivate(${user.id}, '${user.full_name.replace(/'/g, "\\'")}')">⏸️ Desactivar</button>
+                                    <button class="btn-icon" onclick="team.confirmDeactivate(${user.id}, this.dataset.name)" data-name="${utils.escapeHtml(user.full_name)}">⏸️ Desactivar</button>
                                 ` : `
-                                    <button class="btn-icon" onclick="team.confirmReactivate(${user.id}, '${user.full_name.replace(/'/g, "\\'")}')">▶️ Reactivar</button>
+                                    <button class="btn-icon" onclick="team.confirmReactivate(${user.id}, this.dataset.name)" data-name="${utils.escapeHtml(user.full_name)}">▶️ Reactivar</button>
                                 `}
-                                <button class="btn-icon btn-danger" onclick="team.confirmDelete(${user.id}, '${user.full_name.replace(/'/g, "\\'")}')">🗑️ Eliminar</button>
+                                <button class="btn-icon btn-danger" onclick="team.confirmDelete(${user.id}, this.dataset.name)" data-name="${utils.escapeHtml(user.full_name)}">🗑️ Eliminar</button>
                             </div>
                         ` : user.role === 'owner' ? '<span style="color: var(--text-secondary);">—</span>' : '<span style="color: var(--text-secondary);">Sin permisos</span>'}
                     </td>
@@ -300,8 +300,8 @@ const team = {
                     <form id="editUserForm" onsubmit="team.updateUser(${userId}, event); return false;">
                         <div class="modal-body">
                             <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                                <strong>${user.full_name}</strong><br>
-                                <small style="color: var(--text-secondary);">${user.email}</small>
+                                <strong>${utils.escapeHtml(user.full_name)}</strong><br>
+                                <small style="color: var(--text-secondary);">${utils.escapeHtml(user.email)}</small>
                             </div>
 
                             <div class="form-group">
@@ -364,7 +364,7 @@ const team = {
     // Confirm delete user
     async confirmDelete(userId, userName) {
         const confirmed = await modal.confirm(
-            `¿Eliminar a ${userName}?`,
+            `¿Eliminar a ${utils.escapeHtml(userName)}?`,
             'Esta acción es permanente y no se puede deshacer. Se eliminará toda la información asociada a este usuario.'
         );
 
@@ -388,7 +388,7 @@ const team = {
     // Confirm deactivate user
     async confirmDeactivate(userId, userName) {
         const confirmed = await modal.confirm(
-            `¿Desactivar a ${userName}?`,
+            `¿Desactivar a ${utils.escapeHtml(userName)}?`,
             'El usuario no podrá iniciar sesión hasta que sea reactivado. Puedes reactivarlo en cualquier momento.'
         );
 
@@ -400,7 +400,7 @@ const team = {
     // Confirm reactivate user
     async confirmReactivate(userId, userName) {
         const confirmed = await modal.confirm(
-            `¿Reactivar a ${userName}?`,
+            `¿Reactivar a ${utils.escapeHtml(userName)}?`,
             'El usuario podrá volver a iniciar sesión en el panel de administración.'
         );
 
@@ -427,7 +427,7 @@ const team = {
     // Confirm reset password
     async confirmResetPassword(userId, userName, userEmail) {
         const confirmed = await modal.confirm(
-            `¿Resetear contraseña de ${userName}?`,
+            `¿Resetear contraseña de ${utils.escapeHtml(userName)}?`,
             `Se enviará un email a ${userEmail} con un link para crear una nueva contraseña.`
         );
 

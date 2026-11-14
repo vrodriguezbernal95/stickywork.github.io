@@ -327,7 +327,7 @@ const workshops = {
         return `
             <div class="workshop-card ${!workshop.is_active ? 'inactive' : ''} ${isPast && totalSessions > 0 ? 'past' : ''}">
                 <div class="workshop-card-header">
-                    <h3 class="workshop-title">${workshop.name}</h3>
+                    <h3 class="workshop-title">${utils.escapeHtml(workshop.name)}</h3>
                     ${statusBadge}
                 </div>
 
@@ -358,7 +358,7 @@ const workshops = {
                 </div>
 
                 ${workshop.description ? `
-                    <p class="workshop-description">${workshop.description}</p>
+                    <p class="workshop-description">${utils.escapeHtml(workshop.description)}</p>
                 ` : ''}
 
                 <div class="workshop-actions">
@@ -373,7 +373,7 @@ const workshops = {
                         ${workshop.is_active ? 'Desactivar' : 'Activar'}
                     </button>
                     ${totalBooked === 0 ? `
-                        <button class="btn btn-sm btn-danger" onclick="workshops.deleteWorkshop(${workshop.id}, '${workshop.name.replace(/'/g, "\\'")}')">
+                        <button class="btn btn-sm btn-danger" onclick="workshops.deleteWorkshop(${workshop.id}, this.dataset.name)" data-name="${utils.escapeHtml(workshop.name)}">
                             Eliminar
                         </button>
                     ` : ''}
@@ -538,7 +538,7 @@ const workshops = {
     async deleteWorkshop(id, name) {
         const confirmed = await modal.confirm({
             title: 'Eliminar Taller',
-            message: `¿Estás seguro de que quieres eliminar "${name}"?`,
+            message: `¿Estás seguro de que quieres eliminar "${utils.escapeHtml(name)}"?`,
             confirmText: 'Eliminar',
             cancelText: 'Cancelar',
             type: 'danger'
@@ -642,9 +642,9 @@ const workshops = {
                                     ? `<span class="session-tag">${this.formatSessionDate(b.session_date)} ${b.session_start_time?.substring(0,5) || ''}</span>`
                                     : '-'}
                             </td>
-                            <td><strong>${b.customer_name}</strong></td>
-                            <td>${b.customer_email}</td>
-                            <td>${b.customer_phone || '-'}</td>
+                            <td><strong>${utils.escapeHtml(b.customer_name)}</strong></td>
+                            <td>${utils.escapeHtml(b.customer_email)}</td>
+                            <td>${utils.escapeHtml(b.customer_phone || '-')}</td>
                             <td><span class="badge badge-blue">👥 ${b.num_people}</span></td>
                             <td>${parseFloat(b.total_price).toFixed(2)}€</td>
                             <td>${this.getStatusBadge(b.status)}</td>

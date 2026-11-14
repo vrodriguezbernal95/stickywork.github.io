@@ -71,10 +71,10 @@ const services = {
 
                 <div style="margin-bottom: 1rem;">
                     <h3 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: var(--text-primary);">
-                        ${service.name}
+                        ${utils.escapeHtml(service.name)}
                     </h3>
                     <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
-                        ${service.description || 'Sin descripción'}
+                        ${utils.escapeHtml(service.description || 'Sin descripción')}
                     </p>
                 </div>
 
@@ -184,14 +184,14 @@ const services = {
                     <form id="serviceForm" onsubmit="services.submitEdit(event, ${serviceId})">
                         <div style="margin-bottom: 1rem;">
                             <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre del Servicio *</label>
-                            <input type="text" name="name" required value="${service.name}"
+                            <input type="text" name="name" required value="${utils.escapeHtml(service.name)}"
                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary);">
                         </div>
 
                         <div style="margin-bottom: 1rem;">
                             <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Descripción</label>
                             <textarea name="description" rows="3"
-                                      style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); resize: vertical;">${service.description || ''}</textarea>
+                                      style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); resize: vertical;">${utils.escapeHtml(service.description || '')}</textarea>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">

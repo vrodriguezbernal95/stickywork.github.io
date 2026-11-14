@@ -298,7 +298,7 @@ const calendar = {
                             ${dayBookings.length} reserva${dayBookings.length > 1 ? 's' : ''}
                         </div>
                         ${dayBookings.slice(0, 2).map(booking => `
-                            <div class="calendar-booking-time" title="${booking.customer_name} - ${booking.booking_time}">
+                            <div class="calendar-booking-time" title="${utils.escapeHtml(booking.customer_name)} - ${booking.booking_time}">
                                 ${booking.booking_time.substring(0, 5)}
                             </div>
                         `).join('')}
@@ -354,7 +354,7 @@ const calendar = {
                                             ${booking.booking_time.substring(0, 5)}
                                         </div>
                                         <div style="font-weight: 600; font-size: 1.1rem; color: var(--text-primary);">
-                                            ${booking.customer_name}
+                                            ${utils.escapeHtml(booking.customer_name)}
                                         </div>
                                     </div>
                                     <span class="status-badge status-${booking.status}">
@@ -363,12 +363,12 @@ const calendar = {
                                 </div>
 
                                 <div style="display: grid; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
-                                    <div>📧 ${booking.customer_email}</div>
-                                    <div>📞 ${booking.customer_phone}</div>
-                                    ${booking.service_name ? `<div>🛠️ ${booking.service_name}</div>` : ''}
+                                    <div>📧 ${utils.escapeHtml(booking.customer_email)}</div>
+                                    <div>📞 ${utils.escapeHtml(booking.customer_phone)}</div>
+                                    ${booking.service_name ? `<div>🛠️ ${utils.escapeHtml(booking.service_name)}</div>` : ''}
                                     ${booking.notes ? `
                                         <div style="margin-top: 0.5rem; padding: 0.75rem; background: var(--bg-primary); border-radius: 8px;">
-                                            <strong>Notas:</strong> ${booking.notes}
+                                            <strong>Notas:</strong> ${utils.escapeHtml(booking.notes)}
                                         </div>
                                     ` : ''}
                                 </div>

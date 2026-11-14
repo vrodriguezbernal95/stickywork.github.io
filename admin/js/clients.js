@@ -488,7 +488,7 @@ const clients = {
                                         <td style="font-weight: 700; color: ${i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : i === 2 ? '#b45309' : 'var(--text-secondary)'};">
                                             ${i + 1}
                                         </td>
-                                        <td style="font-weight: 600;">${c.name}</td>
+                                        <td style="font-weight: 600;">${utils.escapeHtml(c.name)}</td>
                                         <td style="text-align: center;">
                                             <span style="background: rgba(59, 130, 246, 0.1); padding: 0.2rem 0.6rem; border-radius: 20px; color: #3b82f6; font-weight: 600;">
                                                 ${c.total_bookings || 0}
@@ -729,10 +729,10 @@ const clients = {
                         <tbody>
                             ${bookings.map(b => `
                                 <tr>
-                                    <td style="font-weight: 600;">${b.customer_name}</td>
+                                    <td style="font-weight: 600;">${utils.escapeHtml(b.customer_name)}</td>
                                     <td>${b.booking_time ? b.booking_time.substring(0, 5) : '—'}</td>
-                                    <td>${b.service_name || '—'}</td>
-                                    <td style="font-size: 0.9rem;">${b.customer_phone || '—'}</td>
+                                    <td>${utils.escapeHtml(b.service_name || '—')}</td>
+                                    <td style="font-size: 0.9rem;">${utils.escapeHtml(b.customer_phone || '—')}</td>
                                     ${whatsappReady ? `
                                         <td style="text-align: center;">
                                             <button class="btn-whatsapp-reminder"
@@ -837,9 +837,9 @@ const clients = {
                                     : '#f59e0b';
                                 return `
                                     <tr>
-                                        <td style="font-weight: 600;">${c.name}</td>
-                                        <td style="font-size: 0.9rem;">${c.email}</td>
-                                        <td style="font-size: 0.9rem;">${c.phone}</td>
+                                        <td style="font-weight: 600;">${utils.escapeHtml(c.name)}</td>
+                                        <td style="font-size: 0.9rem;">${utils.escapeHtml(c.email)}</td>
+                                        <td style="font-size: 0.9rem;">${utils.escapeHtml(c.phone)}</td>
                                         <td>${c.last_booking_date ? utils.formatDateShort(c.last_booking_date) : 'Nunca'}</td>
                                         <td style="text-align: center;">
                                             <span style="background: ${urgency}20; color: ${urgency}; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.9rem;">
@@ -967,10 +967,10 @@ const clients = {
                         <tbody>
                             ${pending.map(b => `
                                 <tr>
-                                    <td style="font-weight: 600;">${b.customer_name}</td>
-                                    <td>${b.service_name || '—'}</td>
+                                    <td style="font-weight: 600;">${utils.escapeHtml(b.customer_name)}</td>
+                                    <td>${utils.escapeHtml(b.service_name || '—')}</td>
                                     <td>${b.booking_date ? utils.formatDateShort(b.booking_date) : '—'}</td>
-                                    <td style="font-size: 0.9rem;">${b.customer_phone || '—'}</td>
+                                    <td style="font-size: 0.9rem;">${utils.escapeHtml(b.customer_phone || '—')}</td>
                                     ${whatsappReady ? `
                                         <td style="text-align: center;">
                                             <button class="btn-whatsapp-reminder"
@@ -1096,10 +1096,10 @@ const clients = {
             <tr style="${status === 'baneado' ? 'opacity: 0.6;' : ''}">
                 <td style="font-weight: 600;">
                     ${status === 'premium' ? '<span class="badge-vip">VIP</span>' : ''}
-                    ${client.name}
+                    ${utils.escapeHtml(client.name)}
                 </td>
-                <td style="font-size: 0.9rem;">${client.email}</td>
-                <td style="font-size: 0.9rem;">${client.phone}</td>
+                <td style="font-size: 0.9rem;">${utils.escapeHtml(client.email)}</td>
+                <td style="font-size: 0.9rem;">${utils.escapeHtml(client.phone)}</td>
                 <td style="text-align: center;">
                     <span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.75rem; border-radius: 20px; color: #3b82f6; font-weight: 600;">
                         ${client.total_bookings}
@@ -1130,7 +1130,7 @@ const clients = {
                             ✏️
                         </button>
                         <button class="btn-action"
-                                onclick="clients.deleteClient(${client.id}, '${client.name.replace(/'/g, "\\'")}')"
+                                onclick="clients.deleteClient(${client.id}, this.dataset.name)" data-name="${utils.escapeHtml(client.name)}"
                                 title="Eliminar"
                                 style="background: rgba(239, 68, 68, 0.2); color: #ef4444;">
                             🗑️
@@ -1313,7 +1313,7 @@ const clients = {
 
         document.getElementById('changeStatusContent').innerHTML = `
             <p style="margin-bottom: 1rem; color: var(--text-secondary);">
-                Selecciona el nuevo nivel para <strong>${client.name}</strong>:
+                Selecciona el nuevo nivel para <strong>${utils.escapeHtml(client.name)}</strong>:
             </p>
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                 ${Object.entries(this.statusConfig).map(([status, config]) => `
@@ -1397,11 +1397,11 @@ const clients = {
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
                     <div>
                         <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.25rem;">Email</div>
-                        <div style="font-weight: 500;">${client.email}</div>
+                        <div style="font-weight: 500;">${utils.escapeHtml(client.email)}</div>
                     </div>
                     <div>
                         <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.25rem;">Teléfono</div>
-                        <div style="font-weight: 500;">${client.phone}</div>
+                        <div style="font-weight: 500;">${utils.escapeHtml(client.phone)}</div>
                     </div>
                     <div>
                         <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.25rem;">Nivel</div>
@@ -1419,7 +1419,7 @@ const clients = {
                     <div style="margin-bottom: 2rem;">
                         <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">Notas</div>
                         <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: 8px; white-space: pre-wrap;">
-                            ${client.notes}
+                            ${utils.escapeHtml(client.notes)}
                         </div>
                     </div>
                 ` : ''}
@@ -1443,7 +1443,7 @@ const clients = {
                                     <tr>
                                         <td>${utils.formatDateShort(b.booking_date)}</td>
                                         <td>${utils.formatTime(b.booking_time)}</td>
-                                        <td>${b.service_name || 'Sin servicio'}</td>
+                                        <td>${utils.escapeHtml(b.service_name || 'Sin servicio')}</td>
                                         <td>${createStatusBadge(b.status, 'booking')}</td>
                                     </tr>
                                 `).join('')}
@@ -1473,7 +1473,7 @@ const clients = {
     async deleteClient(clientId, clientName) {
         const confirmed = await modal.confirm({
             title: '¿Eliminar cliente?',
-            message: `¿Estás seguro de que quieres eliminar a "${clientName}"? Esta acción no se puede deshacer.`,
+            message: `¿Estás seguro de que quieres eliminar a "${utils.escapeHtml(clientName)}"? Esta acción no se puede deshacer.`,
             confirmText: 'Eliminar',
             cancelText: 'Cancelar',
             type: 'danger'
@@ -1638,12 +1638,12 @@ const clients = {
                         <tbody>
                             ${activeVouchers.map(v => `
                                 <tr>
-                                    <td style="font-weight: 600;">${v.customer_name || '—'}</td>
+                                    <td style="font-weight: 600;">${utils.escapeHtml(v.customer_name || '—')}</td>
                                     <td style="color: var(--text-secondary); font-size: 0.9rem;">${v.customer_email || v.customer_phone || '—'}</td>
                                     <td><span class="loyalty-code">${v.code}</span></td>
                                     <td style="color: var(--text-secondary); font-size: 0.9rem;">${new Date(v.earned_at).toLocaleDateString('es-ES')}</td>
                                     <td style="text-align: center;">
-                                        <button class="btn-loyalty-redeem" onclick="clients.redeemVoucher('${v.code}', '${(v.customer_name || '').replace(/'/g, "\\'")}')">
+                                        <button class="btn-loyalty-redeem" onclick="clients.redeemVoucher(this.dataset.code, this.dataset.name)" data-code="${utils.escapeHtml(v.code)}" data-name="${utils.escapeHtml(v.customer_name || '')}">
                                             ✅ Entregar premio
                                         </button>
                                     </td>
@@ -1723,7 +1723,7 @@ const clients = {
     async redeemVoucher(code, customerName) {
         const confirmed = await modal.confirm({
             title: '¿Entregar el premio?',
-            message: `Confirma que has entregado el premio a <strong>${customerName || 'este cliente'}</strong>. El vale con código <strong>${code}</strong> quedará marcado como canjeado.`,
+            message: `Confirma que has entregado el premio a <strong>${utils.escapeHtml(customerName || 'este cliente')}</strong>. El vale con código <strong>${utils.escapeHtml(code)}</strong> quedará marcado como canjeado.`,
             confirmText: '✅ Sí, entregado',
             cancelText: 'Cancelar',
             type: 'success'

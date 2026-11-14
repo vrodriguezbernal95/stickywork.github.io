@@ -153,7 +153,7 @@ const billing = {
                 <div class="billing-section">
                     <h2>Tu plan actual</h2>
                     <div class="current-plan-card ${currentPlan}">
-                        <div class="plan-badge">${sub.bonusUntil ? '🎁 ' : ''}${plan.name}</div>
+                        <div class="plan-badge">${sub.bonusUntil ? '🎁 ' : ''}${utils.escapeHtml(plan.name)}</div>
                         <div class="plan-price">
                             ${currentPlan === 'free' ? '0 €' : sub.bonusUntil ? 'Gratis (regalo)' : `${plan.price} €/mes`}
                         </div>
@@ -235,7 +235,7 @@ const billing = {
         return `
             <div class="plan-card ${isCurrent ? 'current' : ''} ${isPopular ? 'popular' : ''}">
                 ${isPopular ? '<div class="popular-badge">⭐ Recomendado</div>' : ''}
-                <h3>${plan.name}</h3>
+                <h3>${utils.escapeHtml(plan.name)}</h3>
                 <div class="plan-price-large">
                     <span class="price">${plan.price} €</span>
                     <span class="period">/mes</span>

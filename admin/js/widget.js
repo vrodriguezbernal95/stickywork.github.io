@@ -263,8 +263,8 @@ const widget = {
 
         return steps.map(step => `
             <div class="guide-step">
-                <h4>${step.title}</h4>
-                <p>${step.text}</p>
+                <h4>${utils.escapeHtml(step.title)}</h4>
+                <p>${utils.escapeHtml(step.text)}</p>
             </div>
         `).join('');
     },

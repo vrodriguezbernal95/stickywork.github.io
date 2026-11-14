@@ -683,8 +683,8 @@ const settings = {
                 <div class="avatar-upload">
                     <div class="avatar-preview" id="avatarPreview">${initials}</div>
                     <div>
-                        <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500;">${user.full_name}</p>
-                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">${user.email}</p>
+                        <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500;">${utils.escapeHtml(user.full_name)}</p>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">${utils.escapeHtml(user.email)}</p>
                         <span class="badge badge-info" style="margin-top: 0.5rem;">${this.getRoleName(user.role)}</span>
                     </div>
                 </div>
@@ -692,11 +692,11 @@ const settings = {
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nombre Completo</label>
-                        <input type="text" id="profile-name" value="${user.full_name || ''}" placeholder="Tu nombre">
+                        <input type="text" id="profile-name" value="${utils.escapeHtml(user.full_name || '')}" placeholder="Tu nombre">
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" id="profile-email" value="${user.email}" disabled>
+                        <input type="email" id="profile-email" value="${utils.escapeHtml(user.email)}" disabled>
                         <p class="hint">El email no se puede cambiar</p>
                     </div>
                 </div>
@@ -815,24 +815,24 @@ const settings = {
 
                 <div class="form-group">
                     <label>Nombre del Negocio</label>
-                    <input type="text" id="business-name" value="${business.name || ''}" placeholder="Nombre de tu negocio">
+                    <input type="text" id="business-name" value="${utils.escapeHtml(business.name || '')}" placeholder="Nombre de tu negocio">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Email de Contacto</label>
-                        <input type="email" id="business-email" value="${business.email || ''}" placeholder="contacto@negocio.com">
+                        <input type="email" id="business-email" value="${utils.escapeHtml(business.email || '')}" placeholder="contacto@negocio.com">
                         <p class="hint">Email donde recibirás notificaciones</p>
                     </div>
                     <div class="form-group">
                         <label>Teléfono</label>
-                        <input type="tel" id="business-phone" value="${business.phone || ''}" placeholder="+34 600 000 000">
+                        <input type="tel" id="business-phone" value="${utils.escapeHtml(business.phone || '')}" placeholder="+34 600 000 000">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Dirección</label>
-                    <input type="text" id="business-address" value="${business.address || ''}" placeholder="Calle, número, ciudad">
+                    <input type="text" id="business-address" value="${utils.escapeHtml(business.address || '')}" placeholder="Calle, número, ciudad">
                 </div>
 
                 <div class="form-group">
@@ -1459,7 +1459,7 @@ const settings = {
 
                 <div class="form-group">
                     <label>Email de Notificaciones</label>
-                    <input type="email" id="notification-email" value="${business.email || ''}"
+                    <input type="email" id="notification-email" value="${utils.escapeHtml(business.email || '')}"
                            placeholder="notificaciones@tunegocio.com">
                     <p class="hint">Este email recibirá todas las notificaciones de reservas</p>
                 </div>
@@ -2197,7 +2197,7 @@ const settings = {
                                         <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; text-align: center;">
                                             ${weekDays.map(day => `
                                                 <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 0.5rem; background: var(--bg-primary); border-radius: 6px; transition: all 0.2s;">
-                                                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">${day.name}</span>
+                                                    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">${utils.escapeHtml(day.name)}</span>
                                                     <input type="checkbox" id="shift${i}-day-${day.num}" value="${day.num}"
                                                            ${day.num <= 6 ? 'checked' : ''}
                                                            style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
@@ -2768,7 +2768,7 @@ const settings = {
                    min="1" max="50" placeholder="4" style="width:60px;"
                    oninput="settings.recalcZoneCapacity('${zoneName}')">
             <span style="color:var(--text-secondary);font-size:0.9rem;">personas</span>
-            <button type="button" onclick="settings.removeTableTypeRow(this,'${zoneName}')"
+            <button type="button" onclick="settings.removeTableTypeRow(this, this.dataset.zone)" data-zone="${utils.escapeHtml(zoneName)}"
                     style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:0 4px;">✕</button>
         `;
         container.appendChild(row);
@@ -3069,7 +3069,7 @@ const settings = {
                                min="1" max="50" value="${t.capacity}" placeholder="4" style="width:60px;"
                                oninput="settings.recalcZoneCapacity('${zoneName}')">
                         <span style="color:var(--text-secondary);font-size:0.9rem;">personas</span>
-                        <button type="button" onclick="settings.removeTableTypeRow(this,'${zoneName}')"
+                        <button type="button" onclick="settings.removeTableTypeRow(this, this.dataset.zone)" data-zone="${utils.escapeHtml(zoneName)}"
                                 style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:1.1rem;padding:0 4px;">✕</button>
                     </div>
                 `).join('');
@@ -3109,7 +3109,7 @@ const settings = {
                             <div id="zone-table-rows-${zoneName}">
                                 ${tableRows}
                             </div>
-                            <button type="button" onclick="settings.addTableTypeRow('${zoneName}')"
+                            <button type="button" onclick="settings.addTableTypeRow(this.dataset.zone)" data-zone="${utils.escapeHtml(zoneName)}"
                                     style="margin-top:0.5rem;padding:0.35rem 0.85rem;font-size:0.85rem;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-primary);color:var(--text-primary);cursor:pointer;">
                                 + Añadir tipo de mesa
                             </button>
@@ -3392,7 +3392,7 @@ const settings = {
                                 <div style="flex: 1;">
                                     <input type="text"
                                            class="zone-input"
-                                           value="${zone.name}"
+                                           value="${utils.escapeHtml(zone.name)}"
                                            placeholder="Nombre de la zona"
                                            style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
                                 </div>
@@ -3722,7 +3722,7 @@ const settings = {
                                 <input type="text"
                                        class="feedback-question-text form-input"
                                        data-index="${index}"
-                                       value="${q.question}"
+                                       value="${utils.escapeHtml(q.question)}"
                                        placeholder="Escribe tu pregunta aquí">
                             </div>
 

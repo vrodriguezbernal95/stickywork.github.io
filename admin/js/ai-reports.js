@@ -379,7 +379,7 @@ const aiReports = {
             <div class="context-card">
                 <div class="context-card-header">
                     <span style="font-size: 1.2rem;">${field.icon}</span>
-                    <h4>${field.title}</h4>
+                    <h4>${utils.escapeHtml(field.title)}</h4>
                 </div>
                 <p class="context-card-help">${field.help}</p>
                 <textarea
@@ -609,7 +609,7 @@ const aiReports = {
                         ⚠️ Error al generar el reporte
                     </p>
                     <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">
-                        ${error.message || 'Intenta nuevamente en unos momentos'}
+                        ${utils.escapeHtml(error.message || 'Intenta nuevamente en unos momentos')}
                     </p>
                 </div>
             `;
@@ -927,7 +927,7 @@ const aiReports = {
         statusDiv.style.display = 'block';
         statusDiv.innerHTML = `
             <div style="padding: 1rem; background: ${color.bg}; border-radius: 8px; border-left: 4px solid ${color.border};">
-                <p style="margin: 0; color: ${color.text}; font-weight: 600;">
+                <p style="margin: 0; color: ${utils.escapeHtml(color.text)}; font-weight: 600;">
                     ${message}
                 </p>
             </div>

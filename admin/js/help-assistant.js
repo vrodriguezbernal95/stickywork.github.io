@@ -90,7 +90,7 @@
                 <div class="help-cats">
                     ${window.HELP_CATEGORIES.map(c => `
                         <button class="help-cat" onclick="helpAssistant.showCategory('${c.id}')">
-                            <span>${c.icon}</span>${c.title}
+                            <span>${c.icon}</span>${utils.escapeHtml(c.title)}
                         </button>`).join('')}
                 </div>
             `);
@@ -101,7 +101,7 @@
             const topics = window.HELP_TOPICS.filter(t => t.cat === catId);
             help.setBody(`
                 <button class="help-back" onclick="helpAssistant.renderHome()">← Volver</button>
-                <div class="help-label">${cat.icon} ${cat.title}</div>
+                <div class="help-label">${cat.icon} ${utils.escapeHtml(cat.title)}</div>
                 ${topics.map(help.topicButton).join('')}
             `);
         },

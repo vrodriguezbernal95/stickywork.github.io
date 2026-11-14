@@ -88,10 +88,10 @@ const messages = {
             <div class="feature-card" style="text-align: left; border-left: 4px solid ${getStatusColor(msg.status, 'message')};">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                     <div>
-                        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">${msg.name}</h3>
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem;">${utils.escapeHtml(msg.name)}</h3>
                         <div style="display: flex; gap: 1rem; font-size: 0.9rem; color: var(--text-secondary); flex-wrap: wrap;">
-                            <span>📧 ${msg.email}</span>
-                            ${msg.phone ? `<span>📞 ${msg.phone}</span>` : ''}
+                            <span>📧 ${utils.escapeHtml(msg.email)}</span>
+                            ${msg.phone ? `<span>📞 ${utils.escapeHtml(msg.phone)}</span>` : ''}
                             <span>📅 ${utils.formatDateTime(msg.created_at)}</span>
                         </div>
                     </div>
@@ -100,7 +100,7 @@ const messages = {
 
                 ${msg.business_name ? `
                     <div style="margin-bottom: 0.5rem;">
-                        <strong>Negocio:</strong> ${msg.business_name}
+                        <strong>Negocio:</strong> ${utils.escapeHtml(msg.business_name)}
                         ${msg.business_type ? `<span style="color: var(--text-secondary);"> (${msg.business_type})</span>` : ''}
                     </div>
                 ` : ''}
@@ -116,7 +116,7 @@ const messages = {
 
                 <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
                     <strong style="display: block; margin-bottom: 0.5rem;">Mensaje:</strong>
-                    <p style="margin: 0; line-height: 1.6; white-space: pre-wrap;">${msg.message}</p>
+                    <p style="margin: 0; line-height: 1.6; white-space: pre-wrap;">${utils.escapeHtml(msg.message)}</p>
                 </div>
 
                 <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">

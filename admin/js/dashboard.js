@@ -119,8 +119,8 @@ const dashboard = {
                             <span>${b.booking_time.substring(0, 5)}</span>
                         </div>
                         <div class="pending-confirm-who">
-                            <strong>${b.customer_name}</strong>
-                            <span>${b.service_name || ''}${b.customer_phone ? ` · ${b.customer_phone}` : ''}</span>
+                            <strong>${utils.escapeHtml(b.customer_name)}</strong>
+                            <span>${utils.escapeHtml(b.service_name || '')}${b.customer_phone ? ` · ${utils.escapeHtml(b.customer_phone)}` : ''}</span>
                         </div>
                         <div class="pending-confirm-actions">
                             <button class="pending-btn-ok" onclick="dashboard.confirmPending(${b.id})">✓ Confirmar</button>
@@ -143,7 +143,7 @@ const dashboard = {
             modal.toast({ message: 'Reserva confirmada. El cliente recibirá un email.', type: 'success' });
             this.load();
         } catch (error) {
-            modal.toast({ message: `Error al confirmar: ${error.message}`, type: 'error' });
+            modal.toast({ message: `Error al confirmar: ${utils.escapeHtml(error.message)}`, type: 'error' });
         }
     },
 
@@ -156,7 +156,7 @@ const dashboard = {
             modal.toast({ message: 'Reserva rechazada. El cliente recibirá un email.', type: 'success' });
             this.load();
         } catch (error) {
-            modal.toast({ message: `Error al rechazar: ${error.message}`, type: 'error' });
+            modal.toast({ message: `Error al rechazar: ${utils.escapeHtml(error.message)}`, type: 'error' });
         }
     },
 
@@ -375,10 +375,10 @@ const dashboard = {
                                 ${bookings.map(booking => `
                                     <tr>
                                         <td>
-                                            <div style="font-weight: 600;">${booking.customer_name}</div>
-                                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${booking.customer_email}</div>
+                                            <div style="font-weight: 600;">${utils.escapeHtml(booking.customer_name)}</div>
+                                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${utils.escapeHtml(booking.customer_email)}</div>
                                         </td>
-                                        <td>${booking.service_name || 'N/A'}</td>
+                                        <td>${utils.escapeHtml(booking.service_name || 'N/A')}</td>
                                         <td>${new Date(booking.booking_date).toLocaleDateString('es-ES')}</td>
                                         <td>${booking.booking_time}</td>
                                         <td>
@@ -978,13 +978,13 @@ const dashboard = {
                         <!-- Customer Info -->
                         <div>
                             <div style="color: white; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.25rem;">
-                                ${booking.customer_name}
+                                ${utils.escapeHtml(booking.customer_name)}
                             </div>
                             <div style="color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
-                                ${booking.service_name || 'Sin servicio especificado'}
+                                ${utils.escapeHtml(booking.service_name || 'Sin servicio especificado')}
                             </div>
                             <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; margin-top: 0.25rem;">
-                                📧 ${booking.customer_email} • 📞 ${booking.customer_phone}
+                                📧 ${utils.escapeHtml(booking.customer_email)} • 📞 ${utils.escapeHtml(booking.customer_phone)}
                             </div>
                         </div>
                     </div>
@@ -999,7 +999,7 @@ const dashboard = {
 
                 ${booking.notes ? `
                     <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
-                        <strong>Notas:</strong> ${booking.notes}
+                        <strong>Notas:</strong> ${utils.escapeHtml(booking.notes)}
                     </div>
                 ` : ''}
             </div>
@@ -1215,12 +1215,12 @@ const dashboard = {
                                     <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                                         ${isToday ? '<span style="background: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">HOY</span>' : ''}
                                         <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">
-                                            ${booking.customer_name}
+                                            ${utils.escapeHtml(booking.customer_name)}
                                         </h3>
                                     </div>
                                     <div style="color: var(--text-secondary); font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.25rem;">
-                                        <div>📧 ${booking.customer_email}</div>
-                                        ${booking.customer_phone ? `<div>📱 ${booking.customer_phone}</div>` : ''}
+                                        <div>📧 ${utils.escapeHtml(booking.customer_email)}</div>
+                                        ${booking.customer_phone ? `<div>📱 ${utils.escapeHtml(booking.customer_phone)}</div>` : ''}
                                     </div>
                                 </div>
                                 <div style="text-align: right;">
@@ -1233,7 +1233,7 @@ const dashboard = {
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
                                 <div>
                                     <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Servicio</div>
-                                    <div style="color: var(--text-primary); font-weight: 500;">${booking.service_name || 'N/A'}</div>
+                                    <div style="color: var(--text-primary); font-weight: 500;">${utils.escapeHtml(booking.service_name || 'N/A')}</div>
                                 </div>
                                 <div>
                                     <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Fecha</div>
@@ -1253,7 +1253,7 @@ const dashboard = {
                                 <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1);">
                                     <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">📝 Notas</div>
                                     <div style="color: var(--text-secondary); font-style: italic; font-size: 0.9rem;">
-                                        "${booking.notes}"
+                                        "${utils.escapeHtml(booking.notes)}"
                                     </div>
                                 </div>
                             ` : ''}
@@ -1469,12 +1469,12 @@ const dashboard = {
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                                         <span style="font-size: 1.2rem;">${isNew ? '🔴' : '⚪'}</span>
                                         <h3 style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">
-                                            ${booking.customer_name}
+                                            ${utils.escapeHtml(booking.customer_name)}
                                         </h3>
                                     </div>
                                     <div style="color: var(--text-secondary); font-size: 0.9rem;">
-                                        📧 ${booking.customer_email}
-                                        ${booking.customer_phone ? ` · 📱 ${booking.customer_phone}` : ''}
+                                        📧 ${utils.escapeHtml(booking.customer_email)}
+                                        ${booking.customer_phone ? ` · 📱 ${utils.escapeHtml(booking.customer_phone)}` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -1482,7 +1482,7 @@ const dashboard = {
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                                 <div>
                                     <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Servicio</div>
-                                    <div style="color: var(--text-primary); font-weight: 500;">${booking.service_name || 'N/A'}</div>
+                                    <div style="color: var(--text-primary); font-weight: 500;">${utils.escapeHtml(booking.service_name || 'N/A')}</div>
                                 </div>
                                 <div>
                                     <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">Reserva era para</div>
@@ -1503,7 +1503,7 @@ const dashboard = {
                                 <div style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; padding: 0.75rem; border-radius: 6px;">
                                     <div style="color: var(--text-tertiary); font-size: 0.8rem; margin-bottom: 0.25rem;">💬 Motivo de cancelación</div>
                                     <div style="color: var(--text-primary); font-style: italic;">
-                                        "${booking.cancellation_reason}"
+                                        "${utils.escapeHtml(booking.cancellation_reason)}"
                                     </div>
                                 </div>
                             ` : ''}
@@ -1713,7 +1713,7 @@ const dashboard = {
                             <div style="width: 44px; height: 44px; border-radius: 10px; background: ${box.color}20; display: flex; align-items: center; justify-content: center; color: ${box.color}; flex-shrink: 0;">
                                 ${svgIcons[box.id]}
                             </div>
-                            <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.3;">${box.title}</div>
+                            <div style="font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.3;">${utils.escapeHtml(box.title)}</div>
                         </div>
                         ${box.count !== null
                             ? `<div id="dash-count-${box.id}" style="font-size: 2.75rem; font-weight: 700; color: ${box.color}; line-height: 1;">${box.count}</div>`
@@ -1734,8 +1734,8 @@ const dashboard = {
             ${bookings.map(b => `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
                     <div>
-                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${b.customer_name}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.booking_time.substring(0,5)} · ${b.service_name || 'Sin servicio'}</div>
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${utils.escapeHtml(b.customer_name)}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.booking_time.substring(0,5)} · ${utils.escapeHtml(b.service_name || 'Sin servicio')}</div>
                     </div>
                     <span class="status-badge status-${b.status}" style="font-size: 0.75rem; padding: 0.2rem 0.55rem;">${this.getStatusLabel(b.status)}</span>
                 </div>
@@ -1751,8 +1751,8 @@ const dashboard = {
             ${bookings.map(b => `
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.customer_name}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.booking_time.substring(0,5)} · ${b.service_name || 'Sin servicio'}</div>
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${utils.escapeHtml(b.customer_name)}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.booking_time.substring(0,5)} · ${utils.escapeHtml(b.service_name || 'Sin servicio')}</div>
                     </div>
                     ${b.customer_phone
                         ? `<button onclick="dashboard.sendReminder24hFromDashboard(${b.id})"
@@ -1773,8 +1773,8 @@ const dashboard = {
             ${pending.map(b => `
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
                     <div style="flex: 1; min-width: 0;">
-                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${b.customer_name}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${b.service_name || 'Sin servicio'} · ${new Date(b.booking_date).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}</div>
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${utils.escapeHtml(b.customer_name)}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${utils.escapeHtml(b.service_name || 'Sin servicio')} · ${new Date(b.booking_date).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})}</div>
                     </div>
                     ${b.customer_phone
                         ? `<button onclick="dashboard.sendFeedbackFromDashboard(${b.id})"
@@ -1794,12 +1794,12 @@ const dashboard = {
         return `<div style="padding: 0.5rem 0.75rem;">
             ${cancelled.map(b => `
                 <div style="padding: 0.6rem 0.25rem; border-bottom: 1px solid var(--border-color);">
-                    <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${b.customer_name}</div>
+                    <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${utils.escapeHtml(b.customer_name)}</div>
                     <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                        ${new Date(b.booking_date).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} · ${b.service_name || 'Sin servicio'}
+                        ${new Date(b.booking_date).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'})} · ${utils.escapeHtml(b.service_name || 'Sin servicio')}
                     </div>
                     ${b.cancellation_reason
-                        ? `<div style="font-size: 0.78rem; color: var(--text-secondary); font-style: italic; margin-top: 0.2rem;">"${b.cancellation_reason}"</div>`
+                        ? `<div style="font-size: 0.78rem; color: var(--text-secondary); font-style: italic; margin-top: 0.2rem;">"${utils.escapeHtml(b.cancellation_reason)}"</div>`
                         : ''
                     }
                 </div>
@@ -1840,7 +1840,7 @@ const dashboard = {
         header.innerHTML = `
             <div>
                 <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
-                    ${cfg.icon} ${cfg.title}
+                    ${cfg.icon} ${utils.escapeHtml(cfg.title)}
                 </h2>
                 <p id="action-modal-count" style="margin: 0.4rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
                     ${items.length} ${items.length === 1 ? 'elemento' : 'elementos'}
@@ -1993,9 +1993,9 @@ const dashboard = {
                 const bg          = isOccupied ? 'rgba(239,68,68,0.18)' : 'rgba(16,185,129,0.14)';
                 const border      = isOccupied ? '#ef4444' : '#10b981';
                 const textColor   = isOccupied ? '#ef4444' : '#10b981';
-                const bookingData = isOccupied ? JSON.stringify(table.booking).replace(/"/g, '&quot;') : '';
-                const clickAttr   = isOccupied ? `onclick="dashboard.showTablePopup(this, '${bookingData}')"` : '';
-                const title       = isOccupied ? `${table.booking.customer_name} · ${table.booking.people} pers.` : 'Libre';
+                const bookingData = isOccupied ? utils.escapeHtml(JSON.stringify(table.booking)) : '';
+                const clickAttr   = isOccupied ? `data-booking="${bookingData}" onclick="dashboard.showTablePopup(this, this.dataset.booking)"` : '';
+                const title       = isOccupied ? `${utils.escapeHtml(table.booking.customer_name)} · ${table.booking.people} pers.` : 'Libre';
 
                 if (hasPositions) {
                     const pos  = zonePosMap[table.id] || { x: (i % COLS) * (TABLE_SIZE + 10) + 10, y: Math.floor(i / COLS) * (TABLE_SIZE + 10) + 10 };
@@ -2027,7 +2027,7 @@ const dashboard = {
             return `
                 <div style="margin-bottom:1.75rem;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem;">
-                        <h3 style="margin:0;font-size:1rem;color:var(--text-primary);">📍 ${zone.name}</h3>
+                        <h3 style="margin:0;font-size:1rem;color:var(--text-primary);">📍 ${utils.escapeHtml(zone.name)}</h3>
                         <span style="font-size:0.8rem;color:var(--text-secondary);">${zone.occupiedTables}/${zone.totalTables} ocupadas</span>
                     </div>
                     ${hasPositions
@@ -2069,14 +2069,14 @@ const dashboard = {
 
         popup.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
-                <strong style="color:var(--text-primary);font-size:0.95rem;">${booking.customer_name}</strong>
+                <strong style="color:var(--text-primary);font-size:0.95rem;">${utils.escapeHtml(booking.customer_name)}</strong>
                 <button onclick="document.getElementById('table-popup').remove()"
                         style="background:none;border:none;color:var(--text-secondary);font-size:1rem;cursor:pointer;padding:0;margin-left:0.5rem;">✕</button>
             </div>
             <div style="font-size:0.82rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:0.3rem;">
                 <span>🕐 ${booking.time}</span>
                 <span>👥 ${booking.people} personas</span>
-                ${booking.service_name ? `<span>💼 ${booking.service_name}</span>` : ''}
+                ${booking.service_name ? `<span>💼 ${utils.escapeHtml(booking.service_name)}</span>` : ''}
             </div>
             ${waPhone ? `
                 <a href="https://wa.me/${waPhone}" target="_blank"

@@ -79,13 +79,13 @@
 
         card.innerHTML = `
             <div class="pending-info">
-                <h4>${pending.customer_name}</h4>
+                <h4>${utils.escapeHtml(pending.customer_name)}</h4>
                 <p class="pending-meta">
-                    ${pending.service_name || 'Servicio'} • ${dateStr} (${daysText})
+                    ${utils.escapeHtml(pending.service_name || 'Servicio')} • ${dateStr} (${daysText})
                 </p>
-                ${pending.customer_phone ? `<p class="pending-phone">📱 ${pending.customer_phone}</p>` : ''}
+                ${pending.customer_phone ? `<p class="pending-phone">📱 ${utils.escapeHtml(pending.customer_phone)}</p>` : ''}
             </div>
-            <button class="btn-send-feedback" onclick="opiniones.sendFeedbackWhatsApp(${pending.id}, '${pending.customer_name}', '${pending.customer_phone}', '${pending.service_name || ''}', '${pending.feedback_token}')">
+            <button class="btn-send-feedback" onclick="opiniones.sendFeedbackWhatsApp(${Number(pending.id)}, this.dataset.name, this.dataset.phone, this.dataset.service, this.dataset.token)" data-name="${utils.escapeHtml(pending.customer_name)}" data-phone="${utils.escapeHtml(pending.customer_phone)}" data-service="${utils.escapeHtml(pending.service_name || '')}" data-token="${utils.escapeHtml(pending.feedback_token)}">
                 💬 Solicitar Opinión
             </button>
         `;
@@ -331,7 +331,7 @@
                         // Rating (estrellas)
                         questionItems.push(`
                             <div class="question-item">
-                                <span class="question-label">${label}:</span>
+                                <span class="question-label">${utils.escapeHtml(label)}:</span>
                                 <span class="question-value">${'⭐'.repeat(value)}</span>
                             </div>
                         `);
@@ -339,7 +339,7 @@
                         // Sí/No
                         questionItems.push(`
                             <div class="question-item">
-                                <span class="question-label">${label}:</span>
+                                <span class="question-label">${utils.escapeHtml(label)}:</span>
                                 <span style="color: ${value ? '#10b981' : '#ef4444'}; font-weight: 600;">
                                     ${value ? '✓ Sí' : '✗ No'}
                                 </span>
@@ -349,7 +349,7 @@
                         // Texto libre
                         questionItems.push(`
                             <div class="question-item">
-                                <span class="question-label">${label}:</span>
+                                <span class="question-label">${utils.escapeHtml(label)}:</span>
                                 <div class="question-text-response">"${value}"</div>
                             </div>
                         `);
@@ -369,13 +369,13 @@
         card.innerHTML = `
             <div class="feedback-header">
                 <div class="feedback-customer">
-                    <h3>${feedback.customer_name || 'Cliente Anónimo'}</h3>
+                    <h3>${utils.escapeHtml(feedback.customer_name || 'Cliente Anónimo')}</h3>
                     <div class="feedback-meta">
                         ${dateStr} • ${timeStr}
-                        ${feedback.customer_email ? `• ${feedback.customer_email}` : ''}
+                        ${feedback.customer_email ? `• ${utils.escapeHtml(feedback.customer_email)}` : ''}
                     </div>
                     ${feedback.service_name ? `
-                        <span class="feedback-service">📋 ${feedback.service_name}</span>
+                        <span class="feedback-service">📋 ${utils.escapeHtml(feedback.service_name)}</span>
                     ` : ''}
                 </div>
                 <div class="feedback-stars">${stars}</div>
@@ -384,7 +384,7 @@
             ${feedback.comment ? `
                 <div class="question-item-structured">
                     <div class="question-text">💬 ¿Algo más que quieras comentar?</div>
-                    <div class="answer-text">"${feedback.comment}"</div>
+                    <div class="answer-text">"${utils.escapeHtml(feedback.comment)}"</div>
                 </div>
             ` : ''}
 

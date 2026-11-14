@@ -102,7 +102,7 @@ const consultancy = {
         if (this.canRequest) {
             return `
                 <div class="alert alert-success">
-                    <strong>Disponible:</strong> ${eligibility.message || 'Puedes solicitar tu consultoría gratuita.'}
+                    <strong>Disponible:</strong> ${utils.escapeHtml(eligibility.message || 'Puedes solicitar tu consultoría gratuita.')}
                 </div>
             `;
         }
@@ -119,7 +119,7 @@ const consultancy = {
         if (eligibility.reason === 'monthly_limit') {
             return `
                 <div class="alert alert-info">
-                    <strong>Límite alcanzado:</strong> ${eligibility.message || 'Ya has usado tu consultoría de este mes.'}
+                    <strong>Límite alcanzado:</strong> ${utils.escapeHtml(eligibility.message || 'Ya has usado tu consultoría de este mes.')}
                 </div>
             `;
         }
@@ -278,7 +278,7 @@ const consultancy = {
                     <span class="request-topic">${request.topic}</span>
                     <span class="status-badge ${statusClasses[request.status] || ''}">${statusLabels[request.status] || request.status}</span>
                 </div>
-                <div class="request-description">${request.description}</div>
+                <div class="request-description">${utils.escapeHtml(request.description)}</div>
                 <div class="request-dates">
                     <small>Fechas preferidas: ${this.formatPreferredDates(request)}</small>
                 </div>

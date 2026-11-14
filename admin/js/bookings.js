@@ -153,7 +153,7 @@ const bookings = {
                     height: ${height}px;
                     width: ${blockW - 8}px;
                     background: ${color.bg};
-                    color: ${color.text};
+                    color: ${utils.escapeHtml(color.text)};
                     border-radius: 8px;
                     padding: 0 0.5rem;
                     font-size: 0.78rem;
@@ -164,8 +164,8 @@ const bookings = {
                     align-items: center;
                     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
                     z-index: 1;
-                " onclick="bookings.showClientPopup(${b.id})" title="${b.customer_name} — ${utils.formatTime(b.booking_time)}">
-                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name} · ${people}p</span>
+                " onclick="bookings.showClientPopup(${b.id})" title="${utils.escapeHtml(b.customer_name)} — ${utils.formatTime(b.booking_time)}">
+                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${utils.escapeHtml(name)} · ${people}p</span>
                 </div>`;
             }).join('');
 
@@ -356,7 +356,7 @@ const bookings = {
                                     <option value="">Sin servicio específico</option>
                                     ${this.services.map(service => `
                                         <option value="${service.id}">
-                                            ${service.name} ${service.duration ? `(${service.duration} min)` : ''} ${service.price ? `- ${service.price}€` : ''}
+                                            ${utils.escapeHtml(service.name)} ${service.duration ? `(${service.duration} min)` : ''} ${service.price ? `- ${service.price}€` : ''}
                                         </option>
                                     `).join('')}
                                 </select>
@@ -536,10 +536,10 @@ const bookings = {
                 <td>
                     <span class="booking-client-name" onclick="bookings.showClientPopup(${booking.id})" title="Ver datos de contacto">
                         ${this.getCustomerBadge(booking.customer_status)}
-                        ${booking.customer_name}
+                        ${utils.escapeHtml(booking.customer_name)}
                     </span>
                 </td>
-                <td>${booking.service_name || 'Sin servicio'}</td>
+                <td>${utils.escapeHtml(booking.service_name || 'Sin servicio')}</td>
                 <td style="text-align: center; font-weight: 600;">
                     ${booking.num_adults !== null && booking.num_adults !== undefined
                         ? `<span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #3b82f6; white-space: nowrap;">
@@ -552,7 +552,7 @@ const bookings = {
                 </td>
                 <td style="text-align: center;">
                     ${booking.zone
-                        ? `<span style="background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #10b981; font-weight: 500;">${booking.zone}</span>`
+                        ? `<span style="background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.5rem; border-radius: 6px; color: #10b981; font-weight: 500;">${utils.escapeHtml(booking.zone)}</span>`
                         : '<span style="color: var(--text-secondary); font-size: 0.9rem;">-</span>'
                     }
                 </td>
@@ -672,7 +672,7 @@ const bookings = {
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                     <div>
                         <div style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary);">
-                            ${badge} ${booking.customer_name}
+                            ${badge} ${utils.escapeHtml(booking.customer_name)}
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
                             Datos de contacto
@@ -687,11 +687,11 @@ const bookings = {
                 <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.2rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-primary);">
                         <span style="font-size: 1rem;">📧</span>
-                        <span style="word-break: break-all;">${booking.customer_email || '—'}</span>
+                        <span style="word-break: break-all;">${utils.escapeHtml(booking.customer_email || '—')}</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-primary);">
                         <span style="font-size: 1rem;">📞</span>
-                        <span>${booking.customer_phone || '—'}</span>
+                        <span>${utils.escapeHtml(booking.customer_phone || '—')}</span>
                     </div>
                 </div>
 
@@ -707,7 +707,7 @@ const bookings = {
                         </a>
                     ` : ''}
                     ${booking.customer_email ? `
-                        <a href="mailto:${booking.customer_email}" style="
+                        <a href="mailto:${utils.escapeHtml(booking.customer_email)}" style="
                             flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
                             background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);
                             border-radius: 8px; padding: 0.5rem; text-decoration: none; font-size: 0.85rem; font-weight: 600;
@@ -778,7 +778,7 @@ const bookings = {
             this.load(); // Reload bookings
         } catch (error) {
             console.error('Error creating booking:', error);
-            this.showNotification(`Error al crear la reserva: ${error.message}`, 'error');
+            this.showNotification(`Error al crear la reserva: ${utils.escapeHtml(error.message)}`, 'error');
         }
     },
 
@@ -1062,7 +1062,7 @@ const bookings = {
                         🔄 Repetir Cita
                     </h2>
                     <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
-                        ${booking.customer_name} - ${bookingDate} a las ${bookingTime}
+                        ${utils.escapeHtml(booking.customer_name)} - ${bookingDate} a las ${bookingTime}
                     </p>
                 </div>
 
@@ -1202,7 +1202,7 @@ const bookings = {
         } catch (error) {
             console.error('Error repeating booking:', error);
             modal.toast({
-                message: `Error al repetir cita: ${error.message}`,
+                message: `Error al repetir cita: ${utils.escapeHtml(error.message)}`,
                 type: 'error'
             });
         }
@@ -1243,7 +1243,7 @@ const bookings = {
                         📅 Cambiar Fecha/Hora
                     </h2>
                     <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
-                        ${booking.customer_name}
+                        ${utils.escapeHtml(booking.customer_name)}
                     </p>
                 </div>
 
@@ -1352,7 +1352,7 @@ const bookings = {
         } catch (error) {
             console.error('Error rescheduling booking:', error);
             modal.toast({
-                message: `Error al reprogramar: ${error.message}`,
+                message: `Error al reprogramar: ${utils.escapeHtml(error.message)}`,
                 type: 'error'
             });
             return false;

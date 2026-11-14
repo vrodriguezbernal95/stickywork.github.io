@@ -377,7 +377,7 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
                 <!-- Tu mensaje -->
                 <div style="margin-bottom: ${msg.admin_response ? '1.5rem' : '0'};">
                     <p style="color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem; font-size: 0.85rem;">Tu mensaje:</p>
-                    <p style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; margin: 0; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">${msg.message}</p>
+                    <p style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; margin: 0; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">${utils.escapeHtml(msg.message)}</p>
                 </div>
 
                 <!-- Respuesta -->
@@ -386,7 +386,7 @@ Si necesitas enviar algo más largo, selecciona 'Solicitar Email Detallado' o 'S
                         <p style="color: var(--primary-color); font-weight: 600; margin-bottom: 0.5rem; font-size: 0.85rem;">
                             💬 Respuesta de ${msg.answered_by || 'StickyWork'}:
                         </p>
-                        <p style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; margin: 0;">${msg.admin_response}</p>
+                        <p style="color: var(--text-primary); line-height: 1.6; white-space: pre-wrap; margin: 0;">${utils.escapeHtml(msg.admin_response)}</p>
                         <p style="color: var(--text-tertiary); font-size: 0.8rem; margin: 0.5rem 0 0 0;">
                             ${new Date(msg.answered_at).toLocaleString('es-ES')}
                         </p>

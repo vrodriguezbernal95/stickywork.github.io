@@ -97,7 +97,7 @@ const globalSearch = {
                             <span class="gs-item-name">${this.highlight(b.customer_name, query)}</span>
                             <span class="gs-item-badge" style="background: ${statusColor};">${b.status}</span>
                         </div>
-                        <div class="gs-item-detail">${b.service_name || 'Servicio'} · ${dateStr} ${timeStr}</div>
+                        <div class="gs-item-detail">${utils.escapeHtml(b.service_name || 'Servicio')} · ${dateStr} ${timeStr}</div>
                     </div>
                 `;
             });
