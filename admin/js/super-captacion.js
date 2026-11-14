@@ -97,7 +97,10 @@ const superCaptacion = {
                     </div>`;
                 return;
             }
+            const sinTel = this.rows.filter(p => !p.phone_norm).length;
             this.body().innerHTML = `
+                ${sinTel ? `<div class="cap-bulk"><span>${sinTel} ${sinTel === 1 ? 'negocio no tiene' : 'negocios no tienen'} teléfono.</span>
+                    <button class="cap-btn small" onclick="superCaptacion.discardNoPhone()">🗑️ Descartar los que no tienen teléfono</button></div>` : ''}
                 <p class="cap-hint">${this.rows.length} ${this.rows.length === 1 ? 'negocio' : 'negocios'} para hoy. Primero los que te dieron permiso o te pidieron que les llamaras.
                 Recuerda: preséntate, di de dónde sacaste su número y, si te dicen que no, márcalo como <strong>No contactar</strong>.</p>
                 <div class="cap-cards">${this.rows.map(p => this.renderCard(p)).join('')}</div>`;
@@ -164,6 +167,7 @@ const superCaptacion = {
                 <button class="cap-btn ok" onclick="superCaptacion.outcome(${p.id}, 'permiso_wa')">✅ Permiso WhatsApp</button>
                 <button class="cap-btn ok" onclick="superCaptacion.outcome(${p.id}, 'registrado')">🎉 Registrado</button>
                 <button class="cap-btn" onclick="superCaptacion.outcome(${p.id}, 'no_interesa')">🙅 No le interesa</button>
+                <button class="cap-btn" onclick="superCaptacion.outcome(${p.id}, 'descartado')" title="Sin teléfono, cerrado, cadena... Sale de la lista; se puede recuperar desde Todos">🗑️ Descartar</button>
                 <button class="cap-btn danger" onclick="superCaptacion.outcome(${p.id}, 'no_contactar')">⛔ No contactar</button>
             </div>
 
@@ -217,6 +221,17 @@ const superCaptacion = {
         } catch (e) {
             alert(e.message);
         }
+    },
+
+    // Quita de la lista los que no tienen teléfono (estado «descartado»: no van a «no contactar» y se pueden recuperar desde «Todos»)
+    async discardNoPhone() {
+        const sin = this.rows.filter(p => !p.phone_norm);
+        if (!sin.length) return;
+        if (!confirm(`¿Descartar ${sin.length} ${sin.length === 1 ? 'negocio' : 'negocios'} sin teléfono? Saldrán de la lista de hoy. Si más adelante encuentras su teléfono, búscalo en «Todos» (estado Descartado), apúntalo y pulsa «Llamar otro día».`)) return;
+        for (const p of sin) {
+            try { await superApi.post(`/api/super-admin/prospects/${p.id}/outcome`, { outcome: 'descartado' }); } catch (e) { console.error(e); }
+        }
+        this.loadToday();
     },
 
     askDate(id) {
@@ -616,6 +631,7 @@ const superCaptacion = {
             .cap-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
             .cap-tab { padding: 0.55rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; font-size: 0.92rem; }
             .cap-tab.active { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+            .cap-bulk { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; justify-content: space-between; padding: 0.7rem 1rem; border-radius: 12px; border: 1px solid rgba(245,158,11,0.5); background: var(--bg-secondary); color: var(--text-primary); margin-bottom: 0.75rem; font-size: 0.9rem; }
             .cap-hint { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.55; margin: 0.5rem 0 1rem; }
             .cap-hint code { background: var(--bg-secondary); padding: 0.1rem 0.35rem; border-radius: 4px; }
             .cap-empty { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); }
