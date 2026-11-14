@@ -34,6 +34,8 @@ async function runMigrations() {
             await require('./backend/prospects').ensureProspectTables(db);
             // Recuperación de contraseña del super admin
             await require('./backend/super-admin-reset').ensureResetTable(db);
+            // Registro de envíos de email (aviso en el super admin si fallan)
+            await require('./backend/email-health').ensureEmailEventsTable(db);
         }
     } catch (err) {
         console.error('⚠️ Error verificando tablas:', err.message);
@@ -244,6 +246,7 @@ async function startServer() {
                 // Captación: borrar contactos sin interés de hace más de 12 meses
                 try {
                     await require('./backend/prospects').cleanupOldProspects(db);
+                    await require('./backend/email-health').cleanup(db);
                 } catch (error) {
                     console.error('❌ [Cron] Error limpiando captación:', error.message);
                 }

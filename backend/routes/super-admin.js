@@ -1465,6 +1465,15 @@ router.put('/documents/:key', requireSuperAdmin, async (req, res) => {
     }
 });
 
+// Salud del envío de emails (aviso en el dashboard si fallan)
+router.get('/email-health', requireSuperAdmin, async (req, res) => {
+    try {
+        res.json({ success: true, data: await require('../email-health').getHealth(db) });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al comprobar los emails' });
+    }
+});
+
 // Regalar un mes de Profesional a un negocio (último empujón de la captación)
 router.post('/businesses/:id/gift-month', requireSuperAdmin, async (req, res) => {
     try {

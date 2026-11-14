@@ -1,5 +1,33 @@
 // Super Admin Dashboard Module
 const superDashboard = {
+    // Aviso si los emails de StickyWork están fallando (p. ej. Brevo bloquea la IP del servidor)
+    async loadEmailHealth() {
+        const box = document.getElementById('emailHealth');
+        if (!box) return;
+        try {
+            const h = (await superApi.get('/api/super-admin/email-health')).data;
+            const f = d => {
+                if (!d) return '—';
+                const x = new Date(d);
+                return `${String(x.getDate()).padStart(2, '0')}/${String(x.getMonth() + 1).padStart(2, '0')} ${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`;
+            };
+            const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const base = 'padding: 0.85rem 1.1rem; border-radius: 12px; margin-bottom: 1.25rem; line-height: 1.5; font-size: 0.92rem; color: var(--text-primary);';
+            if (h.fail24 > 0) {
+                box.innerHTML = `<div style="${base} background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.55);">
+                    <strong>⚠️ ${h.fail24} ${h.fail24 === 1 ? 'email ha fallado' : 'emails han fallado'} en las últimas 24 horas</strong>
+                    (${h.ok24} enviados bien). Último error (${f(h.lastFail)}): <em>${esc(h.lastError)}</em><br>
+                    Si habla de una IP no reconocida: Brevo → Seguridad → IP autorizadas → autoriza la IP nueva de Railway.</div>`;
+            } else if (h.lastOk) {
+                box.innerHTML = `<div style="${base} background: var(--bg-secondary); border: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-secondary);">✓ Emails funcionando · último enviado: ${f(h.lastOk)}</div>`;
+            } else {
+                box.innerHTML = '';
+            }
+        } catch (e) {
+            box.innerHTML = '';
+        }
+    },
+
     async load() {
         // Update page title
         document.getElementById('pageTitle').textContent = 'Dashboard';
@@ -12,6 +40,7 @@ const superDashboard = {
             // Render dashboard
             const contentArea = document.getElementById('contentArea');
             contentArea.innerHTML = `
+                <div id="emailHealth"></div>
                 <div class="stats-grid">
                     ${this.renderStatCards(stats)}
                 </div>
@@ -37,6 +66,7 @@ const superDashboard = {
                     ${this.renderQuickSummary(stats)}
                 </div>
             `;
+            this.loadEmailHealth();
 
         } catch (error) {
             console.error('Error loading dashboard:', error);

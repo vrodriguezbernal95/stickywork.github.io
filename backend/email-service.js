@@ -1333,7 +1333,14 @@ const emailTemplates = {
 };
 
 // Send email function
+// Envía y apunta el resultado (super admin → aviso si los emails fallan)
 async function sendEmail(to, template, data) {
+    const result = await sendEmailInner(to, template, data);
+    await require('./email-health').record(result);
+    return result;
+}
+
+async function sendEmailInner(to, template, data) {
     // Preferir Brevo API HTTP si está configurada
     if (useBrevoAPI) {
         return await sendEmailViaBrevoAPI(to, template.subject, template.html, template.attachments);
