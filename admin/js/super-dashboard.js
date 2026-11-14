@@ -13,7 +13,12 @@ const superDashboard = {
             };
             const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
             const base = 'padding: 0.85rem 1.1rem; border-radius: 12px; margin-bottom: 1.25rem; line-height: 1.5; font-size: 0.92rem; color: var(--text-primary);';
-            if (h.fail24 > 0) {
+            const recuperado = h.fail24 > 0 && h.lastOk && new Date(h.lastOk) > new Date(h.lastFail);
+            if (recuperado) {
+                box.innerHTML = `<div style="${base} background: rgba(16,185,129,0.10); border: 1px solid rgba(16,185,129,0.45);">
+                    ✓ <strong>Emails funcionando de nuevo</strong> · último enviado: ${f(h.lastOk)}.
+                    <span style="color: var(--text-secondary);">Hubo ${h.fail24} ${h.fail24 === 1 ? 'fallo' : 'fallos'} en las últimas 24 horas (el último a las ${f(h.lastFail)}).</span></div>`;
+            } else if (h.fail24 > 0) {
                 box.innerHTML = `<div style="${base} background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.55);">
                     <strong>⚠️ ${h.fail24} ${h.fail24 === 1 ? 'email ha fallado' : 'emails han fallado'} en las últimas 24 horas</strong>
                     (${h.ok24} enviados bien). Último error (${f(h.lastFail)}): <em>${esc(h.lastError)}</em><br>
