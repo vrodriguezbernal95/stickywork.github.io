@@ -151,7 +151,11 @@ const superCaptacion = {
                 <button class="cap-btn small" onclick="superCaptacion.savePhone(${p.id})">Guardar</button>
             </div>
 
-            ${p.call_script ? `<details class="cap-details"><summary>📞 Guion de llamada</summary><div class="cap-script">${this.esc(p.call_script)}</div></details>` : ''}
+            <details class="cap-details"><summary>📞 Guion de llamada</summary>
+                <button class="cap-btn small" onclick="superCaptacion.callMode(${p.id})">🖥️ Abrir en grande (modo llamada)</button>
+                ${window.callScripts ? callScripts.build(p) : ''}
+                ${p.call_script ? `<details class="cap-details"><summary style="font-weight:400;font-size:0.85rem;">Notas del agente sobre este negocio</summary><div class="cap-script">${this.esc(p.call_script)}</div></details>` : ''}
+            </details>
             ${waText ? `<details class="cap-details"><summary>💬 ${p.status === 'mensaje_enviado' || p.status === 'seguimiento' ? 'WhatsApp de seguimiento' : 'WhatsApp (solo con permiso)'}</summary>
                 <div class="cap-script">${this.esc(this.fillMessage(waText, p))}</div>
                 <button class="cap-btn small" onclick="superCaptacion.copy(${p.id})">📋 Copiar</button>
@@ -232,6 +236,11 @@ const superCaptacion = {
             try { await superApi.post(`/api/super-admin/prospects/${p.id}/outcome`, { outcome: 'descartado' }); } catch (e) { console.error(e); }
         }
         this.loadToday();
+    },
+
+    callMode(id) {
+        const p = this.rows.find(x => x.id === id);
+        if (p) callScripts.open(p);
     },
 
     askDate(id) {
@@ -623,6 +632,7 @@ const superCaptacion = {
     },
 
     injectStyles() {
+        if (window.callScripts) callScripts.injectStyles();
         if (document.getElementById('cap-styles')) return;
         const st = document.createElement('style');
         st.id = 'cap-styles';
