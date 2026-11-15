@@ -10,7 +10,11 @@
 const crypto = require('crypto');
 
 const SECTORES = ['peluqueria', 'estetica', 'fisioterapia', 'psicologia', 'nutricion', 'podologia',
-    'canina', 'tatuajes', 'optica', 'dental', 'gimnasio', 'otro'];
+    'canina', 'tatuajes', 'optica', 'dental', 'gimnasio', 'formacion', 'otro'];
+
+// Segmentos de captación: pymes (clientes) y centros de formación (FP de estética, peluquería, dietética…)
+const SEGMENTOS = ['pyme', 'formacion'];
+const segmentoDe = p => SEGMENTOS.includes(p.segment) ? p.segment : (p.sector === 'formacion' ? 'formacion' : 'pyme');
 
 const ESTADOS = ['nuevo', 'no_contesta', 'volver_llamar', 'interesado', 'permiso_wa', 'mensaje_enviado',
     'seguimiento', 'registrado', 'no_interesa', 'no_contactar', 'descartado'];
@@ -89,6 +93,13 @@ async function ensureProspectTables(db) {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )
     `);
+    const segCol = await db.query(
+        `SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'prospects' AND COLUMN_NAME = 'segment'`
+    );
+    if (!segCol.length) {
+        await db.query(`ALTER TABLE prospects ADD COLUMN segment VARCHAR(20) NOT NULL DEFAULT 'pyme', ADD INDEX idx_prospect_segment (segment)`);
+        console.log('✅ Columna prospects.segment añadida (pymes / centros de formación)');
+    }
     await migrateOldLeads(db);
 }
 
@@ -219,11 +230,11 @@ async function insertProspect(db, p) {
             const status = ESTADOS.includes(p.status) ? p.status : 'nuevo';
             const r = await db.query(
                 `INSERT INTO prospects
-                 (code, name, sector, address, district, city, phone, phone_norm, website, instagram,
+                 (code, name, sector, segment, address, district, city, phone, phone_norm, website, instagram,
                   booking_method, booking_tool, score, tier, hook, call_script, wa_message, followup_message,
                   source, source_date, batch, variant, status, next_action_at, notes)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [nuevoCodigo(), recorta(p.name, 200), sector, recorta(p.address, 255), recorta(p.district, 120),
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [nuevoCodigo(), recorta(p.name, 200), sector, segmentoDe(p), recorta(p.address, 255), recorta(p.district, 120),
                     recorta(p.city, 120), recorta(p.phone, 40), normPhone(p.phone), recorta(p.website, 255),
                     recorta(p.instagram, 255), recorta(p.booking_method, 40), recorta(p.booking_tool, 80),
                     score, tier, recorta(p.hook, 2000), recorta(p.call_script, 6000), recorta(p.wa_message, 3000),
@@ -363,31 +374,33 @@ async function linkRegistration(db, businessId, { leadCode, phone } = {}) {
 }
 
 // Embudo y desgloses para la pantalla de resultados
-async function getStats(db) {
-    const porEstado = await db.query('SELECT status, COUNT(*) AS n FROM prospects GROUP BY status');
+async function getStats(db, segment) {
+    const seg = SEGMENTOS.includes(segment) ? segment : null;
+    const W = seg ? `segment = '${seg}'` : '1=1'; // valor validado contra la lista
+    const porEstado = await db.query(`SELECT status, COUNT(*) AS n FROM prospects WHERE ${W} GROUP BY status`);
     const porSector = await db.query(`
         SELECT COALESCE(sector, 'sin sector') AS sector,
                COUNT(*) AS total,
                SUM(status <> 'nuevo' AND status <> 'descartado') AS contactados,
                SUM(consent_wa_at IS NOT NULL) AS permisos,
                SUM(business_id IS NOT NULL) AS registrados
-        FROM prospects GROUP BY sector ORDER BY total DESC`);
+        FROM prospects WHERE ${W} GROUP BY sector ORDER BY total DESC`);
     const porVariante = await db.query(`
         SELECT COALESCE(variant, '—') AS variant, COUNT(*) AS total,
                SUM(consent_wa_at IS NOT NULL) AS permisos, SUM(business_id IS NOT NULL) AS registrados
-        FROM prospects WHERE status <> 'nuevo' GROUP BY variant ORDER BY total DESC`);
+        FROM prospects WHERE status <> 'nuevo' AND ${W} GROUP BY variant ORDER BY total DESC`);
     // Lo que de verdad importa: negocios registrados que lo usan
     const activacion = await db.query(`
         SELECT p.id, p.name, p.sector, p.business_id, b.slug, b.name AS business_name, b.plan, b.plan_bonus_until,
                (SELECT COUNT(*) FROM services s WHERE s.business_id = b.id AND s.is_active = TRUE) AS servicios,
                (SELECT COUNT(*) FROM bookings bk WHERE bk.business_id = b.id AND bk.status <> 'cancelled') AS reservas
-        FROM prospects p JOIN businesses b ON b.id = p.business_id`);
+        FROM prospects p JOIN businesses b ON b.id = p.business_id WHERE ${seg ? `p.segment = '${seg}'` : '1=1'}`);
     const est = Object.fromEntries(porEstado.map(r => [r.status, Number(r.n)]));
     const total = porEstado.reduce((a, r) => a + Number(r.n), 0);
     const [ev] = await db.query(`
         SELECT SUM(type = 'no_contesta') AS llamadas_sin_respuesta,
                SUM(type IN ('interesado','permiso_wa','no_interesa','no_contactar','volver_llamar')) AS conversaciones
-        FROM prospect_events`);
+        FROM prospect_events WHERE ${seg ? `prospect_id IN (SELECT id FROM prospects WHERE segment = '${seg}')` : '1=1'}`);
     const pagan = activacion.filter(a => ['founders', 'professional', 'premium'].includes(a.plan) && !a.plan_bonus_until).length;
     return {
         total,
@@ -421,7 +434,7 @@ async function cleanupOldProspects(db) {
 }
 
 module.exports = {
-    SECTORES, ESTADOS,
+    SECTORES, ESTADOS, SEGMENTOS,
     ensureProspectTables, importBatch, insertProspect, applyOutcome, addDoNotContact,
     linkRegistration, getStats, cleanupOldProspects, logEvent, normPhone, normText,
     isDoNotContact, findDuplicate, fixDates

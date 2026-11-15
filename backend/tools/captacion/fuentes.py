@@ -9,6 +9,8 @@ Fuentes (todas abiertas y gratuitas):
     sanidad (fisios, psicólogos, podólogos, dentales...), gimnasios, peluquerías caninas. Sin teléfono.
   - Clínicas dentales autorizadas de Cataluña (Generalitat, datos abiertos): con teléfono.
   - Establecimientos sanitarios autorizados (Generalitat): ópticas y centros auditivos, con teléfono.
+  - Oferta de plazas de FP + directorio de centros educativos (Generalitat): centros que imparten
+    ciclos de estética, peluquería o dietética (segmento «formacion»), con teléfono.
 
 No se guarda el nombre de los titulares (personas): solo datos del negocio.
 """
@@ -150,6 +152,51 @@ def generalitat():
     return out
 
 
+# Ciclos de FP que encajan: tienen salón o servicio de prácticas con cita, o forman a futuros profesionales con cita
+CICLOS_FP = ('estètica', 'estetica', 'perruqueria', 'dietètica', 'dietetica', 'caracterització', 'termalisme')
+
+
+def centros_fp():
+    print('  Generalitat: centros de FP de estética, peluquería y dietética')
+    ciclos = {}
+    for r in socrata('ky5m-v7i9', "curs='2026/2027'"):
+        nombre = (r.get('nom_ensenyament') or '').strip()
+        if not any(c in nombre.lower() for c in CICLOS_FP):
+            continue
+        c = ciclos.setdefault(r.get('codi_centre'), {'r': r, 'ciclos': set()})
+        c['ciclos'].add(nombre)
+    if not ciclos:
+        return []
+    directorio = {}
+    codigos = list(ciclos)
+    for i in range(0, len(codigos), 100):
+        lista = ','.join(f"'{c}'" for c in codigos[i:i + 100])
+        for d in socrata('kvmv-ahh4', f"curs='2026/2027' AND codi_centre in({lista})"):
+            directorio[d.get('codi_centre')] = d
+    out = []
+    for codigo, c in ciclos.items():
+        r, d = c['r'], directorio.get(codigo, {})
+        out.append({
+            'key': f"fp:{codigo}",
+            'name': (r.get('denominaci_completa') or '').strip(),
+            'sector': 'formacion',
+            'segment': 'formacion',
+            'address': (d.get('adre_a') or '').strip(),
+            'district': (d.get('nom_dm') or '').strip(),
+            'city': (r.get('nom_municipi') or '').strip(),
+            'comarca': (r.get('nom_comarca') or '').strip(),
+            'phone': norm_tel(d.get('tel_fon')),
+            'email': (d.get('e_mail_centre') or '').strip(),
+            'website': (d.get('url') or '').strip(),
+            'titularidad': (r.get('nom_naturalesa') or '').strip(),  # Públic / Privat
+            'ciclos': sorted(c['ciclos']),
+            'lat': d.get('coordenades_geo_y'), 'lon': d.get('coordenades_geo_x'),
+            'source': 'Oferta de plazas de FP y directorio de centros educativos, Generalitat de Catalunya (datos abiertos)',
+            'source_date': HOY,
+        })
+    return out
+
+
 GENERICAS = {'perruqueria', 'peluqueria', 'perruquers', 'barberia', 'barber', 'barbershop', 'shop', 'unisex',
              'estetica', 'centre', 'centro', 'de', 'd', 'i', 'y', 'la', 'el', 'nails', 'unas', 'manicura', 'tattoo',
              'tatuatges', 'clinica', 'fisioterapia', 'podologia', 'optica', 'opticas', 'gimnas', 'gimnasio', 'salo',
@@ -163,7 +210,7 @@ def es_generico(nombre):
 
 def main():
     todos = []
-    for nombre, fn in (('Barcelona', barcelona), ('Generalitat', generalitat)):
+    for nombre, fn in (('Barcelona', barcelona), ('Generalitat', generalitat), ('Centros de FP', centros_fp)):
         try:
             todos += fn()
         except Exception as e:  # una fuente caída no debe impedir usar las demás

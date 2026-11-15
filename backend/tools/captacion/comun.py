@@ -12,7 +12,7 @@ EXPORTES = os.path.join(CARPETA, 'exportes')
 USADOS = os.path.join(CARPETA, 'usados.json')
 
 SECTORES = ['peluqueria', 'estetica', 'fisioterapia', 'psicologia', 'nutricion', 'podologia',
-            'canina', 'tatuajes', 'optica', 'dental', 'gimnasio', 'otro']
+            'canina', 'tatuajes', 'optica', 'dental', 'gimnasio', 'formacion', 'otro']
 
 # Cadenas y franquicias: se descartan (deciden en una central). El agente también descarta
 # cualquier negocio con el mismo nombre en 3 o más direcciones.

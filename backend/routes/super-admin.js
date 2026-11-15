@@ -1411,9 +1411,10 @@ const PROSPECT_FIELDS = ['name', 'sector', 'address', 'district', 'city', 'phone
 // Lista (vista «hoy» o «todos» con filtros)
 router.get('/prospects', requireSuperAdmin, async (req, res) => {
     try {
-        const { view, status, sector, tier, q } = req.query;
+        const { view, status, sector, tier, q, segment } = req.query;
         const where = [];
         const vals = [];
+        if (segment && prospects.SEGMENTOS.includes(segment)) { where.push('segment = ?'); vals.push(segment); }
         if (view === 'today') {
             where.push(`next_action_at IS NOT NULL AND next_action_at <= CURDATE() AND status NOT IN ('no_interesa','no_contactar','descartado')`);
         }
@@ -1540,7 +1541,7 @@ router.delete('/prospects/:id', requireSuperAdmin, async (req, res) => {
 // Estadísticas del embudo
 router.get('/prospects-stats', requireSuperAdmin, async (req, res) => {
     try {
-        res.json({ success: true, data: await prospects.getStats(db) });
+        res.json({ success: true, data: await prospects.getStats(db, req.query.segment) });
     } catch (error) {
         console.error('Error en estadísticas de captación:', error);
         res.status(500).json({ success: false, message: 'Error al calcular las estadísticas' });
@@ -1586,7 +1587,7 @@ router.get('/prospects-export', requireSuperAdmin, async (req, res) => {
             res.setHeader('Content-Disposition', 'attachment; filename="no-contactar.csv"');
             return res.send('﻿' + lines.join('\n'));
         }
-        const cols = ['id', 'name', 'sector', 'district', 'city', 'phone_norm', 'website', 'instagram', 'booking_method', 'booking_tool',
+        const cols = ['id', 'name', 'sector', 'segment', 'district', 'city', 'phone_norm', 'website', 'instagram', 'booking_method', 'booking_tool',
             'score', 'tier', 'source', 'batch', 'variant', 'status', 'attempts', 'consent_wa_at', 'business_id', 'created_at', 'updated_at'];
         const rows = await db.query(`SELECT ${cols.join(', ')} FROM prospects ORDER BY id`);
         const events = await db.query(`SELECT prospect_id, type, created_at FROM prospect_events WHERE prospect_id > 0 ORDER BY id`);

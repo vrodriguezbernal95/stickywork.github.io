@@ -21,11 +21,11 @@ Si existe, lee primero el diseño completo: `docs/captacion/diseno-agente-captac
 
 ## Herramientas (desde la raíz del proyecto)
 
-- `python3 backend/tools/captacion/fuentes.py` — descarga las fuentes abiertas a `captacion/datos/candidatos.json` (censo de Barcelona, clínicas dentales, ópticas y centros auditivos de la Generalitat). Ejecútalo si no existe el archivo o si el usuario pide «actualiza las fuentes».
+- `python3 backend/tools/captacion/fuentes.py` — descarga las fuentes abiertas a `captacion/datos/candidatos.json` (censo de Barcelona, clínicas dentales, ópticas y centros auditivos de la Generalitat, y centros de FP con ciclos de estética, peluquería o dietética). Ejecútalo si no existe el archivo o si el usuario pide «actualiza las fuentes».
 - `python3 backend/tools/captacion/candidatos.py --sectores peluqueria,estetica --ciudades Barcelona --n 25` — elige candidatos nuevos repartidos por barrios. Opciones: `--cerca 41.5463,2.1086 --radio 15` (alrededor de Sabadell), `--solo-con-telefono`.
 - `python3 backend/tools/captacion/validar_tanda.py captacion/tandas/AAAA-MM-DD.json` — comprueba la tanda (campos, puntuación, enlace, promesas prohibidas). Con `--marcar` la registra como usada para no repetir negocios. **Usa `--marcar` solo cuando la tanda esté terminada y validada.**
 
-Sectores válidos: `peluqueria, estetica, fisioterapia, psicologia, nutricion, podologia, canina, tatuajes, optica, dental, gimnasio, otro`.
+Sectores válidos: `peluqueria, estetica, fisioterapia, psicologia, nutricion, podologia, canina, tatuajes, optica, dental, gimnasio, formacion, otro`. El sector `formacion` va siempre con `"segment": "formacion"` (en el panel salen aparte, en «🎓 Centros de formación»); todo lo demás es `"segment": "pyme"`.
 
 ## Tarea 1 — «Prepara la tanda de esta semana»
 
@@ -95,6 +95,18 @@ Cuando un negocio se registra, prepara su kit para que reciba reservas de verdad
 2. **Respuesta automática de WhatsApp Business** con su enlace («¡Hola! Para pedir cita reserva aquí 👉 …»). Explica en 3 pasos dónde se configura en WhatsApp Business (Herramientas para la empresa → Mensaje de bienvenida / Mensaje de ausencia).
 3. Recordatorio de que puede imprimir su **cartel con QR** en https://stickywork.com/herramientas/generador-qr-reservas.html.
 4. Mensaje para que Víctor le escriba a los 7 días preguntando si ya ha recibido reservas (con permiso ya lo tiene: es cliente).
+
+## Tarea 5 — «Prepara una tanda de centros de formación»
+
+Institutos y escuelas de FP con ciclos de **estética, peluquería o dietética**. No son clientes que paguen: la idea es que su **salón o servicio de prácticas** (abierto al público con cita) use StickyWork gratis y que los alumnos —futuros dueños de peluquerías y centros de estética— aprendan con él. Van en una tanda **aparte** de las pymes (nunca mezcladas en el mismo archivo).
+
+1. `python3 backend/tools/captacion/candidatos.py --sectores formacion --cerca 41.5463,2.1086 --radio 30 --n 20` (o `--ciudades Barcelona`). Cada candidato trae `ciclos` (los que imparte), `titularidad` (Públic/Privat), `email` y `website` del centro.
+2. Investiga cada centro en su web (una a una): ¿tiene **salón de prácticas abierto al público** («servei de perruqueria i estètica obert al públic», «demana cita», «clients model»)? ¿Cómo piden cita (teléfono, formulario, Google Forms, nada)? ¿Qué ciclos tiene ahora? Nunca apuntes nombres de profesores ni coordinadores aunque salgan en la web: el usuario preguntará por «la coordinación del ciclo».
+3. Puntuación (0-100): salón de prácticas abierto al público con cita por teléfono o formulario +35; ciclos de grado medio o superior de estética/peluquería +20 (dietética sola +10); cerca de Sabadell/Terrassa (visitable) +20; web con contacto del departamento +10; privado o concertado +5 (deciden más rápido). Ya usa una herramienta de reservas: −20.
+4. Campos: igual que las pymes, con `sector: "formacion"`, `segment: "formacion"`, `booking_method` según cómo gestiona las citas del salón, y en `hook` qué ciclos tiene y si tiene salón abierto al público (el guion de llamada del panel lo usa). `call_script` = 3-6 líneas de notas («pide por coordinación de Estética; salón abierto martes y jueves por la mañana; piden cita por teléfono»).
+5. `wa_message` (para después del permiso, al coordinador): saludo, recordatorio de la llamada, la propuesta en dos frases (página de reservas para el salón de prácticas + herramienta real para los alumnos, **gratis para el centro**), `{enlace}` y despedida. Nada de porcentajes ni de prometer cosas que no existen.
+6. Mejor momento para llamar: de septiembre a noviembre y en enero (fuera de exámenes y prácticas en empresa). Díselo al usuario si la tanda cae en otra época.
+7. Archivo: `captacion/tandas/AAAA-MM-DD-centros.json`. Valida y marca como en la Tarea 1.
 
 ## Estilo
 

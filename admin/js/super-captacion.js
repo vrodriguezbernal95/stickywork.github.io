@@ -5,12 +5,14 @@
 const superCaptacion = {
     tab: 'today',
     rows: [],
+    // Segmento: pymes (clientes) o centros de formación (FP). Se recuerda en este navegador.
+    segment: (() => { try { return localStorage.getItem('sw_cap_segment') || 'pyme'; } catch (e) { return 'pyme'; } })(),
     filters: { status: '', sector: '', tier: '', q: '' },
 
     SECTORES: {
         peluqueria: 'Peluquería / barbería', estetica: 'Estética', fisioterapia: 'Fisioterapia', psicologia: 'Psicología',
         nutricion: 'Nutrición', podologia: 'Podología', canina: 'Peluquería canina', tatuajes: 'Tatuajes',
-        optica: 'Óptica / audición', dental: 'Dental', gimnasio: 'Gimnasio / estudio', otro: 'Otro'
+        optica: 'Óptica / audición', dental: 'Dental', gimnasio: 'Gimnasio / estudio', formacion: 'Centro de formación (FP)', otro: 'Otro'
     },
     ESTADOS: {
         nuevo: '🆕 Nuevo', no_contesta: '📵 No contesta', volver_llamar: '🔁 Volver a llamar', interesado: '👀 Interesado',
@@ -55,6 +57,10 @@ const superCaptacion = {
         this.injectStyles();
         document.getElementById('contentArea').innerHTML = `
             <div class="cap-page">
+                <div class="cap-seg">
+                    <button class="cap-seg-btn ${this.segment === 'pyme' ? 'active' : ''}" onclick="superCaptacion.setSegment('pyme')">🏪 Pymes</button>
+                    <button class="cap-seg-btn ${this.segment === 'formacion' ? 'active' : ''}" onclick="superCaptacion.setSegment('formacion')">🎓 Centros de formación</button>
+                </div>
                 <div class="cap-tabs">
                     ${[['today', '📅 Hoy'], ['all', '📋 Todos'], ['stats', '📈 Resultados'], ['import', '📥 Importar y añadir'], ['dnc', '⛔ No contactar'], ['guide', '📘 Guía']]
                         .map(([k, l]) => `<button class="cap-tab ${this.tab === k ? 'active' : ''}" onclick="superCaptacion.switchTab('${k}')">${l}</button>`).join('')}
@@ -69,6 +75,14 @@ const superCaptacion = {
         document.body.appendChild(document.getElementById('capModal'));
         this.switchTab(this.tab);
     },
+
+    setSegment(seg) {
+        this.segment = seg;
+        try { localStorage.setItem('sw_cap_segment', seg); } catch (e) {}
+        this.load();
+    },
+
+    segQ() { return `segment=${encodeURIComponent(this.segment)}`; },
 
     switchTab(tab) {
         this.tab = tab;
@@ -86,7 +100,7 @@ const superCaptacion = {
     // ---------- HOY ----------
     async loadToday() {
         try {
-            const r = await superApi.get('/api/super-admin/prospects?view=today');
+            const r = await superApi.get(`/api/super-admin/prospects?view=today&${this.segQ()}`);
             this.rows = r.data || [];
             if (!this.rows.length) {
                 this.body().innerHTML = `
@@ -316,8 +330,8 @@ const superCaptacion = {
             </div>
             <div id="capTable"><div class="loading" style="padding:2rem;">Cargando...</div></div>`;
         try {
-            const qs = new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString();
-            const r = await superApi.get(`/api/super-admin/prospects${qs ? '?' + qs : ''}`);
+            const qs = new URLSearchParams([...Object.entries(f).filter(([, v]) => v), ['segment', this.segment]]).toString();
+            const r = await superApi.get(`/api/super-admin/prospects?${qs}`);
             this.rows = r.data || [];
             document.getElementById('capTable').innerHTML = this.rows.length ? `
                 <div class="cap-table-wrap"><table class="cap-table">
@@ -365,7 +379,7 @@ const superCaptacion = {
     // ---------- RESULTADOS ----------
     async loadStats() {
         try {
-            const r = await superApi.get('/api/super-admin/prospects-stats');
+            const r = await superApi.get(`/api/super-admin/prospects-stats?${this.segQ()}`);
             const s = r.data;
             const e = s.embudo;
             const pasos = [
@@ -440,7 +454,7 @@ const superCaptacion = {
                 <div id="capImportResult" class="cap-hint"></div>
             </div>
             <div class="cap-section">
-                <h3>➕ Añadir un negocio a mano</h3>
+                <h3>➕ Añadir ${this.segment === 'formacion' ? 'un centro de formación' : 'un negocio'} a mano</h3>
                 <p class="cap-hint">El que ves por la calle o te recomiendan. Luego puedes pedirle al agente que lo investigue y le prepare el guion.</p>
                 <div class="cap-form">
                     <input id="capNName" placeholder="Nombre del negocio *">
@@ -484,7 +498,8 @@ const superCaptacion = {
         if (!v('capNName')) { out.textContent = 'Falta el nombre'; return; }
         try {
             await superApi.post('/api/super-admin/prospects', {
-                name: v('capNName'), sector: v('capNSector') || null, city: v('capNCity'), district: v('capNDistrict'),
+                name: v('capNName'), sector: v('capNSector') || (this.segment === 'formacion' ? 'formacion' : null), segment: this.segment,
+                city: v('capNCity'), district: v('capNDistrict'),
                 phone: v('capNPhone'), website: v('capNWeb'), instagram: v('capNInsta'), notes: v('capNNotes')
             });
             out.textContent = '✅ Añadido. Lo verás hoy en «Hoy».';
@@ -638,6 +653,9 @@ const superCaptacion = {
         st.id = 'cap-styles';
         st.textContent = `
             .cap-page { max-width: 1100px; }
+.cap-seg { display: inline-flex; gap: 0.25rem; padding: 0.25rem; border-radius: 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); margin-bottom: 0.9rem; }
+            .cap-seg-btn { padding: 0.5rem 1rem; border-radius: 9px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 0.92rem; font-weight: 600; font-family: inherit; }
+            .cap-seg-btn.active { background: var(--primary-color); color: #fff; }
             .cap-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
             .cap-tab { padding: 0.55rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); cursor: pointer; font-size: 0.92rem; }
             .cap-tab.active { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }

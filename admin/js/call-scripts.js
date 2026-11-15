@@ -79,7 +79,82 @@ const callScripts = {
         }
     },
 
+    // Guion para centros de formación (FP de estética, peluquería, dietética…)
+    buildFormacion(p) {
+        const e = v => this.esc(v);
+        const n = e(p.name || 'el centro');
+        const saludo = new Date().getHours() < 14 ? 'buenos días' : 'buenas tardes';
+        const cerca = /sabadell|terrassa|sant quirze|castellar|barber[aà]|badia|cerdanyola|ripollet|sant cugat/i.test(`${p.city || ''} ${p.address || ''}`);
+        const ciclo = /dietet|nutri/i.test(`${p.hook || ''} ${p.notes || ''}`) ? 'dietética' : /perruq|pelu/i.test(`${p.hook || ''} ${p.notes || ''}`) ? 'peluquería' : 'estética';
+        const objeciones = [
+            ['«Lo tengo que consultar con dirección»', 'Claro, es lo normal. ¿Te mando un resumen corto por email para que lo puedas enseñar? Así lo veis con calma y, si os encaja, os lo dejo montado.'],
+            ['«No tenemos presupuesto / no podemos contratar nada»', 'No tiene ningún coste para el centro. Os lo dejo con todas las funciones sin pagar nada: lo que me interesa es que los alumnos lo conozcan.'],
+            ['«¿Y la protección de datos?»', 'El cliente que reserva solo deja nombre, email y teléfono para la cita, y solo lo ve el centro en su panel. No hace falta ningún dato de los alumnos.'],
+            ['«Mándalo a secretaría por email»', 'Perfecto. ¿Me podrías decir el nombre de la persona que coordina el ciclo, para que le llegue a ella directamente? Y así le llamo yo después para resolver dudas.'],
+            ['«Ahora estamos con exámenes / prácticas / mucho lío»', '¿Cuándo os vendría mejor? Te llamo esa semana.  →  «Llamar otro día» con la fecha.'],
+            ['«Ya usamos otra herramienta»', '¡Genial! ¿Cuál? … Si os va bien, perfecto. Si queréis, os la enseño igualmente para que los alumnos vean otra opción: muchos acabarán montando su propio negocio.'],
+            ['«¿Por qué lo regalas?»', 'Porque los alumnos de hoy son los profesionales de dentro de dos años. Si aprenden con StickyWork, es probable que lo usen cuando abran su negocio. Y vuestro salón de prácticas gana un sistema de citas sin coste.']
+        ];
+        return `
+        <div class="cs">
+            <div class="cs-block cs-prep">
+                <div class="cs-h">🎯 Antes de llamar <span>10 segundos</span></div>
+                <ul>
+                    <li><strong>Con quién quieres hablar:</strong> coordinador/a del ciclo de ${ciclo} o jefe/a del departamento. Lo normal es que primero coja secretaría.</li>
+                    <li><strong>Objetivo:</strong> conseguir el email o el teléfono directo del coordinador y permiso para mandarle la propuesta${cerca ? ', o una visita de 15 minutos' : ''}.</li>
+                    <li><strong>Lo que sabemos:</strong> ${p.hook ? e(p.hook) : 'que imparten ciclos de imagen personal o dietética.'}</li>
+                </ul>
+            </div>
+
+            <div class="cs-block">
+                <div class="cs-h">1. Secretaría <span>quién atiende primero</span></div>
+                <p class="cs-say">«Hola, ${saludo}. ¿Es <strong>${n}</strong>? … Soy Víctor, de Sabadell. Quería hablar con la persona que coordina el ciclo de ${ciclo}: es para proponerle una herramienta gratuita para el salón de prácticas y para los alumnos. ¿Con quién podría hablar?»</p>
+                <p class="cs-if"><b>Si no está:</b> «¿Me podrías decir su nombre y cuándo es mejor llamarle? ¿O un email donde escribirle?» → apúntalo en las notas y «Llamar otro día».</p>
+                <p class="cs-if"><b>Si piden que lo mandes por email:</b> pide el email del coordinador (no el general) y di que llamarás después.</p>
+            </div>
+
+            <div class="cs-block">
+                <div class="cs-h">2. Con el coordinador/a <span>presentación</span></div>
+                <p class="cs-say">«Hola, soy Víctor, de Sabadell. He creado StickyWork, una herramienta para que los negocios con cita previa —peluquerías, centros de estética, consultas— reciban reservas online. Te llamo porque creo que os puede servir en el centro de dos formas, y sin ningún coste. ¿Tienes un par de minutos?»</p>
+            </div>
+
+            <div class="cs-block">
+                <div class="cs-h">3. Preguntas</div>
+                <p class="cs-say">«¿Tenéis salón o servicio de prácticas abierto al público, donde la gente pide cita?»</p>
+                <p class="cs-hint">👂 Si dice que sí → «¿y cómo gestionáis ahora esas citas?» (libreta, teléfono, secretaría…). Ese es el gancho principal.</p>
+                <p class="cs-say">«¿En algún módulo trabajáis la gestión del negocio o el emprendimiento con los alumnos?»</p>
+                <p class="cs-hint">👂 Si dice que sí → les sirve para practicar con una herramienta real.</p>
+            </div>
+
+            <div class="cs-block">
+                <div class="cs-h">4. Propuesta</div>
+                <p class="cs-say">«Os propongo dos cosas. Una: el salón de prácticas tiene su propia página de reservas y la gente pide cita online; les llega la confirmación y un recordatorio el día antes por email, y desde ahí pueden cancelar o cambiar la hora. Dos: los alumnos aprenden a gestionar una agenda de citas como lo harán en su propio negocio. Os lo dejo montado y con todas las funciones, <strong>gratis para el centro</strong>.»</p>
+                ${cerca ? `<p class="cs-say">«Si queréis, vengo un día y lo enseño en 15 minutos en clase.»</p>` : ''}
+            </div>
+
+            <div class="cs-block">
+                <div class="cs-h">5. Cierre</div>
+                <p class="cs-say">«¿Te mando un resumen por email o por WhatsApp para que lo veáis con calma? ¿A qué dirección?»</p>
+                <p class="cs-if"><b>Si dice que sí:</b> apunta el email o pulsa <strong>✅ Permiso WhatsApp</strong> si es por WhatsApp. «Perfecto, te lo mando hoy y te llamo la semana que viene para ver qué os ha parecido.»</p>
+                <p class="cs-if"><b>Si dice que no:</b> «Perfecto, muchas gracias por tu tiempo. ¡Buen curso!» → «No le interesa».</p>
+            </div>
+
+            <details class="cs-block cs-obj" open>
+                <summary class="cs-h">💬 Si te dice… <span>${objeciones.length} objeciones</span></summary>
+                ${objeciones.map(([o, r]) => `<div class="cs-o"><div class="cs-o-q">${o}</div><div class="cs-o-a">${r}</div></div>`).join('')}
+            </details>
+
+            <div class="cs-block cs-sos">
+                <div class="cs-h">🆘 Me he quedado en blanco</div>
+                <p class="cs-say">«Perdona, que me enrollo. Una pregunta: ¿cómo gestionáis ahora las citas del salón de prácticas?»</p>
+                <p class="cs-say">«En resumen: una página de reservas para vuestro salón y una herramienta real para los alumnos, gratis para el centro.»</p>
+                <p class="cs-say">«¿Te mando un resumen por email y lo hablamos con calma?»</p>
+            </div>
+        </div>`;
+    },
+
     build(p) {
+        if (p.sector === 'formacion' || p.segment === 'formacion') return this.buildFormacion(p);
         const e = v => this.esc(v);
         const g = this.grupo(p.sector);
         const s = this.SECTOR[g];
