@@ -285,6 +285,17 @@
             </button>
         </form>
 
+        <form id="codeForm" style="display: none;">
+            <p style="color: var(--text-secondary); text-align: center; line-height: 1.5; margin: 0 0 1.25rem; font-size: 0.92rem;">
+                Escribe el código de 6 dígitos de tu app de autenticación (Google Authenticator, Authy...). Si no tienes el móvil, usa uno de tus códigos de respaldo.
+            </p>
+            <div class="form-group">
+                <label for="code" class="form-label">Código</label>
+                <input type="text" id="code" class="form-input" inputmode="numeric" autocomplete="one-time-code" maxlength="8" required>
+            </div>
+            <button type="submit" class="btn-login" id="codeButton">Verificar</button>
+        </form>
+
         <div style="text-align: center; margin-top: 1rem; margin-bottom: 1rem;">
             <a href="super-admin-forgot.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s ease;">
                 ¿Olvidaste tu contraseña?
@@ -339,7 +350,13 @@
 
                 const data = await response.json();
 
-                if (response.ok && data.success) {
+                if (response.ok && data.success && data.requires2FA) {
+                    // Segundo paso: código de la app
+                    tempToken = data.tempToken;
+                    loginForm.style.display = 'none';
+                    codeForm.style.display = 'block';
+                    document.getElementById('code').focus();
+                } else if (response.ok && data.success) {
                     // Guardar token y datos del super-admin
                     localStorage.setItem('superAdminToken', data.token);
                     localStorage.setItem('superAdminData', JSON.stringify(data.superAdmin));
@@ -357,6 +374,42 @@
                 // Rehabilitar botón
                 loginButton.disabled = false;
                 loginButton.textContent = 'Iniciar Sesión';
+            }
+        });
+
+        // Segundo paso del login (verificación en dos pasos)
+        let tempToken = null;
+        const codeForm = document.getElementById('codeForm');
+        codeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMessage.style.display = 'none';
+            const btn = document.getElementById('codeButton');
+            btn.disabled = true;
+            btn.textContent = 'Verificando...';
+            try {
+                const response = await fetch(`${API_URL}/api/super-admin/login/2fa`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tempToken, code: document.getElementById('code').value.trim() })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.success) {
+                    localStorage.setItem('superAdminToken', data.token);
+                    localStorage.setItem('superAdminData', JSON.stringify(data.superAdmin));
+                    if (data.notice) alert(data.notice);
+                    window.location.href = 'super-admin.html';
+                } else {
+                    showError(data.message || 'Código incorrecto');
+                    if (response.status === 401 && /minutos|iniciar sesión/i.test(data.message || '')) {
+                        codeForm.style.display = 'none';
+                        loginForm.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                showError('Error al conectar con el servidor.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Verificar';
             }
         });
 

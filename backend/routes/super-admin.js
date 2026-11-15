@@ -44,6 +44,116 @@ router.post('/reset-password', resetLimiter, async (req, res) => {
     }
 });
 
+// ==================== VERIFICACIÓN EN DOS PASOS DEL SUPER ADMIN ====================
+const superAdmin2fa = require('../super-admin-2fa');
+const twoFactorLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 8,
+    skipSuccessfulRequests: true,
+    message: { success: false, message: 'Demasiados códigos incorrectos. Espera 15 minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+function sesionSuperAdmin(superAdmin) {
+    const token = jwt.sign(
+        { super_admin_id: superAdmin.id, email: superAdmin.email, role: superAdmin.role, is_super_admin: true },
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+    );
+    return {
+        success: true,
+        token,
+        superAdmin: { id: superAdmin.id, email: superAdmin.email, fullName: superAdmin.full_name, role: superAdmin.role }
+    };
+}
+
+// Segundo paso del login: código de la app o de respaldo
+router.post('/login/2fa', twoFactorLimiter, async (req, res) => {
+    try {
+        const { tempToken, code } = req.body || {};
+        const adminId = superAdmin2fa.readTempToken(tempToken);
+        if (!adminId) return res.status(401).json({ success: false, message: 'Han pasado más de 5 minutos. Vuelve a escribir tu contraseña.' });
+        const [admin] = await db.query('SELECT * FROM platform_admins WHERE id = ? AND is_active = TRUE', [adminId]);
+        if (!admin || Number(admin.two_factor_enabled) !== 1) return res.status(401).json({ success: false, message: 'Vuelve a iniciar sesión.' });
+        const r = await superAdmin2fa.checkCode(db, admin, code);
+        if (!r.ok) return res.status(401).json({ success: false, message: 'Código incorrecto' });
+        const out = sesionSuperAdmin(admin);
+        if (r.backupUsed) out.notice = `Has usado un código de respaldo. Te quedan ${r.backupLeft}.`;
+        res.json(out);
+    } catch (error) {
+        console.error('Error en el segundo paso del login de super admin:', error.message);
+        res.status(500).json({ success: false, message: 'Error al verificar el código' });
+    }
+});
+
+router.get('/2fa/status', requireSuperAdmin, async (req, res) => {
+    try {
+        const [a] = await db.query('SELECT two_factor_enabled, two_factor_backup_codes FROM platform_admins WHERE id = ?', [req.superAdmin.id]);
+        res.json({ success: true, data: { enabled: Number(a?.two_factor_enabled) === 1, backupLeft: superAdmin2fa.backupLeft(a || {}) } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al comprobar la verificación' });
+    }
+});
+
+router.post('/2fa/setup', requireSuperAdmin, async (req, res) => {
+    try {
+        const [a] = await db.query('SELECT id, email, two_factor_enabled FROM platform_admins WHERE id = ?', [req.superAdmin.id]);
+        if (Number(a.two_factor_enabled) === 1) return res.status(400).json({ success: false, message: 'Ya está activada.' });
+        res.json({ success: true, data: await superAdmin2fa.startSetup(db, a) });
+    } catch (error) {
+        console.error('Error preparando 2FA del super admin:', error.message);
+        res.status(500).json({ success: false, message: 'Error al preparar la verificación' });
+    }
+});
+
+router.post('/2fa/confirm', requireSuperAdmin, twoFactorLimiter, async (req, res) => {
+    try {
+        // Activar también pide la contraseña: con una sesión robada no se puede activar con otro móvil
+        const [a] = await db.query('SELECT password_hash FROM platform_admins WHERE id = ?', [req.superAdmin.id]);
+        const { password, code } = req.body || {};
+        if (!a || !password || !(await bcrypt.compare(String(password), a.password_hash))) {
+            return res.status(400).json({ success: false, message: 'Contraseña incorrecta' });
+        }
+        const r = await superAdmin2fa.confirmSetup(db, req.superAdmin.id, code);
+        if (r.error) return res.status(400).json({ success: false, message: r.error });
+        res.json({ success: true, data: { backupCodes: r.backupCodes } });
+    } catch (error) {
+        console.error('Error activando 2FA del super admin:', error.message);
+        res.status(500).json({ success: false, message: 'Error al activar la verificación' });
+    }
+});
+
+// Desactivar o renovar códigos de respaldo: piden contraseña y un código válido
+async function comprobarIdentidad(req) {
+    const { password, code } = req.body || {};
+    const [a] = await db.query('SELECT * FROM platform_admins WHERE id = ?', [req.superAdmin.id]);
+    if (!a || !password || !(await bcrypt.compare(String(password), a.password_hash))) return 'Contraseña incorrecta';
+    const r = await superAdmin2fa.checkCode(db, a, code);
+    return r.ok ? null : 'Código incorrecto';
+}
+
+router.post('/2fa/disable', requireSuperAdmin, twoFactorLimiter, async (req, res) => {
+    try {
+        const err = await comprobarIdentidad(req);
+        if (err) return res.status(400).json({ success: false, message: err });
+        await superAdmin2fa.disable(db, req.superAdmin.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al desactivar la verificación' });
+    }
+});
+
+router.post('/2fa/backup-codes', requireSuperAdmin, twoFactorLimiter, async (req, res) => {
+    try {
+        const err = await comprobarIdentidad(req);
+        if (err) return res.status(400).json({ success: false, message: err });
+        res.json({ success: true, data: { backupCodes: await superAdmin2fa.newBackupCodes(db, req.superAdmin.id) } });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error al generar los códigos' });
+    }
+});
+
 // Login de super-admin
 router.post('/login', superAdminLoginLimiter, async (req, res) => {
     try {
@@ -82,29 +192,12 @@ router.post('/login', superAdminLoginLimiter, async (req, res) => {
             });
         }
 
-        // Generar token JWT
-        const token = jwt.sign(
-            {
-                super_admin_id: superAdmin.id,
-                email: superAdmin.email,
-                role: superAdmin.role,
-                is_super_admin: true
-            },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
-        );
+        // Verificación en dos pasos: sin código no hay sesión
+        if (Number(superAdmin.two_factor_enabled) === 1) {
+            return res.json({ success: true, requires2FA: true, tempToken: superAdmin2fa.tempToken(superAdmin) });
+        }
 
-        // Responder con token y datos del super-admin
-        res.json({
-            success: true,
-            token,
-            superAdmin: {
-                id: superAdmin.id,
-                email: superAdmin.email,
-                fullName: superAdmin.full_name,
-                role: superAdmin.role
-            }
-        });
+        res.json(sesionSuperAdmin(superAdmin));
 
     } catch (error) {
         console.error('Error en login de super-admin:', error);

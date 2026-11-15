@@ -34,6 +34,8 @@ async function runMigrations() {
             await require('./backend/prospects').ensureProspectTables(db);
             // Recuperación de contraseña del super admin
             await require('./backend/super-admin-reset').ensureResetTable(db);
+            // Verificación en dos pasos del super admin
+            await require('./backend/super-admin-2fa').ensureColumns(db);
             // Registro de envíos de email (aviso en el super admin si fallan)
             await require('./backend/email-health').ensureEmailEventsTable(db);
             // Suspensión de negocios desde el super admin
