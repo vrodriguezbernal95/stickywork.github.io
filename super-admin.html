@@ -66,6 +66,10 @@
                 <span class="nav-icon">🎯</span>
                 <span class="nav-text">Captación</span>
             </a>
+            <a href="#" class="nav-link" data-page="ia">
+                <span class="nav-icon">🤖</span>
+                <span class="nav-text">IA</span>
+            </a>
             <a href="#" class="nav-link" data-page="seguridad">
                 <span class="nav-icon">🔐</span>
                 <span class="nav-text">Seguridad</span>
@@ -208,6 +212,7 @@
     <script src="admin/js/super-messages.js"></script>
     <script src="admin/js/super-captacion.js"></script>
     <script src="admin/js/super-seguridad.js"></script>
+    <script src="admin/js/super-ia.js"></script>
     <script>
         // Navigation handling
         document.querySelectorAll('.nav-link').forEach(link => {
@@ -231,7 +236,8 @@
                 messages: () => superMessages.load(),
                 consultorias: () => superConsultorias.load(),
                 captacion: () => superCaptacion.load(),
-                seguridad: () => superSeguridad.load()
+                seguridad: () => superSeguridad.load(),
+                ia: () => superIA.load()
             };
             (pages[page] || pages.dashboard)();
         }
