@@ -83,7 +83,13 @@ router.post('/api/agent/ia-tablero/actividad', requireAgentKey, async (req, res)
     try {
         const nuevas = (Array.isArray(req.body?.actividad) ? req.body.actividad : [req.body]).slice(0, 30).map(limpiarActividad).filter(a => a.resumen);
         const t = await leer();
-        t.actividad = [...nuevas, ...t.actividad].slice(0, MAX_ACTIVIDAD);
+        // Las que ya estaban (misma fecha, agente y resumen) no se repiten: se puede publicar el archivo entero
+        const clave = a => `${a.fecha}|${a.agente}|${a.resumen}`;
+        const ya = new Set(t.actividad.map(clave));
+        const añadir = nuevas.filter(a => !ya.has(clave(a)));
+        t.actividad = [...añadir, ...t.actividad]
+            .sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)))
+            .slice(0, MAX_ACTIVIDAD);
         await guardar(t);
         res.json({ success: true, actividad: t.actividad.length });
     } catch (e) {
