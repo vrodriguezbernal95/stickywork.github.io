@@ -141,6 +141,14 @@ const superNegocios = {
                         ? 'Está suspendido: no puede entrar en su panel y su widget y su página no aceptan reservas.'
                         : 'Si lo suspendes, no podrá entrar en su panel y su widget y su página dejarán de aceptar reservas. Úsalo solo en casos de impago o abuso.'}</p>
                     <button class="sa-btn ${suspendido ? 'primary' : 'danger'}" onclick="superNegocios.toggleSuspend(${Number(b.id)}, ${suspendido ? 'false' : 'true'})">${suspendido ? '▶️ Reactivar negocio' : '⛔ Suspender negocio'}</button>
+                </div>
+                <div class="sa-section">
+                    <h4>Eliminar negocio</h4>
+                    <p class="sa-note">Para cuentas de prueba o que nunca llegaron a usarse. Se borra todo (reservas, servicios, usuarios…) y <strong>no se puede deshacer</strong>. Escribe el nombre exacto para confirmar.</p>
+                    <div class="sa-form">
+                        <input id="negDelName" placeholder="${ui.esc(b.name)}" style="flex:1; min-width:200px;">
+                        <button class="sa-btn danger" onclick="superNegocios.remove(${Number(b.id)})">🗑️ Eliminar definitivamente</button>
+                    </div>
                 </div>`}`;
         } catch (e) {
             body.innerHTML = `<div class="sa-empty">Error: ${superUI.esc(e.message)}</div>`;
@@ -183,6 +191,17 @@ const superNegocios = {
                 <span class="sa-sub">${superUI.fechaHora(h.changed_at)}</span></div>`).join('')}</div>`
                 : '<p class="sa-note" style="margin-top:0.75rem;">Sin cambios de plan registrados.</p>';
         } catch (e) { box.textContent = e.message; }
+    },
+
+    async remove(id) {
+        const confirmName = document.getElementById('negDelName').value;
+        if (!confirm('¿Eliminar este negocio y todos sus datos? No se puede deshacer.')) return;
+        try {
+            const r = await superApi.fetch(`/api/super-admin/businesses/${id}/permanente`, { method: 'DELETE', body: JSON.stringify({ confirmName }) });
+            alert(r.message || 'Eliminado');
+            this.close();
+            this.loadList();
+        } catch (e) { alert(e.message); }
     },
 
     async toggleSuspend(id, suspender) {

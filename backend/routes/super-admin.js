@@ -611,6 +611,30 @@ router.delete('/businesses/:id', requireSuperAdmin, async (req, res) => {
     }
 });
 
+// Eliminar un negocio DE VERDAD (cuentas de prueba o abandonadas). Borra en cascada sus reservas, servicios,
+// usuarios, etc. Protecciones: no demos, no negocios pagando en Stripe y hay que escribir el nombre exacto.
+router.delete('/businesses/:id/permanente', requireSuperAdmin, async (req, res) => {
+    try {
+        const id = Number(req.params.id);
+        const [b] = await db.query('SELECT id, name FROM businesses WHERE id = ?', [id]);
+        if (!b) return res.status(404).json({ success: false, message: 'Negocio no encontrado' });
+        if (DEMO_BUSINESS_IDS.includes(id)) return res.status(400).json({ success: false, message: 'Las demos no se pueden eliminar' });
+        const [sub] = await db.query(`SELECT status FROM subscriptions WHERE business_id = ? AND status IN ('active','trialing','past_due') LIMIT 1`, [id]);
+        if (sub) return res.status(400).json({ success: false, message: 'Tiene una suscripción de Stripe activa: cancélala antes de eliminarlo' });
+        if (String((req.body || {}).confirmName || '').trim() !== String(b.name).trim()) {
+            return res.status(400).json({ success: false, message: 'El nombre no coincide' });
+        }
+        await db.query('UPDATE prospects SET business_id = NULL WHERE business_id = ?', [id]).catch(() => {});
+        await db.query('DELETE FROM businesses WHERE id = ?', [id]);
+        await require('../suspension').refresh().catch(() => {});
+        console.log(`🗑️ [Super admin] Negocio ${id} («${b.name}») eliminado por ${req.superAdmin?.email || 'super admin'}`);
+        res.json({ success: true, message: `«${b.name}» eliminado` });
+    } catch (error) {
+        console.error('Error eliminando negocio:', error.message);
+        res.status(500).json({ success: false, message: 'No se pudo eliminar: ' + (error.code === 'ER_ROW_IS_REFERENCED_2' ? 'tiene datos que lo impiden' : 'error del servidor') });
+    }
+});
+
 // ==================== SUPPORT MESSAGES ====================
 
 // Listar mensajes de soporte de clientes
