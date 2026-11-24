@@ -206,7 +206,7 @@ CTA = '''        <div class="seo-cta">
 
 HERO_BTNS = '<a href="/registro.html" class="btn btn-secondary">Empezar gratis</a> <a href="/demo.html" class="btn btn-outline">Ver la demo</a>'
 
-def sector(slug, keyword_title, description, h1, intro, problems, features, how, faqs, related):
+def sector(slug, keyword_title, description, h1, intro, problems, features, how, faqs, related, extra='', badge='Plan gratuito · Sin tarjeta'):
     cards = '\n'.join(f'''            <div class="seo-card">
                 <h3>{t}</h3>
                 <p>{d}</p>
@@ -215,7 +215,7 @@ def sector(slug, keyword_title, description, h1, intro, problems, features, how,
     steps = '\n'.join(f'            <li>{s}</li>' for s in how)
     rel = ' · '.join(f'<a href="/{u}">{t}</a>' for t, u in related)
     body = f'''        <p>{intro}</p>
-
+{extra}
         <h2>Lo que más quita tiempo en el día a día</h2>
         <ul>
 {probs}
@@ -238,7 +238,7 @@ def sector(slug, keyword_title, description, h1, intro, problems, features, how,
         <p class="seo-related">También para: {rel}. Más ideas en el <a href="/blog/">blog</a>.</p>'''
     return page(slug, keyword_title, description, h1,
                 f'<p>{description}</p>\n        {HERO_BTNS}', body,
-                schema=[faq_schema(faqs)], badge='Plan gratuito · Sin tarjeta')
+                schema=[faq_schema(faqs)], badge=badge)
 
 COMMON_FAQ_PRICE = ('¿Cuánto cuesta?', 'Hay un plan gratuito para siempre con hasta 30 reservas al mes y 1 usuario. El plan Profesional cuesta 39 € al mes (reservas ilimitadas, 3 usuarios y un informe mensual con IA) y el Premium 79 € al mes. Los planes de pago tienen 7 días de prueba y no hay permanencia.')
 COMMON_FAQ_WEB = ('¿Necesito tener página web?', 'No. Al registrarte tienes una página de reservas propia con un enlace que puedes compartir en Instagram, Google o WhatsApp, y un código QR para imprimir. Si tienes web, puedes añadir también el formulario de reservas copiando un pequeño código.')
@@ -322,9 +322,9 @@ urls.append(sector(
 
 urls.append(sector(
     'reservas-online-fisioterapeutas.html',
-    'Programa de citas para fisioterapeutas | StickyWork',
-    'Citas online para clínicas de fisioterapia: tus pacientes reservan su sesión, programas tratamientos de varias sesiones y reduces las ausencias con recordatorios.',
-    'Citas online para fisioterapeutas y clínicas de fisioterapia',
+    'Sistema de reservas para fisioterapia gratis | StickyWork',
+    'Sistema de reservas para fisioterapia gratis: plan Gratis para siempre hasta 30 reservas al mes, sin tarjeta. Tratamientos en serie y recordatorios por email.',
+    'Sistema de reservas para fisioterapia gratis: citas online para tu clínica',
     'Un tratamiento de fisioterapia suele ser una serie de sesiones, y cada ausencia es un hueco perdido. StickyWork te ayuda a llenar la agenda: tus pacientes reservan en tu enlace, programas las sesiones de un tratamiento de una vez y cada paciente recibe un recordatorio el día antes.',
     ['Tratamientos de varias sesiones que hay que ir agendando.',
      'Sesiones de distinta duración según la técnica o la zona.',
@@ -343,17 +343,23 @@ urls.append(sector(
     [COMMON_FAQ_PRICE, COMMON_FAQ_WEB,
      ('¿Puedo programar todas las sesiones de un tratamiento?', 'Sí. Desde una reserva puedes repetirla cada 1 a 4 semanas, hasta 12 veces.'),
      ('¿Pueden trabajar varios fisioterapeutas en la misma cuenta?', 'Sí. Cada uno puede tener su propio usuario con permisos de administrador o de personal. El plan Gratis incluye 1 usuario, el Profesional 3 y el Premium 10.')],
-    [('Nutricionistas', 'reservas-online-nutricionistas.html'), ('Psicólogos', 'reservas-online-psicologos.html'), ('Peluquerías', 'reservas-online-peluquerias.html')]))
+    [('Nutricionistas', 'reservas-online-nutricionistas.html'), ('Psicólogos', 'reservas-online-psicologos.html'), ('Peluquerías', 'reservas-online-peluquerias.html')],
+    extra='''
+        <div class="seo-note">
+            <p><strong>Un sistema de reservas para fisioterapia gratis, de verdad.</strong> El plan Gratis es para siempre: hasta 30 reservas al mes, 1 usuario y sin tarjeta de crédito. Te registras, configuras tus sesiones y empiezas a recibir citas; si tu clínica crece, puedes pasar a un plan de pago cuando quieras. Consulta los <a href="/planes.html">planes y precios</a>.</p>
+        </div>''',
+    badge='Gratis para siempre · Hasta 30 reservas al mes'))
 
 # ======================= BLOG =======================
-def article(slug, title, description, h1, date, read_min, body):
+def article(slug, title, description, h1, date, read_min, body, modified=None):
+    modified = modified or date
     path = f'blog/{slug}.html'
     schema = {"@context": "https://schema.org", "@type": "Article", "headline": h1, "description": description,
-              "datePublished": date, "dateModified": date, "inLanguage": "es",
+              "datePublished": date, "dateModified": modified, "inLanguage": "es",
               "author": {"@type": "Organization", "name": "StickyWork"},
               "publisher": {"@type": "Organization", "name": "StickyWork", "url": SITE},
               "mainEntityOfPage": f"{SITE}/{path}"}
-    full_body = f'''        <p class="seo-meta">Equipo StickyWork · {date[8:10]}/{date[5:7]}/{date[0:4]} · {read_min} min de lectura</p>
+    full_body = f'''        <p class="seo-meta">Equipo StickyWork · {date[8:10]}/{date[5:7]}/{date[0:4]}{'' if modified == date else f' (actualizado el {modified[8:10]}/{modified[5:7]}/{modified[0:4]})'} · {read_min} min de lectura</p>
 {body}
 
 {CTA}
@@ -364,13 +370,27 @@ def article(slug, title, description, h1, date, read_min, body):
 ARTICLES = []
 
 ARTICLES.append(('como-reducir-citas-no-presentadas',
-  'Cómo reducir las citas a las que no se presenta el cliente | StickyWork',
-  'Siete medidas prácticas para reducir las ausencias sin avisar en peluquerías, consultas y clínicas: recordatorios, confirmación, facilidad para cancelar y más.',
-  'Cómo reducir las citas a las que no se presenta el cliente',
-  '2026-11-11', 6, '''        <p>Un cliente que no se presenta no solo es una cita perdida: es un hueco que podrías haber dado a otra persona. En negocios con cita previa (peluquerías, consultas, clínicas, centros de estética) las ausencias sin avisar son uno de los problemas más frecuentes. No se pueden eliminar del todo, pero sí reducir mucho con unas pocas medidas.</p>
+  'Cómo reducir no shows y ausencias en citas | StickyWork',
+  'Qué es un no show y cómo evitar no shows en tu negocio: recordatorios, política de cancelación, señal, confirmación y lista de espera para reducir ausencias en citas.',
+  'Cómo reducir los no shows y las ausencias en citas de tu negocio',
+  '2026-11-11', 8, '''        <p>Un cliente que no se presenta no solo es una cita perdida: es un hueco que podrías haber dado a otra persona. En negocios con cita previa (peluquerías, consultas, clínicas, centros de estética) las ausencias sin avisar son uno de los problemas más frecuentes. No se pueden eliminar del todo, pero sí reducir mucho con unas pocas medidas. Aquí tienes las que mejor funcionan para <strong>evitar no shows en tu negocio</strong>.</p>
+
+        <h2>Qué es un "no show" y por qué cuesta tanto</h2>
+        <p>"No show" es el término en inglés para el cliente que tiene una cita reservada, no acude y tampoco avisa. En castellano lo llamamos ausencia sin aviso, plantón o cita no presentada. Es distinto de una cancelación: si el cliente cancela con tiempo, el hueco se puede volver a ocupar; si simplemente no viene, ya no hay margen.</p>
+        <p>El coste va más allá del precio de la cita. Pierdes el tiempo de esa franja, a veces has preparado material o has rechazado a otra persona, y todo ello sin posibilidad de recuperarlo. Si quieres ponerle cifra a tu caso, usa la <a href="/herramientas/calculadora-citas-perdidas.html">calculadora de citas perdidas</a>: con tus propias citas y precios ves cuánto te cuestan al año.</p>
+
+        <h2>Por qué no vienen los clientes</h2>
+        <p>Conocer la causa ayuda a elegir la medida. Los motivos más habituales son:</p>
+        <ul>
+            <li><strong>Olvido.</strong> Sobre todo en citas reservadas con semanas de antelación.</li>
+            <li><strong>Imprevistos</strong> que no avisan porque cancelar les resulta incómodo o complicado.</li>
+            <li><strong>Vergüenza o evitación</strong>, por ejemplo cuando no han cumplido algo del tratamiento.</li>
+            <li><strong>Reservas a la ligera</strong>, hechas sin compromiso real o en varios sitios a la vez.</li>
+        </ul>
+        <p>Los dos primeros son, con diferencia, los más fáciles de resolver con recordatorios y facilidades para cancelar.</p>
 
         <h2>1. Envía un recordatorio el día antes</h2>
-        <p>La causa más habitual de una ausencia es el simple olvido, sobre todo en citas reservadas con semanas de antelación. Un recordatorio el día anterior, con la fecha, la hora y la dirección, resuelve la mayoría de los casos. Lo ideal es que sea automático, para no depender de acordarte tú.</p>
+        <p>La causa más habitual de una ausencia es el simple olvido. Un recordatorio el día anterior, con la fecha, la hora y la dirección, resuelve la mayoría de los casos. Lo ideal es que sea automático, para no depender de acordarte tú. Tienes ejemplos con texto en nuestro artículo sobre el <a href="/blog/mensaje-recordatorio-cita-plantillas.html">mensaje de recordatorio de cita</a> y en las <a href="/herramientas/plantillas-whatsapp-citas.html">plantillas de WhatsApp para citas</a>.</p>
 
         <h2>2. Pon fácil cancelar o cambiar la cita</h2>
         <p>Parece contradictorio, pero cuanto más fácil es cancelar, menos gente simplemente no aparece. Si para avisar hay que llamar en horario de apertura, muchos clientes no lo hacen. Un enlace en el email de la reserva para cancelar o cambiar la hora convierte una ausencia en un hueco libre que puedes volver a ocupar.</p>
@@ -380,17 +400,27 @@ ARTICLES.append(('como-reducir-citas-no-presentadas',
 
         <h2>4. Confirma las reservas cuando tenga sentido</h2>
         <p>En negocios con citas largas o muy demandadas, revisar cada solicitud antes de aceptarla tiene ventajas: detectas reservas dudosas y el cliente sabe exactamente cuándo su cita es firme. La clave es responder rápido para no dejar a nadie esperando.</p>
+        <p>Otra opción es pedir al cliente que confirme su asistencia. Un mensaje del tipo "responde SÍ para mantener tu cita" funciona bien con citas muy valiosas o con clientes que ya han fallado antes, pero supone trabajo manual, así que resérvalo para esos casos.</p>
 
-        <h2>5. Ten una política de cancelación clara</h2>
-        <p>No hace falta cobrar penalizaciones. Basta con explicar con claridad cuánta antelación pides para cancelar (por ejemplo, 24 horas) en tu web, en tus redes y en el mensaje de confirmación. Que el cliente lo sepa de antemano cambia su comportamiento.</p>
+        <h2>5. Define una política de cancelación clara</h2>
+        <p>No hace falta cobrar penalizaciones. Basta con explicar con claridad cuánta antelación pides para cancelar (por ejemplo, 24 horas) en tu web, en tus redes y en el mensaje de confirmación. Que el cliente lo sepa de antemano cambia su comportamiento. Unas pautas para redactarla:</p>
+        <ul>
+            <li>Indica el plazo exacto ("hasta 24 horas antes") y cómo avisar.</li>
+            <li>Explica qué ocurre si no se respeta, aunque sea solo "perderás tu hueco habitual".</li>
+            <li>Usa un tono amable y breve: es una norma para que otros clientes puedan venir, no un castigo.</li>
+            <li>Aplícala con criterio: una primera falta excepcional no tiene por qué tener consecuencias.</li>
+        </ul>
 
-        <h2>6. Lleva la cuenta de quién falla</h2>
-        <p>La mayoría de los clientes faltan una vez de forma excepcional; unos pocos lo hacen a menudo. Apuntar las ausencias te permite tratar distinto a cada caso: por ejemplo, pedir confirmación previa solo a quien ya ha fallado varias veces.</p>
+        <h2>6. Valora pedir una señal o depósito</h2>
+        <p>Pedir una pequeña señal al reservar es una práctica extendida en servicios largos, caros o de alta demanda (tratamientos de varias horas, primeras visitas, clases con aforo limitado). Quien ha pagado algo, se acuerda y avisa si no puede ir. Tiene contras: añade un paso a la reserva y puede echar atrás a clientes nuevos, así que úsala solo donde de verdad compense y explica con claridad si es reembolsable. Si la pides, decide de antemano cómo la cobras y la devuelves; si no te encaja, la política de cancelación y los recordatorios ya consiguen buena parte del efecto.</p>
 
-        <h2>7. Rellena los huecos que quedan</h2>
-        <p>Si un cliente cancela con tiempo, ese hueco vuelve a estar disponible para quien reserve online. Cuanto antes se libere, más probable es que alguien lo aproveche.</p>
+        <h2>7. Lleva la cuenta de quién falla</h2>
+        <p>La mayoría de los clientes faltan una vez de forma excepcional; unos pocos lo hacen a menudo. Apuntar las ausencias te permite tratar distinto a cada caso: por ejemplo, pedir confirmación previa solo a quien ya ha fallado varias veces, o reservarle solo huecos en horas menos demandadas.</p>
 
-        <h2>Cómo hacerlo con StickyWork</h2>
+        <h2>8. Rellena los huecos: lista de espera manual</h2>
+        <p>Si un cliente cancela con tiempo, ese hueco vuelve a estar disponible para quien reserve online. Cuanto antes se libere, más probable es que alguien lo aproveche. Además, puedes llevar una lista de espera sencilla: apunta a los clientes que querían un día concreto y, cuando surja un hueco, escríbeles en ese momento. No necesitas nada sofisticado: una nota con nombre, teléfono y franja deseada es suficiente.</p>
+
+        <h2>Cómo reducir ausencias en citas con StickyWork</h2>
         <div class="seo-note">
             <ul>
                 <li><strong>Recordatorio automático</strong> por email el día antes de la cita.</li>
@@ -398,9 +428,86 @@ ARTICLES.append(('como-reducir-citas-no-presentadas',
                 <li><strong>Confirmación manual</strong> opcional: tú aceptas o rechazas cada solicitud y el cliente recibe un email.</li>
                 <li>Marca a quien <strong>no se presenta</strong>: con tres faltas pasa automáticamente a la categoría "Riesgo".</li>
                 <li>Las cancelaciones <strong>liberan el hueco</strong> al momento en tu página de reservas, y te llega un aviso por email.</li>
+                <li>En cada reserva hay un <strong>botón de WhatsApp</strong> que abre el mensaje ya escrito; lo envías tú con un toque (el envío automático es solo por email).</li>
             </ul>
         </div>
-        <p>¿Tienes un negocio concreto? Mira cómo funciona para <a href="/reservas-online-peluquerias.html">peluquerías</a>, <a href="/reservas-online-nutricionistas.html">nutricionistas</a>, <a href="/reservas-online-psicologos.html">psicólogos</a> o <a href="/reservas-online-fisioterapeutas.html">fisioterapeutas</a>.</p>'''))
+        <p>¿Tienes un negocio concreto? Mira cómo funciona para <a href="/reservas-online-peluquerias.html">peluquerías</a>, <a href="/reservas-online-nutricionistas.html">nutricionistas</a>, <a href="/reservas-online-psicologos.html">psicólogos</a> o <a href="/reservas-online-fisioterapeutas.html">fisioterapeutas</a>.</p>''', '2026-11-24'))
+
+ARTICLES.append(('mensaje-recordatorio-cita-plantillas',
+  'Recordatorio de cita: plantillas de mensaje para copiar | StickyWork',
+  'Mensaje de recordatorio de cita para WhatsApp, SMS y email, por sector: peluquería, estética, fisio, psicología y dental. Cuándo enviarlo y qué incluir.',
+  'Recordatorio de cita: plantillas de mensaje listas para copiar',
+  '2026-11-24', 8, '''        <p>Un buen <strong>recordatorio de cita</strong> evita que el cliente se olvide, y cuesta unos segundos. Aquí tienes plantillas de mensaje de recordatorio por canal (WhatsApp, SMS y email) y por sector (peluquería, estética, fisioterapia, psicología y dental), además de cuándo enviarlo y qué tiene que llevar. Cópialas y cambia los datos entre corchetes.</p>
+
+        <h2>Cuándo enviar el recordatorio de una cita</h2>
+        <ul>
+            <li><strong>24 horas antes</strong> es el momento más práctico: el cliente aún puede avisar de que no llega y tú puedes dar el hueco a otra persona.</li>
+            <li><strong>Citas reservadas con mucha antelación</strong> (semanas): añade un primer aviso unos días antes, además del de la víspera.</li>
+            <li><strong>Citas largas o de alto valor</strong> (tratamientos, primeras visitas): puedes sumar un aviso corto la mañana del mismo día.</li>
+            <li><strong>Evita avisar demasiado tarde o demasiado pronto</strong>: un recordatorio a última hora no deja tiempo para reorganizar, y uno con una semana de antelación se olvida.</li>
+        </ul>
+
+        <h2>Qué debe incluir un mensaje de recordatorio</h2>
+        <ol>
+            <li><strong>Nombre del cliente</strong>, para que no parezca un mensaje masivo.</li>
+            <li><strong>Día y hora</strong>, escritos de forma clara ("mañana, jueves 5, a las 17:30").</li>
+            <li><strong>Servicio o tipo de cita</strong>, sobre todo si el cliente tiene varias.</li>
+            <li><strong>Dirección</strong> o cómo llegar, si no es evidente.</li>
+            <li><strong>Cómo cancelar o cambiar la cita</strong>: un enlace o un teléfono. Es la parte que más huecos libera.</li>
+            <li>Si procede, <strong>indicaciones previas</strong>: llegar cinco minutos antes, venir sin maquillaje, traer pruebas, etc.</li>
+        </ol>
+
+        <h2>Plantillas de recordatorio por canal</h2>
+        <h3>WhatsApp</h3>
+        <p>Es el canal más cercano y el que más se lee. Mantén el mensaje corto y con tono natural.</p>
+        <div class="seo-note"><p>Hola [nombre], te recordamos tu cita de mañana, [día], a las [hora] en [negocio] ([dirección]). Si no puedes venir, avísanos por aquí y te buscamos otro hueco. ¡Te esperamos!</p></div>
+        <p>Si prefieres otras formulaciones, en las <a href="/herramientas/plantillas-whatsapp-citas.html">plantillas de WhatsApp para citas</a> tienes más mensajes (confirmación, hueco libre, petición de reseña) para copiar con un clic.</p>
+
+        <h3>SMS</h3>
+        <p>El SMS tiene poco espacio y no admite formato, así que ve directo al grano y evita enlaces largos.</p>
+        <div class="seo-note"><p>[Negocio]: [nombre], recordatorio de tu cita mañana [día] a las [hora]. Para cambiarla o cancelarla, llama al [teléfono]. Gracias.</p></div>
+
+        <h3>Email</h3>
+        <p>El email permite más detalle y un botón para gestionar la cita. Cuida el asunto: tiene que decir lo esencial.</p>
+        <div class="seo-note">
+            <p><strong>Asunto:</strong> Recordatorio: tu cita mañana a las [hora] en [negocio]</p>
+            <p>Hola [nombre],<br>
+            te recordamos tu cita de [servicio] el [día] a las [hora] en [dirección].<br>
+            Si necesitas cambiar la hora o cancelarla, puedes hacerlo aquí: [enlace]. Así podremos ofrecer ese hueco a otra persona.<br>
+            Un saludo,<br>
+            [negocio]</p>
+        </div>
+
+        <h2>Plantillas por sector</h2>
+        <h3>Peluquería</h3>
+        <div class="seo-note"><p>Hola [nombre], mañana a las [hora] tienes cita para [corte / color / mechas] en [peluquería]. Recuerda que el color lleva un buen rato, así que si te retrasas, avísanos. Si no puedes venir, dínoslo con tiempo y te cambiamos la cita.</p></div>
+
+        <h3>Centro de estética</h3>
+        <div class="seo-note"><p>Hola [nombre], te recordamos tu tratamiento de [tratamiento] mañana a las [hora] en [centro]. Si es depilación, recuerda venir con el vello de la longitud indicada; si es facial, mejor sin maquillaje. ¿Necesitas cambiar la cita? Respóndenos y lo vemos.</p></div>
+
+        <h3>Fisioterapia</h3>
+        <div class="seo-note"><p>Hola [nombre], mañana [día] a las [hora] tienes tu sesión de fisioterapia en [clínica]. Trae ropa cómoda y, si los tienes, tus informes o pruebas. Si no puedes venir, avísanos cuanto antes: otros pacientes esperan hueco.</p></div>
+
+        <h3>Psicología o consulta</h3>
+        <p>Aquí conviene un tono sobrio y discreto: no menciones el motivo de la consulta en el mensaje.</p>
+        <div class="seo-note"><p>Hola [nombre], te recuerdo que mañana [día] a las [hora] tenemos tu cita en la consulta [dirección o enlace de la videollamada]. Si necesitas cambiarla, escríbeme con tiempo y buscamos otra hora.</p></div>
+
+        <h3>Clínica dental</h3>
+        <div class="seo-note"><p>Hola [nombre], le recordamos su cita en [clínica] el [día] a las [hora] con [doctor/a]. Si es la primera visita, venga cinco minutos antes para completar la ficha. Si no puede asistir, llámenos al [teléfono] para reprogramarla.</p></div>
+
+        <h2>Errores típicos al enviar recordatorios</h2>
+        <ul>
+            <li><strong>No decir cómo cancelar.</strong> Un recordatorio sin salida invita a no responder y a no venir.</li>
+            <li><strong>Mensajes fríos o autoritarios.</strong> "Se recuerda que..." no funciona igual que "te esperamos mañana".</li>
+            <li><strong>Falta de datos.</strong> Si no pone el día o la hora, el cliente tiene que ir a buscarlos.</li>
+            <li><strong>Enviarlos a deshoras.</strong> Evita la noche y el fin de semana para citas entre semana.</li>
+            <li><strong>Olvidarse de enviarlos.</strong> Un recordatorio que depende de que te acuerdes cada día termina fallando; por eso conviene automatizarlo.</li>
+            <li><strong>Incluir datos sensibles.</strong> Especialmente en salud: basta con día, hora y lugar.</li>
+        </ul>
+
+        <h2>Cómo automatizarlo con StickyWork</h2>
+        <p>Si no quieres estar pendiente de enviar mensajes uno a uno, StickyWork manda cada mañana un <strong>recordatorio automático por email</strong> a los clientes que tienen cita al día siguiente, con un botón para cancelar o cambiar la hora. Además, cada reserva tiene un botón de WhatsApp que abre el mensaje ya escrito con los datos de la cita; <strong>lo envías tú</strong> pulsando enviar, porque los WhatsApp y los SMS no se mandan automáticamente. Puedes ver cómo se ve en la <a href="/demo.html">demo</a>.</p>
+        <p>Y si quieres ir más allá del recordatorio, lee nuestra guía para <a href="/blog/como-reducir-citas-no-presentadas.html">reducir los no shows</a>: política de cancelación, confirmación y cómo rellenar huecos.</p>'''))
 
 ARTICLES.append(('boton-reservas-instagram-google-whatsapp',
   'Cómo poner un enlace de reservas en Instagram, Google y WhatsApp | StickyWork',
@@ -449,7 +556,7 @@ for a in ARTICLES:
 items = '\n'.join(f'''            <a class="blog-item" href="/blog/{slug}.html">
                 <h2>{html.escape(h1)}</h2>
                 <p>{html.escape(desc)}</p>
-            </a>''' for slug, _t, desc, h1, _d, _m, _b in ARTICLES)
+            </a>''' for slug, _t, desc, h1, _d, _m, _b, *_x in ARTICLES)
 urls.append(page('blog/index.html', 'Blog de StickyWork | Consejos para negocios con cita previa',
      'Consejos prácticos para peluquerías, consultas y clínicas: cómo llenar la agenda, reducir ausencias y recibir más reservas online.',
      'Blog: consejos para negocios con cita previa',
@@ -802,7 +909,7 @@ WA_BODY = f"""        <div class="tool-box">
             <li><strong>Mensajes cortos y con el nombre.</strong> Se leen más y suenan menos a mensaje automático.</li>
             <li><strong>Guárdalas como respuestas rápidas</strong> en WhatsApp Business para enviarlas en un segundo.</li>
         </ul>
-        <p>¿Quieres saber cuánto te cuestan las citas que fallan? Pruébalo en la <a href="/herramientas/calculadora-citas-perdidas.html">calculadora de citas perdidas</a>.</p>
+        <p>¿Quieres saber cuánto te cuestan las citas que fallan? Pruébalo en la <a href="/herramientas/calculadora-citas-perdidas.html">calculadora de citas perdidas</a>. Y si buscas más ejemplos por sector y por canal, mira el artículo sobre el <a href="/blog/mensaje-recordatorio-cita-plantillas.html">mensaje de recordatorio de cita</a>.</p>
 """
 WA_JS = """    <script>
     (function () {
