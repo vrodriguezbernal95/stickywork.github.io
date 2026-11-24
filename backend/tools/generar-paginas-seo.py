@@ -284,7 +284,7 @@ urls.append(sector(
      ('Varias clientas a la vez', 'Si sois varias personas en el salón, indica cuántas reservas aceptas a la misma hora.'),
      ('Recordatorios automáticos', 'Email al reservar y recordatorio el día antes. Además, un botón para escribir a cada clienta por WhatsApp con el mensaje ya preparado.'),
      ('Clientas que fallan', 'Marca a quien no se presenta: con tres faltas pasa automáticamente a "Riesgo" para que lo tengas en cuenta.'),
-     ('Fidelización', 'Programa de visitas: al llegar al número que tú decidas, la clienta consigue un vale.'),
+     ('Tarjeta de fidelización digital', 'Tarjeta de sellos por visitas con QR: al llegar al número que tú decidas, la clienta consigue un vale. <a href="/tarjeta-fidelizacion-digital.html">Cómo funciona</a>.'),
      ('Reservas desde Instagram', 'Pon tu enlace de reservas en la bio de Instagram y en Google, o imprime tu código QR para el mostrador.')],
     ['Crea tu cuenta gratis y elige "Peluquería / Salón de Belleza".',
      'Revisa los servicios de ejemplo: nombres, duración y precios.',
@@ -293,7 +293,11 @@ urls.append(sector(
     [COMMON_FAQ_PRICE, COMMON_FAQ_WEB,
      ('¿Mis clientas tienen que descargarse una aplicación?', 'No. Reservan desde el navegador del móvil en tu enlace o en tu web, en un par de minutos.'),
      ('¿Qué pasa si una clienta quiere cambiar la cita?', 'Puede cambiar la hora o cancelar desde el enlace de su email, o puedes moverla tú desde el calendario y avisarla por email.')],
-    [('Nutricionistas', 'reservas-online-nutricionistas.html'), ('Fisioterapeutas', 'reservas-online-fisioterapeutas.html'), ('Psicólogos', 'reservas-online-psicologos.html')]))
+    [('Nutricionistas', 'reservas-online-nutricionistas.html'), ('Fisioterapeutas', 'reservas-online-fisioterapeutas.html'), ('Psicólogos', 'reservas-online-psicologos.html')],
+    extra='''
+        <div class="seo-note">
+            <p><strong>Premia a tus clientas habituales sin tarjetas de cartón.</strong> Con la <a href="/tarjeta-fidelizacion-digital.html">tarjeta de fidelización digital</a> decides, por ejemplo, que cada 6 visitas completadas la clienta tenga un corte gratis. Ella escanea tu QR, escribe su email o teléfono y ve cuántas visitas lleva; al llegar a la meta recibe un vale con código que tú entregas desde el panel. Está incluida en todos los planes, también el Gratis.</p>
+        </div>'''))
 
 urls.append(sector(
     'reservas-online-psicologos.html',
@@ -347,8 +351,101 @@ urls.append(sector(
     extra='''
         <div class="seo-note">
             <p><strong>Un sistema de reservas para fisioterapia gratis, de verdad.</strong> El plan Gratis es para siempre: hasta 30 reservas al mes, 1 usuario y sin tarjeta de crédito. Te registras, configuras tus sesiones y empiezas a recibir citas; si tu clínica crece, puedes pasar a un plan de pago cuando quieras. Consulta los <a href="/planes.html">planes y precios</a>.</p>
+        </div>
+        <div class="seo-note">
+            <p><strong>Pacientes de mantenimiento.</strong> Si tienes pacientes que vuelven con regularidad, puedes premiarlos con la <a href="/tarjeta-fidelizacion-digital.html">tarjeta de fidelización digital</a>: por ejemplo, un descuento en la sesión número 10. Cuenta las sesiones que marcas como completadas.</p>
         </div>''',
     badge='Gratis para siempre · Hasta 30 reservas al mes'))
+
+# ======================= TARJETA DE FIDELIZACIÓN =======================
+FIDE_FAQ = [
+    ('¿Cuánto cuesta la tarjeta de fidelización digital?', 'Está incluida en todos los planes, también en el Gratis, sin coste adicional ni límite por plan. Eso sí, el plan Gratis tiene su propio tope de 30 reservas al mes. Consulta la página de planes y precios.'),
+    ('¿Es una tarjeta de puntos por euros gastados?', 'No. Es una tarjeta de sellos por visitas: cada cita completada cuenta como una visita, da igual lo que haya gastado el cliente. Tú eliges cada cuántas visitas hay premio.'),
+    ('¿Mis clientes tienen que descargarse una aplicación?', 'No. Es una página web: abren el QR o el enlace en el móvil, escriben su email o su teléfono y ven cuántas visitas llevan.'),
+    ('¿Qué visitas cuentan?', 'Solo las citas que tú marcas como completadas en tu panel. Las citas canceladas o a las que el cliente no se presentó no suman.'),
+    ('¿Cómo entrego el premio?', 'Cuando el cliente llega a la meta le aparece un vale con un código. Te lo enseña, lo localizas en tu panel y pulsas «Entregar premio» para que no pueda usarse dos veces. Después, la cuenta de visitas empieza de nuevo.'),
+    ('¿Avisa StickyWork al cliente de que ha ganado el premio?', 'No de forma automática. El cliente lo ve cuando consulta su tarjeta, así que conviene recordárselo en el local o por mensaje.'),
+    ('¿Qué premio puedo poner?', 'El que quieras, en texto libre: un corte gratis, un descuento en el siguiente servicio, un tratamiento extra, un producto... Tú decides y tú lo cumples.'),
+]
+
+FIDE_BODY = f'''        <p>Seguro que has tenido alguna vez una tarjeta de cartón con huecos para sellos: el café número diez gratis, el corte número seis de regalo. Es una buena idea que en la práctica falla mucho, y por eso cada vez más negocios con cita previa la pasan a formato digital. Aquí te explicamos cómo funciona la <strong>tarjeta de fidelización digital de StickyWork</strong> y cómo montar un programa que de verdad haga volver a tus clientes.</p>
+
+        <h2>Por qué las tarjetas de sellos de cartón no funcionan bien</h2>
+        <ul>
+            <li><strong>Se pierden o se olvidan en casa.</strong> El cliente llega a la cita sin la tarjeta y el sello "se apunta la próxima vez", o no se apunta nunca.</li>
+            <li><strong>Se pueden falsificar.</strong> Un sello de más, una tarjeta fotocopiada... y tú no tienes forma de comprobarlo.</li>
+            <li><strong>Hay que acordarse de sellar.</strong> Con la agenda llena y las manos ocupadas, el sello es lo primero que se queda sin hacer.</li>
+            <li><strong>No sabes nada de tus clientes.</strong> Una tarjeta de cartón no te dice quién está cerca del premio ni quién lleva meses sin venir.</li>
+        </ul>
+
+        <h2>Cómo funciona la tarjeta de sellos digital de StickyWork</h2>
+        <p>Es una tarjeta <strong>por visitas</strong>, no por gasto: cada cita completada es un sello. Se configura en un par de minutos desde tu panel.</p>
+        <ol>
+            <li><strong>Eliges la regla.</strong> En <em>Clientes → Promociones</em> indicas cada cuántas visitas hay premio, qué premio es (texto libre, por ejemplo «corte gratis») y las fechas en las que el programa está activo.</li>
+            <li><strong>Enseñas el QR.</strong> Imprímelo y ponlo en el mostrador, o comparte el enlace por Instagram o WhatsApp. El código QR y el enlace salen en la misma pestaña.</li>
+            <li><strong>El cliente consulta sus sellos.</strong> Abre el enlace, escribe su email o su teléfono y ve algo como «llevas 4 de 6 visitas». No instala nada ni crea ninguna cuenta.</li>
+            <li><strong>Tú marcas las citas como completadas.</strong> Solo cuentan las visitas completadas, así que no hay sellos regalados ni inventados.</li>
+            <li><strong>Al llegar a la meta, vale con código.</strong> Al cliente le aparece un vale. Cuando te lo enseña, lo ves en tu panel y pulsas «Entregar premio». El vale queda canjeado y la cuenta de visitas empieza de cero.</li>
+        </ol>
+
+        <div class="seo-note">
+            <p><strong>Incluida en todos los planes.</strong> La tarjeta de fidelización no tiene restricción por plan: la puedes usar desde el plan Gratis. Lo que sí cambia entre planes es el límite de reservas al mes. Mira los <a href="/planes.html">planes</a>.</p>
+        </div>
+
+        <h2>Ejemplos de premio según tu negocio</h2>
+        <p>Estas son ideas para inspirarte; el premio es texto libre y lo defines tú.</p>
+        <div class="seo-grid">
+            <div class="seo-card">
+                <h3>Peluquería</h3>
+                <p>Cada 6 visitas, un corte gratis. O un tratamiento de hidratación como regalo a la décima visita. Más ideas en <a href="/reservas-online-peluquerias.html">peluquerías</a>.</p>
+            </div>
+            <div class="seo-card">
+                <h3>Centro de estética</h3>
+                <p>Cada 8 visitas, una limpieza facial o un masaje corto de regalo. Un premio de coste bajo para ti y alto valor para ella.</p>
+            </div>
+            <div class="seo-card">
+                <h3>Manicura y uñas</h3>
+                <p>Cada 5 visitas, un diseño de uñas decoradas gratis o un servicio de nail art incluido.</p>
+            </div>
+            <div class="seo-card">
+                <h3>Peluquería canina</h3>
+                <p>Cada 6 baños, el siguiente gratis. Las mascotas vuelven con mucha regularidad, así que la meta se alcanza pronto.</p>
+            </div>
+            <div class="seo-card">
+                <h3>Fisioterapia</h3>
+                <p>Cada 10 sesiones, un descuento en la siguiente o una sesión de estiramientos. Útil para pacientes de mantenimiento. Ver <a href="/reservas-online-fisioterapeutas.html">fisioterapeutas</a>.</p>
+            </div>
+        </div>
+
+        <h2>Cómo elegir la meta y el premio</h2>
+        <ul>
+            <li><strong>Ajusta la meta a la frecuencia habitual.</strong> Si tus clientes vienen cada mes, una meta de 6 visitas son seis meses; si vienen cada semana, la meta puede ser más alta. Una meta inalcanzable desmotiva.</li>
+            <li><strong>Que el premio cueste poco y se note mucho.</strong> Un servicio corto o un extra suele salir más barato para ti que un descuento grande y se siente como un regalo.</li>
+            <li><strong>Haz las cuentas antes.</strong> Calcula cuánto te cuesta el premio frente a lo que ingresas en las visitas necesarias para ganarlo. Con la <a href="/herramientas/calculadora-citas-perdidas.html">calculadora de citas perdidas</a> puedes ver también cuánto te cuestan las ausencias.</li>
+            <li><strong>Usa las fechas.</strong> Un programa con inicio y fin (una temporada, el segundo semestre) crea sensación de oportunidad y te deja cambiar el premio después.</li>
+            <li><strong>Cuéntaselo a todos.</strong> El QR en el mostrador, un cartel y una frase al despedirte («ya llevas 3, te quedan 3») hacen más que cualquier configuración. Con la herramienta de <a href="/herramientas/generador-qr-reservas.html">cartel con QR</a> puedes preparar uno para las reservas.</li>
+            <li><strong>Recuerda el premio tú.</strong> El sistema no envía un aviso automático cuando alguien lo gana, así que díselo en la siguiente cita.</li>
+        </ul>
+
+        <h2>Qué no es</h2>
+        <p>Para que no haya sorpresas: no es un programa de puntos por euros gastados, no hay app que descargar y no se integra en Apple Wallet ni Google Wallet. Es una tarjeta de sellos por visitas, sencilla, en una página web. Si buscas un sistema que compare con la típica tarjeta de puntos o de sellos de cartón, la diferencia es que esta no se pierde, no se falsifica y no depende de que alguien se acuerde de sellar.</p>
+
+        <p>Si todavía no tienes reservas online, empieza por ahí: la tarjeta cuenta las citas que ya gestionas en tu agenda. En la <a href="/demo.html">demo</a> puedes ver cómo se ve el panel antes de registrarte.</p>
+
+{faq_html(FIDE_FAQ)}
+
+{CTA}
+
+        <p class="seo-related">Por sector: <a href="/reservas-online-peluquerias.html">Peluquerías</a> · <a href="/reservas-online-fisioterapeutas.html">Fisioterapeutas</a> · <a href="/reservas-online-psicologos.html">Psicólogos</a> · <a href="/reservas-online-nutricionistas.html">Nutricionistas</a>. Más ideas en el <a href="/blog/">blog</a>.</p>'''
+
+FIDE_DESC = 'Tarjeta de fidelización digital para negocios con cita previa: sellos por visitas con QR, sin app y sin cartón. Incluida en todos los planes, también el Gratis.'
+urls.append(page('tarjeta-fidelizacion-digital.html',
+    'Tarjeta de fidelización digital para tu negocio | StickyWork',
+    FIDE_DESC,
+    'Tarjeta de fidelización digital para tu negocio',
+    f'<p>{FIDE_DESC}</p>\n        {HERO_BTNS}',
+    FIDE_BODY,
+    schema=[faq_schema(FIDE_FAQ)], badge='Incluida en todos los planes'))
 
 # ======================= BLOG =======================
 def article(slug, title, description, h1, date, read_min, body, modified=None):
