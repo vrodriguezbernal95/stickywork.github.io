@@ -21,7 +21,7 @@ PROHIBIDO = [
     (r'\d+\s?%', 'incluye un porcentaje: no inventamos cifras'),
     (r'profesional(es)? (que|a) elegir|elige (a )?(tu|su) profesional', 'promete elegir profesional (no existe)'),
     (r'festivo', 'promete cerrar festivos (no existe)'),
-    (r'export', 'promete exportar datos (no existe)'),
+    (r'export\w* (las |tus |sus )?(reservas|citas|facturas)', 'promete exportar reservas o facturas (solo existe exportar la lista de clientes)'),
     (r'miles de (negocios|clientes)|cientos de (negocios|clientes)', 'inventa número de clientes'),
 ]
 

@@ -28,11 +28,11 @@ Confírmalo siempre en el código, pero a fecha de noviembre de 2026 **no exist�
 - Categorías de servicios gestionables desde el panel.
 - Cerrar fechas concretas o festivos.
 - Logo del negocio dentro del widget.
-- Exportar datos.
+- Exportar reservas, facturas u otros datos (solo existe exportar la **lista de clientes** a CSV, desde Clientes).
 - Envío automático de WhatsApp: el panel abre WhatsApp con el mensaje ya escrito y el negocio pulsa enviar. Los mensajes automáticos son por **email** (confirmación y recordatorio el día antes).
 - Testimonios, número de clientes o estadísticas de uso: no hay datos reales publicables.
 
-Y **sí existían**: confirmación y recordatorio por email con enlace para cancelar o cambiar la hora; confirmación manual de reservas (opcional por negocio); mover citas en el calendario avisando al cliente; página de reservas propia con enlace y QR; widget embebido o botón flotante; reservas repetidas (cada 1-4 semanas, hasta 12); usuarios del equipo (Gratis 1, Profesional 3, Premium 10); encuestas de satisfacción; programa de recomendación (1 mes de Profesional); marca "Reservas con StickyWork" solo en el plan Gratis.
+Y **sí existían**: confirmación y recordatorio por email con enlace para cancelar o cambiar la hora; confirmación manual de reservas (opcional por negocio); mover citas en el calendario avisando al cliente; página de reservas propia con enlace y QR; widget embebido o botón flotante; reservas repetidas (cada 1-4 semanas, hasta 12); usuarios del equipo (Gratis 1, Profesional 3, Premium 10); encuestas de satisfacción; programa de recomendación (1 mes de Profesional); exportar la lista de clientes a CSV; tarjeta de fidelización por visitas (QR, en todos los planes); marca "Reservas con StickyWork" solo en el plan Gratis.
 
 Precios y límites: compáralos con `backend/plans.js` y con `planes.html`. Si no coinciden entre sí, es un error.
 

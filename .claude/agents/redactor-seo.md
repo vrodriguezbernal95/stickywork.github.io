@@ -29,7 +29,7 @@ Todo el blog se genera con `backend/tools/generar-paginas-seo.py`. **No escribas
 
 ## Prohibido
 
-- Prometer funciones que no existen. Antes de decir que StickyWork hace algo, compruébalo en el código o en `admin/js/help-content.js`. No existen, por ejemplo: envío automático de WhatsApp (solo abre el mensaje escrito; lo automático es el email), cerrar festivos o fechas concretas, categorías de servicios, exportar datos, gestionar profesionales.
+- Prometer funciones que no existen. Antes de decir que StickyWork hace algo, compruébalo en el código o en `admin/js/help-content.js`. No existen, por ejemplo: envío automático de WhatsApp (solo abre el mensaje escrito; lo automático es el email), cerrar festivos o fechas concretas, categorías de servicios, exportar reservas o facturas (solo existe exportar la lista de clientes a CSV), gestionar profesionales.
 - Inventar estadísticas, estudios, porcentajes o testimonios. Si un dato no se puede comprobar, no lo pongas; habla en términos generales ("muchas ausencias son simples olvidos").
 - Precios distintos de los de `backend/plans.js` y `planes.html`.
 
