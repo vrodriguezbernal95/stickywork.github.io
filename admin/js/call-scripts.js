@@ -24,7 +24,8 @@ const callScripts = {
             preguntas: [
                 ['Ahora mismo, ¿cómo os piden cita la mayoría: por WhatsApp, llamando o pasando por aquí?', 'Si dice WhatsApp o teléfono → ese es el dolor: interrupciones mientras corta.'],
                 ['¿Y te pasa que te escriben por la noche o cuando estás con un cliente y no puedes contestar?', 'Si dice que sí → «justo para eso lo hice».'],
-                ['¿Se os queda algún hueco vacío porque alguien no viene o avisa tarde?', 'Si dice que sí → recordatorio el día antes con botón para cancelar o cambiar la hora.']
+                ['¿Se os queda algún hueco vacío porque alguien no viene o avisa tarde?', 'Si dice que sí → recordatorio el día antes con botón para cancelar o cambiar la hora.'],
+                ['¿Tenéis tarjeta de sellos o algo para los clientes que repiten?', 'Si es de cartón → «también va incluida una tarjeta digital: escanean un QR, ven cuántas visitas llevan y al llegar a la meta les sale el vale. No se pierde ni hay que sellar nada». Incluida en todos los planes, también el gratis.']
             ],
             puente: 'Lo que hago es que tus clientes vean tus huecos libres y reserven ellos solos desde un enlace, como si te escribieran por WhatsApp pero sin que tengas que contestar. Les llega la confirmación al momento y un recordatorio el día antes por email, y si no pueden venir cancelan o cambian la hora desde ahí, así que el hueco queda libre para otro.',
             extra: 'Y puedes poner el enlace en tu Instagram y en la respuesta automática de WhatsApp Business: quien te escriba, recibe el enlace solo.'
@@ -36,7 +37,8 @@ const callScripts = {
             preguntas: [
                 ['¿Cómo os piden cita ahora: por Instagram, WhatsApp, teléfono…?', 'Si dice Instagram/WhatsApp → el enlace va en la bio y en la respuesta automática.'],
                 ['¿Cuánto rato al día se te va en cuadrar citas por mensajes?', 'Escucha: si dice «mucho» → ese es el argumento.'],
-                ['¿Os pasa que alguien no se presenta y os quedáis con el hueco vacío?', 'Si dice que sí → recordatorio el día antes con botón para cancelar o cambiar.']
+                ['¿Os pasa que alguien no se presenta y os quedáis con el hueco vacío?', 'Si dice que sí → recordatorio el día antes con botón para cancelar o cambiar.'],
+                ['¿Hacéis algo para premiar a las clientas que repiten, tipo tarjeta de sellos?', 'Si es de cartón o no tienen → «va incluida una tarjeta digital: escanean un QR, ven sus visitas y al llegar a la meta les sale el vale (por ejemplo, una manicura gratis)». Incluida en todos los planes, también el gratis.']
             ],
             puente: 'Lo que hago es que tus clientas reserven solas desde un enlace que pones en tu Instagram: ven tus tratamientos, el precio y los huecos libres, y eligen. Les llega la confirmación al momento y un recordatorio el día antes por email, con un botón por si tienen que cambiar la hora.',
             extra: 'Para las que repiten, puedes dejarles la cita repetida cada pocas semanas en un momento.'

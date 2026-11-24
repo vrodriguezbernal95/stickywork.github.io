@@ -94,7 +94,17 @@ const apiLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Consulta pública de la tarjeta de fidelización: evita probar teléfonos o emails en bloque
+const loyaltyCheckLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  message: { success: false, message: 'Demasiadas consultas. Espera unos minutos y vuelve a intentarlo.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 module.exports = {
+  loyaltyCheckLimiter,
   loginLimiter,
   superAdminLoginLimiter,
   registerLimiter,

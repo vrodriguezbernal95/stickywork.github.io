@@ -525,8 +525,8 @@
 
             document.getElementById('main-content').innerHTML = `
                 <div class="progress-card">
-                    <div class="greeting">Hola,</div>
-                    <div class="customer-name">${escapeHtml(customer_name)}</div>
+                    <div class="greeting">Hola${customer_name ? ',' : ''}</div>
+                    ${customer_name ? `<div class="customer-name">${escapeHtml(customer_name)}</div>` : ''}
 
                     <div class="stamps-container">${stampsHtml}</div>
 
@@ -554,8 +554,8 @@
 
             document.getElementById('main-content').innerHTML = `
                 <div class="voucher-wrapper">
-                    <div class="congrats">¡Enhorabuena,</div>
-                    <div class="customer-name">${escapeHtml(customer_name)}!</div>
+                    <div class="congrats">¡Enhorabuena${customer_name ? ',' : '!'}</div>
+                    ${customer_name ? `<div class="customer-name">${escapeHtml(customer_name)}!</div>` : ''}
 
                     <div class="voucher-card" id="voucher-to-capture">
                         <div class="prize-icon">🎁</div>

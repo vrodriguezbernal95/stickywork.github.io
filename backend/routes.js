@@ -17,7 +17,7 @@ const { validateServicesLimit, validateUsersLimit, validateBookingLimit, getPlan
 const emailService = require('./email-service');
 const { showsBranding } = require('./plans');
 const { setupPostgres } = require('./setup-postgres');
-const { createBookingLimiter, contactLimiter } = require('./middleware/rate-limit');
+const { createBookingLimiter, contactLimiter, loyaltyCheckLimiter } = require('./middleware/rate-limit');
 
 // Permitir inyección de la base de datos (MySQL o SQLite)
 let db = require('../config/database');
@@ -5061,15 +5061,19 @@ router.get('/api/loyalty/:businessId/public', async (req, res) => {
 });
 
 // POST consultar progreso del cliente (sin auth)
-router.post('/api/loyalty/:businessId/check', async (req, res) => {
+router.post('/api/loyalty/:businessId/check', loyaltyCheckLimiter, async (req, res) => {
     try {
         const { businessId } = req.params;
-        const { email, phone } = req.body;
+        const texto = v => (typeof v === 'string' ? v.trim().slice(0, 255) : '');
+        const email = texto(req.body?.email), phone = texto(req.body?.phone);
 
         if (!email && !phone) {
             return res.status(400).json({ success: false, message: 'Se requiere email o teléfono' });
         }
 
+        // Condición «este cliente» (email, teléfono o ambos)
+        const quien = [email && 'customer_email = ?', phone && 'customer_phone = ?'].filter(Boolean).join(' OR ');
+        const quienParams = [email, phone].filter(Boolean);
         // Obtener config del negocio
         const rows = await db.query('SELECT name, loyalty_config FROM businesses WHERE id = ?', [businessId]);
         if (rows.length === 0) {
@@ -5084,29 +5088,32 @@ router.post('/api/loyalty/:businessId/check', async (req, res) => {
 
         // Buscar nombre del cliente en bookings
         const nameRows = await db.query(`
-            SELECT customer_name FROM bookings
+            SELECT customer_name, customer_email, customer_phone FROM bookings
             WHERE business_id = ?
-            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+            AND (${quien})
             ORDER BY created_at DESC LIMIT 1
-        `, [businessId, ...(email ? [email] : []), ...(phone ? [phone] : [])]);
+        `, [businessId, ...quienParams]);
         const customerName = nameRows[0]?.customer_name || email || phone;
+        // Página pública: quien escribe un teléfono o email ajeno solo ve el nombre de pila, nunca datos de contacto
+        const nombrePublico = String(nameRows[0]?.customer_name || '').trim().split(/\s+/)[0] || '';
+        const valePublico = v => ({ code: v.code, status: v.status, earned_at: v.earned_at });
 
         // 1. Buscar vale activo existente
         const activeVoucherQuery = `
             SELECT * FROM loyalty_vouchers
             WHERE business_id = ? AND status = 'active'
-            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+            AND (${quien})
             ORDER BY earned_at DESC LIMIT 1
         `;
-        const activeVouchers = await db.query(activeVoucherQuery, [businessId, ...(email ? [email] : []), ...(phone ? [phone] : [])]);
+        const activeVouchers = await db.query(activeVoucherQuery, [businessId, ...quienParams]);
 
         if (activeVouchers.length > 0) {
             return res.json({
                 success: true,
                 status: 'voucher',
-                customer_name: customerName,
+                customer_name: nombrePublico,
                 business_name: businessName,
-                voucher: activeVouchers[0],
+                voucher: valePublico(activeVouchers[0]),
                 reward: config.reward,
                 goal: config.goal
             });
@@ -5116,10 +5123,10 @@ router.post('/api/loyalty/:businessId/check', async (req, res) => {
         const lastRedeemedQuery = `
             SELECT redeemed_at FROM loyalty_vouchers
             WHERE business_id = ? AND status = 'redeemed'
-            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+            AND (${quien})
             ORDER BY redeemed_at DESC LIMIT 1
         `;
-        const lastRedeemed = await db.query(lastRedeemedQuery, [businessId, ...(email ? [email] : []), ...(phone ? [phone] : [])]);
+        const lastRedeemed = await db.query(lastRedeemedQuery, [businessId, ...quienParams]);
         const countFrom = lastRedeemed.length > 0
             ? lastRedeemed[0].redeemed_at
             : (config.start_date || '2000-01-01');
@@ -5132,13 +5139,13 @@ router.post('/api/loyalty/:businessId/check', async (req, res) => {
             AND booking_date >= ?
             AND booking_date <= ?
             AND booking_date > ?
-            AND (${email ? 'customer_email = ?' : '1=0'} ${email && phone ? 'OR' : ''} ${phone ? 'customer_phone = ?' : '1=0'})
+            AND (${quien})
         `;
         const endDate = config.end_date || '2099-12-31';
         const startDate = config.start_date || '2000-01-01';
         const countRows = await db.query(bookingCountQuery, [
             businessId, startDate, endDate, countFrom,
-            ...(email ? [email] : []), ...(phone ? [phone] : [])
+            ...quienParams
         ]);
         const current = countRows[0].cnt;
 
@@ -5149,15 +5156,15 @@ router.post('/api/loyalty/:businessId/check', async (req, res) => {
             await db.query(`
                 INSERT INTO loyalty_vouchers (business_id, customer_email, customer_phone, customer_name, code)
                 VALUES (?, ?, ?, ?, ?)
-            `, [businessId, email || null, phone || null, customerName, code]);
+            `, [businessId, email || nameRows[0]?.customer_email || '', phone || nameRows[0]?.customer_phone || null, customerName, code]);
 
             const newVoucher = { business_id: businessId, customer_email: email, customer_phone: phone, customer_name: customerName, code, status: 'active', earned_at: new Date() };
             return res.json({
                 success: true,
                 status: 'voucher',
-                customer_name: customerName,
+                customer_name: nombrePublico,
                 business_name: businessName,
-                voucher: newVoucher,
+                voucher: valePublico(newVoucher),
                 reward: config.reward,
                 goal: config.goal
             });
@@ -5167,7 +5174,7 @@ router.post('/api/loyalty/:businessId/check', async (req, res) => {
         res.json({
             success: true,
             status: 'progress',
-            customer_name: customerName,
+            customer_name: nombrePublico,
             business_name: businessName,
             current: parseInt(current),
             goal: config.goal,
