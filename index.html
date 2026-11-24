@@ -99,12 +99,16 @@
           "description": "Plataforma de gestión todo-en-uno para negocios con cita previa. Reservas, clientes, WhatsApp, feedback y reportes IA.",
           "url": "https://stickywork.com",
           "offers": {
-            "@type": "Offer",
-            "price": "0",
+            "@type": "AggregateOffer",
             "priceCurrency": "EUR",
-            "priceValidUntil": "2027-12-31",
-            "availability": "https://schema.org/InStock",
-            "description": "Plan gratuito para siempre (hasta 30 reservas al mes)"
+            "lowPrice": "0",
+            "highPrice": "79",
+            "offerCount": "3",
+            "offers": [
+              { "@type": "Offer", "name": "Gratis", "price": "0", "priceCurrency": "EUR", "description": "Gratis para siempre: hasta 30 reservas al mes y 1 usuario", "url": "https://stickywork.com/planes.html" },
+              { "@type": "Offer", "name": "Profesional", "price": "39", "priceCurrency": "EUR", "description": "Reservas ilimitadas y 3 usuarios. Precio fundador de 25 € al mes para las 50 primeras plazas", "url": "https://stickywork.com/planes.html" },
+              { "@type": "Offer", "name": "Premium", "price": "79", "priceCurrency": "EUR", "description": "10 usuarios, reportes con IA cada semana y consultoría mensual", "url": "https://stickywork.com/planes.html" }
+            ]
           },
           "screenshot": "https://stickywork.com/images/screenshot.jpg",
           "featureList": [
@@ -113,7 +117,9 @@
             "Botón de WhatsApp en cada reserva",
             "Encuestas de feedback",
             "Reportes con inteligencia artificial",
-            "Widget embebible para tu web"
+            "Widget embebible para tu web",
+            "Recordatorio automático por email el día antes",
+            "Tarjeta de fidelización digital por visitas"
           ]
         },
         {

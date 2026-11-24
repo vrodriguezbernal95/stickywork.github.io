@@ -129,6 +129,10 @@
         .seo-related a, .seo-wrap p a:not(.btn), .seo-wrap li a:not(.btn) { color: var(--primary-color); }
         [data-theme="dark"] .seo-related a, [data-theme="dark"] .seo-wrap p a:not(.btn), [data-theme="dark"] .seo-wrap li a:not(.btn) { color: #9ea2ff; }
         .seo-note { border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 8px; margin: 1.5rem 0; }
+        .seo-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+        .seo-table th, .seo-table td { border: 1px solid var(--border-color); padding: 0.7rem 0.8rem; text-align: left; vertical-align: top; color: var(--text-secondary); line-height: 1.5; }
+        .seo-table thead th, .seo-table tbody th { color: var(--text-primary); background: var(--bg-secondary); }
+        @media (max-width: 600px) { .seo-table { font-size: 0.8rem; table-layout: fixed; } .seo-table th, .seo-table td { padding: 0.5rem 0.45rem; overflow-wrap: break-word; hyphens: auto; } .seo-table tr > :first-child { width: 28%; } }
         .blog-list { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
         .blog-item { display: block; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; }
         .blog-item:hover { border-color: var(--primary-color); }

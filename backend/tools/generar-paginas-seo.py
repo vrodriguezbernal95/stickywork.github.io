@@ -121,6 +121,10 @@ STYLE = '''    <style>
         .seo-related a, .seo-wrap p a:not(.btn), .seo-wrap li a:not(.btn) { color: var(--primary-color); }
         [data-theme="dark"] .seo-related a, [data-theme="dark"] .seo-wrap p a:not(.btn), [data-theme="dark"] .seo-wrap li a:not(.btn) { color: #9ea2ff; }
         .seo-note { border-left: 4px solid var(--primary-color); background: var(--bg-secondary); padding: 1rem 1.25rem; border-radius: 8px; margin: 1.5rem 0; }
+        .seo-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+        .seo-table th, .seo-table td { border: 1px solid var(--border-color); padding: 0.7rem 0.8rem; text-align: left; vertical-align: top; color: var(--text-secondary); line-height: 1.5; }
+        .seo-table thead th, .seo-table tbody th { color: var(--text-primary); background: var(--bg-secondary); }
+        @media (max-width: 600px) { .seo-table { font-size: 0.8rem; table-layout: fixed; } .seo-table th, .seo-table td { padding: 0.5rem 0.45rem; overflow-wrap: break-word; hyphens: auto; } .seo-table tr > :first-child { width: 28%; } }
         .blog-list { display: grid; gap: 1.25rem; margin-top: 1.5rem; }
         .blog-item { display: block; text-decoration: none; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.5rem; }
         .blog-item:hover { border-color: var(--primary-color); }
@@ -235,7 +239,7 @@ def sector(slug, keyword_title, description, h1, intro, problems, features, how,
 
 {CTA}
 
-        <p class="seo-related">También para: {rel}. Más ideas en el <a href="/blog/">blog</a>.</p>'''
+        <p class="seo-related">También para: {rel}. Más ideas en el <a href="/blog/">blog</a>. ¿Vienes de otra plataforma? Mira la <a href="/alternativa-booksy.html">alternativa a Booksy</a> o la <a href="/alternativa-fresha.html">alternativa a Fresha</a>.</p>'''
     return page(slug, keyword_title, description, h1,
                 f'<p>{description}</p>\n        {HERO_BTNS}', body,
                 schema=[faq_schema(faqs)], badge=badge)
@@ -447,6 +451,108 @@ urls.append(page('tarjeta-fidelizacion-digital.html',
     FIDE_BODY,
     schema=[faq_schema(FIDE_FAQ)], badge='Incluida en todos los planes'))
 
+# ======================= PÁGINAS COMPARATIVAS =======================
+# Datos de la competencia: tarifas publicadas, a noviembre de 2026. Revisar cada cierto tiempo.
+def compare(slug, rival, other_slug, other_name, title, description, h1, intro, rival_rows, rival_note, faqs):
+    rows = [
+        ('Precio de entrada', rival_rows[0], 'Plan Gratis para siempre (30 reservas al mes, 1 usuario, sin tarjeta)'),
+        ('Para un equipo pequeño', rival_rows[1], 'Profesional: 39 €/mes con 3 usuarios y reservas ilimitadas. Precio fundador: 25 €/mes para siempre en las 50 primeras plazas'),
+        ('Equipo grande', rival_rows[2], 'Premium: 79 €/mes con 10 usuarios'),
+        ('Comisiones', rival_rows[3], 'Ninguna: ni por reserva ni por cliente nuevo'),
+        ('Marketplace que te trae clientes nuevos', 'Sí', 'No. Tus clientes llegan por tu enlace, tu QR y tus redes'),
+        ('Cobros online y señales', 'Sí', 'No'),
+        ('App nativa', 'Sí', 'No: funciona desde el navegador, sin que tus clientes instalen nada'),
+        ('Recordatorios', 'Incluidos (consulta canales y límites en su web)', 'Email automático el día antes; WhatsApp con el mensaje escrito, lo envías tú con un toque. Sin SMS'),
+        ('Sincronización con Google Calendar', 'Consúltalo en su web', 'No'),
+        ('Tarjeta de fidelización digital', 'Consúltalo en su web', 'Sí, en todos los planes, también el Gratis'),
+        ('Página de reservas propia, enlace y QR', 'Consúltalo en su web', 'Sí, desde el primer minuto'),
+    ]
+    trs = '\n'.join(f'''                <tr><th scope="row">{a}</th><td>{b}</td><td>{c}</td></tr>''' for a, b, c in rows)
+    body = f"""        <p>{intro}</p>
+        <div class="seo-note">
+            <p><strong>Una aclaración antes de empezar.</strong> {rival} es una plataforma conocida y con funciones que StickyWork no tiene. Esta comparativa no pretende convencerte de que cambies sí o sí, sino ayudarte a decidir con datos. Los precios y condiciones de {rival} son los de sus tarifas publicadas a noviembre de 2026 y pueden haber cambiado: compruébalo siempre en su web.</p>
+        </div>
+
+        <h2>{rival} y StickyWork, lado a lado</h2>
+        <div style="overflow-x:auto;">
+        <table class="seo-table">
+            <thead><tr><th></th><th>{rival}</th><th>StickyWork</th></tr></thead>
+            <tbody>
+{trs}
+            </tbody>
+        </table>
+        </div>
+        <p class="seo-meta">{rival_note} Los precios de StickyWork están en la página de <a href="/planes.html">planes</a>; el plan Profesional a 25 €/mes es el precio fundador, para las 50 primeras plazas, y pasa a 39 €/mes cuando se agoten.</p>
+
+        <h2>Cuándo te conviene seguir con {rival}</h2>
+        <ul>
+            <li><strong>Dependes de su marketplace.</strong> Si una parte importante de tus clientes nuevos te encuentra allí, dejarlo supone perder esa fuente de reservas. StickyWork no te trae clientes: gestiona los que ya tienes y los que llegan por tus propios canales.</li>
+            <li><strong>Cobras online o pides señal.</strong> StickyWork no cobra: el cliente paga en el local. Si necesitas cobrar por adelantado, hoy no es tu herramienta.</li>
+            <li><strong>Quieres una app nativa</strong> para ti o para tus clientes.</li>
+            <li><strong>Necesitas SMS o WhatsApp totalmente automáticos.</strong> En StickyWork el recordatorio automático es por email; el WhatsApp abre el mensaje ya escrito y lo envías tú.</li>
+            <li><strong>Tu agenda debe sincronizarse con Google Calendar.</strong> StickyWork no lo hace.</li>
+        </ul>
+
+        <h2>Cuándo te conviene StickyWork</h2>
+        <ul>
+            <li><strong>Tus clientes ya son tuyos</strong> (clientela habitual, boca a boca, Instagram) y no quieres pagar comisión cada vez que llega uno nuevo.</li>
+            <li><strong>Quieres saber exactamente lo que pagas al mes</strong>: una cuota fija, sin comisiones y sin sorpresas en la factura.</li>
+            <li><strong>Empiezas o tienes poco volumen.</strong> Con el plan Gratis (hasta 30 reservas al mes y 1 usuario) puedes probar sin tarjeta y sin permanencia.</li>
+            <li><strong>Quieres fidelizar</strong> con una <a href="/tarjeta-fidelizacion-digital.html">tarjeta de sellos digital</a> con QR, incluida en todos los planes.</li>
+            <li><strong>Trabajas en un equipo pequeño:</strong> el plan Profesional da 3 usuarios con reservas ilimitadas.</li>
+        </ul>
+        <p>Tampoco es una decisión de todo o nada: puedes dejar tu cuenta actual funcionando mientras pruebas StickyWork con tus clientes habituales, y decidir con calma.</p>
+
+        <h2>Cómo cambiar de {rival} a StickyWork, paso a paso</h2>
+        <ol>
+            <li><strong>Crea tu cuenta gratis</strong> en <a href="/registro.html">el registro</a>. Lleva pocos minutos y no pide tarjeta.</li>
+            <li><strong>Añade tus servicios</strong> con su duración y precio. Por ejemplo, en una peluquería: corte (30 min), color (90 min), mechas (120 min). Tenlos delante en tu cuenta actual y cópialos.</li>
+            <li><strong>Configura tu horario</strong>, por ejemplo de lunes a viernes de 9:30 a 14:00 y de 16:30 a 20:00, y los sábados por la mañana.</li>
+            <li><strong>Comparte tu enlace de reservas y tu QR</strong> en Instagram, WhatsApp y el mostrador. Te ayuda nuestra guía para <a href="/blog/boton-reservas-instagram-google-whatsapp.html">poner el enlace en Instagram, Google y WhatsApp</a>, y la herramienta para crear un <a href="/herramientas/generador-qr-reservas.html">cartel con QR</a>.</li>
+            <li><strong>Avisa a tus clientes habituales</strong> con un mensaje y el enlace nuevo. Hay <a href="/herramientas/plantillas-whatsapp-citas.html">plantillas de WhatsApp</a> para copiar.</li>
+            <li><strong>Mantén las citas ya reservadas donde estaban</strong> hasta que pasen, y empieza a coger las nuevas en StickyWork.</li>
+        </ol>
+        <div class="seo-note">
+            <p><strong>Sobre tus datos.</strong> StickyWork no importa clientes ni citas desde otras plataformas: los clientes se van creando con cada reserva nueva. Lo que sí puedes hacer es exportar tu lista de clientes a CSV desde StickyWork cuando quieras. Si necesitas conservar el historial de tu cuenta actual, descárgalo antes de cerrarla, según lo que permita esa plataforma.</p>
+        </div>
+
+        <h2>Más información</h2>
+        <p>Mira cómo funciona StickyWork en tu sector: <a href="/reservas-online-peluquerias.html">peluquerías</a>, <a href="/reservas-online-nutricionistas.html">nutricionistas</a>, <a href="/reservas-online-psicologos.html">psicólogos</a> o <a href="/reservas-online-fisioterapeutas.html">fisioterapeutas</a>. También puedes probar la <a href="/demo.html">demo</a>. ¿Comparas varias opciones? Tenemos también la comparativa <a href="/{other_slug}">{other_name}</a>.</p>
+
+{faq_html(faqs)}
+
+{CTA}"""
+    return page(slug, title, description, h1, f'<p>{description}</p>\n        {HERO_BTNS}', body,
+                schema=[faq_schema(faqs)], badge='Comparativa honesta')
+
+def compare_faqs(rival):
+    return [
+        (f'¿StickyWork cobra comisiones como {rival}?', f'No. StickyWork no cobra comisión por reserva ni por cliente nuevo. Pagas la cuota de tu plan (o nada, en el plan Gratis) y las reservas son tuyas. Las condiciones de {rival} compruébalas en su web, porque pueden cambiar.'),
+        ('¿StickyWork tiene marketplace para conseguir clientes nuevos?', 'No. StickyWork no es un escaparate donde te encuentren desconocidos: te da una página de reservas con enlace y QR para que reserven los clientes que llegan por tus propios canales (Instagram, Google, WhatsApp, el local).'),
+        ('¿Puedo cobrar online o pedir una señal?', 'No. StickyWork no gestiona cobros: el cliente paga en el local. Si cobrar por adelantado es imprescindible para ti, mejor sigue con una herramienta que lo incluya.'),
+        (f'¿Puedo importar mis clientes desde {rival}?', f'No hay importación desde {rival} ni desde otras plataformas. Los clientes se crean con cada reserva. Sí puedes exportar la lista de clientes de StickyWork a CSV.'),
+        ('¿Cuánto cuesta StickyWork?', COMMON_FAQ_PRICE[1]),
+        ('¿Puedo probarlo sin dejar mi herramienta actual?', 'Sí. El plan Gratis no pide tarjeta ni permanencia, así que puedes usarlo en paralelo con tus clientes habituales y decidir después.'),
+    ]
+
+urls.append(compare('alternativa-booksy.html', 'Booksy', 'alternativa-fresha.html', 'alternativa a Fresha',
+    'Alternativa a Booksy sin comisiones | StickyWork',
+    'Compara Booksy y StickyWork: precios, comisiones y funciones. Qué ofrece cada uno, cuándo seguir con Booksy y cómo cambiar si no quieres comisiones.',
+    'Alternativa a Booksy sin comisiones: comparativa honesta',
+    '¿Usas Booksy y te planteas cambiar? Es normal que lo mires: cuando una plataforma te cobra cuota por profesional y, además, comisión por los clientes nuevos que te trae, a final de mes cuesta saber cuánto estás pagando de verdad. Aquí tienes una comparativa clara entre Booksy y StickyWork, con lo que cada uno hace bien y lo que no.',
+    ['Unos 34,99 € + IVA/mes con 1 profesional', 'Unos 8 € + IVA al mes por cada profesional extra', 'Se paga por profesional, así que el precio sube con el equipo', 'Comisión «Boost» por cada cliente nuevo que llega por su marketplace'],
+    'Datos de Booksy según sus tarifas publicadas, a noviembre de 2026. Pueden haber cambiado y no incluyen todos sus extras: compruébalos en su web.',
+    compare_faqs('Booksy')))
+
+urls.append(compare('alternativa-fresha.html', 'Fresha', 'alternativa-booksy.html', 'alternativa a Booksy',
+    'Alternativa a Fresha sin comisiones | StickyWork',
+    'Compara Fresha y StickyWork: precios, comisiones y funciones. Qué ofrece cada uno, cuándo seguir con Fresha y cómo cambiar si prefieres cuota fija.',
+    'Alternativa a Fresha sin comisiones: comparativa honesta',
+    'Fresha ya no tiene plan gratis y, según sus tarifas, cobra comisiones en pagos y por clientes nuevos de su marketplace. Si estás pensando en cambiar, aquí tienes una comparativa clara entre Fresha y StickyWork, con lo que cada uno hace bien y lo que no.',
+    ['Sin plan gratis desde 2025; unos 19,95 € + IVA/mes para un profesional', 'Unos 12,95 € + IVA al mes por cada miembro del equipo', 'Se paga por miembro del equipo, así que el precio sube con el equipo', 'Comisiones en los pagos y por clientes nuevos que llegan por su marketplace'],
+    'Datos de Fresha según sus tarifas publicadas, a noviembre de 2026. Pueden haber cambiado y no incluyen todos sus extras: compruébalos en su web.',
+    compare_faqs('Fresha')))
+
 # ======================= BLOG =======================
 def article(slug, title, description, h1, date, read_min, body, modified=None):
     modified = modified or date
@@ -645,6 +751,77 @@ ARTICLES.append(('boton-reservas-instagram-google-whatsapp',
         <h2>Un último consejo</h2>
         <p>Usa siempre el mismo enlace en todas partes y pruébalo tú mismo haciendo una reserva de prueba. Así te aseguras de que lo que ven tus clientes es lo que esperas.</p>
         <p>Más ideas para tu sector: <a href="/reservas-online-peluquerias.html">peluquerías</a>, <a href="/reservas-online-nutricionistas.html">nutricionistas</a>, <a href="/reservas-online-psicologos.html">psicólogos</a> y <a href="/reservas-online-fisioterapeutas.html">fisioterapeutas</a>.</p>'''))
+
+ARTICLES.append(('llenar-agenda-navidad-peluquerias-estetica',
+  'Cómo llenar la agenda en Navidad: guía para peluquerías y estética | StickyWork',
+  'Ideas prácticas para llenar la agenda en Navidad en tu peluquería o centro de estética: reservas con antelación, huecos de última hora, packs y fidelización.',
+  'Cómo llenar la agenda en Navidad: guía para peluquerías y centros de estética',
+  '2026-11-24', 8, '''        <p>Diciembre es el mes en el que más gente quiere arreglarse: cenas de empresa, comidas familiares, Nochevieja, Reyes. Si tienes una peluquería o un centro de estética, la demanda llega, pero el que se organiza antes se lleva las mejores semanas. Esta guía reúne ideas prácticas para <strong>llenar la agenda en Navidad</strong> sin matarte a mensajes y sin dejar huecos sueltos.</p>
+
+        <h2>1. Abre las reservas de diciembre ya</h2>
+        <p>Las fechas clave (los días previos a Nochebuena y a Nochevieja) se llenan pronto, y mucha gente las pide con semanas de antelación. Cuanto antes puedan reservar, más fácil es que lo hagan contigo y no con quien tenga hueco primero.</p>
+        <ul>
+            <li>Si usas una agenda en papel o WhatsApp, anuncia ya que se pueden reservar las fechas de Navidad.</li>
+            <li>Si tienes una página de reservas online, comprueba que tu horario de diciembre está bien configurado antes de avisar.</li>
+            <li>Pon el enlace de reservas donde tus clientes ya te miran: <a href="/blog/boton-reservas-instagram-google-whatsapp.html">en la bio de Instagram, en Google y en WhatsApp</a>.</li>
+        </ul>
+
+        <h2>2. Amplía horarios en las fechas de más demanda</h2>
+        <p>No hace falta ampliar todo el mes. Mira qué días suelen llenarse antes y añade horas solo ahí: abrir un par de tardes más, una mañana de lunes o un sábado completo. Decide tu horario de Navidad con tu equipo y publícalo con claridad, para que nadie tenga que preguntar.</p>
+        <p>Una cosa a tener en cuenta: en StickyWork el horario se define por días de la semana, no por fechas concretas, así que si cierras algún festivo, tendrás que avisar a tus clientes y no ofrecer ese día por otro canal.</p>
+
+        <h2>3. Reduce las ausencias: en diciembre cada hueco vale más</h2>
+        <p>Un no show en un día normal es un fastidio; en la semana de Nochevieja es un hueco que otra clienta habría pagado encantada. Dos medidas sencillas:</p>
+        <ul>
+            <li><strong>Recordatorio el día antes</strong> de cada cita, con una forma fácil de cancelar. Tienes plantillas en <a href="/blog/mensaje-recordatorio-cita-plantillas.html">recordatorios de cita para copiar</a>.</li>
+            <li><strong>Una política de cancelación clara</strong> y comunicada al reservar. Más ideas en la guía para <a href="/blog/como-reducir-citas-no-presentadas.html">reducir los no shows</a>.</li>
+        </ul>
+        <p>Si quieres ponerle números al problema, la <a href="/herramientas/calculadora-citas-perdidas.html">calculadora de citas perdidas</a> te dice cuánto te cuesta cada ausencia.</p>
+
+        <h2>4. Lleva una lista de espera, aunque sea manual</h2>
+        <p>Cuando todo está lleno, quien no encuentra hueco suele irse a otro sitio. No lo dejes escapar:</p>
+        <ul>
+            <li>Apunta en una nota (o una hoja de cálculo) el nombre, el teléfono, el servicio y los días en los que podría venir.</li>
+            <li>Cuando se cancele una cita, escribe primero a esa lista, empezando por quien la pidió antes.</li>
+            <li>Dile a cada persona, desde el principio, que la avisarás si se libera un hueco. Se agradece y evita malentendidos.</li>
+        </ul>
+
+        <h2>5. Rellena los huecos de última hora</h2>
+        <p>Siempre se cae alguna cita o queda una hora suelta. Para que no se pierda:</p>
+        <ul>
+            <li><strong>Historia de Instagram</strong> con el hueco concreto: "Hoy a las 17:00 tengo libre un corte + peinado. ¿Quién lo quiere?", con el enlace de reservas.</li>
+            <li><strong>Mensaje a tus clientes habituales por WhatsApp</strong> o en tu lista de difusión, si la usas. Tienes un modelo de "hueco libre" en las <a href="/herramientas/plantillas-whatsapp-citas.html">plantillas de WhatsApp para citas</a>.</li>
+            <li><strong>Aprovecha las cancelaciones:</strong> si tu agenda libera el hueco al instante, publícalo enseguida, porque lo bueno dura poco.</li>
+        </ul>
+
+        <h2>6. Packs y bonos regalo (una idea de negocio)</h2>
+        <p>En Navidad mucha gente busca regalos de última hora y un servicio de belleza es un regalo fácil de acertar. Algunas ideas generales:</p>
+        <ul>
+            <li><strong>Un pack navideño</strong> que junte servicios que ya ofreces: peinado + manicura para la cena de empresa, tratamiento facial + masaje.</li>
+            <li><strong>Un bono regalo</strong> de un servicio o de un importe, con una tarjeta física bonita o un PDF que envías por WhatsApp.</li>
+            <li>Define bien las condiciones: validez, si se puede cambiar por otro servicio, cómo se canjea. Y llévalo tú en un cuaderno o una hoja de cálculo.</li>
+        </ul>
+        <p>Ojo: StickyWork no vende bonos ni cobra online, así que si vendes packs o bonos, el pago y el control los llevas fuera de la herramienta. Pero las reservas de quien canjee el regalo sí pueden entrar por tu página de reservas como cualquier otra.</p>
+
+        <h2>7. Piensa ya en enero: fideliza a quien viene en Navidad</h2>
+        <p>Tras las fiestas, la agenda suele aflojar. Las clientas que has conseguido en diciembre son la mejor manera de que enero no se quede vacío. Dales un motivo para volver: una <a href="/tarjeta-fidelizacion-digital.html">tarjeta de fidelización digital</a> con un premio a las X visitas funciona bien para esto. Si empiezas a sellar en diciembre, ya tienen una razón para reservar la siguiente cita antes de salir por la puerta.</p>
+
+        <h2>8. Un único enlace de reservas, visible en todas partes</h2>
+        <p>En Navidad, la gente reserva con prisa y desde el móvil. Cuantos menos pasos, mejor: un único enlace en la bio de Instagram, en tu perfil de Google, en el mensaje de bienvenida de WhatsApp y en un cartel con QR en el mostrador. Puedes crear el cartel gratis con la <a href="/herramientas/generador-qr-reservas.html">herramienta de QR para reservas</a>.</p>
+
+        <h2>Lista rápida para esta semana</h2>
+        <ol>
+            <li>Decide tu horario de Navidad y publícalo.</li>
+            <li>Abre las reservas de diciembre y avisa a tus clientes habituales.</li>
+            <li>Prepara los recordatorios del día antes.</li>
+            <li>Crea tu lista de espera.</li>
+            <li>Diseña un pack o bono regalo, si encaja con tu negocio.</li>
+            <li>Pon el enlace y el QR de reservas en todos tus canales.</li>
+            <li>Prepara la tarjeta de fidelización para enero.</li>
+        </ol>
+
+        <h2>Dónde encaja StickyWork</h2>
+        <p>Si quieres que tus clientes reserven solos, con recordatorio automático por email el día antes y una tarjeta de fidelización digital, puedes probarlo con el <strong>plan Gratis</strong> (hasta 30 reservas al mes, 1 usuario y sin tarjeta). Para un mes de mucho movimiento, el plan Profesional da reservas ilimitadas y 3 usuarios, y las 50 primeras plazas lo tienen a <strong>precio fundador: 25 €/mes para siempre</strong> (cuando se llenen las plazas, los nuevos pagarán 39 €/mes). Mira cómo funciona para <a href="/reservas-online-peluquerias.html">peluquerías y centros de estética</a> o prueba la <a href="/demo.html">demo</a>.</p>'''))
 
 for a in ARTICLES:
     urls.append(article(*a))
