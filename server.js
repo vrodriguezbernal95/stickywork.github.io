@@ -110,6 +110,7 @@ app.use((req, res, next) => {
 
 // ==================== RUTAS API ====================
 
+app.use(require('./backend/founders').router); // Precio fundador: contador de plazas
 app.use(require('./backend/ia-board')); // Tablero de IA del super admin (lo escribe Claude Code)
 app.use(routes);
 

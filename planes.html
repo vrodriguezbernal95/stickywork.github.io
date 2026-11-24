@@ -70,6 +70,7 @@
     <meta name="msapplication-TileColor" content="#0F16A3">
     <meta name="msapplication-TileImage" content="/images/favicon-512x512.png">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>[data-fundador].fund-off .fund-only{display:none!important}[data-fundador]:not(.fund-off) .fund-off-only{display:none!important}</style>
 </head>
 <body>
     <!-- Navegación -->
@@ -144,11 +145,16 @@
                 </div>
 
                 <!-- Plan PROFESIONAL -->
-                <div class="pricing-card featured">
-                    <span class="pricing-badge">Recomendado</span>
+                <div class="pricing-card featured" data-fundador>
+                    <span class="pricing-badge"><span class="fund-only">🔥 Precio fundador</span><span class="fund-off-only">Recomendado</span></span>
                     <h3>Profesional</h3>
-                    <div class="pricing-price">39€</div>
+                    <div class="pricing-price"><span class="fund-only"><span class="fund-old">39€</span>25€</span><span class="fund-off-only">39€</span></div>
                     <div class="pricing-period">al mes</div>
+                    <div class="fund-only" style="text-align: center;">
+                        <p class="fund-note" style="margin-top: 0.6rem;"><strong>25 € al mes para siempre</strong> para las <span data-fundador-plazas>50</span> primeras plazas. Mismo plan Profesional, precio congelado mientras lo mantengas.</p>
+                        <div class="fund-bar"><span style="width: 4%"></span></div>
+                        <p class="fund-left">Quedan <strong data-fundador-quedan>50</strong> plazas</p>
+                    </div>
                     <ul class="pricing-features">
                         <li>3 usuarios administradores</li>
                         <li>Reservas ilimitadas</li>
@@ -164,7 +170,7 @@
                         <li>Sin la marca StickyWork en tu formulario y emails</li>
                         <li class="note">Ideal para negocios establecidos</li>
                     </ul>
-                    <a href="registro.html" class="btn btn-primary">Empezar Ahora</a>
+                    <a href="registro.html" class="btn btn-primary"><span class="fund-only">Conseguir mi plaza</span><span class="fund-off-only">Empezar Ahora</span></a>
                     <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
                         <strong>Plan completo para tu negocio:</strong> reservas ilimitadas,
                         tu equipo y te ayudamos a ponerlo en marcha.
@@ -220,7 +226,7 @@
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <td style="padding: 1rem;"><strong>Precio</strong></td>
                             <td style="padding: 1rem; text-align: center; color: #10b981; font-weight: 600;">0€</td>
-                            <td style="padding: 1rem; text-align: center; font-weight: 600;">39€/mes</td>
+                            <td style="padding: 1rem; text-align: center; font-weight: 600;" data-fundador><span class="fund-only">25€/mes <small style="font-weight: 400; color: var(--text-secondary);">(precio fundador para siempre; 39€ cuando se agoten las plazas)</small></span><span class="fund-off-only">39€/mes</span></td>
                             <td style="padding: 1rem; text-align: center; font-weight: 600;">79€/mes</td>
                         </tr>
                         <tr style="border-bottom: 1px solid var(--border-color);">
@@ -416,6 +422,7 @@
     </button>
 
     <script src="js/main.js"></script>
+    <script src="js/plazas-fundador.js"></script>
     <script src="js/cookie-consent.js"></script>
     <!-- Dark Mode Toggle Script -->
     <script src="js/dark-mode.js"></script>

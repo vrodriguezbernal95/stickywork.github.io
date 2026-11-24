@@ -825,7 +825,7 @@ const emailTemplates = {
             <div class="features-box">
                 <h3>✨ Lo que incluye tu plan:</h3>
                 <ul>
-                    ${plan.name === 'Founders' || plan.name === 'Profesional' ? `
+                    ${plan.name === 'Fundador' || plan.name === 'Profesional' ? `
                     <li><strong>3 usuarios</strong> administradores</li>
                     <li><strong>Reservas ilimitadas</strong></li>
                     <li><strong>1 reporte IA</strong> al mes</li>

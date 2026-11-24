@@ -3,6 +3,7 @@
 const billing = {
     subscriptionData: null,
     paymentHistory: [],
+    fundador: null, // { plazas, quedan, precio, activo } del precio fundador
     _container: null,
 
     _getContainer() {
@@ -19,9 +20,9 @@ const billing = {
             features: ['1 usuario', 'Hasta 30 reservas al mes', 'WhatsApp con un clic y encuestas', 'Incluye el enlace «Reservas con StickyWork»']
         },
         founders: {
-            name: 'Founders',
+            name: 'Profesional · Precio fundador',
             price: 25,
-            features: ['3 usuarios', 'Reservas ilimitadas', '1 reporte IA al mes', 'Soporte prioritario', 'Precio garantizado de por vida']
+            features: ['3 usuarios', 'Reservas ilimitadas', '1 reporte IA al mes', 'Te ayudamos a integrarlo en tu web', 'Sin la marca StickyWork', '25 €/mes para siempre mientras mantengas el plan']
         },
         professional: {
             name: 'Profesional',
@@ -63,6 +64,7 @@ const billing = {
         try {
             const subResponse = await api.get('/api/stripe/subscription-status');
             this.subscriptionData = subResponse.data;
+            try { this.fundador = (await api.get('/api/public/plazas-fundador')).data; } catch (e) { this.fundador = null; }
 
             this.paymentHistory = [];
             if (auth.userData?.role === 'owner') {
@@ -231,15 +233,19 @@ const billing = {
         const plan = this.plans[planKey];
         const isCurrent = planKey === currentPlan;
         const isPopular = planKey === 'professional';
+        const f = this.fundador;
+        const conFundador = isPopular && f && f.activo;
 
         return `
             <div class="plan-card ${isCurrent ? 'current' : ''} ${isPopular ? 'popular' : ''}">
-                ${isPopular ? '<div class="popular-badge">⭐ Recomendado</div>' : ''}
+                ${conFundador ? '<div class="popular-badge">🔥 Precio fundador</div>' : isPopular ? '<div class="popular-badge">⭐ Recomendado</div>' : ''}
                 <h3>${utils.escapeHtml(plan.name)}</h3>
                 <div class="plan-price-large">
-                    <span class="price">${plan.price} €</span>
+                    ${conFundador ? `<span class="period" style="text-decoration: line-through; margin-right: 0.35rem;">${plan.price} €</span>` : ''}
+                    <span class="price">${conFundador ? Number(f.precio) : plan.price} €</span>
                     <span class="period">/mes</span>
                 </div>
+                ${conFundador ? `<p style="margin: 0.25rem 0 0.75rem; font-size: 0.85rem; color: var(--text-secondary);"><strong>Para siempre</strong> para las ${Number(f.plazas)} primeras plazas · quedan <strong>${Number(f.quedan)}</strong></p>` : ''}
                 <ul class="plan-features">
                     ${plan.features.map(f => `<li>${f}</li>`).join('')}
                 </ul>

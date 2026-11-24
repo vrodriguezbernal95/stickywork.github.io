@@ -27,7 +27,7 @@ const superUI = {
         const meses = Math.floor(dias / 30);
         return meses === 1 ? 'hace 1 mes' : `hace ${meses} meses`;
     },
-    PLANES: { free: 'Gratis', founders: 'Founders', professional: 'Profesional', premium: 'Premium' },
+    PLANES: { free: 'Gratis', founders: 'Fundador (25 €)', professional: 'Profesional', premium: 'Premium' },
     PRECIO: { founders: 25, professional: 39, premium: 79 },
 
     // Cómo está el plan de un negocio, en una etiqueta: pagando, prueba, regalo, cortesía o gratis

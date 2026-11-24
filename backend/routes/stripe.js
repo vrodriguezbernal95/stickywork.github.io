@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { getPlanLimits } = require('../plans');
+const { estadoFundador } = require('../founders');
 
 // Email service
 const {
@@ -32,7 +33,7 @@ const STRIPE_PRICES = {
 
 const PLAN_DETAILS = {
     free: { name: 'Gratis', price: 0, maxUsers: 1, maxBookings: 30, aiReports: 0 },
-    founders: { name: 'Founders', price: 25, maxUsers: 3, maxBookings: null, aiReports: 1 },
+    founders: { name: 'Fundador', price: 25, maxUsers: 3, maxBookings: null, aiReports: 1 },
     professional: { name: 'Profesional', price: 39, maxUsers: 3, maxBookings: null, aiReports: 1 },
     premium: { name: 'Premium', price: 79, maxUsers: 10, maxBookings: null, aiReports: 8 }
 };
@@ -47,13 +48,18 @@ router.post('/api/stripe/create-checkout-session', requireAuth, requireRole('own
             return res.status(500).json({ success: false, message: 'Stripe no configurado' });
         }
 
-        const { priceId, planName } = req.body;
+        // El precio lo decide siempre el servidor (nunca un priceId enviado por el navegador)
+        let planName = req.body?.planName;
         const businessId = req.user.businessId;
         const userEmail = req.user.email;
 
         // Verificar que el plan es válido
         if (!['founders', 'professional', 'premium'].includes(planName)) {
             return res.status(400).json({ success: false, message: 'Plan no válido' });
+        }
+        // Profesional = precio fundador (25 €) mientras queden plazas; si no, 39 €
+        if (planName === 'professional' || planName === 'founders') {
+            planName = (await estadoFundador({ fresco: true })).activo ? 'founders' : 'professional';
         }
 
         // Obtener o crear cliente de Stripe
@@ -82,7 +88,7 @@ router.post('/api/stripe/create-checkout-session', requireAuth, requireRole('own
             customer: stripeCustomerId,
             payment_method_types: ['card'],
             line_items: [{
-                price: priceId || STRIPE_PRICES[planName],
+                price: STRIPE_PRICES[planName],
                 quantity: 1
             }],
             mode: 'subscription',
