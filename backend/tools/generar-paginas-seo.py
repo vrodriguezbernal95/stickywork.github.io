@@ -381,7 +381,7 @@ FIDE_BODY = f'''        <p>Seguro que has tenido alguna vez una tarjeta de cart�
         <h2>Cómo funciona la tarjeta de sellos digital de StickyWork</h2>
         <p>Es una tarjeta <strong>por visitas</strong>, no por gasto: cada cita completada es un sello. Se configura en un par de minutos desde tu panel.</p>
         <ol>
-            <li><strong>Eliges la regla.</strong> En <em>Clientes → Promociones</em> indicas cada cuántas visitas hay premio, qué premio es (texto libre, por ejemplo «corte gratis») y las fechas en las que el programa está activo.</li>
+            <li><strong>Eliges la regla.</strong> En <em>Clientes → Promociones</em> indicas cada cuántas visitas hay premio, qué premio es (texto libre, por ejemplo «corte gratis») y, si quieres, las fechas en las que está activo (sin fechas, no caduca).</li>
             <li><strong>Enseñas el QR.</strong> Imprímelo y ponlo en el mostrador, o comparte el enlace por Instagram o WhatsApp. El código QR y el enlace salen en la misma pestaña.</li>
             <li><strong>El cliente consulta sus sellos.</strong> Abre el enlace, escribe su email o su teléfono y ve algo como «llevas 4 de 6 visitas». No instala nada ni crea ninguna cuenta.</li>
             <li><strong>Tú marcas las citas como completadas.</strong> Solo cuentan las visitas completadas, así que no hay sellos regalados ni inventados.</li>

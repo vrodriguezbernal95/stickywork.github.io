@@ -521,6 +521,10 @@
             let datesText = '';
             if (start_date && end_date) {
                 datesText = `Válido del ${formatDate(start_date)} al ${formatDate(end_date)}`;
+            } else if (end_date) {
+                datesText = `Válido hasta el ${formatDate(end_date)}`;
+            } else if (start_date) {
+                datesText = `Cuentan las visitas desde el ${formatDate(start_date)}`;
             }
 
             document.getElementById('main-content').innerHTML = `

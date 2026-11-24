@@ -4977,11 +4977,14 @@ router.patch('/api/loyalty/:businessId/config', requireAuth, requireBusinessAcce
         if (enabled && !reward) {
             return res.status(400).json({ success: false, message: 'La descripción del premio es obligatoria' });
         }
-        if (enabled && (!start_date || !end_date)) {
-            return res.status(400).json({ success: false, message: 'Las fechas de inicio y fin son obligatorias' });
+        // Fechas opcionales: sin ellas el programa no caduca
+        const fecha = v => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null);
+        const inicio = fecha(start_date), fin = fecha(end_date);
+        if (inicio && fin && fin <= inicio) {
+            return res.status(400).json({ success: false, message: 'La fecha de fin debe ser posterior a la de inicio' });
         }
 
-        const config = { enabled: !!enabled, goal: parseInt(goal) || 1, reward: reward || '', start_date: start_date || null, end_date: end_date || null };
+        const config = { enabled: !!enabled, goal: parseInt(goal) || 1, reward: String(reward || '').slice(0, 200), start_date: inicio, end_date: fin };
         await db.query('UPDATE businesses SET loyalty_config = ? WHERE id = ?', [JSON.stringify(config), businessId]);
 
         res.json({ success: true, message: 'Configuración guardada correctamente', data: config });

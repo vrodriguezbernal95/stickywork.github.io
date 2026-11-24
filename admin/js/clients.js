@@ -1569,19 +1569,20 @@ const clients = {
                         <div class="form-group" style="flex: 1;">
                             <label class="form-label">Descripción del premio</label>
                             <input type="text" id="loyalty-reward" class="form-input"
-                                   value="${cfg.reward || ''}" placeholder="Ej: Café gratis, 10% descuento...">
+                                   value="${utils.escapeHtml(cfg.reward || '')}" placeholder="Ej: Café gratis, 10% descuento...">
                         </div>
                     </div>
                     <div class="loyalty-field-row">
                         <div class="form-group" style="flex: 1;">
-                            <label class="form-label">Fecha de inicio</label>
+                            <label class="form-label">Fecha de inicio <span style="font-weight: 400; color: var(--text-secondary);">(opcional)</span></label>
                             <input type="date" id="loyalty-start" class="form-input" value="${cfg.start_date || ''}">
                         </div>
                         <div class="form-group" style="flex: 1;">
-                            <label class="form-label">Fecha de fin</label>
+                            <label class="form-label">Fecha de fin <span style="font-weight: 400; color: var(--text-secondary);">(opcional)</span></label>
                             <input type="date" id="loyalty-end" class="form-input" value="${cfg.end_date || ''}">
                         </div>
                     </div>
+                    <p style="margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-secondary);">Déjalas vacías si el programa es permanente. Si pones fechas, solo cuentan las visitas dentro de ese periodo.</p>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
@@ -1704,8 +1705,7 @@ const clients = {
 
         if (enabled) {
             if (!reward) { modal.toast({ message: 'Escribe la descripción del premio', type: 'error' }); return; }
-            if (!start_date || !end_date) { modal.toast({ message: 'Indica las fechas de inicio y fin', type: 'error' }); return; }
-            if (new Date(end_date) <= new Date(start_date)) { modal.toast({ message: 'La fecha de fin debe ser posterior a la de inicio', type: 'error' }); return; }
+            if (start_date && end_date && new Date(end_date) <= new Date(start_date)) { modal.toast({ message: 'La fecha de fin debe ser posterior a la de inicio', type: 'error' }); return; }
         }
 
         try {

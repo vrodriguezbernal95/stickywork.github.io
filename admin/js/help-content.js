@@ -302,7 +302,7 @@ window.HELP_TOPICS = [
         id: 'fidelizacion', cat: 'clientes',
         q: '¿Cómo premio a los clientes que repiten?',
         keywords: 'fidelizacion fidelidad premio vale descuento repetir puntos tarjeta visitas',
-        a: `<p>En <strong>Clientes → Promociones</strong> configuras el programa de fidelización: eliges cada cuántas visitas consigue un premio. Tus clientes consultan su progreso con un QR y reciben un vale al llegar a la meta.</p>`,
+        a: `<p>En <strong>Clientes → Promociones</strong> configuras el programa de fidelización: eliges cada cuántas visitas consigue un premio y, si quieres, unas fechas de inicio y fin (sin fechas, el programa no caduca). Tus clientes consultan su progreso con un QR y reciben un vale al llegar a la meta.</p>`,
         actions: [{ label: 'Ir a Promociones', go: 'clients:promociones' }]
     },
     {
