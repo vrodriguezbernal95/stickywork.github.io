@@ -374,10 +374,10 @@ window.HELP_TOPICS = [
     {
         id: 'planes', cat: 'cuenta', popular: true,
         q: '¿Qué incluye cada plan y cómo cambio?',
-        keywords: 'plan planes precio precios cuanto cuesta coste tarifa gratis gratuito profesional premium cambiar pagar suscripcion limite 30 reservas marca logo stickywork quitar enlace',
+        keywords: 'fundador fundadores plazas 25 plan planes precio precios cuanto cuesta coste tarifa gratis gratuito profesional premium cambiar pagar suscripcion limite 30 reservas marca logo stickywork quitar enlace',
         a: `<ul>
                 <li><strong>Gratis</strong> (0 €): hasta 30 reservas al mes y 1 usuario. Tu formulario y los emails a tus clientes incluyen un pequeño enlace «Reservas con StickyWork».</li>
-                <li><strong>Profesional</strong> (39 €/mes): reservas ilimitadas, 3 usuarios, 1 reporte de IA al mes y sin la marca StickyWork.</li>
+                <li><strong>Profesional</strong> (39 €/mes): reservas ilimitadas, 3 usuarios, 1 reporte de IA al mes y sin la marca StickyWork. Mientras queden plazas de fundador (las 50 primeras), cuesta <strong>25 €/mes para siempre</strong> mientras mantengas el plan.</li>
                 <li><strong>Premium</strong> (79 €/mes): 10 usuarios, 2 reportes de IA a la semana y 1 hora de consultoría al mes.</li>
             </ul>
             <p>Cambia de plan en <strong>Configuración → Plan</strong>; los planes de pago tienen 7 días de prueba. En el plan Gratis, al llegar a 30 reservas en el mes tus clientes no pueden reservar online hasta el mes siguiente, salvo que cambies a Profesional; te avisamos en el Dashboard cuando te acercas.</p>`,

@@ -240,7 +240,7 @@ def sector(slug, keyword_title, description, h1, intro, problems, features, how,
                 f'<p>{description}</p>\n        {HERO_BTNS}', body,
                 schema=[faq_schema(faqs)], badge=badge)
 
-COMMON_FAQ_PRICE = ('¿Cuánto cuesta?', 'Hay un plan gratuito para siempre con hasta 30 reservas al mes y 1 usuario. El plan Profesional cuesta 39 € al mes (reservas ilimitadas, 3 usuarios y un informe mensual con IA) y el Premium 79 € al mes. Los planes de pago tienen 7 días de prueba y no hay permanencia.')
+COMMON_FAQ_PRICE = ('¿Cuánto cuesta?', 'Hay un plan gratuito para siempre con hasta 30 reservas al mes y 1 usuario. El plan Profesional (reservas ilimitadas, 3 usuarios y un informe mensual con IA) cuesta 39 € al mes, pero las 50 primeras plazas lo tienen a precio de fundador: 25 € al mes para siempre. El Premium cuesta 79 € al mes. Los planes de pago tienen 7 días de prueba y no hay permanencia.')
 COMMON_FAQ_WEB = ('¿Necesito tener página web?', 'No. Al registrarte tienes una página de reservas propia con un enlace que puedes compartir en Instagram, Google o WhatsApp, y un código QR para imprimir. Si tienes web, puedes añadir también el formulario de reservas copiando un pequeño código.')
 
 urls = []
